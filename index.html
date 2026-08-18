@@ -226,8 +226,6 @@ textarea{resize:vertical;min-height:62px}
 .rise > *:nth-child(7){animation-delay:.26s}
 .rise > *:nth-child(8){animation-delay:.30s}
 .view-in{animation:riseIn .26s cubic-bezier(.2,.8,.3,1)}
-.card,.stat{transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s}
-.stat:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(21,26,33,.06),0 14px 30px rgba(21,26,33,.09)}
 .btn:active{transform:translateY(1px)}
 tbody tr{transition:background .12s}
 
@@ -260,7 +258,25 @@ tbody tr{transition:background .12s}
 .trend{font-weight:700;font-family:var(--mono);font-size:12px}
 .trend-up{color:var(--green)}
 .trend-down{color:var(--red)}
-.chart-card{padding:16px 18px}
+.chart-card{padding:18px 20px}
+.fleet-line{font-size:12.5px;color:var(--muted);padding:14px 2px 0;letter-spacing:.01em}
+.g-wide{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;align-items:start}
+.range{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.range-dates{display:flex;align-items:center;gap:8px}
+.range-dates label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.range-dates input{width:auto;padding:7px 10px;font-size:13.5px}
+.range-presets{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.range-sep{width:1px;height:24px;background:var(--line);margin:0 2px}
+@media (max-width:900px){
+  .g-wide{grid-template-columns:1fr}
+  .range-presets{margin-left:0;width:100%}
+}
+@media (max-width:760px){
+  .range{padding:11px 12px}
+  .range-dates{width:100%}
+  .range-dates input{flex:1;min-width:0}
+}
 .chart-title{font-size:14.5px;font-weight:700;letter-spacing:-.01em;margin:0 0 2px}
 .chart-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
 @media (max-width:760px){
@@ -296,8 +312,6 @@ tbody tr{transition:background .12s}
 .rise > *:nth-child(7){animation-delay:.26s}
 .rise > *:nth-child(8){animation-delay:.30s}
 .view-in{animation:riseIn .26s cubic-bezier(.2,.8,.3,1)}
-.card,.stat{transition:transform .18s cubic-bezier(.2,.8,.3,1),box-shadow .18s}
-.stat:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(21,26,33,.06),0 14px 30px rgba(21,26,33,.09)}
 .btn:active{transform:translateY(1px)}
 tbody tr{transition:background .12s}
 
@@ -330,7 +344,25 @@ tbody tr{transition:background .12s}
 .trend{font-weight:700;font-family:var(--mono);font-size:12px}
 .trend-up{color:var(--green)}
 .trend-down{color:var(--red)}
-.chart-card{padding:16px 18px}
+.chart-card{padding:18px 20px}
+.fleet-line{font-size:12.5px;color:var(--muted);padding:14px 2px 0;letter-spacing:.01em}
+.g-wide{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;align-items:start}
+.range{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px}
+.range-dates{display:flex;align-items:center;gap:8px}
+.range-dates label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.range-dates input{width:auto;padding:7px 10px;font-size:13.5px}
+.range-presets{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.range-sep{width:1px;height:24px;background:var(--line);margin:0 2px}
+@media (max-width:900px){
+  .g-wide{grid-template-columns:1fr}
+  .range-presets{margin-left:0;width:100%}
+}
+@media (max-width:760px){
+  .range{padding:11px 12px}
+  .range-dates{width:100%}
+  .range-dates input{flex:1;min-width:0}
+}
 .chart-title{font-size:14.5px;font-weight:700;letter-spacing:-.01em;margin:0 0 2px}
 .chart-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
 @media (max-width:760px){
@@ -407,7 +439,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 2.0 &middot; 18 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 2.1 &middot; 18 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -723,7 +755,12 @@ function viewDashboard(){
       spark:series.map(s=>s.profit), sparkColor:'#1C7A57'})+
   '</div>'+
 
-  '<div class="grid" style="grid-template-columns:1.55fr 1fr;gap:14px;margin-top:14px;align-items:start" id="dashCharts">'+
+  '<div class="fleet-line">'+
+    DB.trucks.length+' trucks · '+DB.parties.length+' parties · '+DB.drivers.length+' drivers · '+
+    DB.trips.length+' trips recorded'+
+    (totalDriverPayable()? ' · '+money(totalDriverPayable())+' owed to drivers':'')+
+  '</div>'+
+  '<div class="g-wide" style="margin-top:14px">'+
     '<div class="card chart-card">'+
       '<h3 class="chart-title">Freight against costs</h3>'+
       '<div class="chart-sub">Last six months</div>'+
@@ -740,18 +777,7 @@ function viewDashboard(){
     '</div>'+
   '</div>'+
 
-  '<div class="grid g4 rise" style="margin-top:14px">'+
-    '<div class="stat"><div class="stat-label">Trucks</div><div class="stat-value" data-count="'+DB.trucks.length+'" data-fmt="plain">0</div>'+
-      '<div class="stat-note">'+DB.trucks.filter(t=>t.type==='owned').length+' owned · '+DB.trucks.filter(t=>t.type==='market').length+' market</div></div>'+
-    '<div class="stat"><div class="stat-label">Parties</div><div class="stat-value" data-count="'+DB.parties.length+'" data-fmt="plain">0</div>'+
-      '<div class="stat-note">Customers on your books</div></div>'+
-    '<div class="stat"><div class="stat-label">Drivers</div><div class="stat-value" data-count="'+DB.drivers.length+'" data-fmt="plain">0</div>'+
-      '<div class="stat-note">'+money(totalDriverPayable())+' payable</div></div>'+
-    '<div class="stat"><div class="stat-label">Total trips</div><div class="stat-value" data-count="'+DB.trips.length+'" data-fmt="plain">0</div>'+
-      '<div class="stat-note">All time</div></div>'+
-  '</div>'+
-
-  '<div class="grid g2" style="margin-top:14px;align-items:start">'+
+  '<div class="g-wide" style="margin-top:14px">'+
     '<div class="card">'+
       '<div class="card-head"><h3 class="card-title">Latest trips</h3>'+
         '<button class="btn btn-sm" onclick="go(\'trips\')">See all</button></div>'+
@@ -779,16 +805,17 @@ function viewDashboard(){
    INSIGHTS — the numbers behind the numbers
    ============================================================ */
 function viewInsights(){
-  if(!sub.months) sub.months = 6;
-  const series = monthlySeries(sub.months);
+  defaultRange('6m');
+  const series = seriesForRange(sub.from, sub.to);
+  const inWindow = pnl(sub.from, sub.to);
   const all = pnl('2000-01-01','2099-12-31');
   const trips = DB.trips;
   const bmap = allBalances();
   const outstanding = Object.values(bmap).reduce((s,b)=>s+Math.max(0,b),0);
 
-  const perTrip   = trips.length ? all.freight/trips.length : 0;
-  const costTrip  = trips.length ? all.costs/trips.length : 0;
-  const margin    = all.freight ? all.profit/all.freight*100 : 0;
+  const winPerTrip  = inWindow.tripCount ? inWindow.freight/inWindow.tripCount : 0;
+  const winCostTrip = inWindow.tripCount ? inWindow.costs/inWindow.tripCount : 0;
+  const winMargin   = inWindow.freight ? inWindow.profit/inWindow.freight*100 : 0;
   const billed    = all.freight + DB.parties.reduce((s,p)=>s+Math.max(0,num(p.opening)),0);
   const collected = billed - outstanding;
   const collRate  = billed ? collected/billed*100 : 0;
@@ -797,14 +824,13 @@ function viewInsights(){
   const unpaid = trips.filter(t=>t.status!=='paid').sort((a,b)=>a.date.localeCompare(b.date));
   const oldestDays = unpaid.length ? Math.round((Date.now()-new Date(unpaid[0].date).getTime())/86400000) : 0;
 
-  // truck utilisation over the window
-  const from = series[0].key+'-01';
-  const win = trips.filter(t=>t.date>=from);
+  const from = sub.from, to = sub.to;
+  const win = trips.filter(t=>t.date>=from && t.date<=to);
   const perTruck = DB.trucks.map(tr=>{
     const ts = win.filter(t=>t.truckId===tr.id);
     const freight = ts.reduce((s,t)=>s+num(t.freight),0);
     const hire = ts.reduce((s,t)=>s+num(t.hire),0);
-    const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from).reduce((s,e)=>s+num(e.amount),0);
+    const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from && e.date<=to).reduce((s,e)=>s+num(e.amount),0);
     return {label:tr.number, trips:ts.length, value:freight-hire-exp, freight};
   }).filter(x=>x.trips||x.value).sort((a,b)=>b.value-a.value);
 
@@ -822,21 +848,21 @@ function viewInsights(){
     value: win.filter(t=>t.partyId===p.id).reduce((s,t)=>s+num(t.freight),0)}))
     .filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,6);
 
-  $('#pageSub').textContent = 'Last '+sub.months+' months';
-  $('#pageActions').innerHTML = [6,12,24].map(n=>
-    '<button class="btn btn-sm'+(sub.months===n?' btn-primary':'')+'" onclick="sub.months='+n+';viewInsights();animateCounts()">'+n+'m</button>').join('');
+  $('#pageSub').textContent = rangeCaption();
+  $('#pageActions').innerHTML = '<button class="btn" onclick="window.print()">Print</button>';
 
   $('#view').innerHTML =
+  rangeBar('insights')+
   '<div class="grid g4 rise">'+
-    kpi('Average freight per trip', perTrip, {note:trips.length+' trips all time'})+
-    kpi('Average cost per trip', costTrip, {note:'Hire, expenses, driver pay'})+
-    kpi('Net margin', margin, {fmt:'pct', tone:margin>=0?'pos':'neg', note:'Profit as share of freight'})+
-    kpi('Collection rate', collRate, {fmt:'pct', note:money(outstanding)+' still outstanding'})+
+    kpi('Freight per trip', winPerTrip, {note:inWindow.tripCount+' trips in this period'})+
+    kpi('Cost per trip', winCostTrip, {note:'Hire, expenses, driver pay'})+
+    kpi('Net margin', winMargin, {fmt:'pct', tone:winMargin>=0?'pos':'neg', note:'Profit as share of freight'})+
+    kpi('Collection rate', collRate, {fmt:'pct', note:money(outstanding)+' outstanding, all time'})+
   '</div>'+
 
   '<div class="card chart-card" style="margin-top:14px">'+
     '<h3 class="chart-title">Profit trend</h3>'+
-    '<div class="chart-sub">Freight, costs and what is left over each month</div>'+
+    '<div class="chart-sub">Month by month across '+rangeCaption()+'</div>'+
     lineChart(series, [
       {key:'freight', label:'Freight', color:'#E9A13B', fill:true},
       {key:'cost',    label:'Costs',   color:'#4A5568', dash:true},
@@ -844,7 +870,7 @@ function viewInsights(){
     ], {height:250})+
   '</div>'+
 
-  '<div class="grid g2" style="margin-top:14px;align-items:start">'+
+  '<div class="g-wide" style="margin-top:14px">'+
     '<div class="card chart-card">'+
       '<h3 class="chart-title">Which truck earns most</h3>'+
       '<div class="chart-sub">Freight minus hire and expenses booked to it</div>'+
@@ -1501,24 +1527,12 @@ function delDriver(did){
    REPORTS & P&L
    ============================================================ */
 function viewReports(){
-  const m = thisMonth();
-  if(!sub.from) sub.from = m+'-01';
-  if(!sub.to)   sub.to   = today();
-  if(!sub.tab)  sub.tab  = 'pnl';
+  defaultRange('month');
+  if(!sub.tab) sub.tab = 'pnl';
   const p = pnl(sub.from, sub.to);
   $('#pageActions').innerHTML = '<button class="btn" onclick="window.print()">Print</button>';
 
-  const filters =
-  '<div class="toolbar">'+
-    '<div class="field" style="flex-direction:row;align-items:center;gap:8px"><label for="r_from">From</label>'+
-      '<input id="r_from" type="date" value="'+sub.from+'" onchange="sub.from=this.value;viewReports()"></div>'+
-    '<div class="field" style="flex-direction:row;align-items:center;gap:8px"><label for="r_to">To</label>'+
-      '<input id="r_to" type="date" value="'+sub.to+'" onchange="sub.to=this.value;viewReports()"></div>'+
-    '<button class="btn btn-sm" onclick="quickRange(\'month\')">This month</button>'+
-    '<button class="btn btn-sm" onclick="quickRange(\'last\')">Last month</button>'+
-    '<button class="btn btn-sm" onclick="quickRange(\'fy\')">This financial year</button>'+
-    '<button class="btn btn-sm" onclick="quickRange(\'all\')">All time</button>'+
-  '</div>';
+  const filters = rangeBar('reports');
 
   const tabs = '<div class="tabs">'+
     [['pnl','Profit & Loss'],['party','Party dues'],['truck','Truck-wise'],['expense','Expense split']]
@@ -1527,7 +1541,7 @@ function viewReports(){
   let body = '';
   if(sub.tab==='pnl'){
     const exps = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
-    const trend = monthlySeries(6);
+    const trend = seriesForRange(sub.from, sub.to);
     body =
     '<div class="grid g4 rise" style="margin-bottom:16px">'+
       kpi('Freight income', p.freight, {note:p.tripCount+' trips'})+
@@ -1536,8 +1550,8 @@ function viewReports(){
       kpi('Margin', p.freight?p.profit/p.freight*100:0, {fmt:'pct', note:'Profit ÷ freight'})+
     '</div>'+
     '<div class="card chart-card" style="margin-bottom:16px">'+
-      '<h3 class="chart-title">Six month trend</h3>'+
-      '<div class="chart-sub">Shown regardless of the dates chosen above, for context</div>'+
+      '<h3 class="chart-title">Month by month</h3>'+
+      '<div class="chart-sub">'+rangeCaption()+'</div>'+
       lineChart(trend, [
         {key:'freight', label:'Freight', color:'#E9A13B', fill:true},
         {key:'cost',    label:'Costs',   color:'#4A5568', dash:true},
@@ -1609,7 +1623,7 @@ function viewReports(){
   if(sub.tab==='expense'){
     const entries = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
     const tot = p.expense;
-    body = entries.length? '<div class="grid g2" style="align-items:start">'+
+    body = entries.length? '<div class="g-wide">'+
       '<div class="card chart-card">'+
         '<h3 class="chart-title">Expense split</h3>'+
         '<div class="chart-sub">'+fdate(sub.from)+' to '+fdate(sub.to)+'</div>'+
@@ -1629,23 +1643,6 @@ function viewReports(){
   $('#view').innerHTML = filters + tabs + body;
 }
 function pl(label, v){ return '<div class="pl-line"><span>'+label+'</span><span class="num">'+money(v)+'</span></div>'; }
-function quickRange(k){
-  const d = new Date();
-  if(k==='month'){ sub.from = thisMonth()+'-01'; sub.to = today(); }
-  if(k==='last'){
-    const l = new Date(d.getFullYear(), d.getMonth()-1, 1);
-    const key = l.toISOString().slice(0,7);
-    sub.from = key+'-01';
-    sub.to = new Date(d.getFullYear(), d.getMonth(), 0).toISOString().slice(0,10);
-  }
-  if(k==='fy'){
-    const y = d.getMonth()>=3 ? d.getFullYear() : d.getFullYear()-1;
-    sub.from = y+'-04-01'; sub.to = today();
-  }
-  if(k==='all'){ sub.from = '2000-01-01'; sub.to = '2099-12-31'; }
-  viewReports();
-}
-
 /* ============================================================
    SETTINGS, BACKUP, SAMPLE DATA
    ============================================================ */
@@ -1688,7 +1685,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>2.0</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>2.1</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function cloudPanel(){
@@ -1867,6 +1864,70 @@ function exportLedger(pid){
 }
 
 
+
+/* ============================================================
+   DATE RANGE — one control, used by both Insights and Reports
+   ============================================================ */
+const PRESETS = [
+  {k:'month', label:'This month'},
+  {k:'last',  label:'Last month'},
+  {k:'3m',    label:'3 months'},
+  {k:'6m',    label:'6 months'},
+  {k:'12m',   label:'12 months'},
+  {k:'fy',    label:'Financial year'},
+  {k:'all',   label:'All time'}
+];
+function monthStart(offset){
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth()-offset, 1).toISOString().slice(0,10);
+}
+function rangeFor(k){
+  const d = new Date();
+  if(k==='month') return [thisMonth()+'-01', today()];
+  if(k==='last'){
+    const s = monthStart(1);
+    return [s, new Date(d.getFullYear(), d.getMonth(), 0).toISOString().slice(0,10)];
+  }
+  if(k==='3m')  return [monthStart(2), today()];
+  if(k==='6m')  return [monthStart(5), today()];
+  if(k==='12m') return [monthStart(11), today()];
+  if(k==='fy'){
+    const y = d.getMonth()>=3 ? d.getFullYear() : d.getFullYear()-1;
+    return [y+'-04-01', today()];
+  }
+  const dates = DB.trips.map(t=>t.date).concat(DB.expenses.map(e=>e.date)).filter(Boolean).sort();
+  return [dates[0] || monthStart(5), today()];
+}
+function setRange(k, target){
+  const [f,t] = rangeFor(k);
+  sub.from = f; sub.to = t; sub.preset = k;
+  rerun(target);
+}
+function rerun(target){
+  (target==='insights' ? viewInsights : viewReports)();
+  animateCounts();
+}
+function rangeBar(target){
+  return '<div class="range">'+
+    '<div class="range-dates">'+
+      '<label for="r_from">From</label>'+
+      '<input id="r_from" type="date" value="'+esc(sub.from)+'" max="'+esc(sub.to)+'" '+
+        'onchange="sub.from=this.value;sub.preset=\'\';rerun(\''+target+'\')">'+
+      '<label for="r_to">To</label>'+
+      '<input id="r_to" type="date" value="'+esc(sub.to)+'" min="'+esc(sub.from)+'" '+
+        'onchange="sub.to=this.value;sub.preset=\'\';rerun(\''+target+'\')">'+
+    '</div>'+
+    '<div class="range-presets">'+PRESETS.map(pr=>
+      '<button class="btn btn-sm'+(sub.preset===pr.k?' btn-primary':'')+'" '+
+        'onclick="setRange(\''+pr.k+'\',\''+target+'\')">'+pr.label+'</button>').join('')+
+    '</div>'+
+  '</div>';
+}
+function defaultRange(k){
+  if(!sub.from || !sub.to){ const [f,t]=rangeFor(k); sub.from=f; sub.to=t; sub.preset=k; }
+}
+function rangeCaption(){ return fdate(sub.from)+' to '+fdate(sub.to); }
+
 /* ============================================================
    CHARTS — hand drawn as SVG so the app stays one offline file
    ============================================================ */
@@ -1893,12 +1954,29 @@ function monthLabel(k){
   const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return M[parseInt(k.slice(5,7),10)-1];
 }
-function monthlySeries(n){
-  return monthsBack(n).map(k=>{
+function monthlySeries(n){ return seriesFor(monthsBack(n)); }
+
+/* Every month between two dates, so charts follow whatever range is chosen */
+function monthsBetween(from, to){
+  const out=[];
+  let y=parseInt(from.slice(0,4),10), m=parseInt(from.slice(5,7),10);
+  const ey=parseInt(to.slice(0,4),10), em=parseInt(to.slice(5,7),10);
+  let guard=0;
+  while((y<ey || (y===ey && m<=em)) && guard++<400){
+    out.push(y+'-'+String(m).padStart(2,'0'));
+    m++; if(m>12){ m=1; y++; }
+  }
+  return out.length? out : [from.slice(0,7)];
+}
+function seriesFor(keys){
+  const multiYear = new Set(keys.map(k=>k.slice(0,4))).size>1;
+  return keys.map(k=>{
     const p = pnl(k+'-01', k+'-31');
-    return {key:k, label:monthLabel(k), freight:p.freight, cost:p.costs, profit:p.profit, trips:p.tripCount};
+    return {key:k, label: monthLabel(k)+(multiYear?' '+k.slice(2,4):''),
+      freight:p.freight, cost:p.costs, profit:p.profit, trips:p.tripCount};
   });
 }
+function seriesForRange(from, to){ return seriesFor(monthsBetween(from, to)); }
 
 /* Line chart with two series, drawn left to right on load */
 function lineChart(rows, series, opts={}){
@@ -1915,7 +1993,9 @@ function lineChart(rows, series, opts={}){
     svg += '<line class="grid-line" x1="'+L+'" y1="'+yy.toFixed(1)+'" x2="'+(W-R)+'" y2="'+yy.toFixed(1)+'"/>'+
            '<text class="axis-text" x="'+(L-8)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end">'+shortMoney(v)+'</text>';
   }
+  const every = rows.length>13 ? Math.ceil(rows.length/12) : 1;
   rows.forEach((r,i)=>{
+    if(i%every && i!==rows.length-1) return;
     svg += '<text class="axis-text" x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle">'+esc(r.label)+'</text>';
   });
   series.forEach((s,si)=>{
