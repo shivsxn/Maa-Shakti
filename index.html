@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#151A21">
+<title>Maa Vandana Logistics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --asphalt:#151A21; --asphalt-2:#1E2530; --asphalt-3:#2A323E;
+  --paper:#F6F4EF; --card:#FFFFFF; --line:#E4E0D6; --line-soft:#EFECE4;
+  --ink:#1B1F24; --muted:#6E6A62;
+  --amber:#E9A13B; --amber-soft:#FBF0DC;
+  --red:#B3372C; --red-soft:#FAEAE8;
+  --green:#1C7A57; --green-soft:#E6F2EC;
+  --blue:#2C5D7C; --blue-soft:#E8F0F5;
+  --r:10px; --shadow:0 1px 2px rgba(21,26,33,.06),0 8px 24px rgba(21,26,33,.05);
+  --sans:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'Courier New',monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* ---------- App frame ---------- */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:238px;flex:none;background:var(--asphalt);color:#fff;
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+}
+.brand{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand-mark{display:flex;align-items:center;gap:10px}
+.brand-badge{
+  width:34px;height:34px;border-radius:8px;background:var(--amber);color:var(--asphalt);
+  display:grid;place-items:center;font-weight:700;font-size:14px;letter-spacing:-.02em;flex:none;
+}
+.brand-name{font-weight:700;font-size:15px;letter-spacing:-.01em;line-height:1.2}
+.brand-tag{font-size:11px;color:rgba(255,255,255,.45);margin-top:9px;letter-spacing:.06em;text-transform:uppercase}
+.nav{padding:12px 10px;overflow-y:auto;flex:1}
+.nav-item{
+  display:flex;align-items:center;gap:11px;width:100%;padding:9px 11px;margin-bottom:2px;
+  background:none;border:0;border-radius:8px;color:rgba(255,255,255,.68);
+  font-size:14px;font-weight:500;cursor:pointer;text-align:left;transition:background .12s,color .12s;
+}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.on{background:var(--asphalt-3);color:#fff}
+.nav-item.on .ic{color:var(--amber)}
+.ic{width:19px;height:19px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.side-foot{padding:14px 20px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.35)}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  display:flex;align-items:center;gap:14px;padding:18px 26px;
+  background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;
+}
+.page-title{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0}
+.page-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.content{padding:22px 26px 60px;max-width:1240px;width:100%}
+
+/* ---------- Buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:8px;
+  border:1px solid var(--line);background:var(--card);font-weight:600;font-size:13.5px;
+  cursor:pointer;transition:.12s;white-space:nowrap;
+}
+.btn:hover{border-color:#CFC9BB;background:#FCFBF8}
+.btn-primary{background:var(--asphalt);border-color:var(--asphalt);color:#fff}
+.btn-primary:hover{background:#232B36;border-color:#232B36}
+.btn-amber{background:var(--amber);border-color:var(--amber);color:var(--asphalt)}
+.btn-amber:hover{background:#F0AC4C;border-color:#F0AC4C}
+.btn-danger{color:var(--red);border-color:#E8CFCB}
+.btn-danger:hover{background:var(--red-soft)}
+.btn-sm{padding:6px 11px;font-size:12.5px;border-radius:7px}
+.btn-icon{padding:7px;border-radius:7px}
+.btn:focus-visible,.nav-item:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.tab:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* ---------- Cards & grid ---------- */
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card-pad{padding:16px 18px}
+.card-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-soft)}
+.card-title{font-size:14.5px;font-weight:700;letter-spacing:-.01em;margin:0}
+.card-head .btn{margin-left:auto}
+
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px 17px;box-shadow:var(--shadow)}
+.stat-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.stat-value{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.03em;margin-top:7px;font-variant-numeric:tabular-nums}
+.stat-note{font-size:12px;color:var(--muted);margin-top:5px}
+.stat.accent{border-left:3px solid var(--amber)}
+.stat.pos .stat-value{color:var(--green)}
+.stat.neg .stat-value{color:var(--red)}
+
+/* ---------- Tables ---------- */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{
+  text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap;background:#FCFBF8;
+}
+td{padding:12px 14px;border-bottom:1px solid var(--line-soft);font-size:14px;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#FCFBF8}
+.t-r{text-align:right}
+.t-c{text-align:center}
+.t-strong{font-weight:600}
+.t-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.row-actions{display:flex;gap:5px;justify-content:flex-end}
+
+/* ---------- Chips & the stamp ---------- */
+.chip{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;
+  font-size:11.5px;font-weight:600;letter-spacing:.01em;white-space:nowrap;
+}
+.chip-grey{background:#F0EEE8;color:var(--muted)}
+.chip-amber{background:var(--amber-soft);color:#8A5D12}
+.chip-red{background:var(--red-soft);color:var(--red)}
+.chip-green{background:var(--green-soft);color:var(--green)}
+.chip-blue{background:var(--blue-soft);color:var(--blue)}
+
+/* signature element: rubber-stamp status on the LR slip */
+.stamp{
+  display:inline-block;padding:5px 12px 4px;border:2.5px solid currentColor;border-radius:4px;
+  font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  transform:rotate(-6deg);opacity:.82;font-family:var(--sans);
+}
+.stamp-paid{color:var(--green)}
+.stamp-pending{color:var(--red)}
+.stamp-part{color:#8A5D12}
+
+/* LR slip */
+.slip{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.slip-top{display:flex;align-items:flex-start;gap:14px;padding:15px 18px;background:#FCFBF8;border-bottom:1px dashed var(--line)}
+.slip-lr{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--muted)}
+.slip-route{font-size:17px;font-weight:700;letter-spacing:-.02em;margin-top:3px}
+.slip-body{padding:15px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.field-label{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.field-value{font-size:14px;font-weight:500;margin-top:3px;word-break:break-word}
+
+/* ---------- Forms ---------- */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:600;color:#3C4048;letter-spacing:.01em}
+input,select,textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;
+  font-size:14.5px;transition:border-color .12s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--asphalt-3);outline-offset:1px}
+input[type=number]{font-family:var(--mono)}
+textarea{resize:vertical;min-height:62px}
+.hint{font-size:11.5px;color:var(--muted)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg input{display:none}
+.seg label{
+  padding:8px 13px;border:1px solid var(--line);border-radius:8px;cursor:pointer;
+  font-size:13.5px;font-weight:600;background:#fff;
+}
+.seg input:checked+label{background:var(--asphalt);border-color:var(--asphalt);color:#fff}
+
+/* ---------- Modal ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(21,26,33,.5);z-index:100;
+  display:flex;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;
+  animation:fade .15s ease-out;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  background:var(--card);border-radius:14px;width:100%;max-width:640px;margin:auto;
+  box-shadow:0 24px 60px rgba(21,26,33,.28);animation:pop .18s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes pop{from{transform:translateY(10px) scale(.99);opacity:0}to{transform:none;opacity:1}}
+.modal-head{display:flex;align-items:center;padding:17px 20px;border-bottom:1px solid var(--line-soft)}
+.modal-title{font-size:16.5px;font-weight:700;letter-spacing:-.01em;margin:0}
+.modal-body{padding:18px 20px;max-height:65vh;overflow-y:auto}
+.modal-foot{display:flex;gap:9px;justify-content:flex-end;padding:15px 20px;border-top:1px solid var(--line-soft);background:#FCFBF8;border-radius:0 0 14px 14px}
+.x{margin-left:auto;background:none;border:0;font-size:24px;line-height:1;color:var(--muted);cursor:pointer;padding:0 4px}
+
+/* ---------- Misc ---------- */
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar input,.toolbar select{width:auto;min-width:150px}
+.search{flex:1;min-width:180px;max-width:320px}
+.empty{padding:44px 22px;text-align:center}
+.empty-title{font-weight:700;font-size:15px;margin-bottom:5px}
+.empty-text{font-size:13.5px;color:var(--muted);max-width:380px;margin:0 auto 16px}
+.money-pos{color:var(--green);font-weight:600}
+.money-neg{color:var(--red);font-weight:600}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{
+  padding:9px 14px;background:none;border:0;border-bottom:2px solid transparent;cursor:pointer;
+  font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap;
+}
+.tab.on{color:var(--ink);border-bottom-color:var(--amber)}
+.sec-title{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:24px 0 10px}
+.divide{height:1px;background:var(--line-soft);margin:16px 0}
+.note{background:var(--amber-soft);border:1px solid #EBDCBD;border-radius:8px;padding:12px 14px;font-size:13px}
+.pl-line{display:flex;align-items:baseline;padding:10px 0;border-bottom:1px dotted var(--line)}
+.pl-line span:first-child{flex:1}
+.pl-line .num{font-size:15px}
+.pl-total{border-top:2px solid var(--asphalt);border-bottom:0;margin-top:6px;padding-top:13px;font-weight:700;font-size:16px}
+
+.cloud-pill{
+  margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;
+  border:1px solid var(--line);background:var(--card);font-size:12.5px;font-weight:600;cursor:pointer;
+  color:var(--muted);white-space:nowrap;
+}
+.cloud-pill:hover{border-color:#CFC9BB}
+.cloud-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.cloud-pill.on{color:var(--green);border-color:#C8E2D6;background:var(--green-soft)}
+.cloud-pill.on .cloud-dot{background:var(--green)}
+.cloud-pill.busy{color:#8A5D12;border-color:#EBDCBD;background:var(--amber-soft)}
+.cloud-pill.busy .cloud-dot{background:var(--amber);animation:pulse 1s infinite}
+.cloud-pill.bad{color:var(--red);border-color:#E8CFCB;background:var(--red-soft)}
+.cloud-pill.bad .cloud-dot{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (max-width:760px){.cloud-pill span{display:none}.cloud-pill{padding:7px 9px}}
+.step{display:flex;gap:12px;padding:11px 0;border-bottom:1px dotted var(--line)}
+.step-n{width:22px;height:22px;border-radius:50%;background:var(--asphalt);color:#fff;font-size:11px;
+  font-weight:700;display:grid;place-items:center;flex:none;margin-top:2px}
+.step p{margin:0;font-size:13.5px}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{
+  background:var(--asphalt);color:#fff;padding:11px 18px;border-radius:9px;font-size:13.5px;font-weight:500;
+  box-shadow:0 10px 30px rgba(21,26,33,.3);animation:up .22s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes up{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+.toast.ok{border-left:3px solid var(--amber)}
+
+.mobile-nav{display:none}
+@media (max-width:900px){
+  .g4{grid-template-columns:1fr 1fr}
+  .g3,.g2{grid-template-columns:1fr}
+  .slip-body{grid-template-columns:1fr 1fr}
+}
+@media (max-width:760px){
+  .sidebar{display:none}
+  .content{padding:16px 14px 92px}
+  .topbar{padding:14px 16px}
+  .page-title{font-size:18px}
+  .form-grid{grid-template-columns:1fr}
+  .g4{grid-template-columns:1fr 1fr}
+  .stat-value{font-size:21px}
+  .modal{max-width:none}
+  .modal-body{max-height:none}
+  .overlay{padding:0}
+  .modal{border-radius:14px 14px 0 0;margin:auto auto 0}
+  .mobile-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--asphalt);z-index:50;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.1);
+  }
+  .mnav{
+    flex:1;background:none;border:0;color:rgba(255,255,255,.6);display:flex;flex-direction:column;
+    align-items:center;gap:3px;padding:5px 2px;font-size:10px;font-weight:600;cursor:pointer;border-radius:8px;
+  }
+  .mnav.on{color:var(--amber)}
+  th,td{padding:10px 11px;font-size:13.5px}
+  .topbar-actions .btn span{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{
+  .sidebar,.topbar,.mobile-nav,.toolbar,.btn,.row-actions{display:none!important}
+  .content{padding:0;max-width:none}
+  .card{box-shadow:none;break-inside:avoid}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <div class="brand-badge">MV</div>
+        <div>
+          <div class="brand-name" id="brandName">Maa Vandana<br>Logistics</div>
+        </div>
+      </div>
+      <div class="brand-tag">Blessed by Maa Vandana</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot" id="syncFoot">Data saved on this device</div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        <div class="page-sub" id="pageSub"></div>
+      </div>
+      <button class="cloud-pill" id="cloudPill" onclick="go('settings')" hidden></button>
+      <div class="topbar-actions" id="pageActions"></div>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<nav class="mobile-nav" id="mnav"></nav>
+<div id="modalRoot"></div>
+<div id="toast"></div>
+<script>
+/* ============================================================
+   MAA VANDANA LOGISTICS — transport business manager
+   All data is stored in this browser (localStorage). Use
+   Settings > Backup regularly to keep a copy of your data.
+   ============================================================ */
+
+/* ---------- 1. Storage ---------- */
+const KEY = 'mvl_db_v1';
+const BLANK = {
+  settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:''},
+  trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[],
+  seeded:false
+};
+let DB = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return JSON.parse(JSON.stringify(BLANK));
+    return Object.assign(JSON.parse(JSON.stringify(BLANK)), JSON.parse(raw));
+  }catch(e){ return JSON.parse(JSON.stringify(BLANK)); }
+}
+function save(){
+  reindex();
+  DB.updatedAt = new Date().toISOString();
+  try{ localStorage.setItem(KEY, JSON.stringify(DB)); }
+  catch(e){ toast('Could not save. Your device storage may be full.'); }
+  if(typeof cloudReady==='function' && cloudReady()) cloudPush(false);
+}
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ---------- 2. Helpers ---------- */
+const $  = s => document.querySelector(s);
+const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function money(n, sign){
+  const v = Math.round(num(n));
+  const s = Math.abs(v).toLocaleString('en-IN');
+  if(sign && v>0) return '+₹'+s;
+  return (v<0?'−₹':'₹')+s;
+}
+function today(){ return new Date().toISOString().slice(0,10); }
+function fdate(d){
+  if(!d) return '—';
+  const [y,m,dd] = d.split('-');
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return dd+' '+M[parseInt(m,10)-1]+' '+y;
+}
+function monthKey(d){ return (d||'').slice(0,7); }
+function thisMonth(){ return today().slice(0,7); }
+function monthName(k){
+  if(!k) return '';
+  const M=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return M[parseInt(k.slice(5,7),10)-1]+' '+k.slice(0,4);
+}
+function toast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast ok'; t.textContent = msg;
+  $('#toast').appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2400);
+}
+function confirmAsk(msg, onYes, danger){
+  openModal({
+    title:'Please confirm',
+    body:'<p style="margin:0;font-size:14.5px">'+esc(msg)+'</p>',
+    okText: danger?'Delete':'Yes, continue',
+    okClass: danger?'btn btn-danger':'btn btn-primary',
+    onOk(){ closeModal(); onYes(); }
+  });
+}
+
+/* Debounce: run fn once the person pauses typing, instead of on every keystroke */
+let deferTimer;
+function defer(fn){ clearTimeout(deferTimer); deferTimer = setTimeout(fn, 90); }
+
+/* lookups — kept in an index so long lists stay fast */
+let IDX = {truck:{}, party:{}, driver:{}};
+function reindex(){
+  IDX = {truck:{}, party:{}, driver:{}};
+  DB.trucks.forEach(t=>IDX.truck[t.id]=t);
+  DB.parties.forEach(p=>IDX.party[p.id]=p);
+  DB.drivers.forEach(d=>IDX.driver[d.id]=d);
+}
+// index first, with a safety net in case anything was added without a save
+const truckById  = id => IDX.truck[id]  || DB.trucks.find(t=>t.id===id);
+const partyById  = id => IDX.party[id]  || DB.parties.find(p=>p.id===id);
+const driverById = id => IDX.driver[id] || DB.drivers.find(d=>d.id===id);
+const truckName  = id => { const t=truckById(id); return t? t.number : '—'; };
+const partyName  = id => { const p=partyById(id); return p? p.name : '—'; };
+const driverName = id => { const d=driverById(id); return d? d.name : '—'; };
+
+/* ---------- 3. Business calculations ---------- */
+
+// Party outstanding = opening + freight billed + extra charges − payments received − advances − discounts
+function partyBalance(pid){
+  const p = partyById(pid); if(!p) return 0;
+  let bal = num(p.opening);
+  DB.trips.filter(t=>t.partyId===pid).forEach(t=>{ bal += num(t.freight); bal -= num(t.advance); });
+  DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{ bal += l.type==='debit' ? num(l.amount) : -num(l.amount); });
+  return bal;
+}
+// All party balances in a single pass — used by lists so they stay quick
+function allBalances(){
+  const m = {};
+  DB.parties.forEach(p=>{ m[p.id] = num(p.opening); });
+  DB.trips.forEach(t=>{ if(t.partyId in m) m[t.partyId] += num(t.freight) - num(t.advance); });
+  DB.ledger.forEach(l=>{ if(l.partyId in m) m[l.partyId] += l.type==='debit' ? num(l.amount) : -num(l.amount); });
+  return m;
+}
+function totalReceivable(){
+  const m = allBalances();
+  return Object.values(m).reduce((s,b)=>s+Math.max(0,b),0);
+}
+
+// Driver payable = salary due entries − everything actually paid out
+function driverBalance(did){
+  let bal = 0;
+  DB.driverTxns.filter(t=>t.driverId===did).forEach(t=>{
+    bal += t.type==='due' ? num(t.amount) : -num(t.amount);
+  });
+  return bal;
+}
+function totalDriverPayable(){ return DB.drivers.reduce((s,d)=>s+Math.max(0,driverBalance(d.id)),0); }
+
+// Profit & loss for a date range
+function pnl(from, to){
+  const inR = d => (!from || d>=from) && (!to || d<=to);
+  const trips = DB.trips.filter(t=>inR(t.date));
+  const freight = trips.reduce((s,t)=>s+num(t.freight),0);
+  const hire    = trips.reduce((s,t)=>s+num(t.hire),0);
+  const byCat = {};
+  DB.expenses.filter(e=>inR(e.date)).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
+  const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
+  const driverPaid = DB.driverTxns.filter(t=>inR(t.date) && t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
+  const costs = hire + expense + driverPaid;
+  return {trips, tripCount:trips.length, freight, hire, byCat, expense, driverPaid, costs, profit:freight-costs};
+}
+
+/* ---------- 4. Navigation ---------- */
+const ICONS = {
+  dashboard:'<path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  trucks:'<path d="M2 6h11v11H2z"/><path d="M13 9h4l4 4v4h-8"/><circle cx="6.5" cy="18.5" r="1.8"/><circle cx="17.5" cy="18.5" r="1.8"/>',
+  parties:'<path d="M4 20v-1a5 5 0 015-5h2a5 5 0 015 5v1"/><circle cx="10" cy="7" r="3.4"/><path d="M17 11a3 3 0 000-6"/><path d="M20 20v-1a4 4 0 00-2.5-3.7"/>',
+  trips:'<path d="M4 19V6a2 2 0 012-2h6l2 2h4a2 2 0 012 2v11"/><path d="M4 19h16"/><path d="M9 12h6"/><path d="M9 16h6"/>',
+  expenses:'<path d="M3 7h18v12H3z"/><path d="M3 11h18"/><circle cx="8" cy="15" r="1.4"/>',
+  drivers:'<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0115 0"/>',
+  reports:'<path d="M4 20V9"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/>',
+  settings:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>'
+};
+const PAGES = [
+  {id:'dashboard', label:'Dashboard', sub:'Today at a glance'},
+  {id:'trips',     label:'Trips',     sub:'Every load you have moved'},
+  {id:'parties',   label:'Parties & Ledger', sub:'Who owes you what'},
+  {id:'trucks',    label:'Trucks',    sub:'Your own and market vehicles'},
+  {id:'expenses',  label:'Expenses',  sub:'Money going out'},
+  {id:'drivers',   label:'Drivers',   sub:'Salary, advances and balances'},
+  {id:'reports',   label:'Reports & P&L', sub:'Profit, dues and performance'},
+  {id:'settings',  label:'Settings',  sub:'Business details and backup'}
+];
+const MOBILE = ['dashboard','trips','parties','expenses'];
+let route = 'dashboard';
+let sub = {};   // per-page temporary state (filters, open party, etc.)
+
+function icon(id){ return '<svg class="ic" viewBox="0 0 24 24">'+ICONS[id]+'</svg>'; }
+
+function buildNav(){
+  $('#nav').innerHTML = PAGES.map(p=>
+    '<button class="nav-item'+(p.id===route?' on':'')+'" onclick="go(\''+p.id+'\')">'+icon(p.id)+'<span>'+p.label+'</span></button>'
+  ).join('');
+  const short = {dashboard:'Home',trips:'Trips',parties:'Parties',expenses:'Expenses',reports:'Reports'};
+  $('#mnav').innerHTML = MOBILE.map(id=>
+    '<button class="mnav'+(id===route?' on':'')+'" onclick="go(\''+id+'\')">'+icon(id)+'<span>'+short[id]+'</span></button>'
+  ).join('') +
+  '<button class="mnav'+(MOBILE.includes(route)?'':' on')+'" onclick="moreMenu()">'+
+    '<svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'+
+    '<span>More</span></button>';
+}
+function go(r){ route = r; sub = {}; window.scrollTo(0,0); closeModal(); render(); }
+
+function moreMenu(){
+  const rest = PAGES.filter(p=>!MOBILE.includes(p.id));
+  openModal({
+    title:'More',
+    body:'<div style="display:flex;flex-direction:column;gap:6px">'+rest.map(p=>
+      '<button class="btn" style="justify-content:flex-start;padding:13px 14px;font-size:15px" onclick="go(\''+p.id+'\')">'+
+        icon(p.id)+'<span style="margin-left:4px">'+p.label+'</span>'+
+        '<span style="margin-left:auto;font-weight:400;font-size:12px;color:var(--muted)">'+p.sub+'</span></button>').join('')+
+    '</div>'
+  });
+}
+
+function render(){
+  const p = PAGES.find(x=>x.id===route) || PAGES[0];
+  $('#pageTitle').textContent = p.label;
+  $('#pageSub').textContent = p.sub;
+  $('#pageActions').innerHTML = '';
+  buildNav();
+  ({dashboard:viewDashboard, trips:viewTrips, parties:viewParties, trucks:viewTrucks,
+    expenses:viewExpenses, drivers:viewDrivers, reports:viewReports, settings:viewSettings}[route])();
+}
+
+/* ---------- 5. Modal ---------- */
+let modalOnOk = null;
+function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk, wide}){
+  modalOnOk = onOk;
+  $('#modalRoot').innerHTML =
+    '<div class="overlay" onclick="if(event.target===this)closeModal()">'+
+      '<div class="modal" role="dialog" aria-modal="true"'+(wide?' style="max-width:820px"':'')+'>'+
+        '<div class="modal-head"><h2 class="modal-title">'+esc(title)+'</h2><button class="x" onclick="closeModal()" aria-label="Close">&times;</button></div>'+
+        '<div class="modal-body">'+body+'</div>'+
+        (onOk ? '<div class="modal-foot"><button class="btn" onclick="closeModal()">Cancel</button>'+
+        '<button class="'+okClass+'" onclick="modalOk()">'+esc(okText)+'</button></div>' : '')+
+      '</div></div>';
+  document.body.style.overflow='hidden';
+  const f = $('.modal-body input, .modal-body select, .modal-body textarea');
+  if(f && window.innerWidth>760) f.focus();
+}
+function closeModal(){ $('#modalRoot').innerHTML=''; modalOnOk=null; document.body.style.overflow=''; }
+function modalOk(){ if(modalOnOk) modalOnOk(); }
+function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
+function checked(name){ const el=document.querySelector('input[name="'+name+'"]:checked'); return el?el.value:''; }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+/* field builders */
+function fText(id,label,v='',type='text',extra=''){
+  return '<div class="field"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="'+type+'" value="'+esc(v)+'" '+extra+'></div>';
+}
+function fArea(id,label,v=''){
+  return '<div class="field full"><label for="'+id+'">'+label+'</label><textarea id="'+id+'">'+esc(v)+'</textarea></div>';
+}
+function fSelect(id,label,options,v='',extra=''){
+  return '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'" '+extra+'>'+
+    options.map(o=>'<option value="'+esc(o.v)+'"'+(String(o.v)===String(v)?' selected':'')+'>'+esc(o.t)+'</option>').join('')+
+    '</select></div>';
+}
+function fSeg(name,label,options,v){
+  return '<div class="field full"><label>'+label+'</label><div class="seg">'+options.map((o,i)=>
+    '<input type="radio" name="'+name+'" id="'+name+i+'" value="'+esc(o.v)+'"'+(o.v===v?' checked':'')+'>'+
+    '<label for="'+name+i+'">'+esc(o.t)+'</label>').join('')+'</div></div>';
+}
+const truckOptions = () => [{v:'',t:'— select truck —'}].concat(DB.trucks.map(t=>({v:t.id,t:t.number+(t.type==='market'?' (market)':'')})));
+const partyOptions = () => [{v:'',t:'— select party —'}].concat(DB.parties.map(p=>({v:p.id,t:p.name})));
+const driverOptions= () => [{v:'',t:'— none —'}].concat(DB.drivers.map(d=>({v:d.id,t:d.name})));
+
+const PAGE = 150;   // rows drawn at a time, so long histories stay instant
+function pageLimit(){ return sub.limit || PAGE; }
+function moreBar(shown, total, fn){
+  if(shown >= total) return '';
+  return '<div style="padding:14px;text-align:center;border-top:1px solid var(--line-soft)">'+
+    '<div class="hint" style="margin-bottom:9px">Showing '+shown+' of '+total+'</div>'+
+    '<button class="btn btn-sm more-btn" onclick="sub.limit='+(shown+PAGE)+';'+fn+'()">Show '+
+      Math.min(PAGE, total-shown)+' more</button></div>';
+}
+function empty(title,text,btn){
+  return '<div class="card empty"><div class="empty-title">'+esc(title)+'</div><div class="empty-text">'+esc(text)+'</div>'+(btn||'')+'</div>';
+}
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function viewDashboard(){
+  const m = thisMonth();
+  const p = pnl(m+'-01', m+'-31');
+  const recv = totalReceivable();
+  const owned = DB.trucks.filter(t=>t.type==='owned').length;
+  const recent = DB.trips.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+  const bmap = allBalances();
+  const dues = DB.parties.map(x=>({name:x.name, id:x.id, bal:bmap[x.id]||0}))
+                 .filter(x=>x.bal>0).sort((a,b)=>b.bal-a.bal).slice(0,5);
+
+  $('#pageSub').textContent = monthName(m)+' · '+p.tripCount+' trip'+(p.tripCount===1?'':'s')+' so far';
+  $('#pageActions').innerHTML =
+    '<button class="btn btn-amber" onclick="tripForm()">+ <span>New trip</span></button>';
+
+  $('#view').innerHTML =
+  '<div class="grid g4">'+
+    '<div class="stat accent"><div class="stat-label">To collect</div><div class="stat-value">'+money(recv)+'</div>'+
+      '<div class="stat-note">'+dues.length+' part'+(dues.length===1?'y':'ies')+' with pending dues</div></div>'+
+    '<div class="stat"><div class="stat-label">Freight this month</div><div class="stat-value">'+money(p.freight)+'</div>'+
+      '<div class="stat-note">From '+p.tripCount+' trips</div></div>'+
+    '<div class="stat"><div class="stat-label">Costs this month</div><div class="stat-value">'+money(p.costs)+'</div>'+
+      '<div class="stat-note">Hire, expenses & driver payouts</div></div>'+
+    '<div class="stat '+(p.profit>=0?'pos':'neg')+'"><div class="stat-label">Profit this month</div>'+
+      '<div class="stat-value">'+money(p.profit)+'</div>'+
+      '<div class="stat-note">'+(p.freight? Math.round(p.profit/p.freight*100):0)+'% margin</div></div>'+
+  '</div>'+
+
+  '<div class="grid g4" style="margin-top:14px">'+
+    '<div class="stat"><div class="stat-label">Trucks</div><div class="stat-value">'+DB.trucks.length+'</div>'+
+      '<div class="stat-note">'+owned+' owned · '+(DB.trucks.length-owned)+' market</div></div>'+
+    '<div class="stat"><div class="stat-label">Parties</div><div class="stat-value">'+DB.parties.length+'</div>'+
+      '<div class="stat-note">Customers on your books</div></div>'+
+    '<div class="stat"><div class="stat-label">Drivers</div><div class="stat-value">'+DB.drivers.length+'</div>'+
+      '<div class="stat-note">'+money(totalDriverPayable())+' payable</div></div>'+
+    '<div class="stat"><div class="stat-label">Total trips</div><div class="stat-value">'+DB.trips.length+'</div>'+
+      '<div class="stat-note">All time</div></div>'+
+  '</div>'+
+
+  '<div class="grid g2" style="margin-top:16px;align-items:start">'+
+    '<div class="card">'+
+      '<div class="card-head"><h3 class="card-title">Latest trips</h3>'+
+        '<button class="btn btn-sm" onclick="go(\'trips\')">See all</button></div>'+
+      (recent.length ? '<div class="tbl-wrap"><table><tbody>'+recent.map(t=>
+        '<tr onclick="tripDetail(\''+t.id+'\')" style="cursor:pointer">'+
+          '<td><div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
+            '<div class="t-sub">'+fdate(t.date)+' · '+esc(truckName(t.truckId))+' · '+esc(partyName(t.partyId))+'</div></td>'+
+          '<td class="t-r"><div class="num t-strong">'+money(t.freight)+'</div>'+
+            '<div class="t-sub">'+statusChip(t.status)+'</div></td>'+
+        '</tr>').join('')+'</tbody></table></div>'
+        : '<div class="empty"><div class="empty-text">No trips recorded yet. Add your first load to get started.</div>'+
+          '<button class="btn btn-amber" onclick="tripForm()">+ New trip</button></div>')+
+    '</div>'+
+    '<div class="card">'+
+      '<div class="card-head"><h3 class="card-title">Top pending dues</h3>'+
+        '<button class="btn btn-sm" onclick="go(\'parties\')">Open ledger</button></div>'+
+      (dues.length ? '<div class="tbl-wrap"><table><tbody>'+dues.map(d=>
+        '<tr onclick="partyLedger(\''+d.id+'\')" style="cursor:pointer">'+
+          '<td class="t-strong">'+esc(d.name)+'</td>'+
+          '<td class="t-r num money-neg">'+money(d.bal)+'</td></tr>').join('')+'</tbody></table></div>'
+        : '<div class="empty"><div class="empty-text">Nothing pending. Every party is settled up.</div></div>')+
+    '</div>'+
+  '</div>';
+}
+
+function statusChip(s){
+  if(s==='paid')    return '<span class="chip chip-green">Paid</span>';
+  if(s==='partial') return '<span class="chip chip-amber">Part paid</span>';
+  return '<span class="chip chip-red">Pending</span>';
+}
+function statusStamp(s){
+  if(s==='paid')    return '<span class="stamp stamp-paid">Paid</span>';
+  if(s==='partial') return '<span class="stamp stamp-part">Part paid</span>';
+  return '<span class="stamp stamp-pending">Pending</span>';
+}
+
+/* ============================================================
+   TRIPS
+   ============================================================ */
+function viewTrips(){
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="tripForm()">+ <span>New trip</span></button>';
+  const months = [...new Set(DB.trips.map(t=>monthKey(t.date)))].sort().reverse();
+  $('#view').innerHTML =
+  '<div class="toolbar">'+
+    '<input class="search" type="search" autocomplete="off" placeholder="Search LR, route, party, truck\u2026" value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;sub.limit=0;defer(renderTripList)">'+
+    '<select onchange="sub.month=this.value;sub.limit=0;renderTripList()"><option value="">All months</option>'+
+      months.map(m=>'<option value="'+m+'"'+(m===(sub.month||'')?' selected':'')+'>'+monthName(m)+'</option>').join('')+'</select>'+
+    '<select onchange="sub.party=this.value;sub.limit=0;renderTripList()"><option value="">All parties</option>'+
+      DB.parties.map(p=>'<option value="'+p.id+'"'+(p.id===(sub.party||'')?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>'+
+    '<button class="btn btn-sm" onclick="exportCSV(\'trips\')">Export CSV</button>'+
+  '</div><div id="listBox"></div>';
+  renderTripList();
+}
+
+/* Only this part is rebuilt while you type, so the search box keeps your cursor */
+function renderTripList(){
+  const box = $('#listBox'); if(!box) return;
+  const q = (sub.q||'').toLowerCase().trim();
+  const fm = sub.month||'', fp = sub.party||'';
+  let list = DB.trips.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(fm) list = list.filter(t=>monthKey(t.date)===fm);
+  if(fp) list = list.filter(t=>t.partyId===fp);
+  if(q) list = list.filter(t=>
+    ((t.lr||'')+' '+(t.from||'')+' '+(t.to||'')+' '+(t.material||'')+' '+
+     truckName(t.truckId)+' '+partyName(t.partyId)).toLowerCase().includes(q));
+  const tot = list.reduce((s,t)=>s+num(t.freight),0);
+  const totHire = list.reduce((s,t)=>s+num(t.hire),0);
+  const full = list.length;
+  list = list.slice(0, pageLimit());
+
+  box.innerHTML =
+  (DB.trips.length===0
+    ? empty('No trips yet','A trip records one load: which truck, which party, the route and the freight. Everything else in the app flows from here.',
+        '<button class="btn btn-amber" onclick="tripForm()">+ Add your first trip</button>')
+    : list.length===0 ? empty('Nothing matches','Try a different month, party or search word.','')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Date</th><th>LR no.</th><th>Route</th><th>Party</th><th>Truck</th>'+
+      '<th class="t-r">Freight</th><th class="t-r">Advance</th><th>Status</th><th></th></tr></thead><tbody>'+
+      list.map(t=>
+        '<tr>'+
+          '<td style="white-space:nowrap" onclick="tripDetail(\''+t.id+'\')">'+fdate(t.date)+'</td>'+
+          '<td class="num" onclick="tripDetail(\''+t.id+'\')">'+esc(t.lr||'\u2014')+'</td>'+
+          '<td onclick="tripDetail(\''+t.id+'\')"><span class="t-strong">'+esc(t.from||'\u2014')+' \u2192 '+esc(t.to||'\u2014')+'</span>'+
+            (t.material?'<div class="t-sub">'+esc(t.material)+'</div>':'')+'</td>'+
+          '<td onclick="tripDetail(\''+t.id+'\')">'+esc(partyName(t.partyId))+'</td>'+
+          '<td onclick="tripDetail(\''+t.id+'\')">'+esc(truckName(t.truckId))+
+            (t.hire?'<div class="t-sub">Hire '+money(t.hire)+'</div>':'')+'</td>'+
+          '<td class="t-r num t-strong">'+money(t.freight)+'</td>'+
+          '<td class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+'</td>'+
+          '<td>'+statusChip(t.status)+'</td>'+
+          '<td><div class="row-actions">'+
+            '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">Edit</button>'+
+            '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>'+
+          '</div></td>'+
+        '</tr>').join('')+
+      '</tbody><tfoot><tr><th colspan="5">'+full+' trip'+(full===1?'':'s')+' \u00b7 total freight</th>'+
+      '<th class="t-r num" style="font-size:14px;color:var(--ink)">'+money(tot)+'</th>'+
+      '<th colspan="3">'+(totHire?'<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">Hire paid '+money(totHire)+'</span>':'')+'</th></tr></tfoot>'+
+      '</table></div>'+moreBar(list.length, full, 'renderTripList')+'</div>');
+}
+
+function tripForm(id){
+  const t = id ? DB.trips.find(x=>x.id===id) : null;
+  if(!DB.parties.length || !DB.trucks.length){
+    openModal({title:'Add a truck and a party first',
+      body:'<p style="margin:0 0 10px">A trip needs a truck and a party to link to.</p>'+
+        '<p style="margin:0;color:var(--muted);font-size:13.5px">Go to <b>Trucks</b> to add your vehicle, and <b>Parties &amp; Ledger</b> to add the customer who pays the freight.</p>'});
+    return;
+  }
+  openModal({
+    title: t? 'Edit trip' : 'New trip',
+    okText: t? 'Save changes' : 'Save trip',
+    body:'<div class="form-grid">'+
+      fText('f_date','Trip date', t?t.date:today(),'date')+
+      fText('f_lr','LR / bilty number', t?t.lr:'')+
+      fText('f_from','From', t?t.from:'','text','placeholder="Loading point"')+
+      fText('f_to','To', t?t.to:'','text','placeholder="Delivery point"')+
+      fSelect('f_party','Party (who pays freight)', partyOptions(), t?t.partyId:'')+
+      fSelect('f_truck','Truck', truckOptions(), t?t.truckId:'')+
+      fSelect('f_driver','Driver', driverOptions(), t?t.driverId:'')+
+      fText('f_material','Material', t?t.material:'','text','placeholder="Cement, steel, grain…"')+
+      fText('f_weight','Weight (tonnes)', t?t.weight:'','number','step="0.01" min="0"')+
+      fText('f_freight','Freight amount (₹)', t?t.freight:'','number','min="0" step="1"')+
+      fText('f_advance','Advance received (₹)', t?t.advance:'','number','min="0" step="1"')+
+      fText('f_hire','Hire paid to market truck (₹)', t?t.hire:'','number','min="0" step="1"')+
+      '<div class="field full"><span class="hint">Leave hire blank for your own trucks. For a market truck, hire is what you pay the vehicle owner — your profit is freight minus hire.</span></div>'+
+      fSeg('f_status','Payment status',[{v:'pending',t:'Pending'},{v:'partial',t:'Part paid'},{v:'paid',t:'Paid'}], t?t.status:'pending')+
+      fArea('f_notes','Notes', t?t.notes:'')+
+    '</div>',
+    onOk(){
+      if(!val('f_party')){ toast('Choose the party for this trip'); return; }
+      if(!val('f_truck')){ toast('Choose the truck for this trip'); return; }
+      const rec = {
+        id: t?t.id:uid(), date: val('f_date')||today(), lr: val('f_lr'),
+        from: val('f_from'), to: val('f_to'), partyId: val('f_party'), truckId: val('f_truck'),
+        driverId: val('f_driver'), material: val('f_material'), weight: val('f_weight'),
+        freight: num(val('f_freight')), advance: num(val('f_advance')), hire: num(val('f_hire')),
+        status: checked('f_status')||'pending', notes: val('f_notes')
+      };
+      if(t) DB.trips[DB.trips.findIndex(x=>x.id===t.id)] = rec; else DB.trips.push(rec);
+      save(); closeModal(); render(); toast(t?'Trip updated':'Trip saved');
+    }
+  });
+}
+
+function tripDetail(id){
+  const t = DB.trips.find(x=>x.id===id); if(!t) return;
+  const margin = num(t.freight) - num(t.hire);
+  openModal({
+    title:'Trip details', wide:true,
+    body:'<div class="slip">'+
+      '<div class="slip-top">'+
+        '<div><div class="slip-lr">LR '+esc(t.lr||'—')+' · '+fdate(t.date)+'</div>'+
+          '<div class="slip-route">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div></div>'+
+        '<div style="margin-left:auto;padding-top:6px">'+statusStamp(t.status)+'</div>'+
+      '</div>'+
+      '<div class="slip-body">'+
+        fv('Party', esc(partyName(t.partyId)))+ fv('Truck', esc(truckName(t.truckId)))+
+        fv('Driver', esc(t.driverId?driverName(t.driverId):'—'))+ fv('Material', esc(t.material||'—'))+
+        fv('Weight', esc(t.weight? t.weight+' T':'—'))+ fv('Freight', money(t.freight))+
+        fv('Advance received', num(t.advance)?money(t.advance):'—')+
+        fv('Hire paid', num(t.hire)?money(t.hire):'—')+
+      '</div>'+
+      (num(t.hire)? '<div style="padding:0 18px 15px"><div class="note">Margin on this trip: <b class="num">'+money(margin)+'</b> (freight '+money(t.freight)+' minus hire '+money(t.hire)+')</div></div>':'')+
+      (t.notes? '<div style="padding:0 18px 16px"><div class="field-label">Notes</div><div class="field-value">'+esc(t.notes)+'</div></div>':'')+
+    '</div>'+
+    '<div style="display:flex;gap:8px;margin-top:14px">'+
+      '<button class="btn" onclick="closeModal();tripForm(\''+t.id+'\')">Edit trip</button>'+
+      '<button class="btn" onclick="closeModal();partyLedger(\''+t.partyId+'\')">Open party ledger</button>'+
+    '</div>'
+  });
+}
+function fv(label,value){ return '<div><div class="field-label">'+esc(label)+'</div><div class="field-value">'+value+'</div></div>'; }
+
+function delTrip(id){
+  confirmAsk('Delete this trip? The freight will also be removed from the party ledger.', ()=>{
+    DB.trips = DB.trips.filter(x=>x.id!==id); save(); render(); toast('Trip deleted');
+  }, true);
+}
+/* ============================================================
+   PARTIES & LEDGER
+   ============================================================ */
+function viewParties(){
+  if(sub.open) return renderLedger(sub.open);
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="partyForm()">+ <span>New party</span></button>';
+  const bal = allBalances();
+  const due = Object.values(bal).reduce((s,b)=>s+Math.max(0,b),0);
+  const adv = Object.values(bal).reduce((s,b)=>s+Math.min(0,b),0);
+  $('#view').innerHTML =
+  '<div class="grid g3" style="margin-bottom:16px">'+
+    '<div class="stat accent"><div class="stat-label">Total to collect</div><div class="stat-value">'+money(due)+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Advance held from parties</div><div class="stat-value">'+money(Math.abs(adv))+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Parties</div><div class="stat-value">'+DB.parties.length+'</div></div>'+
+  '</div>'+
+  '<div class="toolbar">'+
+    '<input class="search" type="search" autocomplete="off" placeholder="Search party name, phone, city\u2026" value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;sub.limit=0;defer(renderPartyList)">'+
+    '<button class="btn btn-sm" onclick="exportCSV(\'parties\')">Export CSV</button>'+
+  '</div><div id="listBox"></div>';
+  renderPartyList();
+}
+
+/* Only this part is rebuilt while you type, so the search box keeps your cursor */
+function renderPartyList(){
+  const box = $('#listBox'); if(!box) return;
+  const q = (sub.q||'').toLowerCase().trim();
+  const bal = allBalances();
+  const tripCount = {};
+  DB.trips.forEach(t=>{ tripCount[t.partyId] = (tripCount[t.partyId]||0)+1; });
+  let list = DB.parties.map(p=>({...p, bal:bal[p.id]||0, trips:tripCount[p.id]||0}));
+  if(q) list = list.filter(p=>
+    (p.name+' '+(p.phone||'')+' '+(p.city||'')).toLowerCase().includes(q));
+  list.sort((a,b)=>b.bal-a.bal);
+  const full = list.length;
+  list = list.slice(0, pageLimit());
+
+  box.innerHTML =
+  (DB.parties.length===0
+    ? empty('No parties yet','A party is the customer who books your truck and pays the freight. Add one, then record trips and payments against them.',
+        '<button class="btn btn-amber" onclick="partyForm()">+ Add your first party</button>')
+    : list.length===0 ? empty('Nothing matches','No party matches that search.','')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Party</th><th>Contact</th><th class="t-r">Trips</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      list.map(p=>
+        '<tr>'+
+          '<td onclick="partyLedger(\''+p.id+'\')" style="cursor:pointer"><div class="t-strong">'+esc(p.name)+'</div>'+
+            (p.city?'<div class="t-sub">'+esc(p.city)+'</div>':'')+'</td>'+
+          '<td>'+esc(p.phone||'\u2014')+'</td>'+
+          '<td class="t-r num">'+p.trips+'</td>'+
+          '<td class="t-r num '+(p.bal>0?'money-neg':p.bal<0?'money-pos':'')+'">'+money(p.bal)+
+            '<div class="t-sub">'+(p.bal>0?'to collect':p.bal<0?'advance held':'settled')+'</div></td>'+
+          '<td><div class="row-actions">'+
+            '<button class="btn btn-sm btn-primary" onclick="partyLedger(\''+p.id+'\')">Ledger</button>'+
+            '<button class="btn btn-sm" onclick="partyForm(\''+p.id+'\')">Edit</button>'+
+          '</div></td>'+
+        '</tr>').join('')+'</tbody></table></div>'+moreBar(list.length, full, 'renderPartyList')+'</div>');
+}
+
+function partyForm(id){
+  const p = id ? partyById(id) : null;
+  openModal({
+    title: p? 'Edit party':'New party', okText: p?'Save changes':'Save party',
+    body:'<div class="form-grid">'+
+      fText('p_name','Party / company name', p?p.name:'','text','placeholder="e.g. Shree Cement Depot"')+
+      fText('p_phone','Phone', p?p.phone:'','tel')+
+      fText('p_city','City', p?p.city:'')+
+      fText('p_gst','GST number', p?p.gst:'')+
+      fText('p_opening','Opening balance (₹)', p?p.opening:'','number','step="1"')+
+      '<div class="field"><label>&nbsp;</label><span class="hint">Old dues carried over. Positive if the party owes you, negative if you hold their advance.</span></div>'+
+      fArea('p_address','Address', p?p.address:'')+
+    '</div>',
+    onOk(){
+      if(!val('p_name')){ toast('Enter the party name'); return; }
+      const rec = {id:p?p.id:uid(), name:val('p_name'), phone:val('p_phone'), city:val('p_city'),
+        gst:val('p_gst'), opening:num(val('p_opening')), address:val('p_address')};
+      if(p) DB.parties[DB.parties.findIndex(x=>x.id===p.id)] = rec; else DB.parties.push(rec);
+      save(); closeModal(); render(); toast(p?'Party updated':'Party saved');
+    }
+  });
+}
+function partyLedger(id){ route='parties'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderLedger(id); }
+
+function ledgerRows(pid){
+  const rows = [];
+  const p = partyById(pid);
+  if(num(p.opening)) rows.push({date:'', label:'Opening balance', ref:'', debit:num(p.opening)>0?num(p.opening):0, credit:num(p.opening)<0?-num(p.opening):0, kind:'open'});
+  DB.trips.filter(t=>t.partyId===pid).forEach(t=>{
+    rows.push({date:t.date, label:'Freight — '+(t.from||'?')+' to '+(t.to||'?'), ref:t.lr?('LR '+t.lr):truckName(t.truckId),
+      debit:num(t.freight), credit:0, kind:'trip', tripId:t.id});
+    if(num(t.advance)) rows.push({date:t.date, label:'Advance received against trip', ref:t.lr?('LR '+t.lr):'',
+      debit:0, credit:num(t.advance), kind:'trip', tripId:t.id});
+  });
+  DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{
+    rows.push({date:l.date, label:l.note||(l.type==='credit'?'Payment received':'Charge added'),
+      ref:[l.mode,l.ref].filter(Boolean).join(' · '), debit:l.type==='debit'?num(l.amount):0,
+      credit:l.type==='credit'?num(l.amount):0, kind:'entry', entryId:l.id});
+  });
+  rows.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let run = 0;
+  rows.forEach(r=>{ run += r.debit - r.credit; r.running = run; });
+  return rows;
+}
+
+function renderLedger(pid){
+  const p = partyById(pid);
+  if(!p){ sub={}; return viewParties(); }
+  const rows = ledgerRows(pid);
+  const bal = partyBalance(pid);
+  const billed = rows.reduce((s,r)=>s+r.debit,0);
+  const paid   = rows.reduce((s,r)=>s+r.credit,0);
+  $('#pageTitle').textContent = p.name;
+  $('#pageSub').textContent = [p.city,p.phone].filter(Boolean).join(' · ') || 'Party ledger';
+  $('#pageActions').innerHTML =
+    '<button class="btn" onclick="sub={};render()">← <span>All parties</span></button>'+
+    '<button class="btn btn-amber" onclick="ledgerForm(\''+pid+'\')">+ <span>Add entry</span></button>';
+
+  $('#view').innerHTML =
+  '<div class="grid g3" style="margin-bottom:16px">'+
+    '<div class="stat"><div class="stat-label">Total billed</div><div class="stat-value">'+money(billed)+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Total received</div><div class="stat-value">'+money(paid)+'</div></div>'+
+    '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance to collect':'Advance held')+'</div>'+
+      '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
+  '</div>'+
+  '<div class="toolbar"><button class="btn btn-sm" onclick="window.print()">Print ledger</button>'+
+    '<button class="btn btn-sm" onclick="exportLedger(\''+pid+'\')">Export CSV</button>'+
+    '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delParty(\''+pid+'\')">Delete party</button></div>'+
+  (rows.length===0
+    ? empty('Ledger is empty','Record a trip for this party, or add a direct payment, advance or adjustment entry here.',
+        '<button class="btn btn-amber" onclick="ledgerForm(\''+pid+'\')">+ Add entry</button>')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Date</th><th>Particulars</th><th class="t-r">Debit</th><th class="t-r">Credit</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      rows.map(r=>
+        '<tr><td style="white-space:nowrap">'+(r.date?fdate(r.date):'—')+'</td>'+
+        '<td><div class="t-strong">'+esc(r.label)+'</div>'+(r.ref?'<div class="t-sub">'+esc(r.ref)+'</div>':'')+'</td>'+
+        '<td class="t-r num">'+(r.debit?money(r.debit):'')+'</td>'+
+        '<td class="t-r num" style="color:var(--green)">'+(r.credit?money(r.credit):'')+'</td>'+
+        '<td class="t-r num t-strong">'+money(r.running)+'</td>'+
+        '<td><div class="row-actions">'+
+          (r.kind==='trip'?'<button class="btn btn-sm" onclick="tripDetail(\''+r.tripId+'\')">View</button>':'')+
+          (r.kind==='entry'?'<button class="btn btn-sm" onclick="ledgerForm(\''+pid+'\',\''+r.entryId+'\')">Edit</button>'+
+            '<button class="btn btn-sm btn-danger" onclick="delLedger(\''+r.entryId+'\')">Delete</button>':'')+
+        '</div></td></tr>').join('')+
+      '</tbody></table></div></div>'+
+      '<div class="note" style="margin-top:14px">Debit increases what the party owes you. Credit reduces it — payments, advances and discounts all go in the credit column.</div>');
+}
+
+function ledgerForm(pid, eid){
+  const e = eid ? DB.ledger.find(x=>x.id===eid) : null;
+  openModal({
+    title: e? 'Edit ledger entry':'Add ledger entry', okText: e?'Save changes':'Save entry',
+    body:'<div class="form-grid">'+
+      fSeg('l_type','Entry type',[
+        {v:'credit',t:'Payment / advance received'},
+        {v:'debit', t:'Charge added to party'}], e?e.type:'credit')+
+      fText('l_date','Date', e?e.date:today(),'date')+
+      fText('l_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
+      fSelect('l_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Cheque',t:'Cheque'},{v:'Adjustment',t:'Adjustment / discount'}], e?e.mode:'Cash')+
+      fText('l_ref','Reference', e?e.ref:'','text','placeholder="Cheque no., UTR, remark"')+
+      fText('l_note','Description', e?e.note:'','text','placeholder="e.g. Part payment for Nov trips"')+
+    '</div>',
+    onOk(){
+      const amt = num(val('l_amount'));
+      if(amt<=0){ toast('Enter an amount greater than zero'); return; }
+      const rec = {id:e?e.id:uid(), partyId:pid, date:val('l_date')||today(), type:checked('l_type')||'credit',
+        amount:amt, mode:val('l_mode'), ref:val('l_ref'), note:val('l_note')};
+      if(e) DB.ledger[DB.ledger.findIndex(x=>x.id===e.id)] = rec; else DB.ledger.push(rec);
+      save(); closeModal(); renderLedger(pid); toast(e?'Entry updated':'Entry saved');
+    }
+  });
+}
+function delLedger(eid){
+  const e = DB.ledger.find(x=>x.id===eid); if(!e) return;
+  confirmAsk('Delete this ledger entry?', ()=>{
+    DB.ledger = DB.ledger.filter(x=>x.id!==eid); save(); renderLedger(e.partyId); toast('Entry deleted');
+  }, true);
+}
+function delParty(pid){
+  const n = DB.trips.filter(t=>t.partyId===pid).length;
+  confirmAsk('Delete this party'+(n?' along with its '+n+' trip'+(n===1?'':'s'):'')+' and all ledger entries? This cannot be undone.', ()=>{
+    DB.parties = DB.parties.filter(x=>x.id!==pid);
+    DB.trips   = DB.trips.filter(x=>x.partyId!==pid);
+    DB.ledger  = DB.ledger.filter(x=>x.partyId!==pid);
+    save(); sub={}; render(); toast('Party deleted');
+  }, true);
+}
+/* ============================================================
+   TRUCKS
+   ============================================================ */
+function viewTrucks(){
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="truckForm()">+ <span>New truck</span></button>';
+  const stats = DB.trucks.map(t=>{
+    const trips = DB.trips.filter(x=>x.truckId===t.id);
+    const freight = trips.reduce((s,x)=>s+num(x.freight),0);
+    const hire = trips.reduce((s,x)=>s+num(x.hire),0);
+    const exp = DB.expenses.filter(e=>e.truckId===t.id).reduce((s,e)=>s+num(e.amount),0);
+    return {...t, tripCount:trips.length, freight, hire, exp, net:freight-hire-exp};
+  });
+  $('#view').innerHTML =
+  (DB.trucks.length===0
+    ? empty('No trucks yet','Add the vehicles you run. Mark a truck as "market" when it belongs to someone else and you pay hire for it.',
+        '<button class="btn btn-amber" onclick="truckForm()">+ Add your first truck</button>')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Truck</th><th>Type</th><th>Driver</th><th class="t-r">Trips</th>'+
+      '<th class="t-r">Freight earned</th><th class="t-r">Hire + expenses</th><th class="t-r">Net</th><th></th></tr></thead><tbody>'+
+      stats.map(t=>
+        '<tr><td><div class="t-strong num">'+esc(t.number)+'</div>'+
+          (t.model?'<div class="t-sub">'+esc(t.model)+'</div>':'')+'</td>'+
+        '<td>'+(t.type==='owned'?'<span class="chip chip-blue">Owned</span>':'<span class="chip chip-grey">Market</span>')+
+          (t.owner?'<div class="t-sub">'+esc(t.owner)+'</div>':'')+'</td>'+
+        '<td>'+esc(t.driverId?driverName(t.driverId):'—')+'</td>'+
+        '<td class="t-r num">'+t.tripCount+'</td>'+
+        '<td class="t-r num">'+money(t.freight)+'</td>'+
+        '<td class="t-r num">'+money(t.hire+t.exp)+'</td>'+
+        '<td class="t-r num '+(t.net>=0?'money-pos':'money-neg')+'">'+money(t.net)+'</td>'+
+        '<td><div class="row-actions">'+
+          '<button class="btn btn-sm" onclick="truckForm(\''+t.id+'\')">Edit</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="delTruck(\''+t.id+'\')">Delete</button>'+
+        '</div></td></tr>').join('')+'</tbody></table></div></div>'+
+      '<div class="note" style="margin-top:14px">Net is freight earned minus hire paid and expenses booked to that truck. Driver salary is not included here — see Reports for the full profit picture.</div>');
+}
+function truckForm(id){
+  const t = id ? truckById(id) : null;
+  openModal({
+    title: t?'Edit truck':'New truck', okText: t?'Save changes':'Save truck',
+    body:'<div class="form-grid">'+
+      fSeg('t_type','Truck type',[{v:'owned',t:'Owned by me'},{v:'market',t:'Market / rented'}], t?t.type:'owned')+
+      fText('t_number','Vehicle number', t?t.number:'','text','placeholder="HR 55 AB 1234"')+
+      fText('t_model','Make & model', t?t.model:'','text','placeholder="Tata 3118, 14 wheeler"')+
+      fText('t_capacity','Capacity (tonnes)', t?t.capacity:'','number','step="0.1" min="0"')+
+      fSelect('t_driver','Regular driver', driverOptions(), t?t.driverId:'')+
+      fText('t_owner','Owner / supplier name', t?t.owner:'','text','placeholder="For market trucks"')+
+      fText('t_ownerPhone','Owner phone', t?t.ownerPhone:'','tel')+
+      fText('t_insurance','Insurance expiry', t?t.insurance:'','date')+
+      fText('t_fitness','Fitness expiry', t?t.fitness:'','date')+
+      fArea('t_notes','Notes', t?t.notes:'')+
+    '</div>',
+    onOk(){
+      if(!val('t_number')){ toast('Enter the vehicle number'); return; }
+      const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number').toUpperCase(),
+        model:val('t_model'), capacity:val('t_capacity'), driverId:val('t_driver'), owner:val('t_owner'),
+        ownerPhone:val('t_ownerPhone'), insurance:val('t_insurance'), fitness:val('t_fitness'), notes:val('t_notes')};
+      if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
+      save(); closeModal(); render(); toast(t?'Truck updated':'Truck saved');
+    }
+  });
+}
+function delTruck(id){
+  const n = DB.trips.filter(t=>t.truckId===id).length;
+  if(n){ openModal({title:'Truck is in use', body:'<p style="margin:0">This truck is linked to '+n+' trip'+(n===1?'':'s')+'. Delete or move those trips first, so your records stay correct.</p>'}); return; }
+  confirmAsk('Delete this truck?', ()=>{ DB.trucks = DB.trucks.filter(x=>x.id!==id); save(); render(); toast('Truck deleted'); }, true);
+}
+
+/* ============================================================
+   EXPENSES
+   ============================================================ */
+const CATEGORIES = ['Fuel / Diesel','Toll & Parking','Truck maintenance','Repairs','Tyres','EMI payment',
+  'Insurance & permits','Office expense','Loading / unloading','Commission','Fine / challan','Miscellaneous'];
+
+function viewExpenses(){
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="expenseForm()">+ <span>New expense</span></button>';
+  const months = [...new Set(DB.expenses.map(e=>monthKey(e.date)))].sort().reverse();
+  $('#view').innerHTML =
+  '<div class="toolbar">'+
+    '<select onchange="sub.month=this.value;sub.limit=0;renderExpenseList()"><option value="">All months</option>'+
+      months.map(m=>'<option value="'+m+'"'+(m===(sub.month||'')?' selected':'')+'>'+monthName(m)+'</option>').join('')+'</select>'+
+    '<select onchange="sub.cat=this.value;sub.limit=0;renderExpenseList()"><option value="">All categories</option>'+
+      CATEGORIES.map(c=>'<option value="'+esc(c)+'"'+(c===(sub.cat||'')?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>'+
+    '<select onchange="sub.truck=this.value;sub.limit=0;renderExpenseList()"><option value="">All trucks</option>'+
+      DB.trucks.map(t=>'<option value="'+t.id+'"'+(t.id===(sub.truck||'')?' selected':'')+'>'+esc(t.number)+'</option>').join('')+'</select>'+
+    '<button class="btn btn-sm" onclick="exportCSV(\'expenses\')">Export CSV</button>'+
+  '</div><div id="listBox"></div>';
+  renderExpenseList();
+}
+
+function renderExpenseList(){
+  const box = $('#listBox'); if(!box) return;
+  const fm = sub.month||'', fc = sub.cat||'', ft = sub.truck||'';
+  let list = DB.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(fm) list = list.filter(e=>monthKey(e.date)===fm);
+  if(fc) list = list.filter(e=>e.category===fc);
+  if(ft) list = list.filter(e=>e.truckId===ft);
+  const total = list.reduce((s,e)=>s+num(e.amount),0);
+  const byCat = {}; list.forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
+  const top = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const full = list.length;
+  list = list.slice(0, pageLimit());
+
+  box.innerHTML =
+  (list.length && total ? '<div class="grid g4" style="margin-bottom:16px">'+
+    '<div class="stat accent"><div class="stat-label">Total shown</div><div class="stat-value">'+money(total)+'</div>'+
+      '<div class="stat-note">'+list.length+' entries</div></div>'+
+    top.map(([c,v])=>'<div class="stat"><div class="stat-label">'+esc(c)+'</div>'+
+      '<div class="stat-value">'+money(v)+'</div><div class="stat-note">'+Math.round(v/total*100)+'% of total</div></div>').join('')+
+  '</div>':'')+
+  (DB.expenses.length===0
+    ? empty('No expenses yet','Record diesel, tolls, repairs, EMI and office costs here. Link an expense to a truck to see that truck\u2019s real profit.',
+        '<button class="btn btn-amber" onclick="expenseForm()">+ Add your first expense</button>')
+    : list.length===0 ? empty('Nothing matches','Try a different month, category or truck.','')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Date</th><th>Category</th><th>Details</th><th>Truck</th><th class="t-r">Amount</th><th></th></tr></thead><tbody>'+
+      list.map(e=>
+        '<tr><td style="white-space:nowrap">'+fdate(e.date)+'</td>'+
+        '<td><span class="chip chip-grey">'+esc(e.category)+'</span></td>'+
+        '<td>'+esc(e.note||'\u2014')+(e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
+        '<td class="num">'+esc(e.truckId?truckName(e.truckId):'\u2014')+'</td>'+
+        '<td class="t-r num t-strong">'+money(e.amount)+'</td>'+
+        '<td><div class="row-actions">'+
+          '<button class="btn btn-sm" onclick="expenseForm(\''+e.id+'\')">Edit</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="delExpense(\''+e.id+'\')">Delete</button>'+
+        '</div></td></tr>').join('')+
+      '</tbody><tfoot><tr><th colspan="4">Total of '+full+' entries</th><th class="t-r num" style="font-size:14px;color:var(--ink)">'+money(total)+'</th><th></th></tr></tfoot>'+
+      '</table></div>'+moreBar(list.length, full, 'renderExpenseList')+'</div>');
+}
+
+function expenseForm(id){
+  const e = id ? DB.expenses.find(x=>x.id===id) : null;
+  openModal({
+    title: e?'Edit expense':'New expense', okText: e?'Save changes':'Save expense',
+    body:'<div class="form-grid">'+
+      fText('e_date','Date', e?e.date:today(),'date')+
+      fText('e_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
+      fSelect('e_cat','Category', CATEGORIES.map(c=>({v:c,t:c})), e?e.category:'Fuel / Diesel')+
+      fSelect('e_truck','Truck (optional)', truckOptions(), e?e.truckId:'')+
+      fText('e_paidTo','Paid to', e?e.paidTo:'','text','placeholder="Pump, mechanic, bank…"')+
+      fSelect('e_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Card',t:'Card'},{v:'Credit',t:'On credit'}], e?e.mode:'Cash')+
+      fArea('e_note','Details', e?e.note:'')+
+    '</div>',
+    onOk(){
+      const amt = num(val('e_amount'));
+      if(amt<=0){ toast('Enter an amount greater than zero'); return; }
+      const rec = {id:e?e.id:uid(), date:val('e_date')||today(), amount:amt, category:val('e_cat'),
+        truckId:val('e_truck'), paidTo:val('e_paidTo'), mode:val('e_mode'), note:val('e_note')};
+      if(e) DB.expenses[DB.expenses.findIndex(x=>x.id===e.id)] = rec; else DB.expenses.push(rec);
+      save(); closeModal(); render(); toast(e?'Expense updated':'Expense saved');
+    }
+  });
+}
+function delExpense(id){
+  confirmAsk('Delete this expense?', ()=>{ DB.expenses = DB.expenses.filter(x=>x.id!==id); save(); render(); toast('Expense deleted'); }, true);
+}
+
+/* ============================================================
+   DRIVERS
+   ============================================================ */
+function viewDrivers(){
+  if(sub.open) return renderDriver(sub.open);
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="driverForm()">+ <span>New driver</span></button>';
+  $('#view').innerHTML =
+  '<div class="grid g3" style="margin-bottom:16px">'+
+    '<div class="stat accent"><div class="stat-label">Total payable to drivers</div><div class="stat-value">'+money(totalDriverPayable())+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Drivers</div><div class="stat-value">'+DB.drivers.length+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Paid this month</div><div class="stat-value">'+
+      money(DB.driverTxns.filter(t=>monthKey(t.date)===thisMonth()&&t.type!=='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
+  '</div>'+
+  (DB.drivers.length===0
+    ? empty('No drivers yet','Keep each driver\u2019s salary, advances and payments in one place, so you always know what is owed.',
+        '<button class="btn btn-amber" onclick="driverForm()">+ Add your first driver</button>')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Driver</th><th>Phone</th><th>Licence</th><th class="t-r">Trips</th><th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
+      DB.drivers.map(d=>{
+        const bal = driverBalance(d.id);
+        const trips = DB.trips.filter(t=>t.driverId===d.id).length;
+        return '<tr><td onclick="openDriver(\''+d.id+'\')" style="cursor:pointer"><div class="t-strong">'+esc(d.name)+'</div>'+
+          (d.salary?'<div class="t-sub">Salary '+money(d.salary)+'/month</div>':'')+'</td>'+
+        '<td>'+esc(d.phone||'—')+'</td><td class="num">'+esc(d.licence||'—')+'</td>'+
+        '<td class="t-r num">'+trips+'</td>'+
+        '<td class="t-r num '+(bal>0?'money-neg':bal<0?'money-pos':'')+'">'+money(Math.abs(bal))+
+          '<div class="t-sub">'+(bal>0?'we owe':bal<0?'advance given':'settled')+'</div></td>'+
+        '<td><div class="row-actions">'+
+          '<button class="btn btn-sm btn-primary" onclick="openDriver(\''+d.id+'\')">Account</button>'+
+          '<button class="btn btn-sm" onclick="driverForm(\''+d.id+'\')">Edit</button>'+
+        '</div></td></tr>';}).join('')+'</tbody></table></div></div>');
+}
+function openDriver(id){ route='drivers'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderDriver(id); }
+
+function renderDriver(did){
+  const d = driverById(did); if(!d){ sub={}; return viewDrivers(); }
+  const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let run = 0; const rows = txns.map(t=>{ run += t.type==='due'? num(t.amount) : -num(t.amount); return {...t, running:run}; }).reverse();
+  const bal = driverBalance(did);
+  $('#pageTitle').textContent = d.name;
+  $('#pageSub').textContent = [d.phone, d.licence].filter(Boolean).join(' · ') || 'Driver account';
+  $('#pageActions').innerHTML =
+    '<button class="btn" onclick="sub={};render()">← <span>All drivers</span></button>'+
+    '<button class="btn btn-amber" onclick="driverTxnForm(\''+did+'\')">+ <span>Add entry</span></button>';
+  $('#view').innerHTML =
+  '<div class="grid g3" style="margin-bottom:16px">'+
+    '<div class="stat"><div class="stat-label">Salary due added</div><div class="stat-value">'+
+      money(txns.filter(t=>t.type==='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Total paid out</div><div class="stat-value">'+
+      money(txns.filter(t=>t.type!=='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
+    '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance payable':'Advance recoverable')+'</div>'+
+      '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
+  '</div>'+
+  '<div class="toolbar"><button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delDriver(\''+did+'\')">Delete driver</button></div>'+
+  (rows.length===0
+    ? empty('No entries yet','Add the monthly salary as "salary due", then record each payment or advance you give.',
+        '<button class="btn btn-amber" onclick="driverTxnForm(\''+did+'\')">+ Add entry</button>')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Date</th><th>Entry</th><th class="t-r">Salary due</th><th class="t-r">Paid</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      rows.map(t=>'<tr><td style="white-space:nowrap">'+fdate(t.date)+'</td>'+
+        '<td><div class="t-strong">'+esc(({due:'Salary due',salary:'Salary paid',advance:'Advance paid',other:'Payment'})[t.type]||'Payment')+'</div>'+
+        (t.note?'<div class="t-sub">'+esc(t.note)+'</div>':'')+'</td>'+
+        '<td class="t-r num">'+(t.type==='due'?money(t.amount):'')+'</td>'+
+        '<td class="t-r num" style="color:var(--green)">'+(t.type!=='due'?money(t.amount):'')+'</td>'+
+        '<td class="t-r num t-strong">'+money(t.running)+'</td>'+
+        '<td><div class="row-actions"><button class="btn btn-sm" onclick="driverTxnForm(\''+did+'\',\''+t.id+'\')">Edit</button>'+
+        '<button class="btn btn-sm btn-danger" onclick="delDriverTxn(\''+t.id+'\')">Delete</button></div></td></tr>').join('')+
+      '</tbody></table></div></div>'+
+      '<div class="note" style="margin-top:14px">Only money actually paid out counts as an expense in your profit report. "Salary due" simply records what you still owe.</div>');
+}
+function driverForm(id){
+  const d = id ? driverById(id) : null;
+  openModal({
+    title: d?'Edit driver':'New driver', okText: d?'Save changes':'Save driver',
+    body:'<div class="form-grid">'+
+      fText('d_name','Driver name', d?d.name:'')+
+      fText('d_phone','Phone', d?d.phone:'','tel')+
+      fText('d_licence','Licence number', d?d.licence:'')+
+      fText('d_salary','Monthly salary (₹)', d?d.salary:'','number','min="0" step="1"')+
+      fText('d_join','Joining date', d?d.join:'','date')+
+      fText('d_aadhaar','ID / Aadhaar number', d?d.aadhaar:'')+
+      fArea('d_address','Address', d?d.address:'')+
+    '</div>',
+    onOk(){
+      if(!val('d_name')){ toast('Enter the driver name'); return; }
+      const rec = {id:d?d.id:uid(), name:val('d_name'), phone:val('d_phone'), licence:val('d_licence'),
+        salary:num(val('d_salary')), join:val('d_join'), aadhaar:val('d_aadhaar'), address:val('d_address')};
+      if(d) DB.drivers[DB.drivers.findIndex(x=>x.id===d.id)] = rec; else DB.drivers.push(rec);
+      save(); closeModal(); render(); toast(d?'Driver updated':'Driver saved');
+    }
+  });
+}
+function driverTxnForm(did, tid){
+  const t = tid ? DB.driverTxns.find(x=>x.id===tid) : null;
+  const d = driverById(did);
+  openModal({
+    title: t?'Edit entry':'Driver account entry', okText: t?'Save changes':'Save entry',
+    body:'<div class="form-grid">'+
+      fSeg('dt_type','Entry type',[{v:'due',t:'Salary due'},{v:'salary',t:'Salary paid'},{v:'advance',t:'Advance paid'}], t?t.type:'salary')+
+      fText('dt_date','Date', t?t.date:today(),'date')+
+      fText('dt_amount','Amount (₹)', t?t.amount:(d&&d.salary?d.salary:''),'number','min="0" step="1"')+
+      fText('dt_note','Note', t?t.note:'','text','placeholder="e.g. Salary for July"')+
+    '</div>',
+    onOk(){
+      const amt = num(val('dt_amount'));
+      if(amt<=0){ toast('Enter an amount greater than zero'); return; }
+      const rec = {id:t?t.id:uid(), driverId:did, date:val('dt_date')||today(),
+        type:checked('dt_type')||'salary', amount:amt, note:val('dt_note')};
+      if(t) DB.driverTxns[DB.driverTxns.findIndex(x=>x.id===t.id)] = rec; else DB.driverTxns.push(rec);
+      save(); closeModal(); renderDriver(did); toast(t?'Entry updated':'Entry saved');
+    }
+  });
+}
+function delDriverTxn(tid){
+  const t = DB.driverTxns.find(x=>x.id===tid); if(!t) return;
+  confirmAsk('Delete this entry?', ()=>{ DB.driverTxns = DB.driverTxns.filter(x=>x.id!==tid); save(); renderDriver(t.driverId); toast('Entry deleted'); }, true);
+}
+function delDriver(did){
+  confirmAsk('Delete this driver and all their account entries?', ()=>{
+    DB.drivers = DB.drivers.filter(x=>x.id!==did);
+    DB.driverTxns = DB.driverTxns.filter(x=>x.driverId!==did);
+    save(); sub={}; render(); toast('Driver deleted');
+  }, true);
+}
+/* ============================================================
+   REPORTS & P&L
+   ============================================================ */
+function viewReports(){
+  const m = thisMonth();
+  if(!sub.from) sub.from = m+'-01';
+  if(!sub.to)   sub.to   = today();
+  if(!sub.tab)  sub.tab  = 'pnl';
+  const p = pnl(sub.from, sub.to);
+  $('#pageActions').innerHTML = '<button class="btn" onclick="window.print()">Print</button>';
+
+  const filters =
+  '<div class="toolbar">'+
+    '<div class="field" style="flex-direction:row;align-items:center;gap:8px"><label for="r_from">From</label>'+
+      '<input id="r_from" type="date" value="'+sub.from+'" onchange="sub.from=this.value;viewReports()"></div>'+
+    '<div class="field" style="flex-direction:row;align-items:center;gap:8px"><label for="r_to">To</label>'+
+      '<input id="r_to" type="date" value="'+sub.to+'" onchange="sub.to=this.value;viewReports()"></div>'+
+    '<button class="btn btn-sm" onclick="quickRange(\'month\')">This month</button>'+
+    '<button class="btn btn-sm" onclick="quickRange(\'last\')">Last month</button>'+
+    '<button class="btn btn-sm" onclick="quickRange(\'fy\')">This financial year</button>'+
+    '<button class="btn btn-sm" onclick="quickRange(\'all\')">All time</button>'+
+  '</div>';
+
+  const tabs = '<div class="tabs">'+
+    [['pnl','Profit & Loss'],['party','Party dues'],['truck','Truck-wise'],['expense','Expense split']]
+    .map(([id,l])=>'<button class="tab'+(sub.tab===id?' on':'')+'" onclick="sub.tab=\''+id+'\';viewReports()">'+l+'</button>').join('')+'</div>';
+
+  let body = '';
+  if(sub.tab==='pnl'){
+    const exps = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
+    body =
+    '<div class="grid g4" style="margin-bottom:16px">'+
+      '<div class="stat"><div class="stat-label">Freight income</div><div class="stat-value">'+money(p.freight)+'</div>'+
+        '<div class="stat-note">'+p.tripCount+' trips</div></div>'+
+      '<div class="stat"><div class="stat-label">Total costs</div><div class="stat-value">'+money(p.costs)+'</div></div>'+
+      '<div class="stat '+(p.profit>=0?'pos':'neg')+' accent"><div class="stat-label">Net profit</div>'+
+        '<div class="stat-value">'+money(p.profit)+'</div></div>'+
+      '<div class="stat"><div class="stat-label">Margin</div><div class="stat-value">'+(p.freight?Math.round(p.profit/p.freight*100):0)+'%</div>'+
+        '<div class="stat-note">Profit ÷ freight</div></div>'+
+    '</div>'+
+    '<div class="card card-pad">'+
+      '<h3 class="card-title" style="margin-bottom:6px">Profit &amp; Loss statement</h3>'+
+      '<div class="hint" style="margin-bottom:10px">'+fdate(sub.from)+' to '+fdate(sub.to)+'</div>'+
+      '<div class="sec-title">Income</div>'+
+      pl('Freight billed on trips', p.freight)+
+      '<div class="sec-title">Costs</div>'+
+      (p.hire? pl('Hire paid to market trucks', p.hire):'')+
+      exps.map(([c,v])=>pl(c, v)).join('')+
+      (p.driverPaid? pl('Driver salary &amp; advances paid', p.driverPaid):'')+
+      (p.costs===0? '<div class="pl-line"><span>No costs recorded in this period</span><span class="num">'+money(0)+'</span></div>':'')+
+      pl('Total costs', p.costs)+
+      '<div class="pl-line pl-total"><span>'+(p.profit>=0?'Net profit':'Net loss')+'</span>'+
+        '<span class="num '+(p.profit>=0?'money-pos':'money-neg')+'">'+money(Math.abs(p.profit))+'</span></div>'+
+    '</div>'+
+    '<div class="note" style="margin-top:14px">Freight is counted when the trip is recorded, whether or not the party has paid yet. Pending collection sits in <b>Party dues</b>.</div>';
+  }
+  if(sub.tab==='party'){
+    const bmap = allBalances(); const tc = {};
+    DB.trips.forEach(t=>{ tc[t.partyId] = (tc[t.partyId]||0)+1; });
+    const rows = DB.parties.map(x=>({name:x.name, id:x.id, bal:bmap[x.id]||0,
+      trips:tc[x.id]||0})).filter(x=>x.bal!==0).sort((a,b)=>b.bal-a.bal);
+    const tot = rows.reduce((s,r)=>s+Math.max(0,r.bal),0);
+    body = rows.length? '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Party</th><th class="t-r">Trips</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      rows.map(r=>'<tr><td class="t-strong">'+esc(r.name)+'</td><td class="t-r num">'+r.trips+'</td>'+
+        '<td class="t-r num '+(r.bal>0?'money-neg':'money-pos')+'">'+money(Math.abs(r.bal))+'</td>'+
+        '<td class="t-sub">'+(r.bal>0?'to collect':'advance held')+'</td></tr>').join('')+
+      '</tbody><tfoot><tr><th>Total receivable</th><th></th>'+
+      '<th class="t-r num" style="font-size:14px;color:var(--red)">'+money(tot)+'</th><th></th></tr></tfoot></table></div></div>'
+      : empty('Nothing outstanding','Every party is settled up, or you have not recorded any trips yet.','');
+  }
+  if(sub.tab==='truck'){
+    const inR = d => (!sub.from||d>=sub.from) && (!sub.to||d<=sub.to);
+    const rows = DB.trucks.map(t=>{
+      const trips = DB.trips.filter(x=>x.truckId===t.id && inR(x.date));
+      const freight = trips.reduce((s,x)=>s+num(x.freight),0);
+      const hire = trips.reduce((s,x)=>s+num(x.hire),0);
+      const exp = DB.expenses.filter(e=>e.truckId===t.id && inR(e.date)).reduce((s,e)=>s+num(e.amount),0);
+      return {t, n:trips.length, freight, hire, exp, net:freight-hire-exp};
+    }).filter(r=>r.n||r.exp).sort((a,b)=>b.net-a.net);
+    body = rows.length? '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Truck</th><th class="t-r">Trips</th><th class="t-r">Freight</th><th class="t-r">Hire</th>'+
+      '<th class="t-r">Expenses</th><th class="t-r">Net</th></tr></thead><tbody>'+
+      rows.map(r=>'<tr><td><span class="t-strong num">'+esc(r.t.number)+'</span> '+
+        (r.t.type==='market'?'<span class="chip chip-grey">Market</span>':'')+'</td>'+
+        '<td class="t-r num">'+r.n+'</td><td class="t-r num">'+money(r.freight)+'</td>'+
+        '<td class="t-r num">'+(r.hire?money(r.hire):'—')+'</td><td class="t-r num">'+money(r.exp)+'</td>'+
+        '<td class="t-r num '+(r.net>=0?'money-pos':'money-neg')+'">'+money(r.net)+'</td></tr>').join('')+
+      '</tbody></table></div></div>'
+      : empty('No truck activity','No trips or expenses recorded for your trucks in this period.','');
+  }
+  if(sub.tab==='expense'){
+    const entries = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
+    const tot = p.expense;
+    body = entries.length? '<div class="card card-pad">'+entries.map(([c,v])=>{
+      const pct = Math.round(v/tot*100);
+      return '<div style="margin-bottom:13px"><div style="display:flex;font-size:13.5px;margin-bottom:5px">'+
+        '<span class="t-strong">'+esc(c)+'</span><span class="num" style="margin-left:auto">'+money(v)+' · '+pct+'%</span></div>'+
+        '<div style="height:8px;background:var(--line-soft);border-radius:4px;overflow:hidden">'+
+        '<div style="height:100%;width:'+pct+'%;background:var(--amber)"></div></div></div>';
+    }).join('')+'<div class="divide"></div><div class="pl-line pl-total"><span>Total expenses</span>'+
+      '<span class="num">'+money(tot)+'</span></div></div>'
+      : empty('No expenses in this period','Change the date range, or record expenses to see the split.','');
+  }
+  $('#view').innerHTML = filters + tabs + body;
+}
+function pl(label, v){ return '<div class="pl-line"><span>'+label+'</span><span class="num">'+money(v)+'</span></div>'; }
+function quickRange(k){
+  const d = new Date();
+  if(k==='month'){ sub.from = thisMonth()+'-01'; sub.to = today(); }
+  if(k==='last'){
+    const l = new Date(d.getFullYear(), d.getMonth()-1, 1);
+    const key = l.toISOString().slice(0,7);
+    sub.from = key+'-01';
+    sub.to = new Date(d.getFullYear(), d.getMonth(), 0).toISOString().slice(0,10);
+  }
+  if(k==='fy'){
+    const y = d.getMonth()>=3 ? d.getFullYear() : d.getFullYear()-1;
+    sub.from = y+'-04-01'; sub.to = today();
+  }
+  if(k==='all'){ sub.from = '2000-01-01'; sub.to = '2099-12-31'; }
+  viewReports();
+}
+
+/* ============================================================
+   SETTINGS, BACKUP, SAMPLE DATA
+   ============================================================ */
+function viewSettings(){
+  const s = DB.settings;
+  const counts = [['Trucks',DB.trucks.length],['Parties',DB.parties.length],['Trips',DB.trips.length],
+    ['Ledger entries',DB.ledger.length],['Expenses',DB.expenses.length],['Drivers',DB.drivers.length]];
+  $('#view').innerHTML =
+  '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<h3 class="card-title" style="margin-bottom:14px">Business details</h3>'+
+    '<div class="form-grid">'+
+      fText('s_business','Business name', s.business)+
+      fText('s_owner','Owner name', s.owner)+
+      fText('s_phone','Phone', s.phone,'tel')+
+      fText('s_gst','GST number', s.gst)+
+      fArea('s_address','Address', s.address)+
+    '</div>'+
+    '<div style="margin-top:14px"><button class="btn btn-primary" onclick="saveSettings()">Save details</button></div>'+
+  '</div>'+
+
+  cloudPanel()+
+  '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<h3 class="card-title" style="margin-bottom:6px">Backup file</h3>'+
+    '<p class="hint" style="margin:0 0 14px;max-width:560px">Everything is stored inside this browser on this device. If you clear browser data or change phone, it is gone. Download a backup file every week and keep it in Google Drive or WhatsApp to yourself.</p>'+
+    '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+      '<button class="btn btn-amber" onclick="backup()">Download backup file</button>'+
+      '<button class="btn" onclick="document.getElementById(\'restoreFile\').click()">Restore from backup</button>'+
+      '<input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restore(this)">'+
+    '</div>'+
+    '<div class="divide"></div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:18px">'+counts.map(([l,n])=>
+      '<div><div class="stat-label">'+l+'</div><div class="num t-strong" style="font-size:18px">'+n+'</div></div>').join('')+'</div>'+
+  '</div>'+
+
+  '<div class="card card-pad">'+
+    '<h3 class="card-title" style="margin-bottom:6px">Start fresh</h3>'+
+    '<p class="hint" style="margin:0 0 14px;max-width:560px">Load a few sample trips to see how the app works, or wipe everything and begin with your real business data.</p>'+
+    '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+      '<button class="btn" onclick="loadSample()">Load sample data</button>'+
+      '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
+    '</div>'+
+    '<div class="divide"></div>'+
+    '<div class="hint">App version <b>1.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+  '</div>';
+}
+function cloudPanel(){
+  const onFile = isLocalFile();
+  const s = CLOUD.state;
+  const statusLine = {
+    off:'<span class="chip chip-grey">Not set up</span>',
+    ready:'<span class="chip chip-amber">Not connected</span>',
+    connecting:'<span class="chip chip-amber">Connecting…</span>',
+    syncing:'<span class="chip chip-amber">Saving…</span>',
+    on:'<span class="chip chip-green">Connected</span>',
+    error:'<span class="chip chip-red">Problem</span>'
+  }[s] || '';
+
+  return '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
+      '<h3 class="card-title" style="margin:0">Google Drive sync</h3>'+statusLine+'</div>'+
+    '<p class="hint" style="margin:0 0 14px;max-width:600px">Keeps one data file inside a folder called '+
+      '\u201cMaa Vandana Logistics\u201d in your own Drive, so your phone and laptop stay in step. '+
+      'This app can only touch the file it creates \u2014 it cannot see anything else in your Drive.</p>'+
+    (onFile
+      ? '<div class="note" style="border-color:#E8CFCB;background:var(--red-soft)">'+
+        '<b>This file is open from your computer, not a web address.</b><br>'+
+        'Google will not allow sign-in this way. Put the app online first \u2014 the steps below explain how.</div>'
+      : '')+
+    (CLOUD.message ? '<div class="note" style="margin-bottom:12px">'+esc(CLOUD.message)+'</div>' : '')+
+    '<div class="form-grid" style="margin-top:12px">'+
+      fText('g_client','Google Client ID', CLOUD.clientId,'text','placeholder="1234567890-abcdef.apps.googleusercontent.com"')+
+      '<div class="field"><label>&nbsp;</label><span class="hint">Created once in Google Cloud, then pasted here. Steps are below.</span></div>'+
+    '</div>'+
+    '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px">'+
+      '<button class="btn btn-primary" onclick="saveClientId()">'+(CLOUD.clientId?'Save and connect':'Connect Google Drive')+'</button>'+
+      (cloudReady()
+        ? '<button class="btn" onclick="cloudPush(true);toast(\'Sending to Drive\')">Sync now</button>'+
+          '<button class="btn btn-danger" onclick="cloudDisconnect()">Disconnect</button>'
+        : '')+
+    '</div>'+
+    (CLOUD.lastSync? '<div class="hint" style="margin-top:10px">Last saved to Drive on '+
+      fdate(CLOUD.lastSync.slice(0,10))+' at '+CLOUD.lastSync.slice(11,16)+'</div>':'')+
+    '<div class="divide"></div>'+
+    '<div class="sec-title" style="margin-top:0">One-time setup</div>'+
+    [ 'Put the app online. Sign up free at <b>pages.cloudflare.com</b>, choose <b>Create a project \u2192 Direct Upload</b>, and drag in a folder containing this file renamed to <b>index.html</b>. You get a free address like yourname.pages.dev. (GitHub Pages works equally well if you prefer.)',
+      'Open <b>console.cloud.google.com</b> and create a new project. Name it anything.',
+      'In that project, open <b>APIs &amp; Services \u2192 Library</b>, search for <b>Google Drive API</b> and press Enable.',
+      'Open <b>APIs &amp; Services \u2192 OAuth consent screen</b>. Choose External, fill in the app name and your email, and add yourself as a test user.',
+      'Open <b>Credentials \u2192 Create credentials \u2192 OAuth client ID</b>. Pick <b>Web application</b>. Under Authorised JavaScript origins, add your pages.dev address exactly, with https and no slash at the end.',
+      'Copy the Client ID it shows you, paste it in the box above, and press Connect.'
+    ].map((t,i)=>'<div class="step"><div class="step-n">'+(i+1)+'</div><p>'+t+'</p></div>').join('')+
+  '</div>';
+}
+
+function saveSettings(){
+  DB.settings = {business:val('s_business')||'Maa Vandana Logistics', owner:val('s_owner'),
+    phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')};
+  save(); applyBrand(); toast('Details saved');
+}
+function applyBrand(){
+  const n = DB.settings.business || 'Maa Vandana Logistics';
+  document.title = n;
+  $('#brandName').textContent = n;
+  const parts = n.trim().split(/\s+/);
+  $('.brand-badge').textContent = ((parts[0]||'M')[0] + (parts[1]||parts[0]||'V')[0]).toUpperCase();
+}
+function backup(){
+  const blob = new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'maa-vandana-backup-'+today()+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Backup downloaded');
+}
+function restore(input){
+  const f = input.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      if(!d.trips || !d.parties) throw new Error('bad file');
+      confirmAsk('Replace everything currently in the app with this backup?', ()=>{
+        DB = Object.assign(JSON.parse(JSON.stringify(BLANK)), d);
+        save(); applyBrand(); go('dashboard'); toast('Backup restored');
+      });
+    }catch(e){ toast('That file is not a Maa Vandana backup'); }
+    input.value='';
+  };
+  r.readAsText(f);
+}
+function wipe(){
+  confirmAsk('Delete every truck, party, trip, expense and driver record? Download a backup first if you are not sure.', ()=>{
+    DB = JSON.parse(JSON.stringify(BLANK)); DB.seeded = true; save(); applyBrand(); go('dashboard'); toast('All data deleted');
+  }, true);
+}
+
+function loadSample(){
+  confirmAsk('Add sample trucks, parties and trips to the app? Your existing records stay as they are.', ()=>{ seed(); save(); go('dashboard'); toast('Sample data added'); });
+}
+function seed(){
+  const d = new Date(); const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0');
+  const day = n => y+'-'+m+'-'+String(n).padStart(2,'0');
+  const t1={id:uid(),type:'owned',number:'HR 55 AB 1234',model:'Tata Signa 3118',capacity:'25',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
+  const t2={id:uid(),type:'owned',number:'HR 38 CD 7788',model:'Ashok Leyland 2820',capacity:'31',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
+  const t3={id:uid(),type:'market',number:'RJ 14 GH 4521',model:'Eicher Pro 6028',capacity:'28',owner:'Rajesh Transport',ownerPhone:'',insurance:'',fitness:'',notes:''};
+  const p1={id:uid(),name:'Shree Cement Depot',phone:'98110 22334',city:'Gurugram',gst:'',opening:0,address:''};
+  const p2={id:uid(),name:'Balaji Steel Traders',phone:'98730 55129',city:'Bhiwadi',gst:'',opening:24000,address:''};
+  const p3={id:uid(),name:'Annapurna Grain Agency',phone:'99106 78120',city:'Delhi',gst:'',opening:0,address:''};
+  const dr1={id:uid(),name:'Ramesh Yadav',phone:'99999 11223',licence:'HR5520190001234',salary:22000,join:'',aadhaar:'',address:''};
+  const dr2={id:uid(),name:'Sukhbir Singh',phone:'98180 44556',licence:'HR3820170007788',salary:20000,join:'',aadhaar:'',address:''};
+  DB.trucks.push(t1,t2,t3); DB.parties.push(p1,p2,p3); DB.drivers.push(dr1,dr2);
+  t1.driverId=dr1.id; t2.driverId=dr2.id;
+  const trips=[
+    {date:day(3),lr:'MV-1041',from:'Gurugram',to:'Jaipur',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Cement bags',weight:'24',freight:38000,advance:10000,hire:0,status:'partial',notes:''},
+    {date:day(6),lr:'MV-1042',from:'Bhiwadi',to:'Ahmedabad',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'TMT bars',weight:'30',freight:64000,advance:0,hire:0,status:'pending',notes:''},
+    {date:day(9),lr:'MV-1043',from:'Delhi',to:'Lucknow',partyId:p3.id,truckId:t3.id,driverId:'',material:'Wheat',weight:'27',freight:47000,advance:15000,hire:36000,status:'partial',notes:'Market vehicle arranged through Rajesh Transport'},
+    {date:day(12),lr:'MV-1044',from:'Jaipur',to:'Gurugram',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Empty return load',weight:'18',freight:26000,advance:0,hire:0,status:'paid',notes:''},
+    {date:day(16),lr:'MV-1045',from:'Gurugram',to:'Indore',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advance:20000,hire:0,status:'partial',notes:''}
+  ];
+  trips.forEach(t=>DB.trips.push({id:uid(),...t}));
+  DB.ledger.push(
+    {id:uid(),partyId:p1.id,date:day(14),type:'credit',amount:26000,mode:'UPI',ref:'',note:'Payment for LR MV-1044'},
+    {id:uid(),partyId:p2.id,date:day(18),type:'credit',amount:24000,mode:'Bank',ref:'UTR 998211',note:'Clearing old outstanding'},
+    {id:uid(),partyId:p3.id,date:day(20),type:'debit',amount:2500,mode:'Adjustment',ref:'',note:'Detention charges at Lucknow'}
+  );
+  const ex=[
+    {date:day(3),amount:18500,category:'Fuel / Diesel',truckId:t1.id,paidTo:'HP Pump, Manesar',mode:'Cash',note:'Diesel 210 litres'},
+    {date:day(4),amount:2400,category:'Toll & Parking',truckId:t1.id,paidTo:'FASTag',mode:'UPI',note:''},
+    {date:day(6),amount:26000,category:'Fuel / Diesel',truckId:t2.id,paidTo:'IOC Pump, Bhiwadi',mode:'Cash',note:''},
+    {date:day(8),amount:9800,category:'Truck maintenance',truckId:t2.id,paidTo:'Sharma Motors',mode:'Cash',note:'Brake and clutch work'},
+    {date:day(10),amount:42000,category:'EMI payment',truckId:t1.id,paidTo:'HDFC Bank',mode:'Bank',note:'Monthly EMI'},
+    {date:day(15),amount:6500,category:'Office expense',truckId:'',paidTo:'',mode:'Cash',note:'Rent, phone and stationery'},
+    {date:day(17),amount:3200,category:'Fine / challan',truckId:t2.id,paidTo:'RTO',mode:'Cash',note:'Overloading challan'}
+  ];
+  ex.forEach(e=>DB.expenses.push({id:uid(),...e}));
+  DB.driverTxns.push(
+    {id:uid(),driverId:dr1.id,date:day(1),type:'due',amount:22000,note:'Salary for this month'},
+    {id:uid(),driverId:dr1.id,date:day(5),type:'advance',amount:8000,note:'Advance before Jaipur trip'},
+    {id:uid(),driverId:dr2.id,date:day(1),type:'due',amount:20000,note:'Salary for this month'},
+    {id:uid(),driverId:dr2.id,date:day(11),type:'salary',amount:20000,note:'Salary paid in full'}
+  );
+  DB.seeded = true;
+}
+
+/* ============================================================
+   CSV EXPORT
+   ============================================================ */
+function csvCell(v){ const s = String(v==null?'':v); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+function download(name, rows){
+  const csv = rows.map(r=>r.map(csvCell).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+  toast('CSV downloaded');
+}
+function exportCSV(what){
+  if(what==='trips'){
+    download('trips-'+today()+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight','Advance','Hire','Status','Notes']]
+      .concat(DB.trips.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
+        [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',t.material,t.weight,num(t.freight),num(t.advance),num(t.hire),t.status,t.notes])));
+  }
+  if(what==='parties'){
+    const bal = allBalances();
+    const tc = {}; DB.trips.forEach(t=>{ tc[t.partyId]=(tc[t.partyId]||0)+1; });
+    download('parties-'+today()+'.csv', [['Party','Phone','City','GST','Opening','Trips','Balance']]
+      .concat(DB.parties.map(p=>[p.name,p.phone,p.city,p.gst,num(p.opening),tc[p.id]||0,bal[p.id]||0])));
+  }
+  if(what==='expenses'){
+    download('expenses-'+today()+'.csv', [['Date','Category','Amount','Truck','Paid to','Mode','Details']]
+      .concat(DB.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
+        [e.date,e.category,num(e.amount),e.truckId?truckName(e.truckId):'',e.paidTo,e.mode,e.note])));
+  }
+}
+function exportLedger(pid){
+  const p = partyById(pid);
+  download('ledger-'+p.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
+    [['Date','Particulars','Reference','Debit','Credit','Balance']].concat(
+      ledgerRows(pid).map(r=>[r.date,r.label,r.ref,r.debit||'',r.credit||'',r.running])));
+}
+
+/* ============================================================
+   GOOGLE DRIVE SYNC
+   Saves your data as one file inside a "Maa Vandana Logistics"
+   folder in your own Google Drive. Uses the drive.file scope,
+   which means this app can only ever touch the files it made —
+   it cannot see anything else in your Drive.
+   ============================================================ */
+const FOLDER_NAME = 'Maa Vandana Logistics';
+const FILE_NAME   = 'maa-vandana-data.json';
+const SCOPE       = 'https://www.googleapis.com/auth/drive.file';
+
+const CLOUD = {
+  clientId: localStorage.getItem('mvl_client_id') || '',
+  token:'', tokenClient:null, folderId:'', fileId:'',
+  state:'off',        // off | ready | connecting | on | syncing | error
+  message:'', lastSync: localStorage.getItem('mvl_last_sync') || '', pushTimer:null
+};
+
+function cloudSet(state, message){
+  CLOUD.state = state; CLOUD.message = message || '';
+  const pill = $('#cloudPill'); if(!pill) return;
+  if(state==='off'){ pill.hidden = true; return; }
+  pill.hidden = false;
+  const map = {
+    ready:   ['',     'Not connected'],
+    connecting:['busy','Connecting…'],
+    syncing: ['busy', 'Saving to Drive…'],
+    on:      ['on',   CLOUD.lastSync ? 'Saved to Drive' : 'Connected'],
+    error:   ['bad',  'Sync problem']
+  };
+  const [cls, label] = map[state] || ['',''];
+  pill.className = 'cloud-pill '+cls;
+  pill.innerHTML = '<span class="cloud-dot"></span><span>'+esc(label)+'</span>';
+  pill.title = CLOUD.message || label;
+  if(route==='settings') viewSettings();
+}
+
+function cloudReady(){ return CLOUD.state==='on' || CLOUD.state==='syncing'; }
+function isLocalFile(){ return location.protocol === 'file:'; }
+
+/* Load Google's sign-in library, once */
+function loadGIS(){
+  return new Promise((resolve, reject)=>{
+    if(window.google && window.google.accounts) return resolve();
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = ()=>reject(new Error('Could not reach Google. Check your internet connection.'));
+    document.head.appendChild(s);
+  });
+}
+
+async function cloudConnect(interactive){
+  if(!CLOUD.clientId){ cloudSet('off'); return; }
+  if(isLocalFile()){
+    cloudSet('error','Google sign-in does not work on a file opened from your computer. The app needs to be on a web address.');
+    return;
+  }
+  try{
+    cloudSet('connecting');
+    await loadGIS();
+    if(!CLOUD.tokenClient){
+      CLOUD.tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLOUD.clientId,
+        scope: SCOPE,
+        callback: (resp)=>{
+          if(resp && resp.access_token){ CLOUD.token = resp.access_token; afterSignIn(); }
+          else { cloudSet('error','Sign-in was not completed.'); }
+        },
+        error_callback: (err)=>{
+          cloudSet('error', err && err.type==='popup_closed'
+            ? 'Sign-in window was closed before finishing.'
+            : 'Google refused the sign-in. Check that the web address is listed in your Google Cloud settings.');
+        }
+      });
+    }
+    CLOUD.tokenClient.requestAccessToken({prompt: interactive ? 'consent' : ''});
+  }catch(e){ cloudSet('error', e.message); }
+}
+
+async function afterSignIn(){
+  try{
+    cloudSet('syncing');
+    CLOUD.folderId = await ensureFolder();
+    CLOUD.fileId   = await findFile();
+    if(CLOUD.fileId){ await cloudPull(true); }
+    else { await cloudPush(true); toast('Connected. Your data is now in Google Drive'); }
+    cloudSet('on');
+  }catch(e){ cloudSet('error', e.message); toast('Could not sync: '+e.message); }
+}
+
+/* Every Drive request goes through here, so an expired sign-in retries once */
+async function drive(url, opts={}, retried){
+  const r = await fetch(url, {...opts, headers:{...(opts.headers||{}), Authorization:'Bearer '+CLOUD.token}});
+  if(r.status===401 && !retried){
+    await new Promise(res=>{
+      CLOUD.tokenClient.callback = resp=>{ CLOUD.token = resp.access_token || ''; res(); };
+      CLOUD.tokenClient.requestAccessToken({prompt:''});
+    });
+    if(!CLOUD.token) throw new Error('Sign-in expired. Connect again from Settings.');
+    return drive(url, opts, true);
+  }
+  if(!r.ok){
+    let detail = '';
+    try{ detail = (await r.json()).error.message; }catch(e){}
+    throw new Error(detail || ('Drive returned error '+r.status));
+  }
+  return r;
+}
+
+async function ensureFolder(){
+  const q = encodeURIComponent("name='"+FOLDER_NAME+"' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+  const r = await drive('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id)&spaces=drive');
+  const j = await r.json();
+  if(j.files && j.files.length) return j.files[0].id;
+  const c = await drive('https://www.googleapis.com/drive/v3/files?fields=id', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name:FOLDER_NAME, mimeType:'application/vnd.google-apps.folder'})
+  });
+  return (await c.json()).id;
+}
+
+async function findFile(){
+  const q = encodeURIComponent("name='"+FILE_NAME+"' and '"+CLOUD.folderId+"' in parents and trashed=false");
+  const r = await drive('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,modifiedTime)&spaces=drive');
+  const j = await r.json();
+  return j.files && j.files.length ? j.files[0].id : '';
+}
+
+async function cloudPull(onConnect){
+  if(!CLOUD.fileId) return;
+  const r = await drive('https://www.googleapis.com/drive/v3/files/'+CLOUD.fileId+'?alt=media');
+  const remote = await r.json();
+  const rTime = remote.updatedAt || '';
+  const lTime = DB.updatedAt || '';
+  const localEmpty = DB.trips.length===0 && DB.parties.length===0 && DB.trucks.length===0;
+
+  if(localEmpty || rTime > lTime){
+    if(!localEmpty && onConnect){
+      return askWhichCopy(remote, rTime, lTime);
+    }
+    applyRemote(remote);
+    toast('Loaded the latest data from Drive');
+  } else if(lTime > rTime){
+    await cloudPush(true);
+  }
+}
+
+function applyRemote(remote){
+  DB = Object.assign(JSON.parse(JSON.stringify(BLANK)), remote);
+  reindex();
+  localStorage.setItem(KEY, JSON.stringify(DB));
+  applyBrand(); render();
+}
+
+let pendingRemote = null;
+function askWhichCopy(remote, rTime, lTime){
+  pendingRemote = remote;
+  const count = o => (o.trips||[]).length+' trips, '+(o.parties||[]).length+' parties, '+(o.expenses||[]).length+' expenses';
+  openModal({
+    title:'Two copies found',
+    body:'<p style="margin:0 0 14px;font-size:14.5px">The copy in Drive and the copy on this device do not match. Which one should be kept?</p>'+
+      '<div class="card card-pad" style="margin-bottom:10px"><div class="stat-label">In Google Drive</div>'+
+      '<div style="margin-top:5px">'+esc(count(remote))+'</div>'+
+      '<div class="hint">Last saved '+(rTime?fdate(rTime.slice(0,10)):'date unknown')+'</div>'+
+      '<button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="useDriveCopy()">Use the Drive copy</button></div>'+
+      '<div class="card card-pad"><div class="stat-label">On this device</div>'+
+      '<div style="margin-top:5px">'+esc(count(DB))+'</div>'+
+      '<div class="hint">Last saved '+(lTime?fdate(lTime.slice(0,10)):'date unknown')+'</div>'+
+      '<button class="btn btn-sm" style="margin-top:10px" onclick="useDeviceCopy()">Keep this device</button></div>'+
+      '<div class="note" style="margin-top:12px">Nothing is overwritten until you choose. If you are unsure, close this and download a backup from Settings first.</div>'
+  });
+}
+function useDriveCopy(){
+  if(!pendingRemote) return closeModal();
+  applyRemote(pendingRemote); pendingRemote=null; closeModal();
+  cloudSet('on'); toast('Now using the Drive copy');
+}
+function useDeviceCopy(){
+  pendingRemote=null; closeModal();
+  DB.updatedAt = new Date().toISOString();
+  cloudPush(true); toast('Kept this device and sent it to Drive');
+}
+
+async function cloudPush(now){
+  if(!CLOUD.token || !CLOUD.folderId) return;
+  clearTimeout(CLOUD.pushTimer);
+  if(!now){ CLOUD.pushTimer = setTimeout(()=>cloudPush(true), 2500); return; }
+  try{
+    cloudSet('syncing');
+    const content = JSON.stringify(DB);
+    if(CLOUD.fileId){
+      await drive('https://www.googleapis.com/upload/drive/v3/files/'+CLOUD.fileId+'?uploadType=media',
+        {method:'PATCH', headers:{'Content-Type':'application/json'}, body:content});
+    } else {
+      const b = '-------mvl'+Date.now();
+      const meta = {name:FILE_NAME, parents:[CLOUD.folderId]};
+      const body = '--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+
+                   '\r\n--'+b+'\r\nContent-Type: application/json\r\n\r\n'+content+'\r\n--'+b+'--';
+      const r = await drive('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+        {method:'POST', headers:{'Content-Type':'multipart/related; boundary='+b}, body});
+      CLOUD.fileId = (await r.json()).id;
+    }
+    CLOUD.lastSync = new Date().toISOString();
+    localStorage.setItem('mvl_last_sync', CLOUD.lastSync);
+    cloudSet('on');
+  }catch(e){
+    cloudSet('error', e.message);
+  }
+}
+
+function cloudDisconnect(){
+  confirmAsk('Disconnect Google Drive? Your data stays on this device and in Drive, it just stops syncing.', ()=>{
+    if(CLOUD.token && window.google) try{ google.accounts.oauth2.revoke(CLOUD.token); }catch(e){}
+    CLOUD.token=''; CLOUD.fileId=''; CLOUD.folderId='';
+    cloudSet('ready'); toast('Disconnected from Drive');
+  });
+}
+
+function saveClientId(){
+  const id = val('g_client').trim();
+  CLOUD.clientId = id;
+  localStorage.setItem('mvl_client_id', id);
+  if(id){ cloudSet('ready'); cloudConnect(true); }
+  else { cloudSet('off'); toast('Google Drive turned off'); }
+}
+
+/* ============================================================
+   START
+   ============================================================ */
+reindex();
+if(!DB.seeded && DB.trips.length===0){ seed(); save(); }
+applyBrand();
+render();
+if(CLOUD.clientId){ cloudSet('ready'); cloudConnect(false); }
+window.addEventListener('online', ()=>{ if(cloudReady()) cloudPush(true); });
+</script>
+</body>
+</html>
