@@ -190,6 +190,21 @@ textarea{resize:vertical;min-height:62px}
 
 /* ---------- Misc ---------- */
 .toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filters{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:12px 14px;margin-bottom:14px}
+.filter-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.filter-row select,.filter-row input{width:auto;min-width:150px;padding:8px 11px;font-size:13.5px}
+.filter-row .search{flex:1;min-width:190px;max-width:340px}
+.filter-row.adv{margin-top:11px;padding-top:11px;border-top:1px solid var(--line-soft)}
+.fpair{display:flex;align-items:center;gap:7px}
+.fpair label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.fpair input{min-width:0}
+@media (max-width:760px){
+  .filter-row select,.filter-row input{min-width:0;flex:1 1 46%}
+  .filter-row .search{flex:1 1 100%;max-width:none}
+  .fpair{flex:1 1 100%}
+  .fpair input{flex:1}
+}
 .toolbar input,.toolbar select{width:auto;min-width:150px}
 .search{flex:1;min-width:180px;max-width:320px}
 .empty{padding:44px 22px;text-align:center}
@@ -230,17 +245,20 @@ textarea{resize:vertical;min-height:62px}
 tbody tr{transition:background .12s}
 
 /* ---------- Charts ---------- */
-.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart{width:100%;height:auto;display:block}
 .chart .grid-line{stroke:var(--line-soft);stroke-width:1}
 .chart .axis-text{fill:var(--muted);font-family:var(--mono);font-size:10px}
 .chart .series-line{fill:none;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;
   stroke-dasharray:4000;stroke-dashoffset:4000;animation:drawLine 1.1s cubic-bezier(.3,.8,.4,1) forwards}
+.chart .series-dashed{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:6 5;stroke-dashoffset:0;opacity:0;animation:fadeSeries .5s .5s forwards}
+@keyframes fadeSeries{to{opacity:1}}
 .chart .series-dot{stroke:var(--card);stroke-width:2}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:2px}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600}
 .legend-key{width:11px;height:3px;border-radius:2px;flex:none}
 .donut-hole{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.donut-seg{transform-origin:center;--circ:0;--off:0;stroke-dashoffset:var(--circ);animation:sweep .95s cubic-bezier(.3,.8,.4,1) forwards}
+.donut-seg{--circ:0;--off:0;stroke-dashoffset:var(--circ);animation:sweep .95s cubic-bezier(.3,.8,.4,1) forwards}
 .bar-row{margin-bottom:12px}
 .bar-head{display:flex;align-items:baseline;font-size:13px;margin-bottom:5px;gap:10px}
 .bar-head .bar-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -316,17 +334,20 @@ tbody tr{transition:background .12s}
 tbody tr{transition:background .12s}
 
 /* ---------- Charts ---------- */
-.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart{width:100%;height:auto;display:block}
 .chart .grid-line{stroke:var(--line-soft);stroke-width:1}
 .chart .axis-text{fill:var(--muted);font-family:var(--mono);font-size:10px}
 .chart .series-line{fill:none;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;
   stroke-dasharray:4000;stroke-dashoffset:4000;animation:drawLine 1.1s cubic-bezier(.3,.8,.4,1) forwards}
+.chart .series-dashed{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:6 5;stroke-dashoffset:0;opacity:0;animation:fadeSeries .5s .5s forwards}
+@keyframes fadeSeries{to{opacity:1}}
 .chart .series-dot{stroke:var(--card);stroke-width:2}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:2px}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600}
 .legend-key{width:11px;height:3px;border-radius:2px;flex:none}
 .donut-hole{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.donut-seg{transform-origin:center;--circ:0;--off:0;stroke-dashoffset:var(--circ);animation:sweep .95s cubic-bezier(.3,.8,.4,1) forwards}
+.donut-seg{--circ:0;--off:0;stroke-dashoffset:var(--circ);animation:sweep .95s cubic-bezier(.3,.8,.4,1) forwards}
 .bar-row{margin-bottom:12px}
 .bar-head{display:flex;align-items:baseline;font-size:13px;margin-bottom:5px;gap:10px}
 .bar-head .bar-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -415,6 +436,7 @@ tbody tr{transition:background .12s}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
   .chart .series-line{stroke-dashoffset:0}
+  .chart .series-dashed{opacity:1}
   .donut-seg{stroke-dashoffset:var(--off)}
   .bar-fill{transform:none}
 }
@@ -439,7 +461,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 2.1 &middot; 18 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 2.3 &middot; 18 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -491,6 +513,7 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7
 /* ---------- 2. Helpers ---------- */
 const $  = s => document.querySelector(s);
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+const plural = (n, word) => n+' '+word+(n===1?'':'s');
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function money(n, sign){
@@ -875,7 +898,7 @@ function viewInsights(){
       '<h3 class="chart-title">Which truck earns most</h3>'+
       '<div class="chart-sub">Freight minus hire and expenses booked to it</div>'+
       (perTruck.length? barList(perTruck.map(t=>({label:t.label, value:t.value,
-        color:t.value>=0?'#2C5D7C':'#B3372C', note:t.trips+' trips · '+money(t.freight)+' freight'})))
+        color:t.value>=0?'#2C5D7C':'#B3372C', note:plural(t.trips,'trip')+' · '+money(t.freight)+' freight'})))
         : '<div class="empty" style="padding:26px 10px"><div class="empty-text">No truck activity in this period.</div></div>')+
     '</div>'+
     '<div class="card chart-card">'+
@@ -920,30 +943,76 @@ function statusStamp(s){
    ============================================================ */
 function viewTrips(){
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="tripForm()">+ <span>New trip</span></button>';
-  const months = [...new Set(DB.trips.map(t=>monthKey(t.date)))].sort().reverse();
+  if(sub.adv===undefined) sub.adv = false;
   $('#view').innerHTML =
-  '<div class="toolbar">'+
-    '<input class="search" type="search" autocomplete="off" placeholder="Search LR, route, party, truck\u2026" value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;sub.limit=0;defer(renderTripList)">'+
-    '<select onchange="sub.month=this.value;sub.limit=0;renderTripList()"><option value="">All months</option>'+
-      months.map(m=>'<option value="'+m+'"'+(m===(sub.month||'')?' selected':'')+'>'+monthName(m)+'</option>').join('')+'</select>'+
-    '<select onchange="sub.party=this.value;sub.limit=0;renderTripList()"><option value="">All parties</option>'+
-      DB.parties.map(p=>'<option value="'+p.id+'"'+(p.id===(sub.party||'')?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>'+
-    '<button class="btn btn-sm" onclick="exportCSV(\'trips\')">Export CSV</button>'+
+  '<div class="filters">'+
+    '<div class="filter-row">'+
+      '<input class="search" type="search" autocomplete="off" placeholder="Search anything\u2026" value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;sub.limit=0;defer(renderTripList)">'+
+      '<select onchange="sub.party=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">All parties</option>'+
+        DB.parties.map(p=>'<option value="'+p.id+'"'+(p.id===(sub.party||'')?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>'+
+      '<select onchange="sub.truck=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">All trucks</option>'+
+        DB.trucks.map(t=>'<option value="'+t.id+'"'+(t.id===(sub.truck||'')?' selected':'')+'>'+esc(t.number)+'</option>').join('')+'</select>'+
+      '<select onchange="sub.status=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">Any status</option>'+
+        [['pending','Pending'],['partial','Part paid'],['paid','Paid']].map(([v,l])=>
+          '<option value="'+v+'"'+(v===(sub.status||'')?' selected':'')+'>'+l+'</option>').join('')+'</select>'+
+      '<button class="btn btn-sm" id="advToggle" onclick="toggleAdv()">More filters</button>'+
+      '<button class="btn btn-sm" style="margin-left:auto" onclick="exportCSV(\'trips\')">Export CSV</button>'+
+    '</div>'+
+    '<div class="filter-row adv" id="advFilters"'+(sub.adv?'':' hidden')+'>'+
+      '<div class="fpair"><label for="t_from_d">Trips from</label>'+
+        '<input id="t_from_d" type="date" value="'+esc(sub.dFrom||'')+'" onchange="sub.dFrom=this.value;sub.limit=0;renderTripList();filterBadge()"></div>'+
+      '<div class="fpair"><label for="t_to_d">to</label>'+
+        '<input id="t_to_d" type="date" value="'+esc(sub.dTo||'')+'" onchange="sub.dTo=this.value;sub.limit=0;renderTripList();filterBadge()"></div>'+
+      '<input placeholder="LR number" value="'+esc(sub.lr||'')+'" oninput="sub.lr=this.value;sub.limit=0;defer(afterFilterTyping)">'+
+      '<input placeholder="From (loading point)" value="'+esc(sub.origin||'')+'" oninput="sub.origin=this.value;sub.limit=0;defer(afterFilterTyping)">'+
+      '<input placeholder="To (delivery point)" value="'+esc(sub.dest||'')+'" oninput="sub.dest=this.value;sub.limit=0;defer(afterFilterTyping)">'+
+      '<button class="btn btn-sm btn-danger" onclick="clearTripFilters()">Clear all</button>'+
+    '</div>'+
   '</div><div id="listBox"></div>';
   renderTripList();
+  filterBadge();
+}
+
+function activeTripFilters(){
+  return ['q','party','truck','status','dFrom','dTo','lr','origin','dest'].filter(k=>sub[k]).length;
+}
+function afterFilterTyping(){ renderTripList(); filterBadge(); }
+function filterBadge(){
+  const b = $('#advToggle'); if(!b) return;
+  const n = ['dFrom','dTo','lr','origin','dest'].filter(k=>sub[k]).length;
+  b.textContent = 'More filters'+(n?' ('+n+')':'');
+  b.className = 'btn btn-sm'+(n?' btn-primary':'');
+}
+function toggleAdv(){
+  sub.adv = !sub.adv;
+  const el = $('#advFilters'); if(el) el.hidden = !sub.adv;
+}
+function clearTripFilters(){
+  ['q','party','truck','status','dFrom','dTo','lr','origin','dest'].forEach(k=>delete sub[k]);
+  sub.limit = 0;
+  viewTrips();
 }
 
 /* Only this part is rebuilt while you type, so the search box keeps your cursor */
 function renderTripList(){
   const box = $('#listBox'); if(!box) return;
   const q = (sub.q||'').toLowerCase().trim();
-  const fm = sub.month||'', fp = sub.party||'';
+  const lr = (sub.lr||'').toLowerCase().trim();
+  const og = (sub.origin||'').toLowerCase().trim();
+  const de = (sub.dest||'').toLowerCase().trim();
   let list = DB.trips.slice().sort((a,b)=>b.date.localeCompare(a.date));
-  if(fm) list = list.filter(t=>monthKey(t.date)===fm);
-  if(fp) list = list.filter(t=>t.partyId===fp);
+  if(sub.party)  list = list.filter(t=>t.partyId===sub.party);
+  if(sub.truck)  list = list.filter(t=>t.truckId===sub.truck);
+  if(sub.status) list = list.filter(t=>(t.status||'pending')===sub.status);
+  if(sub.dFrom)  list = list.filter(t=>t.date>=sub.dFrom);
+  if(sub.dTo)    list = list.filter(t=>t.date<=sub.dTo);
+  if(lr) list = list.filter(t=>(t.lr||'').toLowerCase().includes(lr));
+  if(og) list = list.filter(t=>(t.from||'').toLowerCase().includes(og));
+  if(de) list = list.filter(t=>(t.to||'').toLowerCase().includes(de));
   if(q) list = list.filter(t=>
-    ((t.lr||'')+' '+(t.from||'')+' '+(t.to||'')+' '+(t.material||'')+' '+
+    ((t.lr||'')+' '+(t.from||'')+' '+(t.to||'')+' '+(t.material||'')+' '+(t.notes||'')+' '+
      truckName(t.truckId)+' '+partyName(t.partyId)).toLowerCase().includes(q));
+
   const tot = list.reduce((s,t)=>s+num(t.freight),0);
   const totHire = list.reduce((s,t)=>s+num(t.hire),0);
   const full = list.length;
@@ -953,18 +1022,21 @@ function renderTripList(){
   (DB.trips.length===0
     ? empty('No trips yet','A trip records one load: which truck, which party, the route and the freight. Everything else in the app flows from here.',
         '<button class="btn btn-amber" onclick="tripForm()">+ Add your first trip</button>')
-    : list.length===0 ? empty('Nothing matches','Try a different month, party or search word.','')
+    : full===0 ? empty('Nothing matches these filters','Widen the dates, or clear the filters to see every trip again.',
+        '<button class="btn" onclick="clearTripFilters()">Clear all filters</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
-      '<thead><tr><th>Date</th><th>LR no.</th><th>Route</th><th>Party</th><th>Truck</th>'+
+      '<thead><tr><th>Date</th><th>LR no.</th><th>From</th><th>To</th><th>Party</th><th>Truck</th>'+
       '<th class="t-r">Freight</th><th class="t-r">Advance</th><th>Status</th><th></th></tr></thead><tbody>'+
-      list.map(t=>
-        '<tr>'+
-          '<td style="white-space:nowrap" onclick="tripDetail(\''+t.id+'\')">'+fdate(t.date)+'</td>'+
-          '<td class="num" onclick="tripDetail(\''+t.id+'\')">'+esc(t.lr||'\u2014')+'</td>'+
-          '<td onclick="tripDetail(\''+t.id+'\')"><span class="t-strong">'+esc(t.from||'\u2014')+' \u2192 '+esc(t.to||'\u2014')+'</span>'+
+      list.map(t=>{
+        const go = ' onclick="tripDetail(\''+t.id+'\')" style="cursor:pointer"';
+        return '<tr>'+
+          '<td style="white-space:nowrap"'+go+'>'+fdate(t.date)+'</td>'+
+          '<td class="num" style="white-space:nowrap"'+go+'>'+esc(t.lr||'\u2014')+'</td>'+
+          '<td class="t-strong"'+go+'>'+esc(t.from||'\u2014')+'</td>'+
+          '<td class="t-strong"'+go+'>'+esc(t.to||'\u2014')+
             (t.material?'<div class="t-sub">'+esc(t.material)+'</div>':'')+'</td>'+
-          '<td onclick="tripDetail(\''+t.id+'\')">'+esc(partyName(t.partyId))+'</td>'+
-          '<td onclick="tripDetail(\''+t.id+'\')">'+esc(truckName(t.truckId))+
+          '<td'+go+'>'+esc(partyName(t.partyId))+'</td>'+
+          '<td'+go+'>'+esc(truckName(t.truckId))+
             (t.hire?'<div class="t-sub">Hire '+money(t.hire)+'</div>':'')+'</td>'+
           '<td class="t-r num t-strong">'+money(t.freight)+'</td>'+
           '<td class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+'</td>'+
@@ -973,8 +1045,9 @@ function renderTripList(){
             '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">Edit</button>'+
             '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>'+
           '</div></td>'+
-        '</tr>').join('')+
-      '</tbody><tfoot><tr><th colspan="5">'+full+' trip'+(full===1?'':'s')+' \u00b7 total freight</th>'+
+        '</tr>';}).join('')+
+      '</tbody><tfoot><tr><th colspan="6">'+plural(full,'trip')+
+        (activeTripFilters()?' matching':'')+' \u00b7 total freight</th>'+
       '<th class="t-r num" style="font-size:14px;color:var(--ink)">'+money(tot)+'</th>'+
       '<th colspan="3">'+(totHire?'<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">Hire paid '+money(totHire)+'</span>':'')+'</th></tr></tfoot>'+
       '</table></div>'+moreBar(list.length, full, 'renderTripList')+'</div>');
@@ -1607,7 +1680,7 @@ function viewReports(){
       '<h3 class="chart-title">Net earnings by truck</h3>'+
       '<div class="chart-sub">After hire and expenses booked to each vehicle</div>'+
       barList(rows.map(r=>({label:r.t.number, value:r.net, color:r.net>=0?'#2C5D7C':'#B3372C',
-        note:r.n+' trips · '+money(r.freight)+' freight'})))+
+        note:plural(r.n,'trip')+' · '+money(r.freight)+' freight'})))+
       '</div>'+
       '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Truck</th><th class="t-r">Trips</th><th class="t-r">Freight</th><th class="t-r">Hire</th>'+
@@ -1685,7 +1758,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>2.1</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>2.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function cloudPanel(){
@@ -1780,7 +1853,11 @@ function wipe(){
 }
 
 function loadSample(){
-  confirmAsk('Add sample trucks, parties and trips to the app? Your existing records stay as they are.', ()=>{ seed(); save(); go('dashboard'); toast('Sample data added'); });
+  const already = DB.trips.some(t=>(t.lr||'').startsWith('MV-104'));
+  const msg = already
+    ? 'Sample data looks like it is already loaded. Adding it again will create duplicate trips. Add another copy anyway?'
+    : 'Add sample trucks, parties and trips to the app? Your existing records stay as they are.';
+  confirmAsk(msg, ()=>{ seed(); save(); go('dashboard'); toast('Sample data added'); }, already);
 }
 function seed(){
   const d = new Date(); const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0');
@@ -2003,8 +2080,8 @@ function lineChart(rows, series, opts={}){
     if(s.fill && rows.length>1){
       svg += '<path d="M'+pts.join(' L')+' L'+x(rows.length-1).toFixed(1)+','+(H-B)+' L'+L+','+(H-B)+' Z" fill="'+s.color+'" opacity=".08"/>';
     }
-    svg += '<polyline class="series-line" points="'+pts.join(' ')+'" stroke="'+s.color+'"'+
-           (s.dash?' stroke-dasharray="6 5" style="animation:none"':'')+' style="animation-delay:'+(si*0.12)+'s"/>';
+    svg += '<polyline class="'+(s.dash?'series-dashed':'series-line')+'" points="'+pts.join(' ')+
+           '" stroke="'+s.color+'" style="animation-delay:'+(si*0.12)+'s"/>';
     rows.forEach((r,i)=>{
       svg += '<circle class="series-dot" cx="'+x(i).toFixed(1)+'" cy="'+y(r[s.key]).toFixed(1)+'" r="3.4" fill="'+s.color+'">'+
              '<title>'+esc(r.label)+': '+money(r[s.key])+'</title></circle>';
@@ -2024,17 +2101,18 @@ function donutChart(items, centreLabel){
   let acc=0;
   let svg='<svg class="chart" viewBox="0 0 '+S+' '+S+'" style="max-width:230px;margin:0 auto" role="img">';
   svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--line-soft)" stroke-width="22"/>';
+  svg += '<g transform="rotate(-90 '+cx+' '+cy+')">';
   items.forEach((it,i)=>{
     const frac = num(it.value)/total;
     const len = frac*circ;
     const off = circ - len;
     svg += '<circle class="donut-seg" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+(it.color||SERIES[i%SERIES.length])+'"'+
       ' stroke-width="22" stroke-dasharray="'+len.toFixed(2)+' '+(circ-len).toFixed(2)+'"'+
-      ' style="--circ:'+circ.toFixed(2)+';--off:'+(-acc).toFixed(2)+';animation-delay:'+(i*0.09)+'s"'+
-      ' transform="rotate(-90 '+cx+' '+cy+')">'+
+      ' style="--circ:'+circ.toFixed(2)+';--off:'+(-acc).toFixed(2)+';animation-delay:'+(i*0.09)+'s">'+
       '<title>'+esc(it.label)+': '+money(it.value)+' ('+Math.round(frac*100)+'%)</title></circle>';
     acc += len;
   });
+  svg += '</g>';
   svg += '<text class="donut-hole" x="'+cx+'" y="'+(cy-2)+'" text-anchor="middle" font-size="19" font-weight="600" fill="var(--ink)">'+shortMoney(total)+'</text>'+
          '<text x="'+cx+'" y="'+(cy+16)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)" letter-spacing="1.2">'+esc((centreLabel||'TOTAL').toUpperCase())+'</text>'+
          '</svg>';
