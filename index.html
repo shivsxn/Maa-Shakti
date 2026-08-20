@@ -1988,6 +1988,74 @@ tbody tr {
   }
 }
 
+
+.mobile-nav { display: none; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .g3, .g2 { grid-template-columns: 1fr; }
+  .slip-body { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .sidebar { display: none; }
+  .content { padding: 16px 14px 92px; }
+  .topbar { padding: 14px 16px; }
+  .page-title { font-size: 18px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .stat-value { font-size: 21px; }
+  .slip-body { grid-template-columns: 1fr; }
+  .modal { max-width: none; border-radius: 14px 14px 0 0; margin: auto auto 0; }
+  .modal-body { max-height: none; }
+  .overlay { padding: 0; }
+  .gate-card { padding: 24px 20px 22px; }
+  .doc-grid { grid-template-columns: 1fr 1fr; }
+  .docrow { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .docrow .rmdoc { grid-column: 2; justify-self: end; }
+  .filter-row select, .filter-row input { min-width: 0; flex: 1 1 46%; }
+  .filter-row .search { flex: 1 1 100%; max-width: none; }
+  .fpair { flex: 1 1 100%; }
+  .fpair input { flex: 1; }
+  .range { padding: 11px 12px; }
+  .range-dates { width: 100%; }
+  .range-dates input { flex: 1; min-width: 0; }
+  .range-presets { margin-left: 0; width: 100%; }
+  .kpi-value { font-size: 22px; }
+  .kpi { min-height: 104px; }
+  .cloud-pill span { display: none; }
+  .cloud-pill { padding: 7px 9px; }
+  .topbar-actions .btn span { display: none; }
+  th, td { padding: 10px 11px; font-size: 13.5px; }
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--asphalt);
+    z-index: 50;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255,255,255,.1);
+  }
+  .mnav {
+    flex: 1; background: none; border: 0; color: rgba(255,255,255,.6);
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 5px 2px; font-size: 10px; font-weight: 600; cursor: pointer; border-radius: 8px;
+  }
+  .mnav.on { color: var(--amber); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .chart .series-line { stroke-dashoffset: 0; }
+  .chart .series-dashed { opacity: 1; }
+  .donut-seg { stroke-dashoffset: var(--off); }
+  .bar-fill { transform: none; }
+}
+@media print {
+  .sidebar, .topbar, .mobile-nav, .toolbar, .filters, .range, .btn, .row-actions, .bell { display: none !important; }
+  .content { padding: 0; max-width: none; }
+  .card { box-shadow: none; break-inside: avoid; }
+  body { background: #fff; }
+}
 </style>
 </head>
 <body>
@@ -2003,7 +2071,7 @@ tbody tr {
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 4.2 &middot; 20 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 4.4 &middot; 20 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3865,7 +3933,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>4.2</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>4.4</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -4640,10 +4708,28 @@ function pctChange(now, before){
    saving on this device only.
    ============================================================ */
 const SDK_VER = '10.12.0';
+/* Your Firebase project. These values are meant to be public — they name the
+   project, they do not grant access. Access is controlled by the security
+   rules you published in Firestore. */
+const DEFAULT_FB = {
+  apiKey: "AIzaSyD_r3OONAD2q8uIrj302PuiyJGkUfl-1wE",
+  authDomain: "maa-vandana-logistics-c85f7.firebaseapp.com",
+  projectId: "maa-vandana-logistics-c85f7",
+  storageBucket: "maa-vandana-logistics-c85f7.firebasestorage.app",
+  messagingSenderId: "638306278511",
+  appId: "1:638306278511:web:e87be91889970dd3d7019a"
+};
+
 const FB = {
-  cfg: (()=>{ try{ return JSON.parse(localStorage.getItem('mvl_fb_cfg')||'null'); }catch(e){ return null; } })(),
+  cfg: (()=>{
+    try{
+      const saved = JSON.parse(localStorage.getItem('mvl_fb_cfg')||'null');
+      return (saved && saved.apiKey) ? saved : DEFAULT_FB;
+    }catch(e){ return DEFAULT_FB; }
+  })(),
   app:null, auth:null, db:null, api:null, user:null,
   state:'off',            // off | loading | signedout | syncing | on | error
+  keep: localStorage.getItem('mvl_keep_signed_in')==='1',   // default: ask every time
   message:'', unsub:null, pushTimer:null, lastPhoto:{}, applying:false,
   lastSync: localStorage.getItem('mvl_last_sync') || ''
 };
@@ -4688,6 +4774,13 @@ async function startAuth(){
     const api = await loadSDK();
     FB.app  = api.initializeApp(FB.cfg);
     FB.auth = api.getAuth(FB.app);
+    /* "Ask every time" keeps the session in memory only, so closing or
+       reloading the page signs you out. "Stay signed in" remembers you
+       on this device until you sign out yourself. */
+    try{
+      const mode = FB.keep ? api.browserLocalPersistence : api.inMemoryPersistence;
+      if(api.setPersistence && mode) await api.setPersistence(FB.auth, mode);
+    }catch(e){}
     try{
       FB.db = api.initializeFirestore(FB.app, {localCache: api.persistentLocalCache
         ? api.persistentLocalCache({tabManager: api.persistentMultipleTabManager && api.persistentMultipleTabManager()})
@@ -4696,7 +4789,7 @@ async function startAuth(){
     api.onAuthStateChanged(FB.auth, u=>{
       FB.user = u || null;
       if(u){ hideGate(); afterSignIn(); }
-      else { syncSet('signedout'); showGate(); }
+      else { syncSet('signedout'); if(!offlineMode) showGate(); }
     });
   }catch(e){
     syncSet('error', 'Could not reach Firebase. '+(e.message||''));
@@ -4739,6 +4832,10 @@ function paintGate(mode){
         ? 'Already have an account? <a href="#" onclick="event.preventDefault();paintGate(\'in\')">Sign in</a>'
         : 'First time here? <a href="#" onclick="event.preventDefault();paintGate(\'up\')">Create an account</a>'+
           ' · <a href="#" onclick="event.preventDefault();gateReset()">Forgot password</a>')+
+    '</div>'+
+    '<div class="gate-offline">No internet? '+
+      '<a href="#" onclick="event.preventDefault();workOffline()">Work offline on this device</a>'+
+      '<div class="hint" style="margin-top:4px">Your records stay on this phone or laptop and go up the next time you sign in.</div>'+
     '</div>'+
   '</div>';
   const f = $('#au_email'); if(f && window.innerWidth>760) f.focus();
@@ -4794,12 +4891,21 @@ async function gateReset(){
     toast('Password reset link sent to '+email);
   }catch(e){ gateError(friendlyAuth(e.code, e.message)); }
 }
+let offlineMode = false;
+function workOffline(){
+  offlineMode = true;
+  hideGate();
+  syncSet('signedout', 'Working offline. Sign in from Settings to save to the cloud.');
+  toast('Working offline on this device');
+}
+
 async function signOutNow(){
   confirmAsk('Sign out? Your records stay in the cloud and come back when you sign in again.', async()=>{
     try{
       if(FB.unsub){ FB.unsub(); FB.unsub = null; }
       const api = await loadSDK();
       await api.signOut(FB.auth);
+      offlineMode = false;
       toast('Signed out');
     }catch(e){ toast('Could not sign out: '+e.message); }
   });
@@ -4945,6 +5051,17 @@ function syncPanel(){
   return '<div class="card card-pad" style="margin-bottom:16px">'+
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
       '<h3 class="card-title" style="margin:0">Login and cloud storage</h3>'+chip+'</div>'+
+    '<div class="field full" style="margin-bottom:16px"><label>When you open the app</label>'+
+      '<div class="seg">'+
+        '<input type="radio" name="keepIn" id="keepIn0" value="0"'+(FB.keep?'':' checked')+
+          ' onchange="setKeepSignedIn(0)"><label for="keepIn0">Ask for my password</label>'+
+        '<input type="radio" name="keepIn" id="keepIn1" value="1"'+(FB.keep?' checked':'')+
+          ' onchange="setKeepSignedIn(1)"><label for="keepIn1">Keep me signed in</label>'+
+      '</div>'+
+      '<span class="hint">'+(FB.keep
+        ? 'This device stays signed in until you sign out. Convenient on your own phone.'
+        : 'You will type your email and password each time the app opens. Safer on a shared computer.')+
+      '</span></div>'+
     (FB.user
       ? '<p class="hint" style="margin:0 0 14px">Signed in as <b>'+esc(FB.user.email||'your account')+'</b>. '+
         'Every change is saved to your Firebase project and reaches your other devices within a few seconds.</p>'+
@@ -4959,29 +5076,33 @@ function syncPanel(){
     (FB.message ? '<div class="note" style="margin-top:12px">'+esc(FB.message)+'</div>' : '')+
     '<div class="divide"></div>'+
     '<div class="sec-title" style="margin-top:0">Firebase project</div>'+
-    '<div class="field"><label for="fb_cfg">Config from Firebase</label>'+
-      '<textarea id="fb_cfg" style="min-height:120px;font-family:var(--mono);font-size:12.5px" '+
-      'placeholder=\'{ "apiKey": "…", "authDomain": "…", "projectId": "…", "appId": "…" }\'>'+
-      esc(cfg.apiKey? JSON.stringify(cfg, null, 2):'')+'</textarea>'+
-      '<span class="hint">Paste the whole firebaseConfig object from your project settings.</span></div>'+
-    '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">'+
-      '<button class="btn btn-primary" onclick="saveFbConfig()">'+(cfg.apiKey?'Save and reconnect':'Connect Firebase')+'</button>'+
-      (cfg.apiKey? '<button class="btn btn-danger" onclick="clearFbConfig()">Disconnect project</button>':'')+
-    '</div>'+
+    '<p class="hint" style="margin:0 0 12px;max-width:600px">This app is already pointed at your project '+
+      '<b>'+esc((FB.cfg&&FB.cfg.projectId)||'—')+'</b>, so there is nothing to set up on a new phone or laptop. '+
+      'Just open the web address and sign in.</p>'+
+    '<details style="margin-bottom:12px"><summary class="hint" style="cursor:pointer">Use a different project</summary>'+
+      '<div class="field" style="margin-top:10px"><label for="fb_cfg">Config from Firebase</label>'+
+      '<textarea id="fb_cfg" style="min-height:110px;font-family:var(--mono);font-size:12.5px" '+
+      'placeholder=\'{ "apiKey": "…", "projectId": "…" }\'></textarea>'+
+      '<span class="hint">Only needed if you move to another Firebase project.</span></div>'+
+      '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px">'+
+        '<button class="btn" onclick="saveFbConfig()">Save and reconnect</button>'+
+        '<button class="btn btn-danger" onclick="clearFbConfig()">Reset to the built-in project</button>'+
+      '</div>'+
+    '</details>'+
     '<div class="divide"></div>'+
-    '<div class="sec-title" style="margin-top:0">One-time setup</div>'+
-    [ 'Go to <b>console.firebase.google.com</b> and create a project. Skip Google Analytics, you do not need it.',
-      'Inside the project open <b>Build \u2192 Authentication \u2192 Get started</b>, and switch on <b>Email/Password</b>. Switch on <b>Google</b> too if you want that button to work.',
-      'Open <b>Build \u2192 Firestore Database \u2192 Create database</b>. Choose a location near you and start in <b>production mode</b>.',
-      'Open the <b>Rules</b> tab of Firestore, replace everything with the rules shown below, and press Publish. This is what stops anyone else reading your data.',
-      'Open <b>Project settings</b> (the gear icon), scroll to <b>Your apps</b>, add a <b>Web app</b>, and copy the firebaseConfig block it shows you.',
-      'Paste that config in the box above and press Connect. Then create your account with your email and a password.'
-    ].map((t,i)=>'<div class="step"><div class="step-n">'+(i+1)+'</div><p>'+t+'</p></div>').join('')+
-    '<div class="sec-title">Security rules to paste</div>'+
+    '<div class="sec-title" style="margin-top:0">Security rules in Firestore</div>'+
+    '<p class="hint" style="margin:0 0 10px">Already published. Keep a copy in case you ever rebuild the project.</p>'+
     '<pre class="rules">'+esc(RULES)+'</pre>'+
     '<button class="btn btn-sm" onclick="copyRules()">Copy rules</button>'+
   '</div>';
 }
+function setKeepSignedIn(v){
+  FB.keep = !!Number(v);
+  localStorage.setItem('mvl_keep_signed_in', FB.keep?'1':'0');
+  viewSettings();
+  toast(FB.keep ? 'This device will stay signed in' : 'You will be asked for your password each time');
+}
+
 function saveFbConfig(){
   const raw = (val('fb_cfg')||'').trim();
   if(!raw){ toast('Paste the config from Firebase first'); return; }
@@ -4998,7 +5119,7 @@ function saveFbConfig(){
   location.reload();
 }
 function clearFbConfig(){
-  confirmAsk('Disconnect this Firebase project? Your records stay on this device and in the cloud, they simply stop syncing.', ()=>{
+  confirmAsk('Go back to the built-in project? Your records stay on this device and in the cloud.', ()=>{
     localStorage.removeItem('mvl_fb_cfg');
     localStorage.removeItem('mvl_last_sync');
     location.reload();
