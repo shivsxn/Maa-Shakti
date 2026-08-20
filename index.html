@@ -261,6 +261,7 @@ textarea{resize:vertical;min-height:62px}
 .pl-line span:first-child{flex:1}
 .pl-line .num{font-size:15px}
 .pl-total{border-top:2px solid var(--asphalt);border-bottom:0;margin-top:6px;padding-top:13px;font-weight:700;font-size:16px}
+.pl-sub{font-size:11.5px;font-weight:400;color:var(--muted);margin-top:2px;letter-spacing:0}
 
 /* ---------- Motion ---------- */
 @keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -497,7 +498,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 2.9 &middot; 19 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 3.0 &middot; 20 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -652,7 +653,19 @@ function pnl(from, to){
   const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
   const driverPaid = DB.driverTxns.filter(t=>inR(t.date) && t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
   const costs = hire + expense + driverPaid;
-  return {trips, tripCount:trips.length, freight, hire, byCat, expense, driverPaid, costs, profit:freight-costs};
+
+  /* Money actually in hand. Advances taken against a trip plus receipts
+     entered in a party ledger. Advances live on the trip and are never
+     copied into the ledger, so nothing is counted twice. Discounts and
+     adjustments reduce a balance without money arriving, so they are left out. */
+  const advances = trips.reduce((s,t)=>s+num(t.advance),0);
+  const credits  = DB.ledger.filter(l=>inR(l.date) && l.type==='credit');
+  const receipts = credits.filter(l=>l.mode!=='Adjustment').reduce((s,l)=>s+num(l.amount),0);
+  const adjusted = credits.filter(l=>l.mode==='Adjustment').reduce((s,l)=>s+num(l.amount),0);
+  const collected = advances + receipts;
+
+  return {trips, tripCount:trips.length, freight, hire, byCat, expense, driverPaid, costs,
+    profit:freight-costs, advances, receipts, adjusted, collected, actual:collected-costs};
 }
 
 /* ---------- 4. Navigation ---------- */
@@ -1764,11 +1777,13 @@ function viewReports(){
     const exps = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
     const trend = seriesForRange(sub.from, sub.to);
     body =
-    '<div class="grid g4 rise" style="margin-bottom:16px">'+
-      kpi('Freight income', p.freight, {note:p.tripCount+' trips'})+
+    '<div class="grid g3 rise" style="margin-bottom:16px">'+
+      kpi('Freight billed', p.freight, {note:plural(p.tripCount,'trip')})+
+      kpi('Actually collected', p.collected, {note:p.freight?Math.round(p.collected/p.freight*100)+'% of freight billed':'No freight billed'})+
       kpi('Total costs', p.costs, {note:'Hire, expenses, driver pay'})+
-      kpi('Net profit', p.profit, {tone:p.profit>=0?'pos':'neg'})+
-      kpi('Margin', p.freight?p.profit/p.freight*100:0, {fmt:'pct', note:'Profit ÷ freight'})+
+      kpi('Net profit', p.profit, {tone:p.profit>=0?'pos':'neg', note:'On the full freight'})+
+      kpi('Actual profit', p.actual, {tone:p.actual>=0?'pos':'neg', note:'On money received'})+
+      kpi('Margin', p.freight?p.profit/p.freight*100:0, {fmt:'pct', note:'Net profit ÷ freight'})+
     '</div>'+
     '<div class="card chart-card" style="margin-bottom:16px">'+
       '<h3 class="chart-title">Month by month</h3>'+
@@ -1790,10 +1805,30 @@ function viewReports(){
       (p.driverPaid? pl('Driver salary &amp; advances paid', p.driverPaid):'')+
       (p.costs===0? '<div class="pl-line"><span>No costs recorded in this period</span><span class="num">'+money(0)+'</span></div>':'')+
       pl('Total costs', p.costs)+
-      '<div class="pl-line pl-total"><span>'+(p.profit>=0?'Net profit':'Net loss')+'</span>'+
+
+      '<div class="sec-title">Position</div>'+
+      pl('Total freight billed', p.freight)+
+      pl('Actually collected from parties', p.collected)+
+      '<div class="hint" style="margin:2px 0 4px">'+
+        money(p.advances)+' taken as advances on trips'+
+        (p.receipts? ' · '+money(p.receipts)+' received in the party ledgers':'')+
+        (p.adjusted? ' · '+money(p.adjusted)+' in discounts and adjustments is not counted as money received':'')+
+      '</div>'+
+
+      '<div class="pl-line pl-total"><span>'+(p.profit>=0?'Net profit':'Net loss')+
+        '<div class="pl-sub">On the full freight, paid or not</div></span>'+
         '<span class="num '+(p.profit>=0?'money-pos':'money-neg')+'">'+money(Math.abs(p.profit))+'</span></div>'+
+      '<div class="pl-line pl-total" style="border-top:1px dotted var(--line);margin-top:0">'+
+        '<span>'+(p.actual>=0?'Actual profit':'Actual loss')+
+        '<div class="pl-sub">On money actually received</div></span>'+
+        '<span class="num '+(p.actual>=0?'money-pos':'money-neg')+'">'+money(Math.abs(p.actual))+'</span></div>'+
     '</div>'+
-    '<div class="note" style="margin-top:14px">Freight is counted when the trip is recorded, whether or not the party has paid yet. Pending collection sits in <b>Party dues</b>.</div>';
+    '<div class="note" style="margin-top:14px">'+
+      (p.freight>p.collected
+        ? '<b>'+money(p.freight-p.collected)+'</b> of freight billed in this period has not reached you yet. '+
+          'That gap is the difference between the two profit figures — see <b>Party dues</b> for who is holding it.'
+        : 'Everything billed in this period has been collected, so both profit figures agree.')+
+    '</div>';
   }
   if(sub.tab==='party'){
     const bmap = allBalances(); const tc = {};
@@ -1912,7 +1947,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>2.9</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>3.0</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function cloudPanel(){
