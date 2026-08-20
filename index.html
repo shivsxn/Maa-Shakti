@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --asphalt:#151A21; --asphalt-2:#1E2530; --asphalt-3:#2A323E;
@@ -339,6 +338,24 @@ tbody tr{transition:background .12s}
   .kpi-value{font-size:22px}
   .kpi{min-height:104px}
 }
+.gate{position:fixed;inset:0;z-index:150;background:var(--paper);display:flex;align-items:center;
+  justify-content:center;padding:24px 18px;overflow-y:auto}
+.gate-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 50px rgba(21,26,33,.10);
+  padding:30px 30px 26px;width:100%;max-width:410px;margin:auto;animation:riseIn .3s cubic-bezier(.2,.8,.3,1)}
+.gate-brand{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+.gate-name{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.gate-tag{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.gate-title{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.gate-sub{font-size:13.5px;color:var(--muted);margin:0 0 20px;line-height:1.5}
+.gate-error{background:var(--red-soft);border:1px solid #E8CFCB;color:var(--red);border-radius:8px;
+  padding:10px 12px;font-size:13px;margin-top:12px}
+.gate-go{width:100%;justify-content:center;margin-top:16px;padding:11px}
+.gate-google{width:100%;justify-content:center;margin-top:9px;padding:11px}
+.gate-foot{font-size:13px;color:var(--muted);margin-top:18px;text-align:center;line-height:1.7}
+.gate-foot a{color:var(--ink);font-weight:600}
+.rules{background:var(--asphalt);color:#E8E6E1;border-radius:9px;padding:14px 16px;font-family:var(--mono);
+  font-size:11.5px;line-height:1.55;overflow-x:auto;margin:0 0 10px;white-space:pre}
+@media (max-width:760px){.gate-card{padding:24px 20px 22px}}
 .bell{position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
   padding:8px;cursor:pointer;color:var(--muted);display:inline-flex;line-height:0}
 .bell:hover{border-color:#CFC9BB;color:var(--ink)}
@@ -455,6 +472,24 @@ tbody tr{transition:background .12s}
   .kpi-value{font-size:22px}
   .kpi{min-height:104px}
 }
+.gate{position:fixed;inset:0;z-index:150;background:var(--paper);display:flex;align-items:center;
+  justify-content:center;padding:24px 18px;overflow-y:auto}
+.gate-card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 20px 50px rgba(21,26,33,.10);
+  padding:30px 30px 26px;width:100%;max-width:410px;margin:auto;animation:riseIn .3s cubic-bezier(.2,.8,.3,1)}
+.gate-brand{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+.gate-name{font-weight:700;font-size:15px;letter-spacing:-.01em}
+.gate-tag{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.gate-title{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.gate-sub{font-size:13.5px;color:var(--muted);margin:0 0 20px;line-height:1.5}
+.gate-error{background:var(--red-soft);border:1px solid #E8CFCB;color:var(--red);border-radius:8px;
+  padding:10px 12px;font-size:13px;margin-top:12px}
+.gate-go{width:100%;justify-content:center;margin-top:16px;padding:11px}
+.gate-google{width:100%;justify-content:center;margin-top:9px;padding:11px}
+.gate-foot{font-size:13px;color:var(--muted);margin-top:18px;text-align:center;line-height:1.7}
+.gate-foot a{color:var(--ink);font-weight:600}
+.rules{background:var(--asphalt);color:#E8E6E1;border-radius:9px;padding:14px 16px;font-family:var(--mono);
+  font-size:11.5px;line-height:1.55;overflow-x:auto;margin:0 0 10px;white-space:pre}
+@media (max-width:760px){.gate-card{padding:24px 20px 22px}}
 .bell{position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
   padding:8px;cursor:pointer;color:var(--muted);display:inline-flex;line-height:0}
 .bell:hover{border-color:#CFC9BB;color:var(--ink)}
@@ -552,7 +587,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 3.3 &middot; 20 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 4.0 &middot; 20 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -562,7 +597,7 @@ tbody tr{transition:background .12s}
       </div>
       <div class="topbar-right">
         <button class="bell" id="bellBtn" onclick="notifications()" aria-label="Notifications"></button>
-        <button class="cloud-pill" id="cloudPill" onclick="go('settings')" hidden></button>
+        <button class="cloud-pill" id="syncPill" onclick="go('settings')" hidden></button>
         <div class="topbar-actions" id="pageActions"></div>
       </div>
     </header>
@@ -570,6 +605,7 @@ tbody tr{transition:background .12s}
   </div>
 </div>
 <nav class="mobile-nav" id="mnav"></nav>
+<div class="gate" id="authGate" hidden></div>
 <div id="modalRoot"></div>
 <div id="toast"></div>
 <script>
@@ -601,7 +637,7 @@ function save(){
   DB.updatedAt = new Date().toISOString();
   try{ localStorage.setItem(KEY, JSON.stringify(DB)); }
   catch(e){ toast('Could not save. Your device storage may be full.'); }
-  if(typeof cloudReady==='function' && cloudReady()) cloudPush(false);
+  if(typeof syncReady==='function' && syncReady()) syncPush(false);
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 
@@ -1700,7 +1736,7 @@ function truckForm(id){
     title: t?'Edit truck':'New truck', okText: t?'Save changes':'Save truck',
     body:'<div class="form-grid">'+
       fSeg('t_type','Truck type',[{v:'owned',t:'Owned by me'},{v:'market',t:'Market / rented'}], t?t.type:'owned')+
-      fText('t_number','Vehicle number', t?t.number:'','text','placeholder="HR 55 AB 1234" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"')+
+      fText('t_number','Vehicle number', t?t.number:'','text','placeholder="UP83 AT 2470" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="this.value=formatPlate(this.value)"')+
       fText('t_model','Make & model', t?t.model:'','text','placeholder="Tata 3118, 14 wheeler"')+
       fText('t_capacity','Capacity (tonnes)', t?t.capacity:'','number','step="0.1" min="0"')+
       fSelect('t_driver','Regular driver', driverOptions(), t?t.driverId:'')+
@@ -1720,9 +1756,10 @@ function truckForm(id){
       const bad = pendingTruckDocs.find(d=>(d.header && !d.expiry) || (!d.header && d.expiry));
       if(bad){ toast('Every document needs both a name and an expiry date'); return; }
       const docs = pendingTruckDocs.filter(d=>d.header && d.expiry);
-      const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:upperTruck(val('t_number')),
+      const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number'),
         model:val('t_model'), capacity:val('t_capacity'), driverId:val('t_driver'), owner:val('t_owner'),
         ownerPhone:val('t_ownerPhone'), notes:val('t_notes'), docs:docs};
+      rec.number = formatPlate(rec.number);
       if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
       save(); buildDocTypeList(); closeModal(); render(); toast(t?'Truck updated':'Truck saved');
     }
@@ -2384,7 +2421,7 @@ function viewSettings(){
     '<div style="margin-top:14px"><button class="btn btn-primary" onclick="saveSettings()">Save details</button></div>'+
   '</div>'+
 
-  cloudPanel()+
+  syncPanel()+
   '<div class="card card-pad" style="margin-bottom:16px">'+
     '<h3 class="card-title" style="margin-bottom:6px">Backup file</h3>'+
     '<p class="hint" style="margin:0 0 14px;max-width:560px">Everything is stored inside this browser on this device. If you clear browser data or change phone, it is gone. Download a backup file every week and keep it in Google Drive or WhatsApp to yourself.</p>'+
@@ -2412,58 +2449,9 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>3.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>4.0</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
-function cloudPanel(){
-  const onFile = isLocalFile();
-  const s = CLOUD.state;
-  const statusLine = {
-    off:'<span class="chip chip-grey">Not set up</span>',
-    ready:'<span class="chip chip-amber">Not connected</span>',
-    connecting:'<span class="chip chip-amber">Connecting…</span>',
-    syncing:'<span class="chip chip-amber">Saving…</span>',
-    on:'<span class="chip chip-green">Connected</span>',
-    error:'<span class="chip chip-red">Problem</span>'
-  }[s] || '';
-
-  return '<div class="card card-pad" style="margin-bottom:16px">'+
-    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
-      '<h3 class="card-title" style="margin:0">Google Drive sync</h3>'+statusLine+'</div>'+
-    '<p class="hint" style="margin:0 0 14px;max-width:600px">Keeps one data file inside a folder called '+
-      '\u201cMaa Vandana Logistics\u201d in your own Drive, so your phone and laptop stay in step. '+
-      'This app can only touch the file it creates \u2014 it cannot see anything else in your Drive.</p>'+
-    (onFile
-      ? '<div class="note" style="border-color:#E8CFCB;background:var(--red-soft)">'+
-        '<b>This file is open from your computer, not a web address.</b><br>'+
-        'Google will not allow sign-in this way. Put the app online first \u2014 the steps below explain how.</div>'
-      : '')+
-    (CLOUD.message ? '<div class="note" style="margin-bottom:12px">'+esc(CLOUD.message)+'</div>' : '')+
-    '<div class="form-grid" style="margin-top:12px">'+
-      fText('g_client','Google Client ID', CLOUD.clientId,'text','placeholder="1234567890-abcdef.apps.googleusercontent.com"')+
-      '<div class="field"><label>&nbsp;</label><span class="hint">Created once in Google Cloud, then pasted here. Steps are below.</span></div>'+
-    '</div>'+
-    '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:14px">'+
-      '<button class="btn btn-primary" onclick="saveClientId()">'+(CLOUD.clientId?'Save and connect':'Connect Google Drive')+'</button>'+
-      (cloudReady()
-        ? '<button class="btn" onclick="cloudPush(true);toast(\'Sending to Drive\')">Sync now</button>'+
-          '<button class="btn btn-danger" onclick="cloudDisconnect()">Disconnect</button>'
-        : '')+
-    '</div>'+
-    (CLOUD.lastSync? '<div class="hint" style="margin-top:10px">Last saved to Drive on '+
-      fdate(CLOUD.lastSync.slice(0,10))+' at '+CLOUD.lastSync.slice(11,16)+'</div>':'')+
-    '<div class="divide"></div>'+
-    '<div class="sec-title" style="margin-top:0">One-time setup</div>'+
-    [ 'Put the app online. On GitHub, create a repository, upload this file renamed to <b>index.html</b> (all lowercase \u2014 this matters), then under <b>Settings \u2192 Pages</b> set the source to the main branch and save.',
-      'Open <b>console.cloud.google.com</b> and create a new project. Name it anything.',
-      'In that project, open <b>APIs &amp; Services \u2192 Library</b>, search for <b>Google Drive API</b> and press Enable.',
-      'Open <b>APIs &amp; Services \u2192 Google Auth Platform</b> and press Get started. Enter an app name and your email, choose <b>External</b> as the audience, agree to the policy and create.',
-      'Still in Google Auth Platform, open the <b>Audience</b> tab and add your own Gmail address under Test users. Then open the <b>Clients</b> tab and click <b>Create client</b>. Pick <b>Web application</b>. Under Authorised JavaScript origins, add only the domain part of your address \u2014 for example <b>https://yourname.github.io</b> \u2014 with no folder name and no slash at the end. Google rejects anything longer.',
-      'Copy the Client ID it shows you, paste it in the box above, and press Connect.'
-    ].map((t,i)=>'<div class="step"><div class="step-n">'+(i+1)+'</div><p>'+t+'</p></div>').join('')+
-  '</div>';
-}
-
 function saveSettings(){
   DB.settings = {business:val('s_business')||'Maa Vandana Logistics', owner:val('s_owner'),
     phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')};
@@ -2516,9 +2504,9 @@ function loadSample(){
 function seed(){
   const d = new Date(); const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0');
   const day = n => y+'-'+m+'-'+String(n).padStart(2,'0');
-  const t1={id:uid(),type:'owned',number:'HR 55 AB 1234',model:'Tata Signa 3118',capacity:'25',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
-  const t2={id:uid(),type:'owned',number:'HR 38 CD 7788',model:'Ashok Leyland 2820',capacity:'31',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
-  const t3={id:uid(),type:'market',number:'RJ 14 GH 4521',model:'Eicher Pro 6028',capacity:'28',owner:'Rajesh Transport',ownerPhone:'',insurance:'',fitness:'',notes:''};
+  const t1={id:uid(),type:'owned',number:'HR55 AB 1234',model:'Tata Signa 3118',capacity:'25',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
+  const t2={id:uid(),type:'owned',number:'HR38 CD 7788',model:'Ashok Leyland 2820',capacity:'31',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
+  const t3={id:uid(),type:'market',number:'RJ14 GH 4521',model:'Eicher Pro 6028',capacity:'28',owner:'Rajesh Transport',ownerPhone:'',insurance:'',fitness:'',notes:''};
   const p1={id:uid(),name:'Shree Cement Depot',phone:'98110 22334',city:'Gurugram',gst:'',opening:0,address:''};
   const p2={id:uid(),name:'Balaji Steel Traders',phone:'98730 55129',city:'Bhiwadi',gst:'',opening:24000,address:''};
   const p3={id:uid(),name:'Annapurna Grain Agency',phone:'99106 78120',city:'Delhi',gst:'',opening:0,address:''};
@@ -2617,10 +2605,20 @@ const SOON_DAYS = 30;
 
 function upperTruck(v){ return String(v||'').toUpperCase().replace(/\s+/g,' ').trim(); }
 
+/* Standard Indian plate laid out as UP83 AT 2470.
+   Anything that does not fit the pattern is left as typed, just uppercased,
+   so BH series, older plates and trailer numbers are never mangled. */
+function formatPlate(v){
+  const raw = String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const m = raw.match(/^([A-Z]{2})(\d{1,2})([A-Z]{0,3})(\d{1,4})$/);
+  if(!m) return upperTruck(v);
+  return m[1] + m[2] + (m[3] ? ' ' + m[3] : '') + ' ' + m[4];
+}
+
 function migrateTrucks(){
   let changed = false;
   DB.trucks.forEach(t=>{
-    const up = upperTruck(t.number);
+    const up = formatPlate(t.number);
     if(t.number!==up){ t.number = up; changed = true; }
     if(!t.docs){
       t.docs = [];
@@ -3216,232 +3214,383 @@ function pctChange(now, before){
   return (now-before)/Math.abs(before)*100;
 }
 
-/* ============================================================
-   GOOGLE DRIVE SYNC
-   Saves your data as one file inside a "Maa Vandana Logistics"
-   folder in your own Google Drive. Uses the drive.file scope,
-   which means this app can only ever touch the files it made —
-   it cannot see anything else in your Drive.
-   ============================================================ */
-const FOLDER_NAME = 'Maa Vandana Logistics';
-const FILE_NAME   = 'maa-vandana-data.json';
-const SCOPE       = 'https://www.googleapis.com/auth/drive.file';
 
-const CLOUD = {
-  clientId: localStorage.getItem('mvl_client_id') || '',
-  token:'', tokenClient:null, folderId:'', fileId:'',
-  state:'off',        // off | ready | connecting | on | syncing | error
-  message:'', lastSync: localStorage.getItem('mvl_last_sync') || '', pushTimer:null
+/* ============================================================
+   FIREBASE — email login and cloud storage
+   Data lives under users/{uid} in your own Firebase project.
+   Driver photos are written to separate documents so the main
+   record stays well under Firestore's 1 MB per-document limit.
+   Until a project is configured the app runs exactly as before,
+   saving on this device only.
+   ============================================================ */
+const SDK_VER = '10.12.0';
+const FB = {
+  cfg: (()=>{ try{ return JSON.parse(localStorage.getItem('mvl_fb_cfg')||'null'); }catch(e){ return null; } })(),
+  app:null, auth:null, db:null, api:null, user:null,
+  state:'off',            // off | loading | signedout | syncing | on | error
+  message:'', unsub:null, pushTimer:null, lastPhoto:{}, applying:false,
+  lastSync: localStorage.getItem('mvl_last_sync') || ''
 };
 
-function cloudSet(state, message){
-  CLOUD.state = state; CLOUD.message = message || '';
-  const pill = $('#cloudPill'); if(!pill) return;
+function syncReady(){ return FB.state==='on' || FB.state==='syncing'; }
+function syncSet(state, message){
+  FB.state = state; FB.message = message || '';
+  const pill = $('#syncPill'); if(!pill) return;
   if(state==='off'){ pill.hidden = true; return; }
   pill.hidden = false;
   const map = {
-    ready:   ['',     'Not connected'],
-    connecting:['busy','Connecting…'],
-    syncing: ['busy', 'Saving to Drive…'],
-    on:      ['on',   CLOUD.lastSync ? 'Saved to Drive' : 'Connected'],
-    error:   ['bad',  'Sync problem']
+    loading:   ['busy', 'Connecting…'],
+    signedout: ['',     'Not signed in'],
+    syncing:   ['busy', 'Saving…'],
+    on:        ['on',   FB.user ? 'Synced' : 'Connected'],
+    error:     ['bad',  'Sync problem']
   };
   const [cls, label] = map[state] || ['',''];
   pill.className = 'cloud-pill '+cls;
   pill.innerHTML = '<span class="cloud-dot"></span><span>'+esc(label)+'</span>';
-  pill.title = CLOUD.message || label;
+  pill.title = FB.message || label;
   if(route==='settings') viewSettings();
 }
 
-function cloudReady(){ return CLOUD.state==='on' || CLOUD.state==='syncing'; }
-function isLocalFile(){ return location.protocol === 'file:'; }
+async function loadSDK(){
+  if(FB.api) return FB.api;
+  if(window.__fbSdk){ FB.api = window.__fbSdk; return FB.api; }
+  const base = 'https://www.gstatic.com/firebasejs/'+SDK_VER+'/';
+  const [app, auth, store] = await Promise.all([
+    import(base+'firebase-app.js'),
+    import(base+'firebase-auth.js'),
+    import(base+'firebase-firestore.js')
+  ]);
+  FB.api = {...app, ...auth, ...store};
+  return FB.api;
+}
 
-/* Load Google's sign-in library, once */
-function loadGIS(){
-  return new Promise((resolve, reject)=>{
-    if(window.google && window.google.accounts) return resolve();
-    const s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.async = true;
-    s.onload = resolve;
-    s.onerror = ()=>reject(new Error('Could not reach Google. Check your internet connection.'));
-    document.head.appendChild(s);
+async function startAuth(){
+  if(!FB.cfg){ syncSet('off'); return; }
+  try{
+    syncSet('loading');
+    const api = await loadSDK();
+    FB.app  = api.initializeApp(FB.cfg);
+    FB.auth = api.getAuth(FB.app);
+    try{
+      FB.db = api.initializeFirestore(FB.app, {localCache: api.persistentLocalCache
+        ? api.persistentLocalCache({tabManager: api.persistentMultipleTabManager && api.persistentMultipleTabManager()})
+        : undefined});
+    }catch(e){ FB.db = api.getFirestore(FB.app); }
+    api.onAuthStateChanged(FB.auth, u=>{
+      FB.user = u || null;
+      if(u){ hideGate(); afterSignIn(); }
+      else { syncSet('signedout'); showGate(); }
+    });
+  }catch(e){
+    syncSet('error', 'Could not reach Firebase. '+(e.message||''));
+    showGate();
+  }
+}
+
+/* ---------- the login screen ---------- */
+function showGate(){
+  if(!FB.cfg) return;
+  const g = $('#authGate'); if(!g) return;
+  g.hidden = false;
+  paintGate('in');
+}
+function hideGate(){ const g = $('#authGate'); if(g) g.hidden = true; }
+let gateMode = 'in';
+function paintGate(mode){
+  gateMode = mode || gateMode;
+  const g = $('#authGate'); if(!g) return;
+  const signup = gateMode==='up';
+  g.innerHTML =
+  '<div class="gate-card">'+
+    '<div class="gate-brand"><div class="brand-badge">MV</div>'+
+      '<div><div class="gate-name">'+esc(DB.settings.business||'Maa Vandana Logistics')+'</div>'+
+      '<div class="gate-tag">Transport management</div></div></div>'+
+    '<h2 class="gate-title">'+(signup?'Create your account':'Sign in to continue')+'</h2>'+
+    '<p class="gate-sub">'+(signup
+      ? 'Your records are kept in your own Firebase project and reach every device you sign in on.'
+      : 'Use the email and password for this business.')+'</p>'+
+    '<div class="field"><label for="au_email">Email address</label>'+
+      '<input id="au_email" type="email" autocomplete="username" placeholder="you@example.com"></div>'+
+    '<div class="field" style="margin-top:11px"><label for="au_pass">Password</label>'+
+      '<input id="au_pass" type="password" autocomplete="'+(signup?'new-password':'current-password')+'" '+
+      'placeholder="'+(signup?'At least 6 characters':'Your password')+'" onkeydown="if(event.key===\'Enter\')gateSubmit()"></div>'+
+    '<div id="gateError" class="gate-error" hidden></div>'+
+    '<button class="btn btn-primary gate-go" onclick="gateSubmit()">'+(signup?'Create account':'Sign in')+'</button>'+
+    '<button class="btn gate-google" onclick="gateGoogle()">Continue with Google</button>'+
+    '<div class="gate-foot">'+
+      (signup
+        ? 'Already have an account? <a href="#" onclick="event.preventDefault();paintGate(\'in\')">Sign in</a>'
+        : 'First time here? <a href="#" onclick="event.preventDefault();paintGate(\'up\')">Create an account</a>'+
+          ' · <a href="#" onclick="event.preventDefault();gateReset()">Forgot password</a>')+
+    '</div>'+
+  '</div>';
+  const f = $('#au_email'); if(f && window.innerWidth>760) f.focus();
+}
+function gateError(msg){
+  const e = $('#gateError'); if(!e) return;
+  e.hidden = !msg; e.textContent = msg || '';
+}
+function friendlyAuth(code, fallback){
+  return ({
+    'auth/invalid-email':'That email address does not look right.',
+    'auth/missing-password':'Enter your password.',
+    'auth/weak-password':'Choose a password of at least 6 characters.',
+    'auth/email-already-in-use':'That email already has an account. Try signing in instead.',
+    'auth/invalid-credential':'Email or password is not correct.',
+    'auth/wrong-password':'That password is not correct.',
+    'auth/user-not-found':'No account found for that email.',
+    'auth/too-many-requests':'Too many attempts. Wait a few minutes and try again.',
+    'auth/network-request-failed':'No internet connection. You can keep working offline.',
+    'auth/popup-closed-by-user':'The Google window was closed before finishing.',
+    'auth/operation-not-allowed':'This sign-in method is switched off in your Firebase project.'
+  })[code] || fallback || 'Something went wrong. Please try again.';
+}
+async function gateSubmit(){
+  const email = (val('au_email')||'').trim(), pass = val('au_pass')||'';
+  if(!email){ gateError('Enter your email address.'); return; }
+  if(!pass){ gateError('Enter your password.'); return; }
+  gateError('');
+  const btn = $('.gate-go'); if(btn){ btn.disabled = true; btn.textContent = 'Please wait…'; }
+  try{
+    const api = await loadSDK();
+    if(gateMode==='up') await api.createUserWithEmailAndPassword(FB.auth, email, pass);
+    else await api.signInWithEmailAndPassword(FB.auth, email, pass);
+  }catch(e){
+    gateError(friendlyAuth(e.code, e.message));
+    if(btn){ btn.disabled = false; btn.textContent = gateMode==='up'?'Create account':'Sign in'; }
+  }
+}
+async function gateGoogle(){
+  gateError('');
+  try{
+    const api = await loadSDK();
+    await api.signInWithPopup(FB.auth, new api.GoogleAuthProvider());
+  }catch(e){ gateError(friendlyAuth(e.code, e.message)); }
+}
+async function gateReset(){
+  const email = (val('au_email')||'').trim();
+  if(!email){ gateError('Type your email above, then press Forgot password.'); return; }
+  try{
+    const api = await loadSDK();
+    await api.sendPasswordResetEmail(FB.auth, email);
+    gateError('');
+    toast('Password reset link sent to '+email);
+  }catch(e){ gateError(friendlyAuth(e.code, e.message)); }
+}
+async function signOutNow(){
+  confirmAsk('Sign out? Your records stay in the cloud and come back when you sign in again.', async()=>{
+    try{
+      if(FB.unsub){ FB.unsub(); FB.unsub = null; }
+      const api = await loadSDK();
+      await api.signOut(FB.auth);
+      toast('Signed out');
+    }catch(e){ toast('Could not sign out: '+e.message); }
   });
 }
 
-async function cloudConnect(interactive){
-  if(!CLOUD.clientId){ cloudSet('off'); return; }
-  if(isLocalFile()){
-    cloudSet('error','Google sign-in does not work on a file opened from your computer. The app needs to be on a web address.');
-    return;
-  }
-  try{
-    cloudSet('connecting');
-    await loadGIS();
-    if(!CLOUD.tokenClient){
-      CLOUD.tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLOUD.clientId,
-        scope: SCOPE,
-        callback: (resp)=>{
-          if(resp && resp.access_token){ CLOUD.token = resp.access_token; afterSignIn(); }
-          else { cloudSet('error','Sign-in was not completed.'); }
-        },
-        error_callback: (err)=>{
-          cloudSet('error', err && err.type==='popup_closed'
-            ? 'Sign-in window was closed before finishing.'
-            : 'Google refused the sign-in. Check that the web address is listed in your Google Cloud settings.');
-        }
-      });
-    }
-    CLOUD.tokenClient.requestAccessToken({prompt: interactive ? 'consent' : ''});
-  }catch(e){ cloudSet('error', e.message); }
+/* ---------- reading and writing the cloud copy ---------- */
+function mainDocRef(){ return FB.api.doc(FB.db, 'users', FB.user.uid, 'app', 'main'); }
+function photoDocRef(id){ return FB.api.doc(FB.db, 'users', FB.user.uid, 'photos', id); }
+
+function mainPayload(){
+  const copy = JSON.parse(JSON.stringify(DB));
+  copy.drivers = (copy.drivers||[]).map(d=>{ const c = {...d}; delete c.docs; return c; });
+  copy.updatedAt = DB.updatedAt || new Date().toISOString();
+  return copy;
 }
 
 async function afterSignIn(){
   try{
-    cloudSet('syncing');
-    CLOUD.folderId = await ensureFolder();
-    CLOUD.fileId   = await findFile();
-    if(CLOUD.fileId){ await cloudPull(true); }
-    else { await cloudPush(true); toast('Connected. Your data is now in Google Drive'); }
-    cloudSet('on');
-  }catch(e){ cloudSet('error', e.message); toast('Could not sync: '+e.message); }
-}
-
-/* Every Drive request goes through here, so an expired sign-in retries once */
-async function drive(url, opts={}, retried){
-  const r = await fetch(url, {...opts, headers:{...(opts.headers||{}), Authorization:'Bearer '+CLOUD.token}});
-  if(r.status===401 && !retried){
-    await new Promise(res=>{
-      CLOUD.tokenClient.callback = resp=>{ CLOUD.token = resp.access_token || ''; res(); };
-      CLOUD.tokenClient.requestAccessToken({prompt:''});
-    });
-    if(!CLOUD.token) throw new Error('Sign-in expired. Connect again from Settings.');
-    return drive(url, opts, true);
-  }
-  if(!r.ok){
-    let detail = '';
-    try{ detail = (await r.json()).error.message; }catch(e){}
-    throw new Error(detail || ('Drive returned error '+r.status));
-  }
-  return r;
-}
-
-async function ensureFolder(){
-  const q = encodeURIComponent("name='"+FOLDER_NAME+"' and mimeType='application/vnd.google-apps.folder' and trashed=false");
-  const r = await drive('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id)&spaces=drive');
-  const j = await r.json();
-  if(j.files && j.files.length) return j.files[0].id;
-  const c = await drive('https://www.googleapis.com/drive/v3/files?fields=id', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({name:FOLDER_NAME, mimeType:'application/vnd.google-apps.folder'})
-  });
-  return (await c.json()).id;
-}
-
-async function findFile(){
-  const q = encodeURIComponent("name='"+FILE_NAME+"' and '"+CLOUD.folderId+"' in parents and trashed=false");
-  const r = await drive('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,modifiedTime)&spaces=drive');
-  const j = await r.json();
-  return j.files && j.files.length ? j.files[0].id : '';
-}
-
-async function cloudPull(onConnect){
-  if(!CLOUD.fileId) return;
-  const r = await drive('https://www.googleapis.com/drive/v3/files/'+CLOUD.fileId+'?alt=media');
-  const remote = await r.json();
-  const rTime = remote.updatedAt || '';
-  const lTime = DB.updatedAt || '';
-  const localEmpty = DB.trips.length===0 && DB.parties.length===0 && DB.trucks.length===0;
-
-  if(localEmpty || rTime > lTime){
-    if(!localEmpty && onConnect){
-      return askWhichCopy(remote, rTime, lTime);
+    syncSet('syncing');
+    const api = FB.api;
+    const snap = await api.getDoc(mainDocRef());
+    if(snap.exists()){
+      const remote = snap.data();
+      const localEmpty = DB.trips.length===0 && DB.parties.length===0 && DB.trucks.length===0;
+      if(localEmpty || (remote.updatedAt||'') > (DB.updatedAt||'')){
+        if(!localEmpty) return askWhichCopy(remote);
+        await applyRemote(remote);
+      } else if((DB.updatedAt||'') > (remote.updatedAt||'')){
+        await syncPush(true);
+      }
+    } else {
+      await syncPush(true);
+      toast('Your records are now in the cloud');
     }
-    applyRemote(remote);
-    toast('Loaded the latest data from Drive');
-  } else if(lTime > rTime){
-    await cloudPush(true);
+    watchRemote();
+    syncSet('on');
+  }catch(e){
+    syncSet('error', e.message);
+    toast('Could not sync: '+e.message);
   }
 }
 
-function applyRemote(remote){
-  DB = Object.assign(JSON.parse(JSON.stringify(BLANK)), remote);
-  reindex();
-  localStorage.setItem(KEY, JSON.stringify(DB));
+/* live updates from your other device */
+function watchRemote(){
+  if(FB.unsub) FB.unsub();
+  FB.unsub = FB.api.onSnapshot(mainDocRef(), snap=>{
+    if(!snap.exists() || FB.applying) return;
+    if(snap.metadata && snap.metadata.hasPendingWrites) return;
+    const remote = snap.data();
+    if((remote.updatedAt||'') > (DB.updatedAt||'')) applyRemote(remote, true);
+  }, err=>syncSet('error', err.message));
+}
+
+async function loadPhotos(){
+  const out = {};
+  try{
+    const snaps = await FB.api.getDocs(FB.api.collection(FB.db, 'users', FB.user.uid, 'photos'));
+    snaps.forEach(s=>{ out[s.id] = s.data().docs || {}; });
+  }catch(e){}
+  return out;
+}
+
+async function applyRemote(remote, quiet){
+  FB.applying = true;
+  const photos = await loadPhotos();
+  const merged = Object.assign(JSON.parse(JSON.stringify(BLANK)), remote);
+  merged.drivers = (merged.drivers||[]).map(d=>({...d, docs: photos[d.id] || {}}));
+  DB = merged;
+  reindex(); buildPlaceList(); buildDocTypeList();
+  try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){}
   applyBrand(); render();
+  FB.applying = false;
+  if(quiet) toast('Updated from your other device');
 }
 
 let pendingRemote = null;
-function askWhichCopy(remote, rTime, lTime){
+function askWhichCopy(remote){
   pendingRemote = remote;
-  const count = o => (o.trips||[]).length+' trips, '+(o.parties||[]).length+' parties, '+(o.expenses||[]).length+' expenses';
+  const count = o => (o.trips||[]).length+' trips, '+(o.parties||[]).length+' parties';
+  syncSet('on');
   openModal({
     title:'Two copies found',
-    body:'<p style="margin:0 0 14px;font-size:14.5px">The copy in Drive and the copy on this device do not match. Which one should be kept?</p>'+
-      '<div class="card card-pad" style="margin-bottom:10px"><div class="stat-label">In Google Drive</div>'+
+    body:'<p style="margin:0 0 14px;font-size:14.5px">The cloud copy and this device do not match. Which should be kept?</p>'+
+      '<div class="card card-pad" style="margin-bottom:10px"><div class="stat-label">In the cloud</div>'+
       '<div style="margin-top:5px">'+esc(count(remote))+'</div>'+
-      '<div class="hint">Last saved '+(rTime?fdate(rTime.slice(0,10)):'date unknown')+'</div>'+
-      '<button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="useDriveCopy()">Use the Drive copy</button></div>'+
+      '<div class="hint">Last saved '+(remote.updatedAt?fdate(remote.updatedAt.slice(0,10)):'date unknown')+'</div>'+
+      '<button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="useCloudCopy()">Use the cloud copy</button></div>'+
       '<div class="card card-pad"><div class="stat-label">On this device</div>'+
       '<div style="margin-top:5px">'+esc(count(DB))+'</div>'+
-      '<div class="hint">Last saved '+(lTime?fdate(lTime.slice(0,10)):'date unknown')+'</div>'+
+      '<div class="hint">Last saved '+(DB.updatedAt?fdate(DB.updatedAt.slice(0,10)):'date unknown')+'</div>'+
       '<button class="btn btn-sm" style="margin-top:10px" onclick="useDeviceCopy()">Keep this device</button></div>'+
-      '<div class="note" style="margin-top:12px">Nothing is overwritten until you choose. If you are unsure, close this and download a backup from Settings first.</div>'
+      '<div class="note" style="margin-top:12px">Nothing is overwritten until you choose. Download a backup from Settings if you are unsure.</div>'
   });
 }
-function useDriveCopy(){
+async function useCloudCopy(){
   if(!pendingRemote) return closeModal();
-  applyRemote(pendingRemote); pendingRemote=null; closeModal();
-  cloudSet('on'); toast('Now using the Drive copy');
+  const r = pendingRemote; pendingRemote = null; closeModal();
+  await applyRemote(r); watchRemote(); syncSet('on'); toast('Now using the cloud copy');
 }
-function useDeviceCopy(){
-  pendingRemote=null; closeModal();
+async function useDeviceCopy(){
+  pendingRemote = null; closeModal();
   DB.updatedAt = new Date().toISOString();
-  cloudPush(true); toast('Kept this device and sent it to Drive');
+  await syncPush(true); watchRemote(); toast('Kept this device and sent it up');
 }
 
-async function cloudPush(now){
-  if(!CLOUD.token || !CLOUD.folderId) return;
-  clearTimeout(CLOUD.pushTimer);
-  if(!now){ CLOUD.pushTimer = setTimeout(()=>cloudPush(true), 2500); return; }
+async function syncPush(now){
+  if(!FB.user || !FB.db) return;
+  clearTimeout(FB.pushTimer);
+  if(!now){ FB.pushTimer = setTimeout(()=>syncPush(true), 2500); return; }
   try{
-    cloudSet('syncing');
-    const content = JSON.stringify(DB);
-    if(CLOUD.fileId){
-      await drive('https://www.googleapis.com/upload/drive/v3/files/'+CLOUD.fileId+'?uploadType=media',
-        {method:'PATCH', headers:{'Content-Type':'application/json'}, body:content});
-    } else {
-      const b = '-------mvl'+Date.now();
-      const meta = {name:FILE_NAME, parents:[CLOUD.folderId]};
-      const body = '--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+
-                   '\r\n--'+b+'\r\nContent-Type: application/json\r\n\r\n'+content+'\r\n--'+b+'--';
-      const r = await drive('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
-        {method:'POST', headers:{'Content-Type':'multipart/related; boundary='+b}, body});
-      CLOUD.fileId = (await r.json()).id;
+    syncSet('syncing');
+    const api = FB.api;
+    await api.setDoc(mainDocRef(), mainPayload());
+    for(const d of (DB.drivers||[])){
+      const docs = d.docs || {};
+      const stamp = JSON.stringify(Object.keys(docs).sort())+':'+Object.values(docs).reduce((n,v)=>n+(v?v.length:0),0);
+      if(FB.lastPhoto[d.id] === stamp) continue;
+      await api.setDoc(photoDocRef(d.id), {docs});
+      FB.lastPhoto[d.id] = stamp;
     }
-    CLOUD.lastSync = new Date().toISOString();
-    localStorage.setItem('mvl_last_sync', CLOUD.lastSync);
-    cloudSet('on');
+    FB.lastSync = new Date().toISOString();
+    localStorage.setItem('mvl_last_sync', FB.lastSync);
+    syncSet('on');
   }catch(e){
-    cloudSet('error', e.message);
+    syncSet('error', e.message);
   }
 }
 
-function cloudDisconnect(){
-  confirmAsk('Disconnect Google Drive? Your data stays on this device and in Drive, it just stops syncing.', ()=>{
-    if(CLOUD.token && window.google) try{ google.accounts.oauth2.revoke(CLOUD.token); }catch(e){}
-    CLOUD.token=''; CLOUD.fileId=''; CLOUD.folderId='';
-    cloudSet('ready'); toast('Disconnected from Drive');
-  });
-}
+/* ---------- settings ---------- */
+const RULES = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /users/{uid}/{document=**} {\n      allow read, write: if request.auth != null && request.auth.uid == uid;\n    }\n  }\n}";
 
-function saveClientId(){
-  const id = val('g_client').trim();
-  CLOUD.clientId = id;
-  localStorage.setItem('mvl_client_id', id);
-  if(id){ cloudSet('ready'); cloudConnect(true); }
-  else { cloudSet('off'); toast('Google Drive turned off'); }
+function syncPanel(){
+  const s = FB.state;
+  const chip = {
+    off:'<span class="chip chip-grey">Not set up</span>',
+    loading:'<span class="chip chip-amber">Connecting…</span>',
+    signedout:'<span class="chip chip-amber">Not signed in</span>',
+    syncing:'<span class="chip chip-amber">Saving…</span>',
+    on:'<span class="chip chip-green">Signed in</span>',
+    error:'<span class="chip chip-red">Problem</span>'
+  }[s] || '';
+  const cfg = FB.cfg || {};
+  return '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
+      '<h3 class="card-title" style="margin:0">Login and cloud storage</h3>'+chip+'</div>'+
+    (FB.user
+      ? '<p class="hint" style="margin:0 0 14px">Signed in as <b>'+esc(FB.user.email||'your account')+'</b>. '+
+        'Every change is saved to your Firebase project and reaches your other devices within a few seconds.</p>'+
+        (FB.lastSync? '<div class="hint" style="margin-bottom:12px">Last saved '+fdate(FB.lastSync.slice(0,10))+
+          ' at '+FB.lastSync.slice(11,16)+'</div>':'')+
+        '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+          '<button class="btn" onclick="syncPush(true);toast(\'Saving now\')">Sync now</button>'+
+          '<button class="btn btn-danger" onclick="signOutNow()">Sign out</button>'+
+        '</div>'
+      : '<p class="hint" style="margin:0 0 14px;max-width:600px">Sign in with an email address and your records live in your own '+
+        'Firebase project instead of only on this device. Free to run at your size, and no card is needed.</p>')+
+    (FB.message ? '<div class="note" style="margin-top:12px">'+esc(FB.message)+'</div>' : '')+
+    '<div class="divide"></div>'+
+    '<div class="sec-title" style="margin-top:0">Firebase project</div>'+
+    '<div class="field"><label for="fb_cfg">Config from Firebase</label>'+
+      '<textarea id="fb_cfg" style="min-height:120px;font-family:var(--mono);font-size:12.5px" '+
+      'placeholder=\'{ "apiKey": "…", "authDomain": "…", "projectId": "…", "appId": "…" }\'>'+
+      esc(cfg.apiKey? JSON.stringify(cfg, null, 2):'')+'</textarea>'+
+      '<span class="hint">Paste the whole firebaseConfig object from your project settings.</span></div>'+
+    '<div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:12px">'+
+      '<button class="btn btn-primary" onclick="saveFbConfig()">'+(cfg.apiKey?'Save and reconnect':'Connect Firebase')+'</button>'+
+      (cfg.apiKey? '<button class="btn btn-danger" onclick="clearFbConfig()">Disconnect project</button>':'')+
+    '</div>'+
+    '<div class="divide"></div>'+
+    '<div class="sec-title" style="margin-top:0">One-time setup</div>'+
+    [ 'Go to <b>console.firebase.google.com</b> and create a project. Skip Google Analytics, you do not need it.',
+      'Inside the project open <b>Build \u2192 Authentication \u2192 Get started</b>, and switch on <b>Email/Password</b>. Switch on <b>Google</b> too if you want that button to work.',
+      'Open <b>Build \u2192 Firestore Database \u2192 Create database</b>. Choose a location near you and start in <b>production mode</b>.',
+      'Open the <b>Rules</b> tab of Firestore, replace everything with the rules shown below, and press Publish. This is what stops anyone else reading your data.',
+      'Open <b>Project settings</b> (the gear icon), scroll to <b>Your apps</b>, add a <b>Web app</b>, and copy the firebaseConfig block it shows you.',
+      'Paste that config in the box above and press Connect. Then create your account with your email and a password.'
+    ].map((t,i)=>'<div class="step"><div class="step-n">'+(i+1)+'</div><p>'+t+'</p></div>').join('')+
+    '<div class="sec-title">Security rules to paste</div>'+
+    '<pre class="rules">'+esc(RULES)+'</pre>'+
+    '<button class="btn btn-sm" onclick="copyRules()">Copy rules</button>'+
+  '</div>';
+}
+function saveFbConfig(){
+  const raw = (val('fb_cfg')||'').trim();
+  if(!raw){ toast('Paste the config from Firebase first'); return; }
+  let cfg = null;
+  try{
+    const cleaned = raw.replace(/^[\s\S]*?firebaseConfig\s*=\s*/,'').replace(/;\s*$/,'')
+      .replace(/([{,]\s*)([A-Za-z0-9_]+)\s*:/g,'$1"$2":').replace(/'/g,'"').replace(/,(\s*[}\]])/g,'$1');
+    cfg = JSON.parse(cleaned);
+  }catch(e){ toast('That does not look like a Firebase config. Copy the whole block including the braces.'); return; }
+  if(!cfg.apiKey || !cfg.projectId){ toast('The config needs at least apiKey and projectId'); return; }
+  FB.cfg = cfg;
+  localStorage.setItem('mvl_fb_cfg', JSON.stringify(cfg));
+  toast('Saved. Connecting to Firebase…');
+  location.reload();
+}
+function clearFbConfig(){
+  confirmAsk('Disconnect this Firebase project? Your records stay on this device and in the cloud, they simply stop syncing.', ()=>{
+    localStorage.removeItem('mvl_fb_cfg');
+    localStorage.removeItem('mvl_last_sync');
+    location.reload();
+  }, true);
+}
+function copyRules(){
+  if(navigator.clipboard) navigator.clipboard.writeText(RULES).then(()=>toast('Rules copied'), ()=>toast('Select the text and copy it'));
+  else toast('Select the text above and copy it');
 }
 
 /* ============================================================
@@ -3455,8 +3604,9 @@ migrateTrucks();
 if(!DB.seeded && DB.trips.length===0){ seed(); save(); }
 applyBrand();
 render();
-if(CLOUD.clientId){ cloudSet('ready'); cloudConnect(false); }
-window.addEventListener('online', ()=>{ if(cloudReady()) cloudPush(true); });
+startAuth();
+buildDocTypeList();
+window.addEventListener('online', ()=>{ if(syncReady()) syncPush(true); });
 </script>
 </body>
 </html>
