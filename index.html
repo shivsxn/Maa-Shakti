@@ -196,6 +196,42 @@ textarea{resize:vertical;min-height:62px}
 .filter-row select,.filter-row input{width:auto;min-width:150px;padding:8px 11px;font-size:13.5px}
 .filter-row .search{flex:1;min-width:190px;max-width:340px}
 .filter-row.adv{margin-top:11px;padding-top:11px;border-top:1px solid var(--line-soft)}
+.adv-block{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:#FCFBF8}
+.adv-head{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.adv-total{display:flex;align-items:center;margin-top:14px;padding-top:12px;border-top:1.5px solid var(--asphalt);
+  font-weight:700;font-size:14.5px}
+.adv-balance{margin-top:9px;padding-top:9px;border-top:1px dotted var(--line)}
+.adv-status{display:flex;align-items:center;gap:9px;margin-top:11px;font-size:12.5px;color:var(--muted)}
+.adv-status span:last-child{margin-left:auto}
+.money-amber{color:#8A5D12;font-weight:600}
+.adv-total-value{margin-left:auto;font-size:18px;letter-spacing:-.02em}
+.doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.doc{border:1.5px dashed var(--line);border-radius:10px;background:#FCFBF8;overflow:hidden;
+  display:flex;flex-direction:column;min-height:132px;position:relative}
+.doc.filled{border-style:solid;background:var(--card)}
+.doc-label{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  padding:9px 10px 0;text-align:center}
+.doc-drop{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  cursor:pointer;padding:10px;text-align:center}
+.doc-drop:hover{background:#F7F5F0}
+.doc-plus{width:26px;height:26px;border-radius:50%;background:var(--line-soft);color:var(--muted);
+  display:grid;place-items:center;font-size:17px;line-height:1}
+.doc-hint{font-size:11px;color:var(--muted)}
+.doc-thumb{flex:1;width:100%;object-fit:cover;cursor:zoom-in;display:block;min-height:0}
+.doc-bar{display:flex;gap:6px;padding:7px;border-top:1px solid var(--line-soft);background:#FCFBF8}
+.doc-bar button{flex:1;padding:5px;font-size:11.5px;border-radius:6px;border:1px solid var(--line);
+  background:var(--card);cursor:pointer;font-weight:600}
+.doc-bar button:hover{background:#F7F5F0}
+.doc-bar .rm{color:var(--red);border-color:#E8CFCB}
+.doc-size{position:absolute;top:8px;right:8px;background:rgba(21,26,33,.72);color:#fff;font-size:10px;
+  font-family:var(--mono);padding:2px 6px;border-radius:4px}
+.doc-busy{position:absolute;inset:0;background:rgba(255,255,255,.86);display:grid;place-items:center;
+  font-size:12px;font-weight:600;color:var(--muted)}
+.meter{height:9px;background:var(--line-soft);border-radius:5px;overflow:hidden;margin:8px 0 6px}
+.meter-fill{height:100%;border-radius:5px;background:var(--green);transition:width .3s}
+.meter-fill.warn{background:var(--amber)}
+.meter-fill.full{background:var(--red)}
+@media (max-width:760px){.doc-grid{grid-template-columns:1fr 1fr}}
 .fpair{display:flex;align-items:center;gap:7px}
 .fpair label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .fpair input{min-width:0}
@@ -461,7 +497,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 2.4 &middot; 18 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 2.9 &middot; 19 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -701,6 +737,8 @@ function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk,
         '<button class="'+okClass+'" onclick="modalOk()">'+esc(okText)+'</button></div>' : '')+
       '</div></div>';
   document.body.style.overflow='hidden';
+  if($('#docGrid')) paintDocs();
+  if($('#f_advTotal')) recalcAdvance();
   const f = $('.modal-body input, .modal-body select, .modal-body textarea');
   if(f && window.innerWidth>760) f.focus();
 }
@@ -947,7 +985,6 @@ function viewTrips(){
   $('#view').innerHTML =
   '<div class="filters">'+
     '<div class="filter-row">'+
-      '<input class="search" type="search" autocomplete="off" placeholder="Search anything\u2026" value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;sub.limit=0;defer(renderTripList)">'+
       '<select onchange="sub.party=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">All parties</option>'+
         DB.parties.map(p=>'<option value="'+p.id+'"'+(p.id===(sub.party||'')?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>'+
       '<select onchange="sub.truck=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">All trucks</option>'+
@@ -974,7 +1011,7 @@ function viewTrips(){
 }
 
 function activeTripFilters(){
-  return ['q','party','truck','status','dFrom','dTo','lr','origin','dest'].filter(k=>sub[k]).length;
+  return ['party','truck','status','dFrom','dTo','lr','origin','dest'].filter(k=>sub[k]).length;
 }
 function afterFilterTyping(){ renderTripList(); filterBadge(); }
 function filterBadge(){
@@ -988,7 +1025,7 @@ function toggleAdv(){
   const el = $('#advFilters'); if(el) el.hidden = !sub.adv;
 }
 function clearTripFilters(){
-  ['q','party','truck','status','dFrom','dTo','lr','origin','dest'].forEach(k=>delete sub[k]);
+  ['party','truck','status','dFrom','dTo','lr','origin','dest'].forEach(k=>delete sub[k]);
   sub.limit = 0;
   viewTrips();
 }
@@ -996,23 +1033,18 @@ function clearTripFilters(){
 /* Only this part is rebuilt while you type, so the search box keeps your cursor */
 function renderTripList(){
   const box = $('#listBox'); if(!box) return;
-  const q = (sub.q||'').toLowerCase().trim();
   const lr = (sub.lr||'').toLowerCase().trim();
   const og = (sub.origin||'').toLowerCase().trim();
   const de = (sub.dest||'').toLowerCase().trim();
   let list = DB.trips.slice().sort((a,b)=>b.date.localeCompare(a.date));
   if(sub.party)  list = list.filter(t=>t.partyId===sub.party);
   if(sub.truck)  list = list.filter(t=>t.truckId===sub.truck);
-  if(sub.status) list = list.filter(t=>(t.status||'pending')===sub.status);
+  if(sub.status) list = list.filter(t=>tripStatus(t)===sub.status);
   if(sub.dFrom)  list = list.filter(t=>t.date>=sub.dFrom);
   if(sub.dTo)    list = list.filter(t=>t.date<=sub.dTo);
   if(lr) list = list.filter(t=>(t.lr||'').toLowerCase().includes(lr));
   if(og) list = list.filter(t=>(t.from||'').toLowerCase().includes(og));
   if(de) list = list.filter(t=>(t.to||'').toLowerCase().includes(de));
-  if(q) list = list.filter(t=>
-    ((t.lr||'')+' '+(t.from||'')+' '+(t.to||'')+' '+(t.material||'')+' '+(t.notes||'')+' '+
-     truckName(t.truckId)+' '+partyName(t.partyId)).toLowerCase().includes(q));
-
   const tot = list.reduce((s,t)=>s+num(t.freight),0);
   const totHire = list.reduce((s,t)=>s+num(t.hire),0);
   const full = list.length;
@@ -1039,8 +1071,9 @@ function renderTripList(){
           '<td'+go+'>'+esc(truckName(t.truckId))+
             (t.hire?'<div class="t-sub">Hire '+money(t.hire)+'</div>':'')+'</td>'+
           '<td class="t-r num t-strong">'+money(t.freight)+'</td>'+
-          '<td class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+'</td>'+
-          '<td>'+statusChip(t.status)+'</td>'+
+          '<td class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+
+            (num(t.fuelAmt)?'<div class="t-sub">cash '+money(t.advCash)+' + fuel '+money(t.fuelAmt)+'</div>':'')+'</td>'+
+          '<td>'+statusChip(tripStatus(t))+'</td>'+
           '<td><div class="row-actions">'+
             '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">Edit</button>'+
             '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>'+
@@ -1061,6 +1094,8 @@ function tripForm(id){
         '<p style="margin:0;color:var(--muted);font-size:13.5px">Go to <b>Trucks</b> to add your vehicle, and <b>Parties &amp; Ledger</b> to add the customer who pays the freight.</p>'});
     return;
   }
+  fuelDirty = !!(t && num(t.fuelAmt) && !(num(t.fuelQty)>0 && num(t.fuelRate)>0
+    && Math.abs(num(t.fuelQty)*num(t.fuelRate) - num(t.fuelAmt)) < 0.5));
   openModal({
     title: t? 'Edit trip' : 'New trip',
     okText: t? 'Save changes' : 'Save trip',
@@ -1074,11 +1109,30 @@ function tripForm(id){
       fSelect('f_driver','Driver', driverOptions(), t?t.driverId:'')+
       fText('f_material','Material', t?t.material:'','text','placeholder="Cement, steel, grain…"')+
       fText('f_weight','Weight (tonnes)', t?t.weight:'','number','step="0.01" min="0"')+
-      fText('f_freight','Freight amount (₹)', t?t.freight:'','number','min="0" step="1"')+
-      fText('f_advance','Advance received (₹)', t?t.advance:'','number','min="0" step="1"')+
+      fText('f_freight','Freight amount (₹)', t?t.freight:'','number','min="0" step="1" oninput="recalcAdvance()"')+
       fText('f_hire','Hire paid to market truck (₹)', t?t.hire:'','number','min="0" step="1"')+
       '<div class="field full"><span class="hint">Leave hire blank for your own trucks. For a market truck, hire is what you pay the vehicle owner — your profit is freight minus hire.</span></div>'+
-      fSeg('f_status','Payment status',[{v:'pending',t:'Pending'},{v:'partial',t:'Part paid'},{v:'paid',t:'Paid'}], t?t.status:'pending')+
+
+      '<div class="field full adv-block">'+
+        '<div class="adv-head">Advance details</div>'+
+        '<div class="form-grid">'+
+          fText('f_advCash','Advance in cash (₹)', t?t.advCash:'','number','min="0" step="1" oninput="recalcAdvance()"')+
+          '<div class="field"></div>'+
+          fText('f_fuelQty','Fuel quantity (litres)', t?t.fuelQty:'','number','min="0" step="0.01" oninput="recalcAdvance()"')+
+          fText('f_fuelRate','Fuel rate (₹ per litre)', t?t.fuelRate:'','number','min="0" step="0.01" oninput="recalcAdvance()"')+
+          fText('f_fuelAmt','Fuel amount (₹)', t?t.fuelAmt:'','number','min="0" step="1" oninput="fuelEdited()"')+
+          '<div class="field"><label>&nbsp;</label><span class="hint" id="fuelHint"></span></div>'+
+        '</div>'+
+        '<div class="adv-total">'+
+          '<span>Total advance received</span>'+
+          '<span class="num adv-total-value" id="f_advTotal">₹0</span>'+
+        '</div>'+
+        '<div class="adv-total adv-balance">'+
+          '<span id="f_balanceLabel">Balance pending</span>'+
+          '<span class="num adv-total-value" id="f_balance">₹0</span>'+
+        '</div>'+
+        '<div class="adv-status"><span>Status will be set to</span><span id="f_statusPreview"></span></div>'+
+      '</div>'+
       fArea('f_notes','Notes', t?t.notes:'')+
     '</div>',
     onOk(){
@@ -1088,9 +1142,13 @@ function tripForm(id){
         id: t?t.id:uid(), date: val('f_date')||today(), lr: val('f_lr'),
         from: val('f_from'), to: val('f_to'), partyId: val('f_party'), truckId: val('f_truck'),
         driverId: val('f_driver'), material: val('f_material'), weight: val('f_weight'),
-        freight: num(val('f_freight')), advance: num(val('f_advance')), hire: num(val('f_hire')),
-        status: checked('f_status')||'pending', notes: val('f_notes')
+        freight: num(val('f_freight')), hire: num(val('f_hire')),
+        advCash: num(val('f_advCash')), fuelQty: val('f_fuelQty'), fuelRate: val('f_fuelRate'),
+        fuelAmt: num(val('f_fuelAmt')),
+        notes: val('f_notes')
       };
+      rec.advance = tripAdvance(rec);     // everything else reads this one total
+      rec.status  = tripStatus(rec);      // worked out from freight and advance
       rememberPlace(rec.from); rememberPlace(rec.to);
       if(t) DB.trips[DB.trips.findIndex(x=>x.id===t.id)] = rec; else DB.trips.push(rec);
       save(); closeModal(); render(); toast(t?'Trip updated':'Trip saved');
@@ -1098,6 +1156,37 @@ function tripForm(id){
   });
 }
 
+let fuelDirty = false;
+function fuelEdited(){ fuelDirty = true; recalcAdvance(); }
+function recalcAdvance(){
+  const amtEl = document.getElementById('f_fuelAmt');
+  if(!amtEl) return;
+  const q = num(val('f_fuelQty')), r = num(val('f_fuelRate'));
+  if(!fuelDirty && q>0 && r>0) amtEl.value = Math.round(q*r*100)/100;
+  const hint = document.getElementById('fuelHint');
+  if(hint){
+    hint.innerHTML = fuelDirty
+      ? 'Entered by hand. <a href="#" onclick="event.preventDefault();fuelDirty=false;recalcAdvance()">Use quantity × rate</a>'
+      : (q>0 && r>0 ? 'Calculated as '+q+' × ₹'+r : 'Fill quantity and rate, or type the amount directly');
+  }
+  const total = num(val('f_advCash')) + num(amtEl.value);
+  const tot = document.getElementById('f_advTotal');
+  if(tot) tot.textContent = money(total);
+
+  const freight = num(val('f_freight'));
+  const bal = freight - total;
+  const balEl = document.getElementById('f_balance');
+  const labEl = document.getElementById('f_balanceLabel');
+  if(balEl){
+    balEl.textContent = money(Math.abs(bal));
+    balEl.className = 'num adv-total-value '+(bal>0?'money-neg':bal<0?'money-amber':'money-pos');
+    if(labEl) labEl.textContent = bal<0 ? 'Advance exceeds freight by'
+                                : bal===0 && freight ? 'Fully paid in advance'
+                                : 'Balance pending';
+  }
+  const prev = document.getElementById('f_statusPreview');
+  if(prev) prev.innerHTML = statusChip(tripStatus({advance:total, freight:freight}));
+}
 function tripDetail(id){
   const t = DB.trips.find(x=>x.id===id); if(!t) return;
   const margin = num(t.freight) - num(t.hire);
@@ -1107,13 +1196,16 @@ function tripDetail(id){
       '<div class="slip-top">'+
         '<div><div class="slip-lr">LR '+esc(t.lr||'—')+' · '+fdate(t.date)+'</div>'+
           '<div class="slip-route">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div></div>'+
-        '<div style="margin-left:auto;padding-top:6px">'+statusStamp(t.status)+'</div>'+
+        '<div style="margin-left:auto;padding-top:6px">'+statusStamp(tripStatus(t))+'</div>'+
       '</div>'+
       '<div class="slip-body">'+
         fv('Party', esc(partyName(t.partyId)))+ fv('Truck', esc(truckName(t.truckId)))+
         fv('Driver', esc(t.driverId?driverName(t.driverId):'—'))+ fv('Material', esc(t.material||'—'))+
         fv('Weight', esc(t.weight? t.weight+' T':'—'))+ fv('Freight', money(t.freight))+
-        fv('Advance received', num(t.advance)?money(t.advance):'—')+
+        fv('Advance in cash', num(t.advCash)?money(t.advCash):'—')+
+        fv('Advance in fuel', num(t.fuelAmt)? money(t.fuelAmt)+(fuelNote(t)?'<div class="t-sub">'+esc(fuelNote(t))+'</div>':'') :'—')+
+        fv('Total advance', num(t.advance)?money(t.advance):'—')+
+        fv('Balance pending', tripBalanceLabel(t))+
         fv('Hire paid', num(t.hire)?money(t.hire):'—')+
       '</div>'+
       (num(t.hire)? '<div style="padding:0 18px 15px"><div class="note">Margin on this trip: <b class="num">'+money(margin)+'</b> (freight '+money(t.freight)+' minus hire '+money(t.hire)+')</div></div>':'')+
@@ -1221,8 +1313,11 @@ function ledgerRows(pid){
   DB.trips.filter(t=>t.partyId===pid).forEach(t=>{
     rows.push({date:t.date, label:'Freight — '+(t.from||'?')+' to '+(t.to||'?'), ref:t.lr?('LR '+t.lr):truckName(t.truckId),
       debit:num(t.freight), credit:0, kind:'trip', tripId:t.id});
-    if(num(t.advance)) rows.push({date:t.date, label:'Advance received against trip', ref:t.lr?('LR '+t.lr):'',
-      debit:0, credit:num(t.advance), kind:'trip', tripId:t.id});
+    if(num(t.advCash)) rows.push({date:t.date, label:'Advance received in cash', ref:t.lr?('LR '+t.lr):'',
+      debit:0, credit:num(t.advCash), kind:'trip', tripId:t.id});
+    if(num(t.fuelAmt)) rows.push({date:t.date, label:'Advance given as fuel',
+      ref:[fuelNote(t), t.lr?('LR '+t.lr):''].filter(Boolean).join(' · '),
+      debit:0, credit:num(t.fuelAmt), kind:'trip', tripId:t.id});
   });
   DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{
     rows.push({date:l.date, label:l.note||(l.type==='credit'?'Payment received':'Charge added'),
@@ -1322,17 +1417,39 @@ function delParty(pid){
    ============================================================ */
 function viewTrucks(){
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="truckForm()">+ <span>New truck</span></button>';
-  const stats = DB.trucks.map(t=>{
+  $('#view').innerHTML =
+  '<div class="filters">'+
+    '<div class="filter-row">'+
+      '<input class="search" type="search" autocomplete="off" placeholder="Search vehicle number, model, owner\u2026" '+
+        'value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;defer(renderTruckList)">'+
+      '<select onchange="sub.type=this.value;renderTruckList()"><option value="">Owned and market</option>'+
+        '<option value="owned"'+(sub.type==='owned'?' selected':'')+'>Owned only</option>'+
+        '<option value="market"'+(sub.type==='market'?' selected':'')+'>Market only</option></select>'+
+    '</div>'+
+  '</div><div id="listBox"></div>';
+  renderTruckList();
+}
+
+function renderTruckList(){
+  const box = $('#listBox'); if(!box) return;
+  const q = (sub.q||'').toLowerCase().trim();
+  let stats = DB.trucks.map(t=>{
     const trips = DB.trips.filter(x=>x.truckId===t.id);
     const freight = trips.reduce((s,x)=>s+num(x.freight),0);
     const hire = trips.reduce((s,x)=>s+num(x.hire),0);
     const exp = DB.expenses.filter(e=>e.truckId===t.id).reduce((s,e)=>s+num(e.amount),0);
     return {...t, tripCount:trips.length, freight, hire, exp, net:freight-hire-exp};
   });
-  $('#view').innerHTML =
+  if(sub.type) stats = stats.filter(t=>t.type===sub.type);
+  if(q) stats = stats.filter(t=>
+    ((t.number||'')+' '+(t.model||'')+' '+(t.owner||'')+' '+(t.ownerPhone||'')+' '+
+     (t.driverId?driverName(t.driverId):'')).toLowerCase().includes(q));
+
+  box.innerHTML =
   (DB.trucks.length===0
     ? empty('No trucks yet','Add the vehicles you run. Mark a truck as "market" when it belongs to someone else and you pay hire for it.',
         '<button class="btn btn-amber" onclick="truckForm()">+ Add your first truck</button>')
+    : stats.length===0 ? empty('No truck matches','Try a different word, or switch back to owned and market.','')
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Truck</th><th>Type</th><th>Driver</th><th class="t-r">Trips</th>'+
       '<th class="t-r">Freight earned</th><th class="t-r">Hire + expenses</th><th class="t-r">Net</th><th></th></tr></thead><tbody>'+
@@ -1352,6 +1469,7 @@ function viewTrucks(){
         '</div></td></tr>').join('')+'</tbody></table></div></div>'+
       '<div class="note" style="margin-top:14px">Net is freight earned minus hire paid and expenses booked to that truck. Driver salary is not included here — see Reports for the full profit picture.</div>');
 }
+
 function truckForm(id){
   const t = id ? truckById(id) : null;
   openModal({
@@ -1490,12 +1608,15 @@ function viewDrivers(){
     ? empty('No drivers yet','Keep each driver\u2019s salary, advances and payments in one place, so you always know what is owed.',
         '<button class="btn btn-amber" onclick="driverForm()">+ Add your first driver</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
-      '<thead><tr><th>Driver</th><th>Phone</th><th>Licence</th><th class="t-r">Trips</th><th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
+      '<thead><tr><th>Driver</th><th>Documents</th><th>Phone</th><th>Licence</th><th class="t-r">Trips</th><th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
       DB.drivers.map(d=>{
         const bal = driverBalance(d.id);
         const trips = DB.trips.filter(t=>t.driverId===d.id).length;
+        const dc = docCount(d.docs);
         return '<tr><td onclick="openDriver(\''+d.id+'\')" style="cursor:pointer"><div class="t-strong">'+esc(d.name)+'</div>'+
           (d.salary?'<div class="t-sub">Salary '+money(d.salary)+'/month</div>':'')+'</td>'+
+          '<td>'+(dc? '<button class="chip chip-green" style="border:0;cursor:pointer" onclick="showDriverDocs(\''+d.id+'\')">'+dc+' of 3 on file</button>'
+                    : '<span class="chip chip-grey">No papers</span>')+'</td>'+
         '<td>'+esc(d.phone||'—')+'</td><td class="num">'+esc(d.licence||'—')+'</td>'+
         '<td class="t-r num">'+trips+'</td>'+
         '<td class="t-r num '+(bal>0?'money-neg':bal<0?'money-pos':'')+'">'+money(Math.abs(bal))+
@@ -1543,8 +1664,26 @@ function renderDriver(did){
       '</tbody></table></div></div>'+
       '<div class="note" style="margin-top:14px">Only money actually paid out counts as an expense in your profit report. "Salary due" simply records what you still owe.</div>');
 }
+function showDriverDocs(id){
+  const d = driverById(id); if(!d || !d.docs) return;
+  const have = DOC_SLOTS.filter(s=>d.docs[s.k]);
+  if(!have.length) return;
+  pendingDocs = Object.assign({}, d.docs);
+  openModal({
+    title: d.name+' — documents', wide:true,
+    body:'<div class="doc-grid">'+have.map(s=>
+      '<div class="doc filled">'+
+        '<div class="doc-label">'+esc(s.label)+'</div>'+
+        '<img class="doc-thumb" src="'+d.docs[s.k]+'" alt="'+esc(s.label)+'" style="min-height:150px" '+
+          'onclick="viewDoc(\''+s.k+'\',\''+esc(s.label)+'\')">'+
+      '</div>').join('')+'</div>'+
+      '<div class="hint" style="margin-top:12px">Tap a photo to see it full size or download it.</div>'
+  });
+}
+
 function driverForm(id){
   const d = id ? driverById(id) : null;
+  pendingDocs = Object.assign({}, (d && d.docs) || {});
   openModal({
     title: d?'Edit driver':'New driver', okText: d?'Save changes':'Save driver',
     body:'<div class="form-grid">'+
@@ -1555,13 +1694,21 @@ function driverForm(id){
       fText('d_join','Joining date', d?d.join:'','date')+
       fText('d_aadhaar','ID / Aadhaar number', d?d.aadhaar:'')+
       fArea('d_address','Address', d?d.address:'')+
+      '<div class="field full"><label>Documents</label>'+
+        '<div class="doc-grid" id="docGrid"></div>'+
+        '<span class="hint" id="docNote"></span>'+
+        '<span class="hint">Photos are shrunk to keep the app fast, and stay on this device and in your own Drive.</span>'+
+      '</div>'+
     '</div>',
     onOk(){
       if(!val('d_name')){ toast('Enter the driver name'); return; }
+      const docs = {};
+      DOC_SLOTS.forEach(s=>{ if(pendingDocs[s.k]) docs[s.k] = pendingDocs[s.k]; });
       const rec = {id:d?d.id:uid(), name:val('d_name'), phone:val('d_phone'), licence:val('d_licence'),
-        salary:num(val('d_salary')), join:val('d_join'), aadhaar:val('d_aadhaar'), address:val('d_address')};
+        salary:num(val('d_salary')), join:val('d_join'), aadhaar:val('d_aadhaar'), address:val('d_address'),
+        docs:docs};
       if(d) DB.drivers[DB.drivers.findIndex(x=>x.id===d.id)] = rec; else DB.drivers.push(rec);
-      save(); closeModal(); render(); toast(d?'Driver updated':'Driver saved');
+      save(); pendingDocs = {}; closeModal(); render(); toast(d?'Driver updated':'Driver saved');
     }
   });
 }
@@ -1747,6 +1894,12 @@ function viewSettings(){
       '<input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restore(this)">'+
     '</div>'+
     '<div class="divide"></div>'+
+    '<div class="stat-label">Storage used</div>'+
+    '<div class="meter"><div class="meter-fill'+(storePct()>85?' full':storePct()>60?' warn':'')+
+      '" style="width:'+Math.max(2,storePct())+'%"></div></div>'+
+    '<div class="hint" style="margin-bottom:14px">'+kb(storeUsed())+' of about 4.6 MB'+
+      (docTotal()? ' · driver photos take '+kb(docTotal()) : '')+
+      (storePct()>85? ' — nearly full. Remove some driver photos, or keep fewer on file.' : '')+'</div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:18px">'+counts.map(([l,n])=>
       '<div><div class="stat-label">'+l+'</div><div class="num t-strong" style="font-size:18px">'+n+'</div></div>').join('')+'</div>'+
   '</div>'+
@@ -1759,7 +1912,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>2.4</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>2.9</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function cloudPanel(){
@@ -1874,11 +2027,11 @@ function seed(){
   DB.trucks.push(t1,t2,t3); DB.parties.push(p1,p2,p3); DB.drivers.push(dr1,dr2);
   t1.driverId=dr1.id; t2.driverId=dr2.id;
   const trips=[
-    {date:day(3),lr:'MV-1041',from:'Gurugram',to:'Jaipur',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Cement bags',weight:'24',freight:38000,advance:10000,hire:0,status:'partial',notes:''},
+    {date:day(3),lr:'MV-1041',from:'Gurugram (Haryana)',to:'Jaipur (Rajasthan)',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Cement bags',weight:'24',freight:38000,advCash:10000,fuelQty:'',fuelRate:'',fuelAmt:0,advance:10000,hire:0,status:'partial',notes:''},
     {date:day(6),lr:'MV-1042',from:'Bhiwadi',to:'Ahmedabad',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'TMT bars',weight:'30',freight:64000,advance:0,hire:0,status:'pending',notes:''},
-    {date:day(9),lr:'MV-1043',from:'Delhi',to:'Lucknow',partyId:p3.id,truckId:t3.id,driverId:'',material:'Wheat',weight:'27',freight:47000,advance:15000,hire:36000,status:'partial',notes:'Market vehicle arranged through Rajesh Transport'},
+    {date:day(9),lr:'MV-1043',from:'Delhi (Delhi)',to:'Lucknow (Uttar Pradesh)',partyId:p3.id,truckId:t3.id,driverId:'',material:'Wheat',weight:'27',freight:47000,advCash:6000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,advance:15000,hire:36000,status:'partial',notes:'Market vehicle arranged through Rajesh Transport'},
     {date:day(12),lr:'MV-1044',from:'Jaipur',to:'Gurugram',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Empty return load',weight:'18',freight:26000,advance:0,hire:0,status:'paid',notes:''},
-    {date:day(16),lr:'MV-1045',from:'Gurugram',to:'Indore',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advance:20000,hire:0,status:'partial',notes:''}
+    {date:day(16),lr:'MV-1045',from:'Gurugram (Haryana)',to:'Indore (Madhya Pradesh)',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advCash:11000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,advance:20000,hire:0,status:'partial',notes:''}
   ];
   trips.forEach(t=>DB.trips.push({id:uid(),...t}));
   DB.ledger.push(
@@ -1918,9 +2071,12 @@ function download(name, rows){
 }
 function exportCSV(what){
   if(what==='trips'){
-    download('trips-'+today()+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight','Advance','Hire','Status','Notes']]
+    download('trips-'+today()+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
+      'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance','Hire','Status','Notes']]
       .concat(DB.trips.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
-        [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',t.material,t.weight,num(t.freight),num(t.advance),num(t.hire),t.status,t.notes])));
+        [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',
+         t.material,t.weight,num(t.freight),num(t.advCash),t.fuelQty||'',t.fuelRate||'',num(t.fuelAmt),
+         num(t.advance),num(t.hire),tripStatus(t),t.notes])));
   }
   if(what==='parties'){
     const bal = allBalances();
@@ -1943,6 +2099,168 @@ function exportLedger(pid){
 
 
 
+
+
+/* ============================================================
+   ADVANCES — cash plus fuel
+   A trip's `advance` field stays the single total that the ledger,
+   dues, profit and reports all read, so nothing downstream had to
+   change. The parts are kept alongside it.
+   ============================================================ */
+function tripAdvance(t){ return num(t.advCash) + num(t.fuelAmt); }
+function tripBalance(t){ return num(t.freight) - num(t.advance); }
+/* No advance = pending. Some advance = part paid. Nothing left = paid. */
+function tripStatus(t){
+  const adv = num(t.advance), fr = num(t.freight);
+  if(adv <= 0) return 'pending';
+  if(adv >= fr) return 'paid';
+  return 'partial';
+}
+function tripBalanceLabel(t){
+  const b = tripBalance(t);
+  if(b > 0) return '<span class="money-neg">'+money(b)+'</span>';
+  if(b < 0) return '<span class="money-amber">'+money(Math.abs(b))+' over</span>';
+  return '<span class="money-pos">Nil</span>';
+}
+function fuelNote(t){
+  if(!num(t.fuelAmt)) return '';
+  return num(t.fuelQty) && num(t.fuelRate)
+    ? num(t.fuelQty)+' L @ ₹'+num(t.fuelRate)+'/L'
+    : 'fuel advance';
+}
+function migrateAdvances(){
+  let changed = false;
+  DB.trips.forEach(t=>{
+    if(t.advCash===undefined){ t.advCash = num(t.advance); changed = true; }
+    if(t.fuelAmt===undefined){ t.fuelAmt = 0; changed = true; }
+    const total = tripAdvance(t);
+    if(num(t.advance)!==total){ t.advance = total; changed = true; }
+    const st = tripStatus(t);
+    if(t.status!==st){ t.status = st; changed = true; }
+  });
+  if(changed){ try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} }
+}
+
+/* ============================================================
+   DRIVER DOCUMENTS
+   Photos are shrunk before saving, because a browser only gives
+   this app a few megabytes in total. They stay on this device
+   (and in your own Drive if sync is on) and go nowhere else.
+   ============================================================ */
+const DOC_SLOTS = [
+  {k:'aadhaarFront', label:'Aadhaar front'},
+  {k:'aadhaarBack',  label:'Aadhaar back'},
+  {k:'licenceFront', label:'Licence front'}
+];
+const DOC_MAX_DIM = 1400;      // long edge, keeps printed text readable
+const DOC_TARGET  = 115*1024;  // aim per photo, before base64 padding
+const STORE_LIMIT = 4.6*1024*1024;
+
+let pendingDocs = {};
+
+function docTotal(){
+  let n=0;
+  DB.drivers.forEach(d=>DOC_SLOTS.forEach(s=>{ if(d.docs && d.docs[s.k]) n += d.docs[s.k].length*0.75; }));
+  return n;
+}
+function storeUsed(){ try{ return (localStorage.getItem(KEY)||'').length; }catch(e){ return 0; } }
+function storePct(){ return Math.min(100, Math.round(storeUsed()/STORE_LIMIT*100)); }
+function kb(n){ return Math.round(n/1024)+' KB'; }
+
+/* Shrink on a canvas, stepping quality down until it fits */
+function shrinkImage(file){
+  return new Promise((resolve, reject)=>{
+    if(!/^image\//.test(file.type)) return reject(new Error('That file is not a photo. Use a JPG or PNG.'));
+    const fr = new FileReader();
+    fr.onerror = ()=>reject(new Error('Could not read that file.'));
+    fr.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=>reject(new Error('That photo could not be opened.'));
+      img.onload = ()=>{
+        try{
+          const scale = Math.min(1, DOC_MAX_DIM/Math.max(img.width, img.height));
+          const cv = document.createElement('canvas');
+          cv.width  = Math.round(img.width*scale);
+          cv.height = Math.round(img.height*scale);
+          const cx = cv.getContext('2d');
+          if(!cx || !cv.toDataURL) return resolve(fr.result);   // very old browser: keep as is
+          cx.fillStyle = '#fff'; cx.fillRect(0,0,cv.width,cv.height);
+          cx.drawImage(img, 0, 0, cv.width, cv.height);
+          let q = 0.72, out = cv.toDataURL('image/jpeg', q);
+          while(out.length > DOC_TARGET*1.37 && q > 0.32){
+            q -= 0.1; out = cv.toDataURL('image/jpeg', q);
+          }
+          resolve(out);
+        }catch(e){ resolve(fr.result); }
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+async function pickDoc(slot, input){
+  const file = input.files && input.files[0];
+  input.value = '';
+  if(!file) return;
+  const tile = document.getElementById('doc_'+slot);
+  if(tile) tile.insertAdjacentHTML('beforeend','<div class="doc-busy" id="busy_'+slot+'">Shrinking photo…</div>');
+  try{
+    const data = await shrinkImage(file);
+    const projected = storeUsed() + data.length;
+    if(projected > STORE_LIMIT){
+      toast('Storage is nearly full. Remove an old photo first.');
+    } else {
+      pendingDocs[slot] = data;
+    }
+  }catch(e){
+    toast(e.message);
+  }
+  const b = document.getElementById('busy_'+slot); if(b) b.remove();
+  paintDocs();
+}
+function removeDoc(slot){ pendingDocs[slot] = null; paintDocs(); }
+
+function docTile(slot, label){
+  const v = pendingDocs[slot];
+  if(v){
+    return '<div class="doc filled" id="doc_'+slot+'">'+
+      '<div class="doc-label">'+esc(label)+'</div>'+
+      '<img class="doc-thumb" src="'+v+'" alt="'+esc(label)+'" onclick="viewDoc(\''+slot+'\',\''+esc(label)+'\')">'+
+      '<div class="doc-size">'+kb(v.length*0.75)+'</div>'+
+      '<div class="doc-bar">'+
+        '<button type="button" onclick="document.getElementById(\'file_'+slot+'\').click()">Replace</button>'+
+        '<button type="button" class="rm" onclick="removeDoc(\''+slot+'\')">Remove</button>'+
+      '</div>'+
+      '<input type="file" id="file_'+slot+'" accept="image/*" style="display:none" onchange="pickDoc(\''+slot+'\',this)">'+
+    '</div>';
+  }
+  return '<div class="doc" id="doc_'+slot+'">'+
+    '<div class="doc-label">'+esc(label)+'</div>'+
+    '<div class="doc-drop" onclick="document.getElementById(\'file_'+slot+'\').click()">'+
+      '<div class="doc-plus">+</div><div class="doc-hint">Add photo</div></div>'+
+    '<input type="file" id="file_'+slot+'" accept="image/*" style="display:none" onchange="pickDoc(\''+slot+'\',this)">'+
+  '</div>';
+}
+function paintDocs(){
+  const wrap = document.getElementById('docGrid');
+  if(wrap) wrap.innerHTML = DOC_SLOTS.map(s=>docTile(s.k, s.label)).join('');
+  const note = document.getElementById('docNote');
+  if(note) note.textContent = docCount(pendingDocs)+' of 3 added · '+storePct()+'% of storage used';
+}
+function docCount(d){ return DOC_SLOTS.filter(s=>d && d[s.k]).length; }
+
+function viewDoc(slot, label){
+  const v = pendingDocs[slot] || '';
+  if(!v) return;
+  openModal({
+    title: label || 'Document', wide:true,
+    body:'<img src="'+v+'" alt="'+esc(label||'')+'" style="width:100%;border-radius:8px;display:block">'+
+      '<div style="display:flex;gap:8px;margin-top:12px">'+
+        '<a class="btn" href="'+v+'" download="'+esc((label||'document').replace(/\s+/g,'-').toLowerCase())+'.jpg">Download</a>'+
+      '</div>'
+  });
+}
 
 /* ============================================================
    PLACES — districts of every state and union territory, plus
@@ -2469,6 +2787,7 @@ function saveClientId(){
    ============================================================ */
 reindex();
 buildPlaceList();
+migrateAdvances();
 if(!DB.seeded && DB.trips.length===0){ seed(); save(); }
 applyBrand();
 render();
