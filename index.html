@@ -498,7 +498,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 3.0 &middot; 20 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 3.1 &middot; 20 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -527,6 +527,7 @@ const KEY = 'mvl_db_v1';
 const BLANK = {
   settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:''},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
+  shops:[], shopLedger:[],
   seeded:false
 };
 let DB = load();
@@ -600,11 +601,14 @@ function reindex(){
   DB.trucks.forEach(t=>IDX.truck[t.id]=t);
   DB.parties.forEach(p=>IDX.party[p.id]=p);
   DB.drivers.forEach(d=>IDX.driver[d.id]=d);
+  IDX.shop = {}; (DB.shops||[]).forEach(s=>IDX.shop[s.id]=s);
 }
 // index first, with a safety net in case anything was added without a save
 const truckById  = id => IDX.truck[id]  || DB.trucks.find(t=>t.id===id);
 const partyById  = id => IDX.party[id]  || DB.parties.find(p=>p.id===id);
 const driverById = id => IDX.driver[id] || DB.drivers.find(d=>d.id===id);
+const shopById   = id => (IDX.shop||{})[id] || (DB.shops||[]).find(s=>s.id===id);
+const shopName   = id => { const s=shopById(id); return s? s.name : '—'; };
 const truckName  = id => { const t=truckById(id); return t? t.number : '—'; };
 const partyName  = id => { const p=partyById(id); return p? p.name : '—'; };
 const driverName = id => { const d=driverById(id); return d? d.name : '—'; };
@@ -676,6 +680,7 @@ const ICONS = {
   trips:'<path d="M4 19V6a2 2 0 012-2h6l2 2h4a2 2 0 012 2v11"/><path d="M4 19h16"/><path d="M9 12h6"/><path d="M9 16h6"/>',
   expenses:'<path d="M3 7h18v12H3z"/><path d="M3 11h18"/><circle cx="8" cy="15" r="1.4"/>',
   drivers:'<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0115 0"/>',
+  shops:'<path d="M4 9h16l-1 11H5z"/><path d="M4 9l1.6-4h12.8L20 9"/><path d="M9 13h6"/>',
   reports:'<path d="M4 20V9"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/>',
   insights:'<path d="M3 17l5-6 4 3 5-7"/><path d="M17 7h4v4"/><path d="M3 21h18"/>',
   settings:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>'
@@ -685,6 +690,7 @@ const PAGES = [
   {id:'trips',     label:'Trips',     sub:'Every load you have moved'},
   {id:'parties',   label:'Parties & Ledger', sub:'Who owes you what'},
   {id:'trucks',    label:'Trucks',    sub:'Your own and market vehicles'},
+  {id:'shops',     label:'Shops',     sub:'Credit taken and what you owe'},
   {id:'expenses',  label:'Expenses',  sub:'Money going out'},
   {id:'drivers',   label:'Drivers',   sub:'Salary, advances and balances'},
   {id:'reports',   label:'Reports & P&L', sub:'Profit, dues and performance'},
@@ -730,8 +736,8 @@ function render(){
   $('#pageActions').innerHTML = '';
   buildNav();
   ({dashboard:viewDashboard, trips:viewTrips, parties:viewParties, trucks:viewTrucks,
-    expenses:viewExpenses, drivers:viewDrivers, reports:viewReports, insights:viewInsights,
-    settings:viewSettings}[route])();
+    expenses:viewExpenses, drivers:viewDrivers, shops:viewShops, reports:viewReports,
+    insights:viewInsights, settings:viewSettings}[route])();
   const v = $('#view');
   v.classList.remove('view-in'); void v.offsetWidth; v.classList.add('view-in');
   animateCounts();
@@ -833,6 +839,7 @@ function viewDashboard(){
     DB.trucks.length+' trucks · '+DB.parties.length+' parties · '+DB.drivers.length+' drivers · '+
     DB.trips.length+' trips recorded'+
     (totalDriverPayable()? ' · '+money(totalDriverPayable())+' owed to drivers':'')+
+    (totalShopPayable()? ' · '+money(totalShopPayable())+' owed to shops':'')+
   '</div>'+
   '<div class="g-wide" style="margin-top:14px">'+
     '<div class="card chart-card">'+
@@ -1565,8 +1572,11 @@ function renderExpenseList(){
       '<thead><tr><th>Date</th><th>Category</th><th>Details</th><th>Truck</th><th class="t-r">Amount</th><th></th></tr></thead><tbody>'+
       list.map(e=>
         '<tr><td style="white-space:nowrap">'+fdate(e.date)+'</td>'+
-        '<td><span class="chip chip-grey">'+esc(e.category)+'</span></td>'+
-        '<td>'+esc(e.note||'\u2014')+(e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
+        '<td><span class="chip chip-grey">'+esc(e.category)+'</span>'+
+          (e.mode==='Credit'?'<div class="t-sub"><span class="chip chip-amber">On credit</span></div>':'')+'</td>'+
+        '<td>'+esc(e.note||'\u2014')+
+          (e.mode==='Credit'&&e.shopId?'<div class="t-sub">'+esc(shopName(e.shopId))+'</div>'
+            :e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
         '<td class="num">'+esc(e.truckId?truckName(e.truckId):'\u2014')+'</td>'+
         '<td class="t-r num t-strong">'+money(e.amount)+'</td>'+
         '<td><div class="row-actions">'+
@@ -1577,8 +1587,13 @@ function renderExpenseList(){
       '</table></div>'+moreBar(list.length, full, 'renderExpenseList')+'</div>');
 }
 
-function expenseForm(id){
-  const e = id ? DB.expenses.find(x=>x.id===id) : null;
+let expenseDraft = null;
+function expenseForm(id, preselectShop){
+  let e = id ? DB.expenses.find(x=>x.id===id) : null;
+  if(!e && expenseDraft){ e = expenseDraft; expenseDraft = null; }
+  const shops = DB.shops || [];
+  const chosenShop = preselectShop || (e?e.shopId:'') || '';
+  const isCredit = (e && e.mode==='Credit') || !!preselectShop;
   openModal({
     title: e?'Edit expense':'New expense', okText: e?'Save changes':'Save expense',
     body:'<div class="form-grid">'+
@@ -1587,18 +1602,65 @@ function expenseForm(id){
       fSelect('e_cat','Category', CATEGORIES.map(c=>({v:c,t:c})), e?e.category:'Fuel / Diesel')+
       fSelect('e_truck','Truck (optional)', truckOptions(), e?e.truckId:'')+
       fText('e_paidTo','Paid to', e?e.paidTo:'','text','placeholder="Pump, mechanic, bank…"')+
-      fSelect('e_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Card',t:'Card'},{v:'Credit',t:'On credit'}], e?e.mode:'Cash')+
+      fSelect('e_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Card',t:'Card'},{v:'Credit',t:'On credit'}],
+        isCredit?'Credit':(e?e.mode:'Cash'), 'onchange="toggleShopField()"')+
+      '<div class="field full" id="shopField"'+(isCredit?'':' hidden')+'>'+
+        '<label for="e_shop">Shop <span style="color:var(--red)">*</span></label>'+
+        '<select id="e_shop" onchange="shopPicked()">'+
+          '<option value="">— select the shop —</option>'+
+          shops.map(s=>'<option value="'+s.id+'"'+(s.id===chosenShop?' selected':'')+'>'+esc(s.name)+
+            (shopBalance(s.id)>0?' · '+money(shopBalance(s.id))+' owed':'')+'</option>').join('')+
+          '<option value="__new">+ Add a new shop</option>'+
+        '</select>'+
+        '<span class="hint">Taken on credit, so this goes into the shop\u2019s ledger as money you owe'+
+          '<span id="shopTruckHint"></span>.</span>'+
+      '</div>'+
       fArea('e_note','Details', e?e.note:'')+
     '</div>',
     onOk(){
       const amt = num(val('e_amount'));
       if(amt<=0){ toast('Enter an amount greater than zero'); return; }
-      const rec = {id:e?e.id:uid(), date:val('e_date')||today(), amount:amt, category:val('e_cat'),
-        truckId:val('e_truck'), paidTo:val('e_paidTo'), mode:val('e_mode'), note:val('e_note')};
-      if(e) DB.expenses[DB.expenses.findIndex(x=>x.id===e.id)] = rec; else DB.expenses.push(rec);
-      save(); closeModal(); render(); toast(e?'Expense updated':'Expense saved');
+      const mode = val('e_mode');
+      const shopId = mode==='Credit' ? val('e_shop') : '';
+      if(mode==='Credit' && (!shopId || shopId==='__new')){
+        toast('Please select a shop for this credit expense.');
+        const el = document.getElementById('e_shop');
+        if(el){ el.focus(); el.style.borderColor = 'var(--red)'; }
+        return;
+      }
+      const existing = e && e.id ? DB.expenses.findIndex(x=>x.id===e.id) : -1;
+      const rec = {id: existing>=0 ? e.id : uid(), date:val('e_date')||today(), amount:amt, category:val('e_cat'),
+        truckId:val('e_truck'), paidTo:val('e_paidTo'), mode:mode, shopId:shopId, note:val('e_note')};
+      if(existing>=0) DB.expenses[existing] = rec; else DB.expenses.push(rec);
+      save(); closeModal();
+      if(route==='shops' && sub.open) renderShopLedger(sub.open); else render();
+      toast(e?'Expense updated':'Expense saved');
     }
   });
+  toggleShopField();
+}
+
+function toggleShopField(){
+  const f = document.getElementById('shopField');
+  if(!f) return;
+  const credit = val('e_mode')==='Credit';
+  f.hidden = !credit;
+  const hint = document.getElementById('shopTruckHint');
+  if(hint){
+    const t = val('e_truck');
+    hint.textContent = t ? ', against ' + truckName(t) : ', with the truck shown as N/A';
+  }
+}
+/* "+ Add a new shop" without losing what has been typed so far */
+function shopPicked(){
+  const el = document.getElementById('e_shop');
+  if(!el) return;
+  el.style.borderColor = '';
+  if(el.value!=='__new') return;
+  const draft = {id:null, date:val('e_date'), amount:val('e_amount'), category:val('e_cat'),
+    truckId:val('e_truck'), paidTo:val('e_paidTo'), mode:'Credit', note:val('e_note')};
+  closeModal();
+  shopForm(null, draft);
 }
 function delExpense(id){
   confirmAsk('Delete this expense?', ()=>{ DB.expenses = DB.expenses.filter(x=>x.id!==id); save(); render(); toast('Expense deleted'); }, true);
@@ -1757,6 +1819,197 @@ function delDriver(did){
     save(); sub={}; render(); toast('Driver deleted');
   }, true);
 }
+
+/* ============================================================
+   SHOPS PAGE AND LEDGER
+   ============================================================ */
+function viewShops(){
+  if(sub.open) return renderShopLedger(sub.open);
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="shopForm()">+ <span>New shop</span></button>';
+  const bal = allShopBalances();
+  const owed = Object.values(bal).reduce((s,b)=>s+Math.max(0,b),0);
+  const withDues = Object.values(bal).filter(b=>b>0).length;
+  const creditThisMonth = DB.expenses.filter(e=>e.mode==='Credit' && monthKey(e.date)===thisMonth())
+    .reduce((s,e)=>s+num(e.amount),0);
+
+  $('#view').innerHTML =
+  '<div class="grid g3 rise" style="margin-bottom:16px">'+
+    kpi('Total outstanding to shops', owed, {tone:owed>0?'neg':'pos',
+      note: withDues? plural(withDues,'shop')+' waiting to be paid' : 'Nothing pending'})+
+    kpi('Taken on credit this month', creditThisMonth, {note:monthName(thisMonth())})+
+    kpi('Shops', (DB.shops||[]).length, {fmt:'plain', note:'On your books'})+
+  '</div>'+
+  '<div class="filters"><div class="filter-row">'+
+    '<input class="search" type="search" autocomplete="off" placeholder="Search shop, contact person, phone\u2026" '+
+      'value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;defer(renderShopList)">'+
+    '<select onchange="sub.due=this.value;renderShopList()"><option value="">All shops</option>'+
+      '<option value="due"'+(sub.due==='due'?' selected':'')+'>With dues only</option></select>'+
+  '</div></div><div id="listBox"></div>';
+  renderShopList();
+}
+
+function renderShopList(){
+  const box = $('#listBox'); if(!box) return;
+  const q = (sub.q||'').toLowerCase().trim();
+  const bal = allShopBalances();
+  const counts = {};
+  DB.expenses.forEach(e=>{ if(e.mode==='Credit' && e.shopId) counts[e.shopId]=(counts[e.shopId]||0)+1; });
+  let list = (DB.shops||[]).map(s=>({...s, bal:bal[s.id]||0, bills:counts[s.id]||0}));
+  if(q) list = list.filter(s=>((s.name||'')+' '+(s.person||'')+' '+(s.phone||'')+' '+(s.city||'')).toLowerCase().includes(q));
+  if(sub.due==='due') list = list.filter(s=>s.bal>0);
+  list.sort((a,b)=>b.bal-a.bal);
+
+  box.innerHTML =
+  ((DB.shops||[]).length===0
+    ? empty('No shops yet','A shop is anyone you buy from on credit — the diesel pump, the tyre dealer, the mechanic. Add one, then mark an expense as "On credit" against it.',
+        '<button class="btn btn-amber" onclick="shopForm()">+ Add your first shop</button>')
+    : list.length===0 ? empty('No shop matches','Try a different word, or switch back to all shops.','')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Shop</th><th>Contact</th><th class="t-r">Credit bills</th>'+
+      '<th class="t-r">Outstanding payable</th><th></th></tr></thead><tbody>'+
+      list.map(s=>
+        '<tr><td onclick="shopLedger(\''+s.id+'\')" style="cursor:pointer"><div class="t-strong">'+esc(s.name)+'</div>'+
+          (s.person?'<div class="t-sub">'+esc(s.person)+'</div>':'')+'</td>'+
+        '<td>'+esc(s.phone||'—')+(s.city?'<div class="t-sub">'+esc(s.city)+'</div>':'')+'</td>'+
+        '<td class="t-r num">'+s.bills+'</td>'+
+        '<td class="t-r num '+(s.bal>0?'money-neg':s.bal<0?'money-pos':'')+'">'+money(Math.abs(s.bal))+
+          '<div class="t-sub">'+(s.bal>0?'you owe':s.bal<0?'paid ahead':'settled')+'</div></td>'+
+        '<td><div class="row-actions">'+
+          '<button class="btn btn-sm btn-primary" onclick="shopLedger(\''+s.id+'\')">Ledger</button>'+
+          '<button class="btn btn-sm" onclick="shopForm(\''+s.id+'\')">Edit</button>'+
+        '</div></td></tr>').join('')+
+      '</tbody><tfoot><tr><th colspan="3">Total payable</th>'+
+      '<th class="t-r num" style="font-size:14px;color:var(--red)">'+
+        money(list.reduce((s,x)=>s+Math.max(0,x.bal),0))+'</th><th></th></tr></tfoot></table></div></div>');
+}
+
+function shopForm(id, fromExpense){
+  const s = id ? shopById(id) : null;
+  openModal({
+    title: s?'Edit shop':'New shop', okText: s?'Save changes':'Save shop',
+    body:'<div class="form-grid">'+
+      fText('s_name','Shop name', s?s.name:'','text','placeholder="e.g. ABC Fuel Station"')+
+      fText('s_person','Contact person', s?s.person:'')+
+      fText('s_phone','Mobile number', s?s.phone:'','tel')+
+      fText('s_city','City', s?s.city:'')+
+      fArea('s_address','Address', s?s.address:'')+
+      fArea('s_notes','Notes', s?s.notes:'')+
+    '</div>'+
+    (s? '<div class="note" style="margin-top:12px">Changing these details does not affect anything already in this shop\u2019s ledger.</div>':''),
+    onOk(){
+      if(!val('s_name')){ toast('Enter the shop name'); return; }
+      const rec = {id:s?s.id:uid(), name:val('s_name'), person:val('s_person'), phone:val('s_phone'),
+        city:val('s_city'), address:val('s_address'), notes:val('s_notes')};
+      DB.shops = DB.shops || [];
+      if(s) DB.shops[DB.shops.findIndex(x=>x.id===s.id)] = rec; else DB.shops.push(rec);
+      save(); closeModal();
+      if(fromExpense){
+        expenseDraft = fromExpense;
+        expenseForm(null, rec.id);
+        toast('Shop added');
+        return;
+      }
+      render(); toast(s?'Shop updated':'Shop saved');
+    }
+  });
+}
+function shopLedger(id){ route='shops'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderShopLedger(id); }
+
+function renderShopLedger(sid){
+  const s = shopById(sid);
+  if(!s){ sub={}; return viewShops(); }
+  const rows = shopLedgerRows(sid);
+  const bal = shopBalance(sid);
+  const taken = rows.reduce((a,r)=>a+r.debit,0);
+  const paid  = rows.reduce((a,r)=>a+r.credit,0);
+  $('#pageTitle').textContent = s.name;
+  $('#pageSub').textContent = [s.person, s.phone, s.city].filter(Boolean).join(' · ') || 'Shop ledger';
+  $('#pageActions').innerHTML =
+    '<button class="btn" onclick="sub={};render()">← <span>All shops</span></button>'+
+    '<button class="btn btn-amber" onclick="shopEntryForm(\''+sid+'\')">+ <span>Add entry</span></button>';
+
+  $('#view').innerHTML =
+  '<div class="grid g3 rise" style="margin-bottom:16px">'+
+    kpi('Taken on credit', taken, {note:plural(rows.filter(r=>r.debit).length,'entry')})+
+    kpi('Paid to shop', paid, {tone:'pos'})+
+    kpi(bal>=0?'Outstanding payable':'Paid ahead', Math.abs(bal), {tone:bal>0?'neg':'pos'})+
+  '</div>'+
+  '<div class="toolbar"><button class="btn btn-sm" onclick="window.print()">Print ledger</button>'+
+    '<button class="btn btn-sm" onclick="exportShopLedger(\''+sid+'\')">Export CSV</button>'+
+    '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delShop(\''+sid+'\')">Delete shop</button></div>'+
+  (rows.length===0
+    ? empty('Ledger is empty','Mark an expense as "On credit" against this shop, or add a payment entry here.',
+        '<button class="btn btn-amber" onclick="shopEntryForm(\''+sid+'\')">+ Add entry</button>')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Date</th><th>Description</th><th>Truck</th><th class="t-r">Debit</th>'+
+      '<th class="t-r">Credit</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      rows.map(r=>
+        '<tr><td style="white-space:nowrap">'+fdate(r.date)+'</td>'+
+        '<td><div class="t-strong">'+r.label+'</div>'+(r.ref?'<div class="t-sub">'+esc(r.ref)+'</div>':'')+'</td>'+
+        '<td class="num">'+esc(r.truck)+'</td>'+
+        '<td class="t-r num">'+(r.debit?money(r.debit):'')+'</td>'+
+        '<td class="t-r num" style="color:var(--green)">'+(r.credit?money(r.credit):'')+'</td>'+
+        '<td class="t-r num t-strong">'+money(r.running)+'</td>'+
+        '<td><div class="row-actions">'+
+          (r.kind==='expense'?'<button class="btn btn-sm" onclick="expenseForm(\''+r.expenseId+'\')">Open expense</button>':'')+
+          (r.kind==='entry'?'<button class="btn btn-sm" onclick="shopEntryForm(\''+sid+'\',\''+r.entryId+'\')">Edit</button>'+
+            '<button class="btn btn-sm btn-danger" onclick="delShopEntry(\''+r.entryId+'\')">Delete</button>':'')+
+        '</div></td></tr>').join('')+
+      '</tbody></table></div></div>'+
+      '<div class="note" style="margin-top:14px">Debit is credit you have taken, which increases what you owe. Credit is money you have paid the shop, which reduces it. Lines from expenses update themselves — edit the expense to change one.</div>');
+}
+
+function shopEntryForm(sid, eid){
+  const e = eid ? (DB.shopLedger||[]).find(x=>x.id===eid) : null;
+  openModal({
+    title: e? 'Edit ledger entry':'Shop ledger entry', okText: e?'Save changes':'Save entry',
+    body:'<div class="form-grid">'+
+      fSeg('sl_type','Entry type',[
+        {v:'credit',t:'Payment made to shop'},
+        {v:'debit', t:'Charge added by shop'}], e?e.type:'credit')+
+      fText('sl_date','Date', e?e.date:today(),'date')+
+      fText('sl_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
+      fSelect('sl_truck','Truck (optional)', truckOptions(), e?e.truckId:'')+
+      fSelect('sl_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Cheque',t:'Cheque'},{v:'Adjustment',t:'Adjustment'}], e?e.mode:'Cash')+
+      fText('sl_note','Description', e?e.note:'','text','placeholder="e.g. Part payment for August bills"')+
+    '</div>',
+    onOk(){
+      const amt = num(val('sl_amount'));
+      if(amt<=0){ toast('Enter an amount greater than zero'); return; }
+      const rec = {id:e?e.id:uid(), shopId:sid, date:val('sl_date')||today(), type:checked('sl_type')||'credit',
+        amount:amt, truckId:val('sl_truck'), mode:val('sl_mode'), note:val('sl_note')};
+      DB.shopLedger = DB.shopLedger || [];
+      if(e) DB.shopLedger[DB.shopLedger.findIndex(x=>x.id===e.id)] = rec; else DB.shopLedger.push(rec);
+      save(); closeModal(); renderShopLedger(sid); toast(e?'Entry updated':'Entry saved');
+    }
+  });
+}
+function delShopEntry(eid){
+  const e = (DB.shopLedger||[]).find(x=>x.id===eid); if(!e) return;
+  confirmAsk('Delete this ledger entry?', ()=>{
+    DB.shopLedger = DB.shopLedger.filter(x=>x.id!==eid); save(); renderShopLedger(e.shopId); toast('Entry deleted');
+  }, true);
+}
+function delShop(sid){
+  const n = creditExpenses(sid).length;
+  if(n){
+    openModal({title:'Shop is in use', body:'<p style="margin:0">'+n+' credit expense'+(n===1?' is':'s are')+
+      ' booked against this shop. Change those expenses first, so your records stay correct.</p>'});
+    return;
+  }
+  confirmAsk('Delete this shop and its manual ledger entries?', ()=>{
+    DB.shops = DB.shops.filter(x=>x.id!==sid);
+    DB.shopLedger = (DB.shopLedger||[]).filter(x=>x.shopId!==sid);
+    save(); sub={}; render(); toast('Shop deleted');
+  }, true);
+}
+function exportShopLedger(sid){
+  const s = shopById(sid);
+  download('shop-'+s.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
+    [['Date','Description','Truck','Debit','Credit','Balance']].concat(
+      shopLedgerRows(sid).map(r=>[r.date, r.label.replace(/<[^>]+>/g,''), r.truck, r.debit||'', r.credit||'', r.running])));
+}
+
 /* ============================================================
    REPORTS & P&L
    ============================================================ */
@@ -1947,7 +2200,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>3.0</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>3.1</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function cloudPanel(){
@@ -2135,6 +2388,59 @@ function exportLedger(pid){
 
 
 
+
+/* ============================================================
+   SHOPS
+   A shop's debits are read straight from the expenses marked
+   "On credit", never copied. So editing, deleting, switching to
+   cash or moving an expense to another shop corrects the ledger
+   on its own — there is no second copy to fall out of step.
+   ============================================================ */
+function creditExpenses(shopId){
+  return DB.expenses.filter(e=>e.mode==='Credit' && e.shopId===shopId);
+}
+function shopBalance(id){
+  let bal = 0;
+  creditExpenses(id).forEach(e=>{ bal += num(e.amount); });
+  (DB.shopLedger||[]).filter(l=>l.shopId===id).forEach(l=>{
+    bal += l.type==='debit' ? num(l.amount) : -num(l.amount);
+  });
+  return bal;
+}
+function allShopBalances(){
+  const m = {};
+  (DB.shops||[]).forEach(s=>{ m[s.id] = 0; });
+  DB.expenses.forEach(e=>{ if(e.mode==='Credit' && e.shopId in m) m[e.shopId] += num(e.amount); });
+  (DB.shopLedger||[]).forEach(l=>{
+    if(l.shopId in m) m[l.shopId] += l.type==='debit' ? num(l.amount) : -num(l.amount);
+  });
+  return m;
+}
+function totalShopPayable(){
+  return Object.values(allShopBalances()).reduce((s,b)=>s+Math.max(0,b),0);
+}
+function shopLedgerRows(id){
+  const rows = [];
+  creditExpenses(id).forEach(e=>{
+    rows.push({date:e.date, label:esc(e.category)+' taken on credit',
+      truck: e.truckId ? truckName(e.truckId) : 'N/A',
+      ref: [e.paidTo, e.note].filter(Boolean).join(' · '),
+      debit:num(e.amount), credit:0, kind:'expense', expenseId:e.id});
+  });
+  (DB.shopLedger||[]).filter(l=>l.shopId===id).forEach(l=>{
+    rows.push({date:l.date,
+      label: l.note || (l.type==='credit' ? 'Payment made to shop' : 'Charge added by shop'),
+      truck: l.truckId ? truckName(l.truckId) : 'N/A',
+      ref: l.mode || '',
+      debit: l.type==='debit' ? num(l.amount) : 0,
+      credit: l.type==='credit' ? num(l.amount) : 0,
+      kind:'entry', entryId:l.id});
+  });
+  rows.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let run = 0;
+  rows.forEach(r=>{ run += r.debit - r.credit; r.running = run; });
+  return rows;
+}
 
 /* ============================================================
    ADVANCES — cash plus fuel
