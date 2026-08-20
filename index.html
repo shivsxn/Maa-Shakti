@@ -64,7 +64,8 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 }
 .page-title{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0}
 .page-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
-.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
 .content{padding:22px 26px 60px;max-width:1240px;width:100%}
 
 /* ---------- Buttons ---------- */
@@ -338,14 +339,14 @@ tbody tr{transition:background .12s}
   .kpi-value{font-size:22px}
   .kpi{min-height:104px}
 }
-.bell{margin-left:auto;position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
+.bell{position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
   padding:8px;cursor:pointer;color:var(--muted);display:inline-flex;line-height:0}
 .bell:hover{border-color:#CFC9BB;color:var(--ink)}
 .bell.has{color:var(--red);border-color:#E8CFCB;background:var(--red-soft)}
 .bell-badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;
   background:var(--red);color:#fff;font-size:10.5px;font-weight:700;line-height:17px;text-align:center;
   font-family:var(--mono)}
-.bell + .cloud-pill{margin-left:8px}
+
 .notif-list{display:flex;flex-direction:column;gap:8px}
 .notif{display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;padding:12px 14px;cursor:pointer;
   background:var(--card);border:1px solid var(--line);border-radius:9px}
@@ -365,11 +366,12 @@ tbody tr{transition:background .12s}
   .docrow .rmdoc{grid-column:2;justify-self:end}
 }
 .cloud-pill{
-  margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;
+  display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;
   border:1px solid var(--line);background:var(--card);font-size:12.5px;font-weight:600;cursor:pointer;
   color:var(--muted);white-space:nowrap;
 }
 .cloud-pill:hover{border-color:#CFC9BB}
+.cloud-pill[hidden],.bell[hidden]{display:none}
 .cloud-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
 .cloud-pill.on{color:var(--green);border-color:#C8E2D6;background:var(--green-soft)}
 .cloud-pill.on .cloud-dot{background:var(--green)}
@@ -453,14 +455,14 @@ tbody tr{transition:background .12s}
   .kpi-value{font-size:22px}
   .kpi{min-height:104px}
 }
-.bell{margin-left:auto;position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
+.bell{position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
   padding:8px;cursor:pointer;color:var(--muted);display:inline-flex;line-height:0}
 .bell:hover{border-color:#CFC9BB;color:var(--ink)}
 .bell.has{color:var(--red);border-color:#E8CFCB;background:var(--red-soft)}
 .bell-badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;
   background:var(--red);color:#fff;font-size:10.5px;font-weight:700;line-height:17px;text-align:center;
   font-family:var(--mono)}
-.bell + .cloud-pill{margin-left:8px}
+
 .notif-list{display:flex;flex-direction:column;gap:8px}
 .notif{display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;padding:12px 14px;cursor:pointer;
   background:var(--card);border:1px solid var(--line);border-radius:9px}
@@ -550,7 +552,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 3.2 &middot; 20 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 3.3 &middot; 20 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -558,9 +560,11 @@ tbody tr{transition:background .12s}
         <h1 class="page-title" id="pageTitle">Dashboard</h1>
         <div class="page-sub" id="pageSub"></div>
       </div>
-      <button class="bell" id="bellBtn" onclick="notifications()" aria-label="Notifications"></button>
-      <button class="cloud-pill" id="cloudPill" onclick="go('settings')" hidden></button>
-      <div class="topbar-actions" id="pageActions"></div>
+      <div class="topbar-right">
+        <button class="bell" id="bellBtn" onclick="notifications()" aria-label="Notifications"></button>
+        <button class="cloud-pill" id="cloudPill" onclick="go('settings')" hidden></button>
+        <div class="topbar-actions" id="pageActions"></div>
+      </div>
     </header>
     <main class="content" id="view"></main>
   </div>
@@ -2408,7 +2412,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>3.2</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>3.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function cloudPanel(){
