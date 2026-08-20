@@ -338,6 +338,32 @@ tbody tr{transition:background .12s}
   .kpi-value{font-size:22px}
   .kpi{min-height:104px}
 }
+.bell{margin-left:auto;position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
+  padding:8px;cursor:pointer;color:var(--muted);display:inline-flex;line-height:0}
+.bell:hover{border-color:#CFC9BB;color:var(--ink)}
+.bell.has{color:var(--red);border-color:#E8CFCB;background:var(--red-soft)}
+.bell-badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;
+  background:var(--red);color:#fff;font-size:10.5px;font-weight:700;line-height:17px;text-align:center;
+  font-family:var(--mono)}
+.bell + .cloud-pill{margin-left:8px}
+.notif-list{display:flex;flex-direction:column;gap:8px}
+.notif{display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;padding:12px 14px;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);border-radius:9px}
+.notif:hover{background:#FCFBF8;border-color:#CFC9BB}
+.notif-dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
+.notif-dot.warn{background:var(--amber)}
+.notif-dot.bad{background:var(--red)}
+.notif-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.notif-title{font-weight:600;font-size:14px}
+.notif-sub{font-size:12.5px;color:var(--muted)}
+.docrow{display:grid;grid-template-columns:1.2fr .9fr 1fr auto;gap:9px;align-items:end;margin-bottom:9px}
+.docrow input{padding:8px 10px;font-size:13.5px}
+.docrow .rmdoc{padding:9px 11px;border:1px solid #E8CFCB;background:var(--card);color:var(--red);
+  border-radius:8px;cursor:pointer;font-weight:600;font-size:12.5px}
+@media (max-width:760px){
+  .docrow{grid-template-columns:1fr 1fr;gap:8px}
+  .docrow .rmdoc{grid-column:2;justify-self:end}
+}
 .cloud-pill{
   margin-left:auto;display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:20px;
   border:1px solid var(--line);background:var(--card);font-size:12.5px;font-weight:600;cursor:pointer;
@@ -427,6 +453,32 @@ tbody tr{transition:background .12s}
   .kpi-value{font-size:22px}
   .kpi{min-height:104px}
 }
+.bell{margin-left:auto;position:relative;background:var(--card);border:1px solid var(--line);border-radius:9px;
+  padding:8px;cursor:pointer;color:var(--muted);display:inline-flex;line-height:0}
+.bell:hover{border-color:#CFC9BB;color:var(--ink)}
+.bell.has{color:var(--red);border-color:#E8CFCB;background:var(--red-soft)}
+.bell-badge{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;
+  background:var(--red);color:#fff;font-size:10.5px;font-weight:700;line-height:17px;text-align:center;
+  font-family:var(--mono)}
+.bell + .cloud-pill{margin-left:8px}
+.notif-list{display:flex;flex-direction:column;gap:8px}
+.notif{display:flex;align-items:flex-start;gap:11px;width:100%;text-align:left;padding:12px 14px;cursor:pointer;
+  background:var(--card);border:1px solid var(--line);border-radius:9px}
+.notif:hover{background:#FCFBF8;border-color:#CFC9BB}
+.notif-dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
+.notif-dot.warn{background:var(--amber)}
+.notif-dot.bad{background:var(--red)}
+.notif-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+.notif-title{font-weight:600;font-size:14px}
+.notif-sub{font-size:12.5px;color:var(--muted)}
+.docrow{display:grid;grid-template-columns:1.2fr .9fr 1fr auto;gap:9px;align-items:end;margin-bottom:9px}
+.docrow input{padding:8px 10px;font-size:13.5px}
+.docrow .rmdoc{padding:9px 11px;border:1px solid #E8CFCB;background:var(--card);color:var(--red);
+  border-radius:8px;cursor:pointer;font-weight:600;font-size:12.5px}
+@media (max-width:760px){
+  .docrow{grid-template-columns:1fr 1fr;gap:8px}
+  .docrow .rmdoc{grid-column:2;justify-self:end}
+}
 .cloud-pill{padding:7px 9px}}
 .step{display:flex;gap:12px;padding:11px 0;border-bottom:1px dotted var(--line)}
 .step-n{width:22px;height:22px;border-radius:50%;background:var(--asphalt);color:#fff;font-size:11px;
@@ -498,7 +550,7 @@ tbody tr{transition:background .12s}
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 3.1 &middot; 20 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 3.2 &middot; 20 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -506,6 +558,7 @@ tbody tr{transition:background .12s}
         <h1 class="page-title" id="pageTitle">Dashboard</h1>
         <div class="page-sub" id="pageSub"></div>
       </div>
+      <button class="bell" id="bellBtn" onclick="notifications()" aria-label="Notifications"></button>
       <button class="cloud-pill" id="cloudPill" onclick="go('settings')" hidden></button>
       <div class="topbar-actions" id="pageActions"></div>
     </header>
@@ -738,6 +791,7 @@ function render(){
   ({dashboard:viewDashboard, trips:viewTrips, parties:viewParties, trucks:viewTrucks,
     expenses:viewExpenses, drivers:viewDrivers, shops:viewShops, reports:viewReports,
     insights:viewInsights, settings:viewSettings}[route])();
+  paintBell();
   const v = $('#view');
   v.classList.remove('view-in'); void v.offsetWidth; v.classList.add('view-in');
   animateCounts();
@@ -757,6 +811,7 @@ function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk,
       '</div></div>';
   document.body.style.overflow='hidden';
   if($('#docGrid')) paintDocs();
+  if($('#truckDocs')) paintTruckDocs();
   if($('#f_advTotal')) recalcAdvance();
   const f = $('.modal-body input, .modal-body select, .modal-body textarea');
   if(f && window.innerWidth>760) f.focus();
@@ -1436,8 +1491,11 @@ function delParty(pid){
    TRUCKS
    ============================================================ */
 function viewTrucks(){
+  if(!sub.tab) sub.tab = 'fleet';
+  if(sub.tab==='docs') return viewTruckDocs();
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="truckForm()">+ <span>New truck</span></button>';
   $('#view').innerHTML =
+  truckTabs()+
   '<div class="filters">'+
     '<div class="filter-row">'+
       '<input class="search" type="search" autocomplete="off" placeholder="Search vehicle number, model, owner\u2026" '+
@@ -1448,6 +1506,114 @@ function viewTrucks(){
     '</div>'+
   '</div><div id="listBox"></div>';
   renderTruckList();
+}
+
+function docHealth(t){
+  const docs = t.docs||[];
+  if(!docs.length) return '<div class="t-sub">No papers on file</div>';
+  const bad  = docs.filter(d=>docStatus(d.expiry).key==='expired').length;
+  const soon = docs.filter(d=>docStatus(d.expiry).key==='soon').length;
+  if(bad)  return '<div class="t-sub"><span class="chip chip-red">'+plural(bad,'paper')+' expired</span></div>';
+  if(soon) return '<div class="t-sub"><span class="chip chip-amber">'+soon+' expiring soon</span></div>';
+  return '<div class="t-sub"><span class="chip chip-green">'+plural(docs.length,'paper')+' valid</span></div>';
+}
+
+function truckTabs(){
+  const n = alertCount();
+  return '<div class="tabs">'+
+    '<button class="tab'+(sub.tab==='fleet'?' on':'')+'" onclick="sub={tab:\'fleet\'};render()">Fleet</button>'+
+    '<button class="tab'+(sub.tab==='docs'?' on':'')+'" onclick="sub={tab:\'docs\'};render()">Documents'+
+      (n?' <span class="chip chip-red" style="margin-left:6px">'+n+'</span>':'')+'</button>'+
+  '</div>';
+}
+
+function viewTruckDocs(){
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="truckDocForm()">+ <span>Add document</span></button>';
+  const rows = [];
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>rows.push({t, d, st:docStatus(d.expiry)})));
+  rows.sort((a,b)=>{
+    const rank = {expired:0, soon:1, active:2, none:3};
+    if(rank[a.st.key]!==rank[b.st.key]) return rank[a.st.key]-rank[b.st.key];
+    return (a.d.expiry||'').localeCompare(b.d.expiry||'');
+  });
+  const filt = sub.status||'';
+  const shown = filt ? rows.filter(r=>r.st.key===filt) : rows;
+  const count = k => rows.filter(r=>r.st.key===k).length;
+
+  $('#view').innerHTML =
+  truckTabs()+
+  '<div class="grid g3 rise" style="margin-bottom:16px">'+
+    kpi('Expired', count('expired'), {fmt:'plain', tone:count('expired')?'neg':'', note:'Needs renewing now'})+
+    kpi('Expiring within '+SOON_DAYS+' days', count('soon'), {fmt:'plain', note:'Plan these'})+
+    kpi('Valid', count('active'), {fmt:'plain', tone:'pos', note:'Nothing due soon'})+
+  '</div>'+
+  '<div class="filters"><div class="filter-row">'+
+    '<select onchange="sub.status=this.value;render()"><option value="">All documents</option>'+
+      [['expired','Expired'],['soon','Expiring soon'],['active','Active']].map(([v,l])=>
+        '<option value="'+v+'"'+(v===filt?' selected':'')+'>'+l+'</option>').join('')+'</select>'+
+    (sub.truck? '<button class="btn btn-sm" onclick="sub={tab:\'docs\'};render()">Showing one truck · show all</button>':'')+
+  '</div></div>'+
+  (rows.length===0
+    ? empty('No documents yet','Record insurance, PUC, fitness, permit and road tax dates here, and the bell will warn you before each one runs out.',
+        '<button class="btn btn-amber" onclick="truckDocForm()">+ Add your first document</button>')
+    : shown.length===0 ? empty('Nothing in this group','Try a different status.','')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Truck</th><th>Document</th><th>Expiry date</th><th>Status</th><th>Notes</th><th></th></tr></thead><tbody>'+
+      shown.map(r=>
+        '<tr'+(sub.truck===r.t.id?' style="background:var(--amber-soft)"':'')+'>'+
+        '<td class="num t-strong">'+esc(r.t.number)+'</td>'+
+        '<td class="t-strong">'+esc(r.d.header)+'</td>'+
+        '<td style="white-space:nowrap">'+fdate(r.d.expiry)+'</td>'+
+        '<td><span class="chip '+r.st.chip+'">'+r.st.label+'</span>'+
+          '<div class="t-sub">'+esc(docWhen(r.st.days))+'</div></td>'+
+        '<td class="t-sub">'+esc(r.d.notes||'—')+'</td>'+
+        '<td><div class="row-actions">'+
+          '<button class="btn btn-sm" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">Edit</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="delTruckDoc(\''+r.t.id+'\',\''+r.d.id+'\')">Delete</button>'+
+        '</div></td></tr>').join('')+
+      '</tbody></table></div></div>');
+}
+
+function truckDocForm(truckId, docId){
+  if(!DB.trucks.length){
+    openModal({title:'Add a truck first', body:'<p style="margin:0">Documents belong to a vehicle, so add a truck before recording its papers.</p>'});
+    return;
+  }
+  const t = truckId ? truckById(truckId) : null;
+  const doc = t && docId ? (t.docs||[]).find(x=>x.id===docId) : null;
+  openModal({
+    title: doc?'Edit document':'Add document', okText: doc?'Save changes':'Save document',
+    body:'<div class="form-grid">'+
+      fSelect('dc_truck','Truck', truckOptions(), t?t.id:(sub.truck||''))+
+      '<div class="field"><label for="dc_header">Document <span style="color:var(--red)">*</span></label>'+
+        '<input id="dc_header" list="docTypeList" autocomplete="off" value="'+esc(doc?doc.header:'')+'" placeholder="Insurance, PUC, permit…"></div>'+
+      fText('dc_expiry','Expiry date', doc?doc.expiry:'','date')+
+      fText('dc_notes','Notes', doc?doc.notes:'','text','placeholder="Optional"')+
+      '<div class="field full"><span class="hint">Renewed it? Just change the date here — the old warning disappears and a fresh one is worked out from the new date.</span></div>'+
+    '</div>',
+    onOk(){
+      const tid = val('dc_truck'), header = val('dc_header'), expiry = val('dc_expiry');
+      if(!tid){ toast('Choose the truck this document belongs to'); return; }
+      if(!header){ toast('Enter the document name'); return; }
+      if(!expiry){ toast('Enter the expiry date'); return; }
+      const target = truckById(tid);
+      target.docs = target.docs || [];
+      if(doc && t && t.id===tid){
+        Object.assign(doc, {header, expiry, notes:val('dc_notes')});
+      } else {
+        if(doc && t) t.docs = t.docs.filter(x=>x.id!==doc.id);   // moved to another truck
+        target.docs.push({id:doc?doc.id:uid(), header, expiry, notes:val('dc_notes')});
+      }
+      save(); buildDocTypeList(); closeModal(); render(); toast(doc?'Document updated':'Document saved');
+    }
+  });
+}
+function delTruckDoc(truckId, docId){
+  const t = truckById(truckId); if(!t) return;
+  confirmAsk('Delete this document and its expiry reminder?', ()=>{
+    t.docs = (t.docs||[]).filter(x=>x.id!==docId);
+    save(); render(); toast('Document deleted');
+  }, true);
 }
 
 function renderTruckList(){
@@ -1478,7 +1644,8 @@ function renderTruckList(){
           (t.model?'<div class="t-sub">'+esc(t.model)+'</div>':'')+'</td>'+
         '<td>'+(t.type==='owned'?'<span class="chip chip-blue">Owned</span>':'<span class="chip chip-grey">Market</span>')+
           (t.owner?'<div class="t-sub">'+esc(t.owner)+'</div>':'')+'</td>'+
-        '<td>'+esc(t.driverId?driverName(t.driverId):'—')+'</td>'+
+        '<td>'+esc(t.driverId?driverName(t.driverId):'—')+
+          docHealth(t)+'</td>'+
         '<td class="t-r num">'+t.tripCount+'</td>'+
         '<td class="t-r num">'+money(t.freight)+'</td>'+
         '<td class="t-r num">'+money(t.hire+t.exp)+'</td>'+
@@ -1490,29 +1657,70 @@ function renderTruckList(){
       '<div class="note" style="margin-top:14px">Net is freight earned minus hire paid and expenses booked to that truck. Driver salary is not included here — see Reports for the full profit picture.</div>');
 }
 
+let pendingTruckDocs = [];
+function addDocRow(header, expiry, notes){
+  pendingTruckDocs.push({id:uid(), header:header||'', expiry:expiry||'', notes:notes||''});
+  paintTruckDocs();
+}
+function removeDocRow(i){ pendingTruckDocs.splice(i,1); paintTruckDocs(); }
+function readDocRows(){
+  pendingTruckDocs.forEach((d,i)=>{
+    const hEl=document.getElementById('td_h'+i), eEl=document.getElementById('td_e'+i), nEl=document.getElementById('td_n'+i);
+    if(hEl) d.header = hEl.value.trim();
+    if(eEl) d.expiry = eEl.value;
+    if(nEl) d.notes  = nEl.value.trim();
+  });
+}
+function paintTruckDocs(){
+  const box = document.getElementById('truckDocs'); if(!box) return;
+  box.innerHTML = pendingTruckDocs.map((d,i)=>{
+    const st = docStatus(d.expiry);
+    return '<div class="docrow">'+
+      '<div class="field"><label for="td_h'+i+'">Document</label>'+
+        '<input id="td_h'+i+'" list="docTypeList" value="'+esc(d.header)+'" placeholder="Insurance" onchange="readDocRows()"></div>'+
+      '<div class="field"><label for="td_e'+i+'">Expires</label>'+
+        '<input id="td_e'+i+'" type="date" value="'+esc(d.expiry)+'" onchange="readDocRows();paintTruckDocs()"></div>'+
+      '<div class="field"><label for="td_n'+i+'">Notes</label>'+
+        '<input id="td_n'+i+'" value="'+esc(d.notes)+'" placeholder="Optional" onchange="readDocRows()"></div>'+
+      '<button type="button" class="rmdoc" onclick="readDocRows();removeDocRow('+i+')">Remove</button>'+
+      (d.expiry?'<div style="grid-column:1/-1;margin-top:-4px"><span class="chip '+st.chip+'">'+st.label+'</span>'+
+        '<span class="hint" style="margin-left:8px">'+esc(docWhen(st.days))+'</span></div>':'')+
+    '</div>';
+  }).join('') || '<div class="hint" style="margin-bottom:9px">No documents added yet.</div>';
+}
+
 function truckForm(id){
   const t = id ? truckById(id) : null;
+  pendingTruckDocs = JSON.parse(JSON.stringify((t && t.docs) || []));
   openModal({
     title: t?'Edit truck':'New truck', okText: t?'Save changes':'Save truck',
     body:'<div class="form-grid">'+
       fSeg('t_type','Truck type',[{v:'owned',t:'Owned by me'},{v:'market',t:'Market / rented'}], t?t.type:'owned')+
-      fText('t_number','Vehicle number', t?t.number:'','text','placeholder="HR 55 AB 1234"')+
+      fText('t_number','Vehicle number', t?t.number:'','text','placeholder="HR 55 AB 1234" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"')+
       fText('t_model','Make & model', t?t.model:'','text','placeholder="Tata 3118, 14 wheeler"')+
       fText('t_capacity','Capacity (tonnes)', t?t.capacity:'','number','step="0.1" min="0"')+
       fSelect('t_driver','Regular driver', driverOptions(), t?t.driverId:'')+
       fText('t_owner','Owner / supplier name', t?t.owner:'','text','placeholder="For market trucks"')+
       fText('t_ownerPhone','Owner phone', t?t.ownerPhone:'','tel')+
-      fText('t_insurance','Insurance expiry', t?t.insurance:'','date')+
-      fText('t_fitness','Fitness expiry', t?t.fitness:'','date')+
       fArea('t_notes','Notes', t?t.notes:'')+
+      '<div class="field full"><label>Documents and expiry dates</label>'+
+        '<div id="truckDocs"></div>'+
+        '<button type="button" class="btn btn-sm" onclick="addDocRow()">+ Add a document</button>'+
+        '<span class="hint">Insurance, PUC, fitness, permit, road tax — anything with a date. '+
+        'You will be warned in the bell as each one nears expiry.</span>'+
+      '</div>'+
     '</div>',
     onOk(){
       if(!val('t_number')){ toast('Enter the vehicle number'); return; }
-      const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number').toUpperCase(),
+      readDocRows();
+      const bad = pendingTruckDocs.find(d=>(d.header && !d.expiry) || (!d.header && d.expiry));
+      if(bad){ toast('Every document needs both a name and an expiry date'); return; }
+      const docs = pendingTruckDocs.filter(d=>d.header && d.expiry);
+      const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:upperTruck(val('t_number')),
         model:val('t_model'), capacity:val('t_capacity'), driverId:val('t_driver'), owner:val('t_owner'),
-        ownerPhone:val('t_ownerPhone'), insurance:val('t_insurance'), fitness:val('t_fitness'), notes:val('t_notes')};
+        ownerPhone:val('t_ownerPhone'), notes:val('t_notes'), docs:docs};
       if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
-      save(); closeModal(); render(); toast(t?'Truck updated':'Truck saved');
+      save(); buildDocTypeList(); closeModal(); render(); toast(t?'Truck updated':'Truck saved');
     }
   });
 }
@@ -2200,7 +2408,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>3.1</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>3.2</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function cloudPanel(){
@@ -2312,6 +2520,13 @@ function seed(){
   const p3={id:uid(),name:'Annapurna Grain Agency',phone:'99106 78120',city:'Delhi',gst:'',opening:0,address:''};
   const dr1={id:uid(),name:'Ramesh Yadav',phone:'99999 11223',licence:'HR5520190001234',salary:22000,join:'',aadhaar:'',address:''};
   const dr2={id:uid(),name:'Sukhbir Singh',phone:'98180 44556',licence:'HR3820170007788',salary:20000,join:'',aadhaar:'',address:''};
+  const iso = n => new Date(Date.now()+n*86400000).toISOString().slice(0,10);
+  t1.docs=[{id:uid(),header:'Insurance',expiry:iso(210),notes:'Comprehensive'},
+           {id:uid(),header:'Pollution Certificate (PUC)',expiry:iso(12),notes:''},
+           {id:uid(),header:'Fitness Certificate',expiry:iso(-6),notes:'Renewal pending'}];
+  t2.docs=[{id:uid(),header:'Insurance',expiry:iso(95),notes:''},
+           {id:uid(),header:'National Permit',expiry:iso(26),notes:''}];
+  t3.docs=[];
   DB.trucks.push(t1,t2,t3); DB.parties.push(p1,p2,p3); DB.drivers.push(dr1,dr2);
   t1.driverId=dr1.id; t2.driverId=dr2.id;
   const trips=[
@@ -2388,6 +2603,99 @@ function exportLedger(pid){
 
 
 
+
+/* ============================================================
+   TRUCK DOCUMENTS AND EXPIRY ALERTS
+   ============================================================ */
+const DOC_TYPES = ['Insurance','Pollution Certificate (PUC)','Fitness Certificate','Permit',
+  'National Permit','State Permit','Road Tax','Registration Certificate (RC)','Fastag KYC','Other'];
+const SOON_DAYS = 30;
+
+function upperTruck(v){ return String(v||'').toUpperCase().replace(/\s+/g,' ').trim(); }
+
+function migrateTrucks(){
+  let changed = false;
+  DB.trucks.forEach(t=>{
+    const up = upperTruck(t.number);
+    if(t.number!==up){ t.number = up; changed = true; }
+    if(!t.docs){
+      t.docs = [];
+      if(t.insurance) t.docs.push({id:uid(), header:'Insurance', expiry:t.insurance, notes:''});
+      if(t.fitness)   t.docs.push({id:uid(), header:'Fitness Certificate', expiry:t.fitness, notes:''});
+      changed = true;
+    }
+  });
+  if(changed){ try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} }
+}
+
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const t = new Date(today()+'T00:00:00').getTime();
+  const e = new Date(dateStr+'T00:00:00').getTime();
+  return Math.round((e-t)/86400000);
+}
+function docStatus(expiry){
+  const d = daysUntil(expiry);
+  if(d===null) return {key:'none', label:'No date', chip:'chip-grey', days:null};
+  if(d < 0)   return {key:'expired', label:'Expired', chip:'chip-red', days:d};
+  if(d <= SOON_DAYS) return {key:'soon', label:'Expiring soon', chip:'chip-amber', days:d};
+  return {key:'active', label:'Active', chip:'chip-green', days:d};
+}
+function docWhen(d){
+  if(d===null) return '';
+  if(d < 0)  return Math.abs(d)===1 ? 'expired yesterday' : 'expired '+Math.abs(d)+' days ago';
+  if(d === 0) return 'expires today';
+  if(d === 1) return 'expires tomorrow';
+  return 'expires in '+d+' days';
+}
+/* Alerts are read from the documents themselves, so a renewed date
+   simply changes the alert and nothing stale can linger. */
+function truckAlerts(){
+  const out = [];
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(doc=>{
+    const st = docStatus(doc.expiry);
+    if(st.key==='expired' || st.key==='soon')
+      out.push({truckId:t.id, truck:t.number, docId:doc.id, header:doc.header, expiry:doc.expiry, st});
+  }));
+  return out.sort((a,b)=>(a.st.days||0)-(b.st.days||0));
+}
+function alertCount(){ return truckAlerts().length; }
+function urgency(st){
+  if(st.key==='expired') return 'Document expired';
+  if(st.days<=1)  return 'Final reminder';
+  if(st.days<=7)  return 'Urgent';
+  if(st.days<=15) return 'Reminder';
+  return 'Expiry alert';
+}
+
+function paintBell(){
+  const b = $('#bellBtn'); if(!b) return;
+  const n = alertCount();
+  b.className = 'bell'+(n?' has':'');
+  b.innerHTML = '<svg class="ic" viewBox="0 0 24 24"><path d="M18 15v-4a6 6 0 10-12 0v4l-1.6 2.4h15.2z"/>'+
+    '<path d="M10 20a2 2 0 004 0"/></svg>'+(n?'<span class="bell-badge">'+(n>9?'9+':n)+'</span>':'');
+  b.title = n ? plural(n,'document')+' need attention' : 'No document alerts';
+}
+function notifications(){
+  const list = truckAlerts();
+  openModal({
+    title:'Notifications', wide:true,
+    body: list.length
+      ? '<div class="notif-list">'+list.map(a=>
+          '<button class="notif" onclick="closeModal();openTruckDocs(\''+a.truckId+'\')">'+
+            '<span class="notif-dot '+(a.st.key==='expired'?'bad':'warn')+'"></span>'+
+            '<span class="notif-body">'+
+              '<span class="notif-title">'+esc(a.header)+' for '+esc(a.truck)+'</span>'+
+              '<span class="notif-sub">'+esc(urgency(a.st))+' \u00b7 '+esc(docWhen(a.st.days))+
+                ' \u00b7 '+fdate(a.expiry)+'</span>'+
+            '</span></button>').join('')+'</div>'+
+        '<div class="hint" style="margin-top:12px">Tap any alert to open that truck\u2019s documents and update the date.</div>'
+      : '<div class="empty" style="padding:30px 10px"><div class="empty-title">Nothing needs attention</div>'+
+        '<div class="empty-text">Every truck document is valid for more than '+SOON_DAYS+' days. '+
+        'Add expiry dates under Trucks \u2192 Documents and alerts will appear here.</div></div>'
+  });
+}
+function openTruckDocs(id){ route='trucks'; sub={tab:'docs', truck:id}; window.scrollTo(0,0); render(); }
 
 /* ============================================================
    SHOPS
@@ -2621,6 +2929,15 @@ function allPlaces(){
     seen.add(k); return true;
   });
   return extra.concat(PLACES);   // your own first, then the standard list
+}
+function buildDocTypeList(){
+  let dl = document.getElementById('docTypeList');
+  if(!dl){ dl = document.createElement('datalist'); dl.id='docTypeList'; document.body.appendChild(dl); }
+  const custom = [];
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>{
+    if(d.header && !DOC_TYPES.includes(d.header) && !custom.includes(d.header)) custom.push(d.header);
+  }));
+  dl.innerHTML = custom.concat(DOC_TYPES).map(v=>'<option value="'+esc(v)+'"></option>').join('');
 }
 function buildPlaceList(){
   let dl = document.getElementById('placeList');
@@ -3128,7 +3445,9 @@ function saveClientId(){
    ============================================================ */
 reindex();
 buildPlaceList();
+buildDocTypeList();
 migrateAdvances();
+migrateTrucks();
 if(!DB.seeded && DB.trips.length===0){ seed(); save(); }
 applyBrand();
 render();
