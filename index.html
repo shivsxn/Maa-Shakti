@@ -2072,7 +2072,7 @@ tbody tr {
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 5.3 &middot; 21 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 5.5 &middot; 21 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3984,7 +3984,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>5.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>5.5</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -4805,7 +4805,7 @@ function syncSet(state, message){
   pill.hidden = false;
   const map = {
     loading:   ['busy', 'Connecting…'],
-    signedout: ['',     'Not signed in'],
+    signedout: ['',     offlineMode ? 'Offline' : 'Not signed in'],
     syncing:   ['busy', 'Saving…'],
     on:        ['on',   FB.user ? 'Synced' : 'Connected'],
     error:     ['bad',  'Sync problem']
@@ -4862,7 +4862,7 @@ async function startAuth(){
 
 /* ---------- the login screen ---------- */
 function showGate(){
-  if(!FB.cfg) return;
+  if(!FB.cfg || offlineMode) return;
   const g = $('#authGate'); if(!g) return;
   g.hidden = false;
   paintGate('in');
@@ -4955,6 +4955,15 @@ async function gateReset(){
   }catch(e){ gateError(friendlyAuth(e.code, e.message)); }
 }
 let offlineMode = false;
+/* Coming back from offline mode, or after signing out. */
+async function signInAgain(){
+  offlineMode = false;
+  if(!FB.cfg){ toast('No Firebase project is configured'); return; }
+  if(!FB.auth){ await startAuth(); }      // the library never loaded, try again
+  if(FB.auth){ paintGate('in'); showGate(); }
+  else { toast('Cannot reach Firebase. Check your internet connection.'); }
+}
+
 function workOffline(){
   offlineMode = true;
   hideGate();
@@ -4980,6 +4989,7 @@ function photoDocRef(id){ return FB.api.doc(FB.db, 'users', FB.user.uid, 'photos
 
 function mainPayload(){
   const copy = JSON.parse(JSON.stringify(DB));
+  copy.seeded = true;
   copy.drivers = (copy.drivers||[]).map(d=>{ const c = {...d}; delete c.docs; return c; });
   copy.updatedAt = DB.updatedAt || new Date().toISOString();
   return copy;
@@ -4992,12 +5002,17 @@ async function afterSignIn(){
     const snap = await api.getDoc(mainDocRef());
     if(snap.exists()){
       const remote = snap.data();
-      const localEmpty = DB.trips.length===0 && DB.parties.length===0 && DB.trucks.length===0;
-      if(localEmpty || (remote.updatedAt||'') > (DB.updatedAt||'')){
-        if(!localEmpty) return askWhichCopy(remote);
-        await applyRemote(remote);
-      } else if((DB.updatedAt||'') > (remote.updatedAt||'')){
-        await syncPush(true);
+      const localEmpty = DB.trips.length===0 && DB.parties.length===0 &&
+                         DB.trucks.length===0 && DB.expenses.length===0;
+      const inStep = (remote.updatedAt||'') === (DB.updatedAt||'');
+      if(inStep){
+        /* already the same copy, nothing to do */
+      } else if(localEmpty){
+        await applyRemote(remote);          // nothing here to lose
+      } else {
+        /* Both sides hold records and they differ. Never choose for the
+           person — whichever way it went, the other copy would be lost. */
+        return askWhichCopy(remote);
       }
     } else {
       await syncPush(true);
@@ -5035,6 +5050,7 @@ async function applyRemote(remote, quiet){
   FB.applying = true;
   const photos = await loadPhotos();
   const merged = Object.assign(JSON.parse(JSON.stringify(BLANK)), remote);
+  merged.seeded = true;      // a cloud copy is real data, never re-seed over it
   merged.drivers = (merged.drivers||[]).map(d=>({...d, docs: photos[d.id] || {}}));
   DB = merged;
   reindex(); buildPlaceList(); buildDocTypeList();
@@ -5047,7 +5063,8 @@ async function applyRemote(remote, quiet){
 let pendingRemote = null;
 function askWhichCopy(remote){
   pendingRemote = remote;
-  const count = o => (o.trips||[]).length+' trips, '+(o.parties||[]).length+' parties';
+  const count = o => (o.trips||[]).length+' trips, '+(o.parties||[]).length+' parties, '+
+                     (o.expenses||[]).length+' expenses';
   syncSet('on');
   openModal({
     title:'Two copies found',
@@ -5134,8 +5151,14 @@ function syncPanel(){
           '<button class="btn" onclick="syncPush(true);toast(\'Saving now\')">Sync now</button>'+
           '<button class="btn btn-danger" onclick="signOutNow()">Sign out</button>'+
         '</div>'
-      : '<p class="hint" style="margin:0 0 14px;max-width:600px">Sign in with an email address and your records live in your own '+
-        'Firebase project instead of only on this device. Free to run at your size, and no card is needed.</p>')+
+      : '<p class="hint" style="margin:0 0 14px;max-width:600px">'+
+        (offlineMode
+          ? 'Working offline on this device. Your records are safe here and will go up the moment you sign in.'
+          : 'Sign in with your email and your records live in your Firebase project instead of only on this device.')+
+        '</p>'+
+        '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
+          '<button class="btn btn-primary" onclick="signInAgain()">Sign in</button>'+
+        '</div>')+
     (FB.message ? '<div class="note" style="margin-top:12px">'+esc(FB.message)+'</div>' : '')+
     '<div class="divide"></div>'+
     '<div class="sec-title" style="margin-top:0">Firebase project</div>'+
@@ -5201,7 +5224,11 @@ buildPlaceList();
 buildDocTypeList();
 migrateAdvances();
 migrateTrucks();
-if(!DB.seeded && DB.trips.length===0){ seed(); save(); }
+/* Sample data is only ever created on a device with no cloud project, and
+   only on the very first run. Otherwise a blank device could seed itself and
+   then overwrite real records in the cloud. Load it by hand from Settings. */
+if(!DB.seeded && DB.trips.length===0 && !FB.cfg){ seed(); save(); }
+if(!DB.seeded){ DB.seeded = true; try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} }
 applyBrand();
 render();
 startAuth();
