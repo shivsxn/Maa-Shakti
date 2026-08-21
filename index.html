@@ -2072,7 +2072,7 @@ tbody tr {
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 5.2 &middot; 21 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 5.3 &middot; 21 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -2197,7 +2197,7 @@ const driverName = id => { const d=driverById(id); return d? d.name : '—'; };
 function partyBalance(pid){
   const p = partyById(pid); if(!p) return 0;
   let bal = num(p.opening);
-  DB.trips.filter(t=>t.partyId===pid).forEach(t=>{ bal += num(t.freight); bal -= tripNetAdvance(t); });
+  DB.trips.filter(t=>t.partyId===pid).forEach(t=>{ bal += num(t.freight); bal -= tripDeducted(t); });
   DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{ bal += l.type==='debit' ? num(l.amount) : -num(l.amount); });
   return bal;
 }
@@ -2205,7 +2205,7 @@ function partyBalance(pid){
 function allBalances(){
   const m = {};
   DB.parties.forEach(p=>{ m[p.id] = num(p.opening); });
-  DB.trips.forEach(t=>{ if(t.partyId in m) m[t.partyId] += num(t.freight) - tripNetAdvance(t); });
+  DB.trips.forEach(t=>{ if(t.partyId in m) m[t.partyId] += num(t.freight) - tripDeducted(t); });
   DB.ledger.forEach(l=>{ if(l.partyId in m) m[l.partyId] += l.type==='debit' ? num(l.amount) : -num(l.amount); });
   return m;
 }
@@ -2234,19 +2234,22 @@ function pnl(from, to){
   DB.expenses.filter(e=>inR(e.date)).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
   const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
   const driverPaid = DB.driverTxns.filter(t=>inR(t.date) && t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
-  const costs = hire + expense + driverPaid;
+  /* Brokerage never reaches you — the broker keeps it out of the freight —
+     so it belongs with the costs, not with what you collected. */
+  const brokerage = trips.reduce((s,t)=>s+num(t.brokerage),0);
+  const costs = hire + expense + driverPaid + brokerage;
 
   /* Money actually in hand. Advances taken against a trip plus receipts
      entered in a party ledger. Advances live on the trip and are never
      copied into the ledger, so nothing is counted twice. Discounts and
      adjustments reduce a balance without money arriving, so they are left out. */
-  const advances = trips.reduce((s,t)=>s+tripNetAdvance(t),0);
+  const advances = trips.reduce((s,t)=>s+num(t.advance),0);
   const credits  = DB.ledger.filter(l=>inR(l.date) && l.type==='credit');
   const receipts = credits.filter(l=>l.mode!=='Adjustment').reduce((s,l)=>s+num(l.amount),0);
   const adjusted = credits.filter(l=>l.mode==='Adjustment').reduce((s,l)=>s+num(l.amount),0);
   const collected = advances + receipts;
 
-  return {trips, tripCount:trips.length, freight, hire, byCat, expense, driverPaid, costs,
+  return {trips, tripCount:trips.length, freight, hire, byCat, expense, driverPaid, brokerage, costs,
     profit:freight-costs, advances, receipts, adjusted, collected, actual:collected-costs};
 }
 
@@ -2723,18 +2726,18 @@ function tripForm(id){
           fText('f_fuelAmt','Fuel amount (₹)', t?t.fuelAmt:'','number','min="0" step="1" oninput="fuelEdited()"')+
           '<div class="field"><label>&nbsp;</label><span class="hint" id="fuelHint"></span></div>'+
           fText('f_brokerage','Brokerage amount (₹)', t?t.brokerage:'','number','min="0" step="1" oninput="recalcAdvance()"')+
-          '<div class="field"><label>&nbsp;</label><span class="hint">Taken out of the advance, not charged on top.</span></div>'+
+          '<div class="field"><label>&nbsp;</label><span class="hint">Charged on top of the advance. Both come off the freight.</span></div>'+
         '</div>'+
         '<div class="adv-total">'+
           '<span>Total advance received</span>'+
           '<span class="num adv-total-value" id="f_advTotal">₹0</span>'+
         '</div>'+
         '<div class="adv-total adv-balance" id="f_brokRow" hidden>'+
-          '<span>Less brokerage</span>'+
+          '<span>Brokerage charged</span>'+
           '<span class="num adv-total-value" id="f_brokOut">₹0</span>'+
         '</div>'+
         '<div class="adv-total adv-balance" id="f_netRow" hidden>'+
-          '<span>Remaining advance after brokerage</span>'+
+          '<span>Advance plus brokerage</span>'+
           '<span class="num adv-total-value" id="f_advNet">₹0</span>'+
         '</div>'+
         '<div class="adv-total adv-balance">'+
@@ -2749,12 +2752,15 @@ function tripForm(id){
     onOk(){
       if(!val('f_party')){ toast('Choose the party for this trip'); return; }
       if(!val('f_truck')){ toast('Choose the truck for this trip'); return; }
-      if(num(val('f_brokerage')) > num(val('f_advCash')) + num(val('f_fuelAmt'))){
-        toast('Brokerage cannot be more than the advance received.');
+      const fr = num(val('f_freight'));
+      const settled = num(val('f_advCash')) + num(val('f_fuelAmt')) + num(val('f_brokerage'));
+      if(fr > 0 && settled > fr){
+        toast('Advance and brokerage together are more than the freight.');
         const el = document.getElementById('f_brokerage');
         if(el){ el.focus(); el.style.borderColor = 'var(--red)'; }
         return;
       }
+
       const rec = {
         id: t?t.id:uid(), date: val('f_date')||today(), lr: val('f_lr'),
         from: val('f_from'), to: val('f_to'), partyId: val('f_party'), truckId: val('f_truck'),
@@ -2791,17 +2797,17 @@ function recalcAdvance(){
   if(tot) tot.textContent = money(total);
 
   const brok = num(val('f_brokerage'));
-  const net = total - brok;
+  const net = total + brok;
   const brokRow = document.getElementById('f_brokRow');
   const netRow  = document.getElementById('f_netRow');
   if(brokRow) brokRow.hidden = !brok;
   if(netRow)  netRow.hidden  = !brok;
   const brokEl = document.getElementById('f_brokOut');
   const netEl  = document.getElementById('f_advNet');
-  if(brokEl) brokEl.textContent = '− '+money(brok);
+  if(brokEl) brokEl.textContent = '+ '+money(brok);
   if(netEl){
     netEl.textContent = money(net);
-    netEl.className = 'num adv-total-value '+(net<0?'money-neg':'');
+    netEl.className = 'num adv-total-value';
   }
 
   const freight = num(val('f_freight'));
@@ -2819,9 +2825,11 @@ function recalcAdvance(){
   if(prev) prev.innerHTML = statusChip(tripStatus({advCash:total, fuelAmt:0, brokerage:brok, freight:freight}));
   const warn = document.getElementById('brokWarn');
   if(warn){
-    const over = brok > total;
+    const over = freight > 0 && net > freight;
     warn.hidden = !over;
-    warn.textContent = over ? 'Brokerage of '+money(brok)+' is more than the '+money(total)+' advance received.' : '';
+    warn.textContent = over
+      ? 'Advance and brokerage together come to '+money(net)+', which is more than the '+money(freight)+' freight.'
+      : '';
   }
 }
 function tripDetail(id){
@@ -2843,7 +2851,7 @@ function tripDetail(id){
         fv('Advance in fuel', num(t.fuelAmt)? money(t.fuelAmt)+(fuelNote(t)?'<div class="t-sub">'+esc(fuelNote(t))+'</div>':'') :'—')+
         fv('Total advance', num(t.advance)?money(t.advance):'—')+
         fv('Brokerage', num(t.brokerage)?money(t.brokerage):'—')+
-        fv('Advance after brokerage', num(t.brokerage)?money(tripNetAdvance(t)):(num(t.advance)?money(t.advance):'—'))+
+        fv('Advance plus brokerage', num(t.brokerage)?money(tripDeducted(t)):(num(t.advance)?money(t.advance):'—'))+
         fv('Balance pending', tripBalanceLabel(t))+
         fv('Hire paid', num(t.hire)?money(t.hire):'—')+
       '</div>'+
@@ -2957,8 +2965,8 @@ function ledgerRows(pid){
     if(num(t.fuelAmt)) rows.push({date:t.date, label:'Advance given as fuel',
       ref:[fuelNote(t), t.lr?('LR '+t.lr):''].filter(Boolean).join(' · '),
       debit:0, credit:num(t.fuelAmt), kind:'trip', tripId:t.id});
-    if(num(t.brokerage)) rows.push({date:t.date, label:'Brokerage deducted from advance',
-      ref:t.lr?('LR '+t.lr):'', debit:num(t.brokerage), credit:0, kind:'trip', tripId:t.id});
+    if(num(t.brokerage)) rows.push({date:t.date, label:'Brokerage charged',
+      ref:t.lr?('LR '+t.lr):'', debit:0, credit:num(t.brokerage), kind:'trip', tripId:t.id});
   });
   DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{
     rows.push({date:l.date, label:l.note||(l.type==='credit'?'Payment received':'Charge added'),
@@ -3829,6 +3837,7 @@ function viewReports(){
       pl('Freight billed on trips', p.freight)+
       '<div class="sec-title">Costs</div>'+
       (p.hire? pl('Hire paid to market trucks', p.hire):'')+
+      (p.brokerage? pl('Brokerage on trips', p.brokerage):'')+
       exps.map(([c,v])=>pl(c, v)).join('')+
       (p.driverPaid? pl('Driver salary &amp; advances paid', p.driverPaid):'')+
       (p.costs===0? '<div class="pl-line"><span>No costs recorded in this period</span><span class="num">'+money(0)+'</span></div>':'')+
@@ -3975,7 +3984,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>5.2</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>5.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -4094,11 +4103,11 @@ function exportCSV(what){
   if(what==='trips'){
     download('trips-'+today()+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
       'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance','Brokerage',
-      'Advance after brokerage','Balance pending','Hire','Status','Notes']]
+      'Advance plus brokerage','Balance pending','Hire','Status','Notes']]
       .concat(DB.trips.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
         [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',
          t.material,t.weight,num(t.freight),num(t.advCash),t.fuelQty||'',t.fuelRate||'',num(t.fuelAmt),
-         num(t.advance),num(t.brokerage),tripNetAdvance(t),tripBalance(t),
+         num(t.advance),num(t.brokerage),tripDeducted(t),tripBalance(t),
          num(t.hire),tripStatus(t),t.notes])));
   }
   if(what==='parties'){
@@ -4292,14 +4301,14 @@ function tripAdvance(t){
   if(t.advCash===undefined && t.fuelAmt===undefined && t.advance!==undefined) return num(t.advance);
   return num(t.advCash) + num(t.fuelAmt);
 }
-/* Brokerage comes out of the advance once, and once only. Everything
-   downstream — pending balance, status, ledger, collections — reads
-   the remaining advance, so it can never be deducted twice. */
-function tripNetAdvance(t){ return tripAdvance(t) - num(t.brokerage); }
-function tripBalance(t){ return num(t.freight) - tripNetAdvance(t); }
+/* Advance is money received; brokerage is charged on top of it. Both
+   reduce what is still due, so everything downstream — pending balance,
+   status, ledger — reads this one figure. */
+function tripDeducted(t){ return tripAdvance(t) + num(t.brokerage); }
+function tripBalance(t){ return num(t.freight) - tripDeducted(t); }
 /* No advance = pending. Some advance = part paid. Nothing left = paid. */
 function tripStatus(t){
-  const adv = tripNetAdvance(t), fr = num(t.freight);
+  const adv = tripDeducted(t), fr = num(t.freight);
   if(adv <= 0) return 'pending';
   if(adv >= fr) return 'paid';
   return 'partial';
