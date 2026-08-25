@@ -2057,6 +2057,60 @@ tbody tr {
   body { background: #fff; }
 }
 
+.pod-track{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#FCFBF8}
+.pod-head{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
+.pod-step{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13.5px}
+.pod-dot{width:10px;height:10px;border-radius:50%;background:var(--line);flex:none;box-shadow:0 0 0 3px var(--paper)}
+.pod-step.done .pod-dot{background:var(--green)}
+.pod-label{font-weight:600;min-width:120px}
+.pod-step:not(.done) .pod-label{color:var(--muted);font-weight:500}
+.pod-date{width:auto;padding:6px 9px;font-size:13px}
+.pod-go{margin-left:auto}
+.pod-step .btn-sm{padding:5px 10px;font-size:12px}
+.pod-group{margin-bottom:20px}
+.pod-group-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.pod-group-head h3{font-size:14.5px;font-weight:700;margin:0;letter-spacing:-.01em}
+.pod-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:10px;background:var(--card);margin-bottom:8px;flex-wrap:wrap}
+.pod-row .who{flex:1;min-width:180px}
+.pod-row .amt{font-family:var(--mono);font-weight:600;white-space:nowrap}
+.pod-age{font-size:12px;font-weight:600}
+.pod-age.old{color:var(--red)}
+@media (max-width:760px){
+  .pod-step{flex-wrap:wrap}
+  .pod-label{min-width:0;flex:1}
+  .pod-go{margin-left:0;width:100%}
+  .pod-row .btn{width:100%}
+}
+.modal-full{max-width:1180px;width:94vw;height:90vh;display:flex;flex-direction:column}
+.modal-full .modal-body{flex:1;overflow-y:auto;max-height:none}
+.trip-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.trip-tabs{margin-bottom:18px}
+.trip-tabs .tab{display:inline-flex;align-items:center;font-size:14px;padding:10px 16px}
+.trip-pane{min-height:220px}
+.form-grid.three{grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.form-grid.three{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.form-grid.three{grid-template-columns:1fr}}
+.trip-cols{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}
+.trip-nav{display:flex;align-items:center;gap:12px;margin-left:auto;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
+
+.trip-nav .hint{margin:0 6px}
+.trip-nav .btn[disabled]{opacity:.4;cursor:default}
+.trip-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.trip-actions .btn{justify-content:center}
+@media (max-width:900px){
+  .trip-cols{grid-template-columns:1fr}
+  .trip-actions{flex-direction:row;flex-wrap:wrap}
+  .trip-actions .btn{flex:1}
+}
+.pod-files{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#FCFBF8;margin-top:14px;position:relative}
+.pod-thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pod-thumb{position:relative;width:104px;height:104px;border-radius:9px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
+.pod-thumb img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block}
+.pod-page{position:absolute;left:6px;top:6px;background:rgba(21,26,33,.75);color:#fff;font-size:10px;
+  font-family:var(--mono);padding:1px 6px;border-radius:4px}
+.pod-buttons{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media (max-width:760px){.pod-buttons .btn{flex:1}}
 </style>
 </head>
 <body>
@@ -2072,7 +2126,7 @@ tbody tr {
       <div class="brand-tag">Blessed by Maa Vandana</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 5.5 &middot; 21 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 6.3 &middot; 22 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -2105,7 +2159,7 @@ const KEY = 'mvl_db_v1';
 const BLANK = {
   settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:''},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
-  shops:[], shopLedger:[],
+  shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{},
   seeded:false
 };
 let DB = load();
@@ -2180,6 +2234,7 @@ function reindex(){
   DB.parties.forEach(p=>IDX.party[p.id]=p);
   DB.drivers.forEach(d=>IDX.driver[d.id]=d);
   IDX.shop = {}; (DB.shops||[]).forEach(s=>IDX.shop[s.id]=s);
+  IDX.supplier = {}; (DB.suppliers||[]).forEach(s=>IDX.supplier[s.id]=s);
 }
 // index first, with a safety net in case anything was added without a save
 const truckById  = id => IDX.truck[id]  || DB.trucks.find(t=>t.id===id);
@@ -2187,6 +2242,8 @@ const partyById  = id => IDX.party[id]  || DB.parties.find(p=>p.id===id);
 const driverById = id => IDX.driver[id] || DB.drivers.find(d=>d.id===id);
 const shopById   = id => (IDX.shop||{})[id] || (DB.shops||[]).find(s=>s.id===id);
 const shopName   = id => { const s=shopById(id); return s? s.name : '—'; };
+const supplierById = id => (IDX.supplier||{})[id] || (DB.suppliers||[]).find(s=>s.id===id);
+const supplierName = id => { const s=supplierById(id); return s? s.name : '—'; };
 const truckName  = id => { const t=truckById(id); return t? t.number : '—'; };
 const partyName  = id => { const p=partyById(id); return p? p.name : '—'; };
 const driverName = id => { const d=driverById(id); return d? d.name : '—'; };
@@ -2262,6 +2319,8 @@ const ICONS = {
   expenses:'<path d="M3 7h18v12H3z"/><path d="M3 11h18"/><circle cx="8" cy="15" r="1.4"/>',
   drivers:'<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0115 0"/>',
   shops:'<path d="M4 9h16l-1 11H5z"/><path d="M4 9l1.6-4h12.8L20 9"/><path d="M9 13h6"/>',
+  suppliers:'<path d="M3 7h9v9H3z"/><path d="M12 10h4l3 3v3h-7"/><circle cx="6.5" cy="18" r="1.6"/><circle cx="16.5" cy="18" r="1.6"/><path d="M15 4h6"/>',
+  pod:'<path d="M4 7h11v10H4z"/><path d="M15 10h3.5L21 13v4h-6"/><path d="M7.5 11.5l1.8 1.8 3.2-3.4"/>',
   reports:'<path d="M4 20V9"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M21 20H3"/>',
   insights:'<path d="M3 17l5-6 4 3 5-7"/><path d="M17 7h4v4"/><path d="M3 21h18"/>',
   settings:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>'
@@ -2270,7 +2329,9 @@ const PAGES = [
   {id:'dashboard', label:'Dashboard', sub:'Today at a glance'},
   {id:'trips',     label:'Trips',     sub:'Every load you have moved'},
   {id:'parties',   label:'Parties & Ledger', sub:'Who owes you what'},
+  {id:'pod',       label:'Deliveries', sub:'Delivery and proof of delivery'},
   {id:'trucks',    label:'Trucks',    sub:'Your own and market vehicles'},
+  {id:'suppliers', label:'Suppliers', sub:'Market trucks and what you owe'},
   {id:'shops',     label:'Shops',     sub:'Credit taken and what you owe'},
   {id:'expenses',  label:'Expenses',  sub:'Money going out'},
   {id:'drivers',   label:'Drivers',   sub:'Salary, advances and balances'},
@@ -2317,7 +2378,7 @@ function render(){
   $('#pageActions').innerHTML = '';
   buildNav();
   ({dashboard:viewDashboard, trips:viewTrips, parties:viewParties, trucks:viewTrucks,
-    expenses:viewExpenses, drivers:viewDrivers, shops:viewShops, reports:viewReports,
+    expenses:viewExpenses, drivers:viewDrivers, shops:viewShops, suppliers:viewSuppliers, pod:viewPod, reports:viewReports,
     insights:viewInsights, settings:viewSettings}[route])();
   paintBell();
   const v = $('#view');
@@ -2327,11 +2388,34 @@ function render(){
 
 /* ---------- 5. Modal ---------- */
 let modalOnOk = null;
+let modalStack = [];
+
+/* everything typed in the open modal, so it can be put back afterwards */
+function snapshotModal(){
+  const vals = {};
+  document.querySelectorAll('#modalRoot input, #modalRoot select, #modalRoot textarea').forEach(el=>{
+    if(!el.id && !el.name) return;
+    const key = el.id || (el.name+':'+el.value);
+    vals[key] = el.type==='checkbox' || el.type==='radio' ? el.checked : el.value;
+  });
+  return vals;
+}
+function restoreModal(vals){
+  Object.entries(vals).forEach(([key, v])=>{
+    const el = document.getElementById(key);
+    if(el){ if(el.type==='checkbox'||el.type==='radio') el.checked = v; else el.value = v; return; }
+    const [name, val] = key.split(':');
+    const radio = document.querySelector('#modalRoot input[name="'+name+'"][value="'+val+'"]');
+    if(radio) radio.checked = v;
+  });
+}
+
 function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk, wide}){
   modalOnOk = onOk;
   $('#modalRoot').innerHTML =
     '<div class="overlay" onclick="if(event.target===this)closeModal()">'+
-      '<div class="modal" role="dialog" aria-modal="true"'+(wide?' style="max-width:820px"':'')+'>'+
+      '<div class="modal'+(wide==='full'?' modal-full':'')+'" role="dialog" aria-modal="true"'+
+        (wide==='xl'?' style="max-width:1000px"':wide==='full'?'':wide?' style="max-width:820px"':'')+'>'+
         '<div class="modal-head"><h2 class="modal-title">'+esc(title)+'</h2><button class="x" onclick="closeModal()" aria-label="Close">&times;</button></div>'+
         '<div class="modal-body">'+body+'</div>'+
         (onOk ? '<div class="modal-foot"><button class="btn" onclick="closeModal()">Cancel</button>'+
@@ -2344,7 +2428,17 @@ function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk,
   const f = $('.modal-body input, .modal-body select, .modal-body textarea');
   if(f && window.innerWidth>760) f.focus();
 }
-function closeModal(){ $('#modalRoot').innerHTML=''; modalOnOk=null; document.body.style.overflow=''; }
+function closeModal(){
+  if(modalStack.length){          // step back to the form underneath
+    const s = modalStack.pop();
+    $('#modalRoot').innerHTML = s.html;
+    restoreModal(s.vals);
+    modalOnOk = s.onOk;
+    if(s.after) s.after();
+    return;
+  }
+  $('#modalRoot').innerHTML=''; modalOnOk=null; document.body.style.overflow='';
+}
 function modalOk(){ if(modalOnOk) modalOnOk(); }
 function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
 function checked(name){ const el=document.querySelector('input[name="'+name+'"]:checked'); return el?el.value:''; }
@@ -2423,6 +2517,8 @@ function viewDashboard(){
     DB.trips.length+' trips recorded'+
     (totalDriverPayable()? ' · '+money(totalDriverPayable())+' owed to drivers':'')+
     (totalShopPayable()? ' · '+money(totalShopPayable())+' owed to shops':'')+
+    (totalSupplierPayable()? ' · '+money(totalSupplierPayable())+' owed to suppliers':'')+
+    (lockedByPod()? ' · '+money(lockedByPod())+' held up by pending PODs':'')+
   '</div>'+
   '<div class="g-wide" style="margin-top:14px">'+
     '<div class="card chart-card">'+
@@ -2606,6 +2702,9 @@ function viewTrips(){
       '<input placeholder="LR number" value="'+esc(sub.lr||'')+'" oninput="sub.lr=this.value;sub.limit=0;defer(afterFilterTyping)">'+
       '<input list="placeList" autocomplete="off" placeholder="From (loading point)" value="'+esc(sub.origin||'')+'" oninput="sub.origin=this.value;sub.limit=0;defer(afterFilterTyping)">'+
       '<input list="placeList" autocomplete="off" placeholder="To (delivery point)" value="'+esc(sub.dest||'')+'" oninput="sub.dest=this.value;sub.limit=0;defer(afterFilterTyping)">'+
+      '<select onchange="sub.stage=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">Any delivery stage</option>'+
+        STAGES.map(s=>'<option value="'+s.k+'"'+(s.k===(sub.stage||'')?' selected':'')+'>'+s.label+'</option>').join('')+
+        '<option value="podpending"'+(sub.stage==='podpending'?' selected':'')+'>POD pending</option></select>'+
       '<button class="btn btn-sm btn-danger" onclick="clearTripFilters()">Clear all</button>'+
     '</div>'+
   '</div><div id="listBox"></div>';
@@ -2614,12 +2713,12 @@ function viewTrips(){
 }
 
 function activeTripFilters(){
-  return ['party','truck','status','dFrom','dTo','lr','origin','dest'].filter(k=>sub[k]).length;
+  return ['party','truck','status','stage','dFrom','dTo','lr','origin','dest'].filter(k=>sub[k]).length;
 }
 function afterFilterTyping(){ renderTripList(); filterBadge(); }
 function filterBadge(){
   const b = $('#advToggle'); if(!b) return;
-  const n = ['dFrom','dTo','lr','origin','dest'].filter(k=>sub[k]).length;
+  const n = ['dFrom','dTo','lr','origin','dest','stage'].filter(k=>sub[k]).length;
   b.textContent = 'More filters'+(n?' ('+n+')':'');
   b.className = 'btn btn-sm'+(n?' btn-primary':'');
 }
@@ -2628,7 +2727,7 @@ function toggleAdv(){
   const el = $('#advFilters'); if(el) el.hidden = !sub.adv;
 }
 function clearTripFilters(){
-  ['party','truck','status','dFrom','dTo','lr','origin','dest'].forEach(k=>delete sub[k]);
+  ['party','truck','status','stage','dFrom','dTo','lr','origin','dest'].forEach(k=>delete sub[k]);
   sub.limit = 0;
   viewTrips();
 }
@@ -2643,6 +2742,8 @@ function renderTripList(){
   if(sub.party)  list = list.filter(t=>t.partyId===sub.party);
   if(sub.truck)  list = list.filter(t=>t.truckId===sub.truck);
   if(sub.status) list = list.filter(t=>tripStatus(t)===sub.status);
+  if(sub.stage==='podpending') list = list.filter(t=>['delivered','received'].includes(tripStage(t)));
+  else if(sub.stage) list = list.filter(t=>tripStage(t)===sub.stage);
   if(sub.dFrom)  list = list.filter(t=>t.date>=sub.dFrom);
   if(sub.dTo)    list = list.filter(t=>t.date<=sub.dTo);
   if(lr) list = list.filter(t=>(t.lr||'').toLowerCase().includes(lr));
@@ -2652,6 +2753,7 @@ function renderTripList(){
   const totHire = list.reduce((s,t)=>s+num(t.hire),0);
   const full = list.length;
   list = list.slice(0, pageLimit());
+  tripNav = list.map(t=>t.id);
 
   box.innerHTML =
   (DB.trips.length===0
@@ -2661,7 +2763,7 @@ function renderTripList(){
         '<button class="btn" onclick="clearTripFilters()">Clear all filters</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Date</th><th>LR no.</th><th>From</th><th>To</th><th>Party</th><th>Truck</th>'+
-      '<th class="t-r">Freight</th><th class="t-r">Advance</th><th>Status</th><th></th></tr></thead><tbody>'+
+      '<th class="t-r">Freight</th><th class="t-r">Advance</th><th>Status</th><th>Delivery</th><th></th></tr></thead><tbody>'+
       list.map(t=>{
         const go = ' onclick="tripDetail(\''+t.id+'\')" style="cursor:pointer"';
         return '<tr>'+
@@ -2677,106 +2779,18 @@ function renderTripList(){
           '<td data-label="Advance" class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+
             '</td>'+
           '<td data-label="Status">'+statusChip(tripStatus(t))+'</td>'+
+          '<td data-label="Delivery">'+stageChip(t)+
+            (podCount(t.id)?'<div class="t-sub">'+plural(podCount(t.id),'page')+' on file</div>':'')+'</td>'+
           '<td><div class="row-actions">'+
             '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">Edit</button>'+
             '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>'+
           '</div></td>'+
         '</tr>';}).join('')+
-      '</tbody><tfoot><tr><th colspan="6">'+plural(full,'trip')+
+      '</tbody><tfoot><tr><th colspan="7">'+plural(full,'trip')+
         (activeTripFilters()?' matching':'')+' \u00b7 total freight</th>'+
       '<th class="t-r num" style="font-size:14px;color:var(--ink)">'+money(tot)+'</th>'+
       '<th colspan="3">'+(totHire?'<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">Hire paid '+money(totHire)+'</span>':'')+'</th></tr></tfoot>'+
       '</table></div>'+moreBar(list.length, full, 'renderTripList')+'</div>');
-}
-
-function tripForm(id){
-  const t = id ? DB.trips.find(x=>x.id===id) : null;
-  if(!DB.parties.length || !DB.trucks.length){
-    openModal({title:'Add a truck and a party first',
-      body:'<p style="margin:0 0 10px">A trip needs a truck and a party to link to.</p>'+
-        '<p style="margin:0;color:var(--muted);font-size:13.5px">Go to <b>Trucks</b> to add your vehicle, and <b>Parties &amp; Ledger</b> to add the customer who pays the freight.</p>'});
-    return;
-  }
-  fuelDirty = !!(t && num(t.fuelAmt) && !(num(t.fuelQty)>0 && num(t.fuelRate)>0
-    && Math.abs(num(t.fuelQty)*num(t.fuelRate) - num(t.fuelAmt)) < 0.5));
-  openModal({
-    title: t? 'Edit trip' : 'New trip',
-    okText: t? 'Save changes' : 'Save trip',
-    body:'<div class="form-grid">'+
-      fText('f_date','Trip date', t?t.date:today(),'date')+
-      fText('f_lr','LR / bilty number', t?t.lr:'')+
-      fPlace('f_from','From', t?t.from:'', 'Type a district or town')+
-      fPlace('f_to','To', t?t.to:'', 'Type a district or town')+
-      fSelect('f_party','Party (who pays freight)', partyOptions(), t?t.partyId:'')+
-      fSelect('f_truck','Truck', truckOptions(), t?t.truckId:'')+
-      fSelect('f_driver','Driver', driverOptions(), t?t.driverId:'')+
-      fText('f_material','Material', t?t.material:'','text','placeholder="Cement, steel, grain…"')+
-      fText('f_weight','Weight (tonnes)', t?t.weight:'','number','step="0.01" min="0"')+
-      fText('f_freight','Freight amount (₹)', t?t.freight:'','number','min="0" step="1" oninput="recalcAdvance()"')+
-      fText('f_hire','Hire paid to market truck (₹)', t?t.hire:'','number','min="0" step="1"')+
-      '<div class="field full"><span class="hint">Leave hire blank for your own trucks. For a market truck, hire is what you pay the vehicle owner — your profit is freight minus hire.</span></div>'+
-
-      '<div class="field full adv-block">'+
-        '<div class="adv-head">Advance details</div>'+
-        '<div class="form-grid">'+
-          fText('f_advCash','Advance in cash (₹)', t?t.advCash:'','number','min="0" step="1" oninput="recalcAdvance()"')+
-          '<div class="field"></div>'+
-          fText('f_fuelQty','Fuel quantity (litres)', t?t.fuelQty:'','number','min="0" step="0.01" oninput="recalcAdvance()"')+
-          fText('f_fuelRate','Fuel rate (₹ per litre)', t?t.fuelRate:'','number','min="0" step="0.01" oninput="recalcAdvance()"')+
-          fText('f_fuelAmt','Fuel amount (₹)', t?t.fuelAmt:'','number','min="0" step="1" oninput="fuelEdited()"')+
-          '<div class="field"><label>&nbsp;</label><span class="hint" id="fuelHint"></span></div>'+
-          fText('f_brokerage','Brokerage amount (₹)', t?t.brokerage:'','number','min="0" step="1" oninput="recalcAdvance()"')+
-          '<div class="field"><label>&nbsp;</label><span class="hint">Charged on top of the advance. Both come off the freight.</span></div>'+
-        '</div>'+
-        '<div class="adv-total">'+
-          '<span>Total advance received</span>'+
-          '<span class="num adv-total-value" id="f_advTotal">₹0</span>'+
-        '</div>'+
-        '<div class="adv-total adv-balance" id="f_brokRow" hidden>'+
-          '<span>Brokerage charged</span>'+
-          '<span class="num adv-total-value" id="f_brokOut">₹0</span>'+
-        '</div>'+
-        '<div class="adv-total adv-balance" id="f_netRow" hidden>'+
-          '<span>Advance plus brokerage</span>'+
-          '<span class="num adv-total-value" id="f_advNet">₹0</span>'+
-        '</div>'+
-        '<div class="adv-total adv-balance">'+
-          '<span id="f_balanceLabel">Balance pending</span>'+
-          '<span class="num adv-total-value" id="f_balance">₹0</span>'+
-        '</div>'+
-        '<div class="adv-status"><span>Status will be set to</span><span id="f_statusPreview"></span></div>'+
-        '<div class="gate-error" id="brokWarn" hidden style="margin-top:10px"></div>'+
-      '</div>'+
-      fArea('f_notes','Notes', t?t.notes:'')+
-    '</div>',
-    onOk(){
-      if(!val('f_party')){ toast('Choose the party for this trip'); return; }
-      if(!val('f_truck')){ toast('Choose the truck for this trip'); return; }
-      const fr = num(val('f_freight'));
-      const settled = num(val('f_advCash')) + num(val('f_fuelAmt')) + num(val('f_brokerage'));
-      if(fr > 0 && settled > fr){
-        toast('Advance and brokerage together are more than the freight.');
-        const el = document.getElementById('f_brokerage');
-        if(el){ el.focus(); el.style.borderColor = 'var(--red)'; }
-        return;
-      }
-
-      const rec = {
-        id: t?t.id:uid(), date: val('f_date')||today(), lr: val('f_lr'),
-        from: val('f_from'), to: val('f_to'), partyId: val('f_party'), truckId: val('f_truck'),
-        driverId: val('f_driver'), material: val('f_material'), weight: val('f_weight'),
-        freight: num(val('f_freight')), hire: num(val('f_hire')),
-        advCash: num(val('f_advCash')), fuelQty: val('f_fuelQty'), fuelRate: val('f_fuelRate'),
-        fuelAmt: num(val('f_fuelAmt')), brokerage: num(val('f_brokerage')),
-        notes: val('f_notes')
-      };
-      rec.advance = tripAdvance(rec);     // everything else reads this one total
-      rec.status  = tripStatus(rec);      // worked out from freight and advance
-      rememberPlace(rec.from); rememberPlace(rec.to);
-      if(t) DB.trips[DB.trips.findIndex(x=>x.id===t.id)] = rec; else DB.trips.push(rec);
-      save(); closeModal(); render(); toast(t?'Trip updated':'Trip saved');
-    }
-  });
 }
 
 let fuelDirty = false;
@@ -2810,7 +2824,18 @@ function recalcAdvance(){
     netEl.className = 'num adv-total-value';
   }
 
-  const freight = num(val('f_freight'));
+  const freight = document.getElementById('f_freight')
+    ? num(val('f_freight'))
+    : num(tripDraft && tripDraft.freight);
+  const echo = document.getElementById('f_freightEcho');
+  if(echo) echo.textContent = money(freight);
+  const hireEl = document.getElementById('f_hire2');
+  const hireDue = document.getElementById('f_hireDue');
+  if(hireDue){
+    const due = num(hireEl?hireEl.value:(tripDraft&&tripDraft.hire)) - num(val('f_hireAdvance'));
+    hireDue.textContent = money(due);
+    hireDue.className = 'num adv-total-value'+(due>0?' money-neg':'');
+  }
   const bal = freight - net;
   const balEl = document.getElementById('f_balance');
   const labEl = document.getElementById('f_balanceLabel');
@@ -2832,38 +2857,255 @@ function recalcAdvance(){
       : '';
   }
 }
-function tripDetail(id){
-  const t = DB.trips.find(x=>x.id===id); if(!t) return;
-  const margin = num(t.freight) - num(t.hire);
-  openModal({
-    title:'Trip details', wide:true,
-    body:'<div class="slip">'+
-      '<div class="slip-top">'+
-        '<div><div class="slip-lr">LR '+esc(t.lr||'—')+' · '+fdate(t.date)+'</div>'+
-          '<div class="slip-route">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div></div>'+
-        '<div style="margin-left:auto;padding-top:6px">'+statusStamp(tripStatus(t))+'</div>'+
-      '</div>'+
-      '<div class="slip-body">'+
-        fv('Party', esc(partyName(t.partyId)))+ fv('Truck', esc(truckName(t.truckId)))+
-        fv('Driver', esc(t.driverId?driverName(t.driverId):'—'))+ fv('Material', esc(t.material||'—'))+
-        fv('Weight', esc(t.weight? t.weight+' T':'—'))+ fv('Freight', money(t.freight))+
-        fv('Advance in cash', num(t.advCash)?money(t.advCash):'—')+
-        fv('Advance in fuel', num(t.fuelAmt)? money(t.fuelAmt)+(fuelNote(t)?'<div class="t-sub">'+esc(fuelNote(t))+'</div>':'') :'—')+
-        fv('Total advance', num(t.advance)?money(t.advance):'—')+
-        fv('Brokerage', num(t.brokerage)?money(t.brokerage):'—')+
-        fv('Advance plus brokerage', num(t.brokerage)?money(tripDeducted(t)):(num(t.advance)?money(t.advance):'—'))+
-        fv('Balance pending', tripBalanceLabel(t))+
-        fv('Hire paid', num(t.hire)?money(t.hire):'—')+
-      '</div>'+
-      (num(t.hire)? '<div style="padding:0 18px 15px"><div class="note">Margin on this trip: <b class="num">'+money(margin)+'</b> (freight '+money(t.freight)+' minus hire '+money(t.hire)+')</div></div>':'')+
-      (t.notes? '<div style="padding:0 18px 16px"><div class="field-label">Notes</div><div class="field-value">'+esc(t.notes)+'</div></div>':'')+
+/* ============================================================
+   TRIP SCREEN
+   One screen for a trip, new or existing. Tab one holds the trip
+   itself, tab two the money, tab three the paperwork. Values you
+   have typed are carried across tab switches, so nothing is lost
+   moving between them.
+   ============================================================ */
+let tripTab = 'details';
+let tripDraft = null;
+
+/* Shown when the trip runs on a market truck: who supplied it,
+   what you owe them and what you have already paid at loading. */
+function supplierBlock(t){
+  const truck = truckById(t.truckId);
+  const isMarket = truck && truck.type==='market';
+  if(!isMarket && !num(t.hire) && !t.supplierId) return '';
+  const sid = tripSupplier(t);
+  const due = num(t.hire) - num(t.hireAdvance);
+  return '<div class="adv-block" style="margin-top:16px">'+
+    '<div class="adv-head">Market truck supplier</div>'+
+    '<div class="form-grid three">'+
+      qSelect('f_supplier','Supplier', 'supplier', sid)+
+      fText('f_hire2','Hire to supplier (₹)', t.hire||'','number','min="0" step="1" oninput="syncHire()"')+
+      fText('f_hireAdvance','Advance paid at loading (₹)', t.hireAdvance||'','number','min="0" step="1" oninput="recalcAdvance()"')+
     '</div>'+
-    '<div style="display:flex;gap:8px;margin-top:14px">'+
-      '<button class="btn" onclick="closeModal();tripForm(\''+t.id+'\')">Edit trip</button>'+
-      '<button class="btn" onclick="closeModal();partyLedger(\''+t.partyId+'\')">Open party ledger</button>'+
-    '</div>'
-  });
+    '<div class="adv-total adv-balance"><span>Balance due to supplier</span>'+
+      '<span class="num adv-total-value'+(due>0?' money-neg':'')+'" id="f_hireDue">'+money(due)+'</span></div>'+
+    (!sid && (isMarket||num(t.hire))
+      ? '<div class="hint" style="margin-top:8px">Link a supplier and this hire lands in their ledger. '+
+        'Add one under <b>Suppliers</b>.</div>' : '')+
+    (sid ? '<div style="margin-top:12px"><button class="btn btn-sm" onclick="closeModal();supplierLedger(\''+sid+'\')">'+
+      'Open '+esc(supplierName(sid))+'\u2019s ledger</button></div>' : '')+
+  '</div>';
 }
+/* the hire box appears on both tabs — keep the two in step */
+function syncHire(){
+  const a = document.getElementById('f_hire'), b = document.getElementById('f_hire2');
+  if(b && tripDraft) tripDraft.hire = num(b.value);
+  if(a && b) a.value = b.value;
+  recalcAdvance();
+}
+
+function blankTrip(){
+  return {id:'', date:today(), lr:'', from:'', to:'', partyId:'', truckId:'', driverId:'',
+    material:'', weight:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
+    advCash:0, fuelQty:'', fuelRate:'', fuelAmt:0,
+    brokerage:0, notes:'', deliveredAt:'', podReceivedAt:'', podSubmittedAt:''};
+}
+/* pull whatever fields are on screen into the draft */
+function readTripForm(){
+  if(!tripDraft) return;
+  const g = id => document.getElementById(id);
+  const map = {f_date:'date', f_lr:'lr', f_from:'from', f_to:'to', f_party:'partyId',
+    f_truck:'truckId', f_driver:'driverId', f_material:'material', f_weight:'weight', f_notes:'notes',
+    f_fuelQty:'fuelQty', f_fuelRate:'fuelRate'};
+  Object.entries(map).forEach(([el,key])=>{ if(g(el)) tripDraft[key] = g(el).value.trim(); });
+  ['freight','hire','advCash','fuelAmt','brokerage','hireAdvance'].forEach(key=>{
+    const el = g('f_'+key); if(el) tripDraft[key] = num(el.value);
+  });
+  if(g('f_hire2')) tripDraft.hire = num(g('f_hire2').value);
+  if(g('f_supplier')) tripDraft.supplierId = g('f_supplier').value;
+}
+function switchTripTab(tab){
+  readTripForm();
+  tripTab = tab;
+  tripScreen(tripDraft && tripDraft.id ? tripDraft.id : null);
+}
+
+function tripScreen(id, tab){
+  if(tab) tripTab = tab;
+  const existing = id ? DB.trips.find(x=>x.id===id) : null;
+  if(existing && (!tripDraft || tripDraft.id !== existing.id)) tripDraft = Object.assign(blankTrip(), existing);
+  if(!existing && (!tripDraft || tripDraft.id)) tripDraft = blankTrip();
+  const t = tripDraft;
+
+  if(!existing && (!DB.parties.length || !DB.trucks.length)){
+    openModal({title:'Add a truck and a party first',
+      body:'<p style="margin:0 0 10px">A trip needs a truck and a party to link to.</p>'+
+        '<p style="margin:0;color:var(--muted);font-size:13.5px">Go to <b>Trucks</b> to add your vehicle, and '+
+        '<b>Parties &amp; Ledger</b> to add the customer who pays the freight.</p>'});
+    return;
+  }
+
+  const pos  = existing ? tripNav.indexOf(id) : -1;
+  const prev = pos > 0 ? tripNav[pos-1] : null;
+  const next = pos > -1 && pos < tripNav.length-1 ? tripNav[pos+1] : null;
+  const stage = stageInfo(tripStage(existing || t));
+  const bal = tripBalance(t);
+
+  const TABS = [
+    {k:'details',  label:'Trip details'},
+    {k:'money',    label:'Money', chip: num(t.freight)
+        ? '<span class="chip '+(bal>0?'chip-red':'chip-green')+'" style="margin-left:7px">'+
+          (bal>0? money(bal)+' due' : 'Settled')+'</span>' : ''},
+    {k:'delivery', label:'Delivery & POD',
+      chip: existing? '<span class="chip '+stage.chip+'" style="margin-left:7px">'+stage.label+'</span>' : ''}
+  ];
+
+  const details = '<div class="form-grid three">'+
+      fText('f_date','Trip date', t.date,'date')+
+      fText('f_lr','LR / bilty number', t.lr)+
+      qSelect('f_party','Party (who pays freight)', 'party', t.partyId)+
+      fPlace('f_from','From', t.from, 'Type a district or town')+
+      fPlace('f_to','To', t.to, 'Type a district or town')+
+      qSelect('f_truck','Truck', 'truck', t.truckId)+
+      qSelect('f_driver','Driver', 'driver', t.driverId)+
+      fText('f_material','Material', t.material,'text','placeholder="Cement, steel, grain…"')+
+      fText('f_weight','Weight (tonnes)', t.weight,'number','step="0.01" min="0"')+
+      fText('f_freight','Freight amount (₹)', t.freight||'','number','min="0" step="1" oninput="recalcAdvance()"')+
+      fText('f_hire','Hire paid to market truck (₹)', t.hire||'','number','min="0" step="1"')+
+      '<div class="field"><label>&nbsp;</label><span class="hint">Leave hire blank for your own trucks.</span></div>'+
+      fArea('f_notes','Notes', t.notes)+
+    '</div>';
+
+  const moneyTab = '<div class="adv-block">'+
+      '<div class="adv-head">Advance and brokerage</div>'+
+      '<div class="form-grid three">'+
+        fText('f_advCash','Advance in cash (₹)', t.advCash||'','number','min="0" step="1" oninput="recalcAdvance()"')+
+        fText('f_fuelQty','Fuel quantity (litres)', t.fuelQty,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
+        fText('f_fuelRate','Fuel rate (₹ per litre)', t.fuelRate,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
+        fText('f_fuelAmt','Fuel amount (₹)', t.fuelAmt||'','number','min="0" step="1" oninput="fuelEdited()"')+
+        fText('f_brokerage','Brokerage amount (₹)', t.brokerage||'','number','min="0" step="1" oninput="recalcAdvance()"')+
+        '<div class="field"><label>&nbsp;</label><span class="hint" id="fuelHint"></span></div>'+
+      '</div>'+
+      '<div class="adv-total"><span>Freight</span>'+
+        '<span class="num adv-total-value" id="f_freightEcho">'+money(t.freight)+'</span></div>'+
+      '<div class="adv-total adv-balance"><span>Total advance received</span>'+
+        '<span class="num adv-total-value" id="f_advTotal">₹0</span></div>'+
+      '<div class="adv-total adv-balance" id="f_brokRow" hidden><span>Brokerage charged</span>'+
+        '<span class="num adv-total-value" id="f_brokOut">₹0</span></div>'+
+      '<div class="adv-total adv-balance" id="f_netRow" hidden><span>Advance plus brokerage</span>'+
+        '<span class="num adv-total-value" id="f_advNet">₹0</span></div>'+
+      '<div class="adv-total adv-balance"><span id="f_balanceLabel">Balance pending</span>'+
+        '<span class="num adv-total-value" id="f_balance">₹0</span></div>'+
+      '<div class="adv-status"><span>Status will be set to</span><span id="f_statusPreview"></span></div>'+
+      '<div class="gate-error" id="brokWarn" hidden style="margin-top:10px"></div>'+
+    '</div>'+
+    supplierBlock(t)+
+    (existing && t.partyId ? '<div style="margin-top:14px"><button class="btn" '+
+      'onclick="closeModal();partyLedger(\'' + t.partyId + '\')">Open '+esc(partyName(t.partyId))+'\u2019s ledger</button></div>' : '');
+
+  const delivery = existing
+    ? podTracker(existing)+ podUploader(existing)+
+      '<div class="hint" style="margin-top:12px">Each step stamps today\'s date, and saves anything you have changed on the other tabs.</div>'
+    : '<div class="empty" style="padding:34px 16px"><div class="empty-title">Save the trip first</div>'+
+      '<div class="empty-text">Once the trip exists you can mark it delivered and track the POD from here.</div></div>';
+
+  openModal({
+    title: existing ? ((t.from||'—')+' → '+(t.to||'—')) : 'New trip',
+    wide:'full',
+    okText: existing ? 'Save changes' : 'Save trip',
+    onOk(){ saveTripScreen(existing); },
+    body:
+    '<div class="trip-top">'+
+      '<div class="slip-lr">'+(existing
+        ? 'LR '+esc(t.lr||'—')+' · '+fdate(t.date)+' · '+esc(partyName(t.partyId))
+        : 'Fill the details, then save')+'</div>'+
+      (existing && tripNav.length > 1 && pos > -1
+        ? '<div class="trip-nav">'+
+            '<button class="btn btn-sm"'+(prev?' onclick="gotoTrip(\''+prev+'\')"':' disabled')+'>← Previous</button>'+
+            '<span class="hint">'+(pos+1)+' of '+tripNav.length+'</span>'+
+            '<button class="btn btn-sm"'+(next?' onclick="gotoTrip(\''+next+'\')"':' disabled')+'>Next →</button>'+
+          '</div>' : '')+
+    '</div>'+
+    '<div class="tabs trip-tabs">'+TABS.map(x=>
+      '<button class="tab'+(tripTab===x.k?' on':'')+'" onclick="switchTripTab(\''+x.k+'\')">'+
+        esc(x.label)+(x.chip||'')+'</button>').join('')+'</div>'+
+    '<div class="trip-pane">'+
+      (tripTab==='delivery'? delivery : tripTab==='money'? moneyTab : details)+
+    '</div>'+
+    (existing? '<div class="trip-actions"><button class="btn btn-danger" '+
+      'onclick="closeModal();delTrip(\''+existing.id+'\')">Delete this trip</button></div>' : '')
+  });
+
+  fuelDirty = !!(num(t.fuelAmt) && !(num(t.fuelQty)>0 && num(t.fuelRate)>0
+    && Math.abs(num(t.fuelQty)*num(t.fuelRate) - num(t.fuelAmt)) < 0.5));
+  if($('#f_advTotal')) recalcAdvance();
+}
+
+/* moving to another trip keeps whatever you typed */
+function gotoTrip(id){
+  const had = tripDraft && tripDraft.id;
+  readTripForm();
+  if(had) saveTripScreen(DB.trips.find(x=>x.id===had), true);
+  tripDraft = null;
+  tripScreen(id);
+}
+
+function saveTripScreen(existing, quiet){
+  readTripForm();
+  const t = tripDraft;
+  if(!t.partyId){ toast('Choose the party for this trip'); switchTripTab('details'); return false; }
+  if(!t.truckId){ toast('Choose the truck for this trip'); switchTripTab('details'); return false; }
+  const settled = num(t.advCash) + num(t.fuelAmt) + num(t.brokerage);
+  if(num(t.freight) > 0 && settled > num(t.freight)){
+    toast('Advance and brokerage together are more than the freight.');
+    if(!quiet) switchTripTab('money');
+    return false;
+  }
+  const rec = Object.assign(blankTrip(), existing || {}, t);
+  rec.id = existing ? existing.id : uid();
+  rec.date = rec.date || today();
+  rec.advance = tripAdvance(rec);
+  rec.status  = tripStatus(rec);
+  if(!rec.supplierId){
+    const tr = truckById(rec.truckId);
+    if(tr && tr.type==='market' && tr.supplierId) rec.supplierId = tr.supplierId;
+  }
+  rememberPlace(rec.from); rememberPlace(rec.to);
+  if(existing) DB.trips[DB.trips.findIndex(x=>x.id===existing.id)] = rec;
+  else DB.trips.push(rec);
+  save();
+  if(quiet) return true;
+  tripDraft = null;
+  closeModal(); render();
+  toast(existing ? 'Trip updated' : 'Trip saved');
+  return true;
+}
+
+/* both old entry points now open the one screen */
+function tripForm(id){ tripDraft = null; tripScreen(id || null, id ? undefined : 'details'); }
+function tripDetail(id, tab){ tripDraft = null; tripScreen(id, tab || 'details'); }
+
+function podTracker(t){
+  const cur = tripStage(t);
+  const idx = STAGES.findIndex(s=>s.k===cur);
+  return '<div class="pod-track">'+
+    '<div class="pod-head">Delivery and paperwork</div>'+
+    STAGES.map((s,i)=>{
+      if(!s.field) return '';
+      const done = i <= idx;
+      const date = t[s.field] || '';
+      return '<div class="pod-step'+(done?' done':'')+'">'+
+        '<span class="pod-dot"></span>'+
+        '<span class="pod-label">'+esc(s.label)+'</span>'+
+        (done
+          ? '<input type="date" class="pod-date" value="'+esc(date)+'" '+
+              'onchange="setStage(\''+t.id+'\',\''+s.field+'\',this.value)">'+
+            '<button class="btn btn-sm" onclick="setStage(\''+t.id+'\',\''+s.field+'\','+"''"+')">Undo</button>'
+          : '<button class="btn btn-sm btn-primary pod-go" onclick="markStage(\''+t.id+'\',\''+s.field+'\')">'+
+              esc(s.action)+'</button>')+
+      '</div>';
+    }).join('')+
+    (cur!=='submitted' && tripBalance(t)>0
+      ? '<div class="hint" style="margin-top:8px">'+money(tripBalance(t))+
+        ' is waiting on this paperwork before you can chase it.</div>' : '')+
+  '</div>';
+}
+
 function fv(label,value){ return '<div><div class="field-label">'+esc(label)+'</div><div class="field-value">'+value+'</div></div>'; }
 
 function delTrip(id){
@@ -2929,9 +3171,10 @@ function renderPartyList(){
         '</tr>').join('')+'</tbody></table></div>'+moreBar(list.length, full, 'renderPartyList')+'</div>');
 }
 
-function partyForm(id){
+function partyForm(id, onSaved){
   const p = id ? partyById(id) : null;
-  openModal({
+  const nest = typeof onSaved === 'function';
+  (nest ? stackForm : openModal)({
     title: p? 'Edit party':'New party', okText: p?'Save changes':'Save party',
     body:'<div class="form-grid">'+
       fText('p_name','Party / company name', p?p.name:'','text','placeholder="e.g. Shree Cement Depot"')+
@@ -2944,10 +3187,14 @@ function partyForm(id){
     '</div>',
     onOk(){
       if(!val('p_name')){ toast('Enter the party name'); return; }
+      const clash = alreadyExists(DB.parties, 'name', val('p_name'), p?p.id:null);
+      if(clash){ toast('This party is already in the system.'); return; }
       const rec = {id:p?p.id:uid(), name:val('p_name'), phone:val('p_phone'), city:val('p_city'),
         gst:val('p_gst'), opening:num(val('p_opening')), address:val('p_address')};
       if(p) DB.parties[DB.parties.findIndex(x=>x.id===p.id)] = rec; else DB.parties.push(rec);
-      save(); closeModal(); render(); toast(p?'Party updated':'Party saved');
+      save();
+      if(nest){ closeModal(); onSaved(rec.id); toast('Party added'); return; }
+      closeModal(); render(); toast(p?'Party updated':'Party saved');
     }
   });
 }
@@ -3263,18 +3510,20 @@ function paintTruckDocs(){
   }).join('') || '<div class="hint" style="margin-bottom:9px">No documents added yet.</div>';
 }
 
-function truckForm(id){
+function truckForm(id, onSaved){
   const t = id ? truckById(id) : null;
+  const nest = typeof onSaved === 'function';
   pendingTruckDocs = JSON.parse(JSON.stringify((t && t.docs) || []));
-  openModal({
+  (nest ? stackForm : openModal)({
     title: t?'Edit truck':'New truck', okText: t?'Save changes':'Save truck',
     body:'<div class="form-grid">'+
       fSeg('t_type','Truck type',[{v:'owned',t:'Owned by me'},{v:'market',t:'Market / rented'}], t?t.type:'owned')+
       fText('t_number','Vehicle number', t?t.number:'','text','placeholder="UP83 AT 2470" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="this.value=formatPlate(this.value)"')+
       fText('t_model','Make & model', t?t.model:'','text','placeholder="Tata 3118, 14 wheeler"')+
       fText('t_capacity','Capacity (tonnes)', t?t.capacity:'','number','step="0.1" min="0"')+
-      fSelect('t_driver','Regular driver', driverOptions(), t?t.driverId:'')+
-      fText('t_owner','Owner / supplier name', t?t.owner:'','text','placeholder="For market trucks"')+
+      qSelect('t_driver','Regular driver', 'driver', t?t.driverId:'')+
+      qSelect('t_supplier','Supplier (for market trucks)', 'supplier', t?t.supplierId:'')+
+      fText('t_owner','Owner name (if not a saved supplier)', t?t.owner:'','text','placeholder="For market trucks"')+
       fText('t_ownerPhone','Owner phone', t?t.ownerPhone:'','tel')+
       fArea('t_notes','Notes', t?t.notes:'')+
       '<div class="field full"><label>Documents and expiry dates</label>'+
@@ -3286,16 +3535,21 @@ function truckForm(id){
     '</div>',
     onOk(){
       if(!val('t_number')){ toast('Enter the vehicle number'); return; }
+      const plate = formatPlate(val('t_number'));
+      const clash = alreadyExists(DB.trucks, 'number', plate, t?t.id:null);
+      if(clash){ toast('This truck is already in the system as '+clash.number+'.'); return; }
       readDocRows();
       const bad = pendingTruckDocs.find(d=>(d.header && !d.expiry) || (!d.header && d.expiry));
       if(bad){ toast('Every document needs both a name and an expiry date'); return; }
       const docs = pendingTruckDocs.filter(d=>d.header && d.expiry);
       const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number'),
         model:val('t_model'), capacity:val('t_capacity'), driverId:val('t_driver'), owner:val('t_owner'),
-        ownerPhone:val('t_ownerPhone'), notes:val('t_notes'), docs:docs};
+        ownerPhone:val('t_ownerPhone'), supplierId:val('t_supplier'), notes:val('t_notes'), docs:docs};
       rec.number = formatPlate(rec.number);
       if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
-      save(); buildDocTypeList(); closeModal(); render(); toast(t?'Truck updated':'Truck saved');
+      save(); buildDocTypeList();
+      if(nest){ closeModal(); onSaved(rec.id); toast('Truck added'); return; }
+      closeModal(); render(); toast(t?'Truck updated':'Truck saved');
     }
   });
 }
@@ -3370,10 +3624,8 @@ function renderExpenseList(){
       '</table></div>'+moreBar(list.length, full, 'renderExpenseList')+'</div>');
 }
 
-let expenseDraft = null;
 function expenseForm(id, preselectShop){
   let e = id ? DB.expenses.find(x=>x.id===id) : null;
-  if(!e && expenseDraft){ e = expenseDraft; expenseDraft = null; }
   const shops = DB.shops || [];
   const chosenShop = preselectShop || (e?e.shopId:'') || '';
   const isCredit = (e && e.mode==='Credit') || !!preselectShop;
@@ -3383,18 +3635,12 @@ function expenseForm(id, preselectShop){
       fText('e_date','Date', e?e.date:today(),'date')+
       fText('e_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
       fSelect('e_cat','Category', CATEGORIES.map(c=>({v:c,t:c})), e?e.category:'Fuel / Diesel')+
-      fSelect('e_truck','Truck (optional)', truckOptions(), e?e.truckId:'')+
+      qSelect('e_truck','Truck (optional)', 'truck', e?e.truckId:'')+
       fText('e_paidTo','Paid to', e?e.paidTo:'','text','placeholder="Pump, mechanic, bank…"')+
       fSelect('e_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Card',t:'Card'},{v:'Credit',t:'On credit'}],
         isCredit?'Credit':(e?e.mode:'Cash'), 'onchange="toggleShopField()"')+
       '<div class="field full" id="shopField"'+(isCredit?'':' hidden')+'>'+
-        '<label for="e_shop">Shop <span style="color:var(--red)">*</span></label>'+
-        '<select id="e_shop" onchange="shopPicked()">'+
-          '<option value="">— select the shop —</option>'+
-          shops.map(s=>'<option value="'+s.id+'"'+(s.id===chosenShop?' selected':'')+'>'+esc(s.name)+
-            (shopBalance(s.id)>0?' · '+money(shopBalance(s.id))+' owed':'')+'</option>').join('')+
-          '<option value="__new">+ Add a new shop</option>'+
-        '</select>'+
+        qSelect('e_shop','Shop *', 'shop', chosenShop)+
         '<span class="hint">Taken on credit, so this goes into the shop\u2019s ledger as money you owe'+
           '<span id="shopTruckHint"></span>.</span>'+
       '</div>'+
@@ -3435,16 +3681,7 @@ function toggleShopField(){
   }
 }
 /* "+ Add a new shop" without losing what has been typed so far */
-function shopPicked(){
-  const el = document.getElementById('e_shop');
-  if(!el) return;
-  el.style.borderColor = '';
-  if(el.value!=='__new') return;
-  const draft = {id:null, date:val('e_date'), amount:val('e_amount'), category:val('e_cat'),
-    truckId:val('e_truck'), paidTo:val('e_paidTo'), mode:'Credit', note:val('e_note')};
-  closeModal();
-  shopForm(null, draft);
-}
+
 function delExpense(id){
   confirmAsk('Delete this expense?', ()=>{ DB.expenses = DB.expenses.filter(x=>x.id!==id); save(); render(); toast('Expense deleted'); }, true);
 }
@@ -3539,10 +3776,11 @@ function showDriverDocs(id){
   });
 }
 
-function driverForm(id){
+function driverForm(id, onSaved){
   const d = id ? driverById(id) : null;
+  const nest = typeof onSaved === 'function';
   pendingDocs = Object.assign({}, (d && d.docs) || {});
-  openModal({
+  (nest ? stackForm : openModal)({
     title: d?'Edit driver':'New driver', okText: d?'Save changes':'Save driver',
     body:'<div class="form-grid">'+
       fText('d_name','Driver name', d?d.name:'')+
@@ -3560,13 +3798,17 @@ function driverForm(id){
     '</div>',
     onOk(){
       if(!val('d_name')){ toast('Enter the driver name'); return; }
+      const clash = alreadyExists(DB.drivers, 'name', val('d_name'), d?d.id:null);
+      if(clash){ toast('This driver is already in the system.'); return; }
       const docs = {};
       DOC_SLOTS.forEach(s=>{ if(pendingDocs[s.k]) docs[s.k] = pendingDocs[s.k]; });
       const rec = {id:d?d.id:uid(), name:val('d_name'), phone:val('d_phone'), licence:val('d_licence'),
         salary:num(val('d_salary')), join:val('d_join'), aadhaar:val('d_aadhaar'), address:val('d_address'),
         docs:docs};
       if(d) DB.drivers[DB.drivers.findIndex(x=>x.id===d.id)] = rec; else DB.drivers.push(rec);
-      save(); pendingDocs = {}; closeModal(); render(); toast(d?'Driver updated':'Driver saved');
+      save(); pendingDocs = {};
+      if(nest){ closeModal(); onSaved(rec.id); toast('Driver added'); return; }
+      closeModal(); render(); toast(d?'Driver updated':'Driver saved');
     }
   });
 }
@@ -3601,6 +3843,288 @@ function delDriver(did){
     DB.driverTxns = DB.driverTxns.filter(x=>x.driverId!==did);
     save(); sub={}; render(); toast('Driver deleted');
   }, true);
+}
+
+
+/* ============================================================
+   DELIVERIES AND POD PAGE
+   ============================================================ */
+function viewPod(){
+  const all = DB.trips.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  /* so Previous/Next inside the trip card walks the queue you are clearing */
+  tripNav = all.filter(t=>['delivered','received'].includes(tripStage(t))).map(t=>t.id);
+  const by = k => all.filter(t=>tripStage(t)===k);
+  const transit = by('transit'), delivered = by('delivered'), received = by('received');
+  const done = by('submitted');
+  const locked = lockedByPod();
+  const chase = podAlerts().length;
+
+  $('#pageActions').innerHTML = '<button class="btn" onclick="window.print()">Print</button>';
+  $('#pageSub').textContent = (delivered.length+received.length)+' waiting on paperwork';
+
+  const row = (t, field, action) => {
+    const since = daysSince(t.podReceivedAt || t.deliveredAt);
+    const bal = tripBalance(t);
+    return '<div class="pod-row">'+
+      '<div class="who">'+
+        '<div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
+        '<div class="t-sub">'+(t.lr?'LR '+esc(t.lr)+' · ':'')+esc(partyName(t.partyId))+
+          ' · '+fdate(t.date)+'</div>'+
+      '</div>'+
+      (since!==null? '<span class="pod-age'+(since>=POD_CHASE_DAYS?' old':'')+'">'+
+        plural(since,'day')+'</span>':'')+
+      '<span class="amt'+(bal>0?' money-neg':'')+'">'+(bal>0?money(bal):'settled')+'</span>'+
+      (podCount(t.id)
+        ? '<button class="btn btn-sm" onclick="downloadPod(\''+t.id+'\')">POD ('+podCount(t.id)+')</button>'
+        : '')+
+      '<button class="btn btn-sm" onclick="tripDetail(\''+t.id+'\',\'delivery\')">Open trip</button>'+
+      (field? '<button class="btn btn-sm btn-primary" onclick="markStage(\''+t.id+'\',\''+field+'\')">'+
+        esc(action)+'</button>':'')+
+    '</div>';
+  };
+
+  const group = (title, chip, list, field, action, empty) =>
+    '<div class="pod-group">'+
+      '<div class="pod-group-head"><h3>'+esc(title)+'</h3>'+
+        '<span class="chip '+chip+'">'+list.length+'</span></div>'+
+      (list.length ? list.map(t=>row(t, field, action)).join('')
+        : '<div class="hint" style="padding:4px 2px 0">'+esc(empty)+'</div>')+
+    '</div>';
+
+  $('#view').innerHTML =
+  '<div class="grid g4 rise" style="margin-bottom:18px">'+
+    kpi('Waiting on paperwork', delivered.length+received.length, {fmt:'plain',
+      note:'Delivered, POD not submitted'})+
+    kpi('Money held up', locked, {tone:locked>0?'neg':'pos',
+      note:'Cannot be chased until POD goes in'})+
+    kpi('Older than '+POD_CHASE_DAYS+' days', chase, {fmt:'plain', tone:chase?'neg':'',
+      note:'Worth a phone call'})+
+    kpi('Still on the road', transit.length, {fmt:'plain', note:'Not marked delivered'})+
+  '</div>'+
+
+  group('Delivered — POD not received from driver', 'chip-blue', delivered,
+    'podReceivedAt', 'POD received', 'Nothing waiting on a driver.')+
+  group('POD received — not submitted to party', 'chip-amber', received,
+    'podSubmittedAt', 'POD submitted', 'Nothing waiting to go to a party.')+
+  group('Still on the road', 'chip-grey', transit,
+    'deliveredAt', 'Mark delivered', 'Every trip has been marked delivered.')+
+
+  '<div class="pod-group">'+
+    '<div class="pod-group-head"><h3>Completed</h3>'+
+      '<span class="chip chip-green">'+done.length+'</span></div>'+
+    (done.length
+      ? '<div class="hint">'+plural(done.length,'trip')+' with POD submitted. '+
+        'They still appear in Trips and in your ledgers as normal.</div>'
+      : '<div class="hint">No POD has been submitted yet.</div>')+
+  '</div>'+
+
+  (locked>0 ? '<div class="note" style="margin-top:6px"><b>'+money(locked)+'</b> of freight is sitting behind '+
+    'paperwork. Submitting those PODs is usually the quickest way to unlock a collection.</div>' : '');
+}
+
+/* ============================================================
+   SUPPLIERS PAGE AND LEDGER
+   ============================================================ */
+function viewSuppliers(){
+  if(sub.open) return renderSupplierLedger(sub.open);
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="supplierForm()">+ <span>New supplier</span></button>';
+  const bal = allSupplierBalances();
+  const owed = Object.values(bal).reduce((s,b)=>s+Math.max(0,b),0);
+  const held = totalHeldByPod();
+  const month = DB.trips.filter(t=>monthKey(t.date)===thisMonth() && num(t.hire)>0)
+    .reduce((s,t)=>s+num(t.hire),0);
+
+  $('#view').innerHTML =
+  '<div class="grid g3 rise" style="margin-bottom:16px">'+
+    kpi('Owed to suppliers', owed, {tone:owed>0?'neg':'pos',
+      note: Object.values(bal).filter(b=>b>0).length+' with a balance'})+
+    kpi('Held pending POD', held, {note:'POD not back from the driver yet'})+
+    kpi('Hire this month', month, {note:monthName(thisMonth())})+
+  '</div>'+
+  '<div class="filters"><div class="filter-row">'+
+    '<input class="search" type="search" autocomplete="off" placeholder="Search supplier, contact, phone…" '+
+      'value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;defer(renderSupplierList)">'+
+    '<select onchange="sub.due=this.value;renderSupplierList()"><option value="">All suppliers</option>'+
+      '<option value="due"'+(sub.due==='due'?' selected':'')+'>With a balance only</option></select>'+
+  '</div></div><div id="listBox"></div>';
+  renderSupplierList();
+}
+
+function renderSupplierList(){
+  const box = $('#listBox'); if(!box) return;
+  const q = (sub.q||'').toLowerCase().trim();
+  const bal = allSupplierBalances();
+  let list = (DB.suppliers||[]).map(s=>{
+    const trips = supplierTrips(s.id);
+    return {...s, bal:bal[s.id]||0, trips:trips.length,
+      hire:trips.reduce((a,t)=>a+num(t.hire),0), held:supplierHeldByPod(s.id)};
+  });
+  if(q) list = list.filter(s=>((s.name||'')+' '+(s.person||'')+' '+(s.phone||'')+' '+(s.city||'')).toLowerCase().includes(q));
+  if(sub.due==='due') list = list.filter(s=>s.bal>0);
+  list.sort((a,b)=>b.bal-a.bal);
+
+  box.innerHTML =
+  ((DB.suppliers||[]).length===0
+    ? empty('No suppliers yet','A supplier is whoever gives you a market truck. Add one, link their vehicles under Trucks, and every hire lands in their ledger.',
+        '<button class="btn btn-amber" onclick="supplierForm()">+ Add your first supplier</button>')
+    : list.length===0 ? empty('No supplier matches','Try a different word, or switch back to all suppliers.','')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Supplier</th><th>Contact</th><th class="t-r">Trips</th><th class="t-r">Total hire</th>'+
+      '<th class="t-r">Outstanding</th><th></th></tr></thead><tbody>'+
+      list.map(s=>
+        '<tr><td data-label="Supplier" onclick="supplierLedger(\''+s.id+'\')" style="cursor:pointer">'+
+          '<div class="t-strong">'+esc(s.name)+'</div>'+
+          (s.person?'<div class="t-sub">'+esc(s.person)+'</div>':'')+'</td>'+
+        '<td data-label="Contact">'+esc(s.phone||'—')+(s.city?'<div class="t-sub">'+esc(s.city)+'</div>':'')+'</td>'+
+        '<td data-label="Trips" class="t-r num">'+s.trips+'</td>'+
+        '<td data-label="Total hire" class="t-r num">'+money(s.hire)+'</td>'+
+        '<td data-label="Outstanding" class="t-r num '+(s.bal>0?'money-neg':s.bal<0?'money-pos':'')+'">'+
+          money(Math.abs(s.bal))+
+          '<div class="t-sub">'+(s.bal>0?'you owe':s.bal<0?'paid ahead':'settled')+
+          (s.held? ' · '+money(s.held)+' held':'')+'</div></td>'+
+        '<td><div class="row-actions">'+
+          '<button class="btn btn-sm btn-primary" onclick="supplierLedger(\''+s.id+'\')">Ledger</button>'+
+          '<button class="btn btn-sm" onclick="supplierForm(\''+s.id+'\')">Edit</button>'+
+        '</div></td></tr>').join('')+
+      '</tbody><tfoot><tr><th colspan="4">Total payable</th>'+
+      '<th class="t-r num" style="font-size:14px;color:var(--red)">'+
+        money(list.reduce((a,x)=>a+Math.max(0,x.bal),0))+'</th><th></th></tr></tfoot></table></div></div>');
+}
+
+function supplierForm(id, onSaved){
+  const s = id ? supplierById(id) : null;
+  const nest = typeof onSaved === 'function';
+  (nest ? stackForm : openModal)({
+    title: s?'Edit supplier':'New supplier', okText: s?'Save changes':'Save supplier',
+    body:'<div class="form-grid">'+
+      fText('sp_name','Supplier name', s?s.name:'','text','placeholder="e.g. Rajesh Transport"')+
+      fText('sp_person','Contact person', s?s.person:'')+
+      fText('sp_phone','Mobile number', s?s.phone:'','tel')+
+      fText('sp_city','City', s?s.city:'')+
+      fText('sp_opening','Opening balance (₹)', s?s.opening:'','number','step="1"')+
+      '<div class="field"><label>&nbsp;</label><span class="hint">What you already owe them today. Negative if you have paid ahead.</span></div>'+
+      fArea('sp_address','Address', s?s.address:'')+
+      fArea('sp_notes','Notes', s?s.notes:'')+
+    '</div>',
+    onOk(){
+      if(!val('sp_name')){ toast('Enter the supplier name'); return; }
+      const clash = alreadyExists(DB.suppliers, 'name', val('sp_name'), s?s.id:null);
+      if(clash){ toast('This supplier is already in the system.'); return; }
+      const rec = {id:s?s.id:uid(), name:val('sp_name'), person:val('sp_person'), phone:val('sp_phone'),
+        city:val('sp_city'), opening:num(val('sp_opening')), address:val('sp_address'), notes:val('sp_notes')};
+      DB.suppliers = DB.suppliers || [];
+      if(s) DB.suppliers[DB.suppliers.findIndex(x=>x.id===s.id)] = rec; else DB.suppliers.push(rec);
+      save();
+      if(nest){ closeModal(); onSaved(rec.id); toast('Supplier added'); return; }
+      closeModal(); render(); toast(s?'Supplier updated':'Supplier saved');
+    }
+  });
+}
+function supplierLedger(id){ route='suppliers'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderSupplierLedger(id); }
+
+function renderSupplierLedger(sid){
+  const s = supplierById(sid);
+  if(!s){ sub={}; return viewSuppliers(); }
+  const rows = supplierLedgerRows(sid);
+  const bal = supplierBalance(sid);
+  const billed = rows.reduce((a,r)=>a+r.debit,0);
+  const paid   = rows.reduce((a,r)=>a+r.credit,0);
+  const held   = supplierHeldByPod(sid);
+
+  $('#pageTitle').textContent = s.name;
+  $('#pageSub').textContent = [s.person, s.phone, s.city].filter(Boolean).join(' · ') || 'Supplier ledger';
+  $('#pageActions').innerHTML =
+    '<button class="btn" onclick="sub={};render()">← <span>All suppliers</span></button>'+
+    '<button class="btn btn-amber" onclick="supplierEntryForm(\''+sid+'\')">+ <span>Add entry</span></button>';
+
+  $('#view').innerHTML =
+  '<div class="grid g4 rise" style="margin-bottom:16px">'+
+    kpi('Hire billed', billed, {note:plural(supplierTrips(sid).length,'trip')})+
+    kpi('Paid so far', paid, {tone:'pos'})+
+    kpi(bal>=0?'Outstanding':'Paid ahead', Math.abs(bal), {tone:bal>0?'neg':'pos'})+
+    kpi('Held pending POD', held, {note:'You can hold this until the POD is back'})+
+  '</div>'+
+  '<div class="toolbar"><button class="btn btn-sm" onclick="window.print()">Print ledger</button>'+
+    '<button class="btn btn-sm" onclick="exportSupplierLedger(\''+sid+'\')">Export CSV</button>'+
+    '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delSupplier(\''+sid+'\')">Delete supplier</button></div>'+
+  (rows.length===0
+    ? empty('Ledger is empty','Record a trip on one of their trucks with a hire amount, or add a payment entry here.',
+        '<button class="btn btn-amber" onclick="supplierEntryForm(\''+sid+'\')">+ Add entry</button>')
+    : '<div class="card"><div class="tbl-wrap"><table>'+
+      '<thead><tr><th>Date</th><th>Particulars</th><th>Truck</th><th class="t-r">Debit</th>'+
+      '<th class="t-r">Credit</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      rows.map(r=>
+        '<tr><td data-label="Date" style="white-space:nowrap">'+(r.date?fdate(r.date):'—')+'</td>'+
+        '<td data-label="Particulars"><div class="t-strong">'+esc(r.label)+'</div>'+
+          (r.ref?'<div class="t-sub">'+esc(r.ref)+'</div>':'')+'</td>'+
+        '<td data-label="Truck" class="num">'+esc(r.truck)+'</td>'+
+        '<td data-label="Debit" class="t-r num">'+(r.debit?money(r.debit):'')+'</td>'+
+        '<td data-label="Credit" class="t-r num" style="color:var(--green)">'+(r.credit?money(r.credit):'')+'</td>'+
+        '<td data-label="Balance" class="t-r num t-strong">'+money(r.running)+'</td>'+
+        '<td><div class="row-actions">'+
+          (r.kind==='trip'?'<button class="btn btn-sm" onclick="tripDetail(\''+r.tripId+'\',\'money\')">Open trip</button>':'')+
+          (r.kind==='entry'?'<button class="btn btn-sm" onclick="supplierEntryForm(\''+sid+'\',\''+r.entryId+'\')">Edit</button>'+
+            '<button class="btn btn-sm btn-danger" onclick="delSupplierEntry(\''+r.entryId+'\')">Delete</button>':'')+
+        '</div></td></tr>').join('')+
+      '</tbody></table></div></div>'+
+      '<div class="note" style="margin-top:14px">Debit is hire you owe. Credit is money you have paid, including advances at loading. '+
+      'Hire lines come from the trips themselves — edit the trip to change one.</div>');
+}
+
+function supplierEntryForm(sid, eid){
+  const e = eid ? (DB.supplierLedger||[]).find(x=>x.id===eid) : null;
+  openModal({
+    title: e? 'Edit ledger entry':'Supplier ledger entry', okText: e?'Save changes':'Save entry',
+    body:'<div class="form-grid">'+
+      fSeg('sl_type','Entry type',[
+        {v:'credit',t:'Payment made to supplier'},
+        {v:'debit', t:'Charge they added'}], e?e.type:'credit')+
+      fText('sl_date','Date', e?e.date:today(),'date')+
+      fText('sl_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
+      qSelect('sl_truck','Truck (optional)', 'truck', e?e.truckId:'')+
+      fSelect('sl_reason','Reason', [{v:'',t:'— none —'}].concat(DEDUCTIONS.map(x=>({v:x,t:x}))), e?e.reason:'')+
+      fSelect('sl_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Cheque',t:'Cheque'},{v:'Adjustment',t:'Adjustment'}], e?e.mode:'Cash')+
+      fText('sl_note','Description', e?e.note:'','text','placeholder="e.g. Balance for August trips"')+
+      '<div class="field full"><span class="hint">A deduction you keep from the hire — commission, shortage, damage — '+
+        'is a payment as far as the balance goes. Pick the reason so the ledger explains itself.</span></div>'+
+    '</div>',
+    onOk(){
+      const amt = num(val('sl_amount'));
+      if(amt<=0){ toast('Enter an amount greater than zero'); return; }
+      const rec = {id:e?e.id:uid(), supplierId:sid, date:val('sl_date')||today(), type:checked('sl_type')||'credit',
+        amount:amt, truckId:val('sl_truck'), reason:val('sl_reason'), mode:val('sl_mode'), note:val('sl_note')};
+      DB.supplierLedger = DB.supplierLedger || [];
+      if(e) DB.supplierLedger[DB.supplierLedger.findIndex(x=>x.id===e.id)] = rec; else DB.supplierLedger.push(rec);
+      save(); closeModal(); renderSupplierLedger(sid); toast(e?'Entry updated':'Entry saved');
+    }
+  });
+}
+function delSupplierEntry(eid){
+  const e = (DB.supplierLedger||[]).find(x=>x.id===eid); if(!e) return;
+  confirmAsk('Delete this ledger entry?', ()=>{
+    DB.supplierLedger = DB.supplierLedger.filter(x=>x.id!==eid);
+    save(); renderSupplierLedger(e.supplierId); toast('Entry deleted');
+  }, true);
+}
+function delSupplier(sid){
+  const n = supplierTrips(sid).length;
+  if(n){
+    openModal({title:'Supplier is in use', body:'<p style="margin:0">'+plural(n,'trip')+
+      ' still points at this supplier. Change those trips first, so your records stay correct.</p>'});
+    return;
+  }
+  confirmAsk('Delete this supplier and their manual ledger entries?', ()=>{
+    DB.suppliers = DB.suppliers.filter(x=>x.id!==sid);
+    DB.supplierLedger = (DB.supplierLedger||[]).filter(x=>x.supplierId!==sid);
+    DB.trucks.forEach(t=>{ if(t.supplierId===sid) t.supplierId=''; });
+    save(); sub={}; render(); toast('Supplier deleted');
+  }, true);
+}
+function exportSupplierLedger(sid){
+  const s = supplierById(sid);
+  download('supplier-'+s.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
+    [['Date','Particulars','Truck','Debit','Credit','Balance']].concat(
+      supplierLedgerRows(sid).map(r=>[r.date, r.label, r.truck, r.debit||'', r.credit||'', r.running])));
 }
 
 /* ============================================================
@@ -3666,9 +4190,10 @@ function renderShopList(){
         money(list.reduce((s,x)=>s+Math.max(0,x.bal),0))+'</th><th></th></tr></tfoot></table></div></div>');
 }
 
-function shopForm(id, fromExpense){
+function shopForm(id, onSaved){
   const s = id ? shopById(id) : null;
-  openModal({
+  const nest = typeof onSaved === 'function';
+  (nest ? stackForm : openModal)({
     title: s?'Edit shop':'New shop', okText: s?'Save changes':'Save shop',
     body:'<div class="form-grid">'+
       fText('s_name','Shop name', s?s.name:'','text','placeholder="e.g. ABC Fuel Station"')+
@@ -3681,18 +4206,15 @@ function shopForm(id, fromExpense){
     (s? '<div class="note" style="margin-top:12px">Changing these details does not affect anything already in this shop\u2019s ledger.</div>':''),
     onOk(){
       if(!val('s_name')){ toast('Enter the shop name'); return; }
+      const clash = alreadyExists(DB.shops, 'name', val('s_name'), s?s.id:null);
+      if(clash){ toast('This shop is already in the system.'); return; }
       const rec = {id:s?s.id:uid(), name:val('s_name'), person:val('s_person'), phone:val('s_phone'),
         city:val('s_city'), address:val('s_address'), notes:val('s_notes')};
       DB.shops = DB.shops || [];
       if(s) DB.shops[DB.shops.findIndex(x=>x.id===s.id)] = rec; else DB.shops.push(rec);
-      save(); closeModal();
-      if(fromExpense){
-        expenseDraft = fromExpense;
-        expenseForm(null, rec.id);
-        toast('Shop added');
-        return;
-      }
-      render(); toast(s?'Shop updated':'Shop saved');
+      save();
+      if(nest){ closeModal(); onSaved(rec.id); toast('Shop added'); return; }
+      closeModal(); render(); toast(s?'Shop updated':'Shop saved');
     }
   });
 }
@@ -3752,7 +4274,7 @@ function shopEntryForm(sid, eid){
         {v:'debit', t:'Charge added by shop'}], e?e.type:'credit')+
       fText('sl_date','Date', e?e.date:today(),'date')+
       fText('sl_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
-      fSelect('sl_truck','Truck (optional)', truckOptions(), e?e.truckId:'')+
+      qSelect('sl_truck','Truck (optional)', 'truck', e?e.truckId:'')+
       fSelect('sl_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Cheque',t:'Cheque'},{v:'Adjustment',t:'Adjustment'}], e?e.mode:'Cash')+
       fText('sl_note','Description', e?e.note:'','text','placeholder="e.g. Part payment for August bills"')+
     '</div>',
@@ -3971,6 +4493,7 @@ function viewSettings(){
       '" style="width:'+Math.max(2,storePct())+'%"></div></div>'+
     '<div class="hint" style="margin-bottom:14px">'+kb(storeUsed())+' of about 4.6 MB'+
       (docTotal()? ' · driver photos take '+kb(docTotal()) : '')+
+      (podBytes()? ' · POD copies take '+kb(podBytes()) : '')+
       (storePct()>85? ' — nearly full. Remove some driver photos, or keep fewer on file.' : '')+'</div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:18px">'+counts.map(([l,n])=>
       '<div><div class="stat-label">'+l+'</div><div class="num t-strong" style="font-size:18px">'+n+'</div></div>').join('')+'</div>'+
@@ -3984,7 +4507,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>5.5</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>6.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -4054,16 +4577,30 @@ function seed(){
   t2.docs=[{id:uid(),header:'Insurance',expiry:iso(95),notes:''},
            {id:uid(),header:'National Permit',expiry:iso(26),notes:''}];
   t3.docs=[];
+  const sup1={id:uid(),name:'Rajesh Transport',person:'Rajesh Kumar',phone:'98100 44556',city:'Delhi',
+    opening:0,address:'',notes:''};
+  DB.suppliers.push(sup1);
+  t3.supplierId = sup1.id;
   DB.trucks.push(t1,t2,t3); DB.parties.push(p1,p2,p3); DB.drivers.push(dr1,dr2);
   t1.driverId=dr1.id; t2.driverId=dr2.id;
   const trips=[
     {date:day(3),lr:'MV-1041',from:'Gurugram (Haryana)',to:'Jaipur (Rajasthan)',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Cement bags',weight:'24',freight:38000,advCash:10000,fuelQty:'',fuelRate:'',fuelAmt:0,advance:10000,hire:0,status:'partial',notes:''},
     {date:day(6),lr:'MV-1042',from:'Bhiwadi',to:'Ahmedabad',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'TMT bars',weight:'30',freight:64000,advance:0,hire:0,status:'pending',notes:''},
-    {date:day(9),lr:'MV-1043',from:'Delhi (Delhi)',to:'Lucknow (Uttar Pradesh)',partyId:p3.id,truckId:t3.id,driverId:'',material:'Wheat',weight:'27',freight:47000,advCash:6000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,advance:15000,hire:36000,status:'partial',notes:'Market vehicle arranged through Rajesh Transport'},
+    {date:day(9),lr:'MV-1043',from:'Delhi (Delhi)',to:'Lucknow (Uttar Pradesh)',partyId:p3.id,truckId:t3.id,driverId:'',material:'Wheat',weight:'27',freight:47000,advCash:6000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,advance:15000,hire:36000,hireAdvance:20000,status:'partial',notes:'Market vehicle arranged through Rajesh Transport'},
     {date:day(12),lr:'MV-1044',from:'Jaipur',to:'Gurugram',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Empty return load',weight:'18',freight:26000,advance:0,hire:0,status:'paid',notes:''},
     {date:day(16),lr:'MV-1045',from:'Gurugram (Haryana)',to:'Indore (Madhya Pradesh)',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advCash:11000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,brokerage:2000,advance:20000,hire:0,status:'partial',notes:''}
   ];
-  trips.forEach(t=>DB.trips.push({id:uid(),...t}));
+  const stageDay = n => new Date(Date.now()-n*86400000).toISOString().slice(0,10);
+  trips.forEach((t,i)=>{
+    const extra = [
+      {deliveredAt:stageDay(9), podReceivedAt:stageDay(7), podSubmittedAt:''},
+      {deliveredAt:stageDay(11), podReceivedAt:'', podSubmittedAt:''},
+      {deliveredAt:stageDay(6), podReceivedAt:stageDay(5), podSubmittedAt:stageDay(3)},
+      {deliveredAt:stageDay(4), podReceivedAt:'', podSubmittedAt:''},
+      {deliveredAt:'', podReceivedAt:'', podSubmittedAt:''}
+    ][i] || {deliveredAt:'', podReceivedAt:'', podSubmittedAt:''};
+    DB.trips.push({id:uid(), ...t, ...extra});
+  });
   DB.ledger.push(
     {id:uid(),partyId:p1.id,date:day(14),type:'credit',amount:26000,mode:'UPI',ref:'',note:'Payment for LR MV-1044'},
     {id:uid(),partyId:p2.id,date:day(18),type:'credit',amount:24000,mode:'Bank',ref:'UTR 998211',note:'Clearing old outstanding'},
@@ -4103,12 +4640,16 @@ function exportCSV(what){
   if(what==='trips'){
     download('trips-'+today()+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
       'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance','Brokerage',
-      'Advance plus brokerage','Balance pending','Hire','Status','Notes']]
+      'Advance plus brokerage','Balance pending','Hire','Status',
+      'Delivery stage','Delivered on','POD received','POD submitted',
+      'Supplier','Hire advance','Hire balance','Notes']]
       .concat(DB.trips.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
         [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',
          t.material,t.weight,num(t.freight),num(t.advCash),t.fuelQty||'',t.fuelRate||'',num(t.fuelAmt),
          num(t.advance),num(t.brokerage),tripDeducted(t),tripBalance(t),
-         num(t.hire),tripStatus(t),t.notes])));
+         num(t.hire),tripStatus(t),stageInfo(tripStage(t)).label,
+         t.deliveredAt||'',t.podReceivedAt||'',t.podSubmittedAt||'',
+         tripSupplier(t)?supplierName(tripSupplier(t)):'',num(t.hireAdvance),tripSupplierBalance(t),t.notes])));
   }
   if(what==='parties'){
     const bal = allBalances();
@@ -4133,6 +4674,365 @@ function exportLedger(pid){
 
 
 
+
+
+
+/* ============================================================
+   QUICK ADD
+   Every master dropdown carries "+ Add New …" as its first item.
+   Choosing it stacks the real creation form on top, saves through
+   the same code and the same checks as the master tab, then drops
+   back and selects what you just made. One source of data, no
+   temporary records.
+   ============================================================ */
+const QUICK = {
+  truck: {
+    add:'+ Add New Truck', blank:'— select truck —',
+    opts:()=>DB.trucks.map(t=>({v:t.id, t:t.number+(t.type==='market'?' (market)':'')})),
+    open:cb=>truckForm(null, cb)
+  },
+  party: {
+    add:'+ Add New Party', blank:'— select party —',
+    opts:()=>DB.parties.map(p=>({v:p.id, t:p.name})),
+    open:cb=>partyForm(null, cb)
+  },
+  driver: {
+    add:'+ Add New Driver', blank:'— none —',
+    opts:()=>DB.drivers.map(d=>({v:d.id, t:d.name})),
+    open:cb=>driverForm(null, cb)
+  },
+  shop: {
+    add:'+ Add New Shop', blank:'— select the shop —',
+    opts:()=>(DB.shops||[]).map(s=>({v:s.id, t:s.name + (shopBalance(s.id)>0? ' · '+money(shopBalance(s.id))+' owed':'')})),
+    open:cb=>shopForm(null, cb)
+  },
+  supplier: {
+    add:'+ Add New Supplier', blank:'— not linked —',
+    opts:()=>(DB.suppliers||[]).map(s=>({v:s.id, t:s.name})),
+    open:cb=>supplierForm(null, cb)
+  }
+};
+
+function quickOptions(kind){
+  const q = QUICK[kind];
+  return [{v:'', t:q.blank}, {v:'__new', t:q.add}].concat(q.opts());
+}
+function qSelect(id, label, kind, v, extra){
+  return fSelect(id, label, quickOptions(kind), v,
+    (extra||'')+' onchange="quickPick(\''+id+'\',\''+kind+'\')"');
+}
+function quickPick(id, kind){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(el.value !== '__new'){ if(typeof afterQuickChange==='function') afterQuickChange(id); return; }
+  el.value = el.dataset.prev || '';
+  QUICK[kind].open(newId=>{ refreshQuick(id, kind, newId); });
+}
+/* rebuild the list and select what was just created */
+function refreshQuick(id, kind, newId){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.innerHTML = quickOptions(kind).map(o=>
+    '<option value="'+esc(o.v)+'">'+esc(o.t)+'</option>').join('');
+  el.value = newId || '';
+  el.dataset.prev = el.value;
+  if(typeof afterQuickChange==='function') afterQuickChange(id);
+}
+/* forms that need to react when a dropdown changes hook in here */
+function afterQuickChange(id){
+  if(id==='e_mode' || id==='e_shop') toggleShopField();
+  if(id==='f_truck' || id==='f_supplier' || id==='f_party') { if(typeof recalcAdvance==='function') recalcAdvance(); }
+}
+/* open a creation form on top of whatever is already open */
+function stackForm(opts, after){
+  modalStack.push({html:$('#modalRoot').innerHTML, vals:snapshotModal(), onOk:modalOnOk, after:after});
+  openModal(opts);
+}
+function alreadyExists(list, field, value, exceptId){
+  const v = String(value||'').trim().toLowerCase();
+  return (list||[]).find(x=>x.id!==exceptId && String(x[field]||'').trim().toLowerCase()===v);
+}
+
+/* ============================================================
+   POD IMAGES
+   Photos are kept in their own bucket keyed by trip, never inside
+   the trip record, so the main data stays small and each trip's
+   images sync as their own cloud document.
+   ============================================================ */
+const POD_MAX = 4;
+
+function podImages(tripId){ return (DB.pods && DB.pods[tripId]) || []; }
+function podCount(tripId){ return podImages(tripId).length; }
+function podBytes(){
+  let n = 0;
+  Object.values(DB.pods||{}).forEach(list=>(list||[]).forEach(p=>{ n += (p.data||'').length*0.75; }));
+  return n;
+}
+
+async function addPodPhoto(tripId, input){
+  const files = input.files ? [...input.files] : [];
+  input.value = '';
+  if(!files.length) return;
+  const box = document.getElementById('podFiles');
+  if(box) box.insertAdjacentHTML('beforeend','<div class="doc-busy" id="podBusy">Shrinking photo…</div>');
+  for(const file of files){
+    if(podCount(tripId) >= POD_MAX){ toast('Up to '+POD_MAX+' pages per trip'); break; }
+    try{
+      const data = await shrinkImage(file);
+      if(storeUsed() + data.length > STORE_LIMIT){ toast('Storage is nearly full. Remove an old photo first.'); break; }
+      DB.pods = DB.pods || {};
+      DB.pods[tripId] = podImages(tripId).concat([{id:uid(), data, name:file.name||'POD', addedAt:today()}]);
+    }catch(e){ toast(e.message); }
+  }
+  const busy = document.getElementById('podBusy'); if(busy) busy.remove();
+
+  /* a photo in hand means the POD is back from the driver */
+  const t = DB.trips.find(x=>x.id===tripId);
+  let noted = '';
+  if(t && podCount(tripId) && !t.podReceivedAt){
+    t.podReceivedAt = today();
+    if(!t.deliveredAt) t.deliveredAt = today();
+    noted = ' · marked POD received';
+  }
+  save();
+  toast('POD saved'+noted);
+  refreshPodScreen(tripId);
+}
+
+function removePodPhoto(tripId, id){
+  confirmAsk('Remove this POD page?', ()=>{
+    DB.pods[tripId] = podImages(tripId).filter(p=>p.id!==id);
+    if(!DB.pods[tripId].length) delete DB.pods[tripId];
+    save(); refreshPodScreen(tripId); toast('Page removed');
+  }, true);
+}
+function refreshPodScreen(tripId){
+  if(document.querySelector('.overlay .trip-tabs')){ tripDraft = null; closeModal(); tripScreen(tripId); }
+  else if(route==='pod') viewPod();
+  else render();
+  paintBell();
+}
+function podFileName(t, i){
+  const bits = ['POD', t.lr || fdate(t.date).replace(/ /g,'-'), (t.from||'').split(' (')[0], (t.to||'').split(' (')[0]];
+  return bits.filter(Boolean).join('-').replace(/[^A-Za-z0-9-]/g,'')+(i>0?'-'+(i+1):'')+'.jpg';
+}
+function viewPodImage(tripId, id){
+  const t = DB.trips.find(x=>x.id===tripId);
+  const list = podImages(tripId);
+  const i = list.findIndex(p=>p.id===id);
+  const img = list[i]; if(!img) return;
+  stackForm({
+    title:'POD — '+((t&&t.lr)||'trip'), wide:'xl',
+    body:'<img src="'+img.data+'" alt="POD" style="width:100%;border-radius:8px;display:block">'+
+      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+        '<a class="btn" href="'+img.data+'" download="'+esc(podFileName(t,i))+'">Download this page</a>'+
+        '<button class="btn btn-danger" onclick="closeModal();removePodPhoto(\''+tripId+'\',\''+id+'\')">Remove</button>'+
+      '</div>'
+  });
+}
+function downloadPod(tripId){
+  const t = DB.trips.find(x=>x.id===tripId);
+  const list = podImages(tripId);
+  if(!list.length){ toast('No POD uploaded for this trip'); return; }
+  list.forEach((img,i)=>{
+    const a = document.createElement('a');
+    a.href = img.data; a.download = podFileName(t,i);
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  toast(list.length>1 ? plural(list.length,'page')+' downloaded' : 'POD downloaded');
+}
+
+/* the upload area shown on the Delivery tab */
+function podUploader(t){
+  const list = podImages(t.id);
+  return '<div class="pod-files" id="podFiles">'+
+    '<div class="pod-head">POD copy</div>'+
+    (list.length
+      ? '<div class="pod-thumbs">'+list.map((p,i)=>
+          '<div class="pod-thumb">'+
+            '<img src="'+p.data+'" alt="POD page '+(i+1)+'" onclick="viewPodImage(\''+t.id+'\',\''+p.id+'\')">'+
+            '<span class="pod-page">'+(i+1)+'</span>'+
+          '</div>').join('')+'</div>'
+      : '<div class="hint" style="margin-bottom:10px">No copy uploaded yet. '+
+        'A photo of the signed LR is enough.</div>')+
+    '<div class="pod-buttons">'+
+      (list.length < POD_MAX
+        ? '<button class="btn btn-sm" onclick="document.getElementById(\'podCam\').click()">Take photo</button>'+
+          '<button class="btn btn-sm" onclick="document.getElementById(\'podFile\').click()">Choose file</button>'
+        : '<span class="hint">Maximum '+POD_MAX+' pages reached.</span>')+
+      (list.length? '<button class="btn btn-sm btn-primary" onclick="downloadPod(\''+t.id+'\')">Download</button>':'')+
+    '</div>'+
+    '<input type="file" id="podCam" accept="image/*" capture="environment" style="display:none" '+
+      'onchange="addPodPhoto(\''+t.id+'\',this)">'+
+    '<input type="file" id="podFile" accept="image/*" multiple style="display:none" '+
+      'onchange="addPodPhoto(\''+t.id+'\',this)">'+
+    '<div class="hint" style="margin-top:9px">Photos are shrunk before saving. Uploading one marks the POD as received.</div>'+
+  '</div>';
+}
+/* ============================================================
+   TRUCK SUPPLIERS
+   The mirror of the party side. Hire on a trip is a debit — what
+   you owe goes up. Advances and payments are credits. Every hire
+   line is read from the trip itself, never copied, so editing a
+   trip or switching it to your own truck corrects the balance
+   on its own.
+   ============================================================ */
+const DEDUCTIONS = ['Commission kept','Shortage','Damage','Late delivery penalty','Other deduction'];
+
+/* which supplier a trip belongs to: the one recorded on it, else the truck's */
+function tripSupplier(t){
+  if(t.supplierId) return t.supplierId;
+  const tr = truckById(t.truckId);
+  return (tr && tr.type==='market') ? (tr.supplierId||'') : '';
+}
+function supplierTrips(sid){
+  return DB.trips.filter(t=>num(t.hire)>0 && tripSupplier(t)===sid);
+}
+function tripSupplierBalance(t){ return num(t.hire) - num(t.hireAdvance); }
+
+function supplierBalance(sid){
+  let bal = num((supplierById(sid)||{}).opening);
+  supplierTrips(sid).forEach(t=>{ bal += num(t.hire) - num(t.hireAdvance); });
+  (DB.supplierLedger||[]).filter(l=>l.supplierId===sid).forEach(l=>{
+    bal += l.type==='debit' ? num(l.amount) : -num(l.amount);
+  });
+  return bal;
+}
+function allSupplierBalances(){
+  const m = {};
+  (DB.suppliers||[]).forEach(s=>{ m[s.id] = num(s.opening); });
+  DB.trips.forEach(t=>{
+    const sid = tripSupplier(t);
+    if(num(t.hire)>0 && sid in m) m[sid] += num(t.hire) - num(t.hireAdvance);
+  });
+  (DB.supplierLedger||[]).forEach(l=>{
+    if(l.supplierId in m) m[l.supplierId] += l.type==='debit' ? num(l.amount) : -num(l.amount);
+  });
+  return m;
+}
+function totalSupplierPayable(){
+  return Object.values(allSupplierBalances()).reduce((s,b)=>s+Math.max(0,b),0);
+}
+/* hire you owe on trips whose POD has not come back from the driver */
+function supplierHeldByPod(sid){
+  return supplierTrips(sid).filter(t=>!t.podReceivedAt && !t.podSubmittedAt)
+    .reduce((s,t)=>s+Math.max(0, tripSupplierBalance(t)), 0);
+}
+function totalHeldByPod(){
+  return (DB.suppliers||[]).reduce((s,x)=>s+supplierHeldByPod(x.id),0);
+}
+
+function supplierLedgerRows(sid){
+  const rows = [];
+  const s = supplierById(sid);
+  if(s && num(s.opening)) rows.push({date:'', label:'Opening balance', ref:'', truck:'N/A',
+    debit:num(s.opening)>0?num(s.opening):0, credit:num(s.opening)<0?-num(s.opening):0, kind:'open'});
+  supplierTrips(sid).forEach(t=>{
+    rows.push({date:t.date, label:'Hire — '+(t.from||'?')+' to '+(t.to||'?'),
+      ref:[t.lr?('LR '+t.lr):'', podNoteFor(t)].filter(Boolean).join(' · '),
+      truck:truckName(t.truckId), debit:num(t.hire), credit:0, kind:'trip', tripId:t.id});
+    if(num(t.hireAdvance)) rows.push({date:t.date, label:'Advance paid at loading',
+      ref:t.lr?('LR '+t.lr):'', truck:truckName(t.truckId),
+      debit:0, credit:num(t.hireAdvance), kind:'trip', tripId:t.id});
+  });
+  (DB.supplierLedger||[]).filter(l=>l.supplierId===sid).forEach(l=>{
+    rows.push({date:l.date,
+      label: l.note || (l.type==='credit' ? 'Payment made to supplier' : (l.reason||'Charge added')),
+      ref: [l.reason, l.mode].filter(Boolean).join(' · '),
+      truck: l.truckId ? truckName(l.truckId) : 'N/A',
+      debit: l.type==='debit' ? num(l.amount) : 0,
+      credit: l.type==='credit' ? num(l.amount) : 0,
+      kind:'entry', entryId:l.id});
+  });
+  rows.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let run = 0;
+  rows.forEach(r=>{ run += r.debit - r.credit; r.running = run; });
+  return rows;
+}
+function podNoteFor(t){
+  if(t.podSubmittedAt || t.podReceivedAt) return 'POD in hand';
+  return t.deliveredAt ? 'POD not received' : 'not delivered yet';
+}
+/* ============================================================
+   DELIVERY AND POD
+   A second axis alongside payment. A trip moves in transit →
+   delivered → POD received from the driver → POD submitted to
+   the party. Each stage carries its own optional date and
+   implies the ones before it, so you can jump straight to the
+   end without back-filling.
+   ============================================================ */
+const STAGES = [
+  {k:'transit',   label:'In transit',    chip:'chip-grey',  field:null},
+  {k:'delivered', label:'Delivered',     chip:'chip-blue',  field:'deliveredAt',   action:'Mark delivered'},
+  {k:'received',  label:'POD received',  chip:'chip-amber', field:'podReceivedAt', action:'POD received'},
+  {k:'submitted', label:'POD submitted', chip:'chip-green', field:'podSubmittedAt',action:'POD submitted'}
+];
+const POD_CHASE_DAYS = 7;
+
+function tripStage(t){
+  if(t.podSubmittedAt) return 'submitted';
+  if(t.podReceivedAt)  return 'received';
+  if(t.deliveredAt)    return 'delivered';
+  return 'transit';
+}
+function stageInfo(k){ return STAGES.find(s=>s.k===k) || STAGES[0]; }
+function stageChip(t){
+  const s = stageInfo(tripStage(t));
+  return '<span class="chip '+s.chip+'">'+s.label+'</span>';
+}
+/* the date a trip reached its current stage */
+function stageDate(t){
+  const s = stageInfo(tripStage(t));
+  return s.field ? t[s.field] : '';
+}
+function daysSince(d){
+  if(!d) return null;
+  return Math.round((new Date(today()+'T00:00:00') - new Date(d+'T00:00:00'))/86400000);
+}
+/* Freight still to come on trips that are delivered but whose POD
+   has not gone to the party — money you cannot chase yet. */
+function lockedByPod(){
+  return DB.trips.filter(t=>{
+    const st = tripStage(t);
+    return (st==='delivered' || st==='received') && tripBalance(t) > 0;
+  }).reduce((s,t)=>s+tripBalance(t),0);
+}
+function podAlerts(){
+  const out = [];
+  DB.trips.forEach(t=>{
+    const st = tripStage(t);
+    if(st==='transit' || st==='submitted') return;
+    const since = daysSince(t.podReceivedAt || t.deliveredAt);
+    if(since !== null && since >= POD_CHASE_DAYS){
+      out.push({tripId:t.id, lr:t.lr, party:partyName(t.partyId),
+        route:(t.from||'?')+' → '+(t.to||'?'), stage:st, days:since, amount:tripBalance(t)});
+    }
+  });
+  return out.sort((a,b)=>b.days-a.days);
+}
+
+function setStage(id, field, value){
+  const t = DB.trips.find(x=>x.id===id); if(!t) return;
+  t[field] = value || '';
+  /* clearing a stage clears the ones after it, so the chain stays honest */
+  const order = ['deliveredAt','podReceivedAt','podSubmittedAt'];
+  if(!value){
+    const from = order.indexOf(field);
+    order.slice(from).forEach(f=>{ t[f]=''; });
+  }
+  save();
+  const open = document.querySelector('.overlay .trip-tabs');
+  if(open){ tripDraft = null; closeModal(); tripScreen(id); }
+  else if(route==='pod') viewPod();
+  else if(route==='trips') renderTripList();
+  else render();
+  paintBell();
+}
+function markStage(id, field){
+  if(tripDraft && tripDraft.id === id) saveTripScreen(DB.trips.find(x=>x.id===id), true);
+  setStage(id, field, today());
+  toast('Updated');
+}
 /* ============================================================
    TRUCK DOCUMENTS AND EXPIRY ALERTS
    ============================================================ */
@@ -4198,7 +5098,7 @@ function truckAlerts(){
   }));
   return out.sort((a,b)=>(a.st.days||0)-(b.st.days||0));
 }
-function alertCount(){ return truckAlerts().length; }
+function alertCount(){ return truckAlerts().length + podAlerts().length; }
 function urgency(st){
   if(st.key==='expired') return 'Document expired';
   if(st.days<=1)  return 'Final reminder';
@@ -4217,21 +5117,34 @@ function paintBell(){
 }
 function notifications(){
   const list = truckAlerts();
+  const pods = podAlerts();
+  const podBlock = pods.length
+    ? '<div class="sec-title" style="margin-top:'+(list.length?'18px':'0')+'">Paperwork pending</div>'+
+      '<div class="notif-list">'+pods.map(a=>
+        '<button class="notif" onclick="closeModal();go(\'pod\')">'+
+          '<span class="notif-dot warn"></span>'+
+          '<span class="notif-body">'+
+            '<span class="notif-title">'+esc(a.stage==='delivered'?'POD not received from driver':'POD not submitted to party')+
+              ' — '+esc(a.lr||a.route)+'</span>'+
+            '<span class="notif-sub">'+esc(a.party)+' · '+a.days+' days'+
+              (a.amount>0?' · '+money(a.amount)+' still to collect':'')+'</span>'+
+          '</span></button>').join('')+'</div>'
+    : '';
   openModal({
     title:'Notifications', wide:true,
-    body: list.length
-      ? '<div class="notif-list">'+list.map(a=>
+    body: (list.length||pods.length)
+      ? (list.length? '<div class="sec-title" style="margin-top:0">Truck documents</div>':'')+
+        '<div class="notif-list">'+list.map(a=>
           '<button class="notif" onclick="closeModal();openTruckDocs(\''+a.truckId+'\')">'+
             '<span class="notif-dot '+(a.st.key==='expired'?'bad':'warn')+'"></span>'+
             '<span class="notif-body">'+
               '<span class="notif-title">'+esc(a.header)+' for '+esc(a.truck)+'</span>'+
               '<span class="notif-sub">'+esc(urgency(a.st))+' \u00b7 '+esc(docWhen(a.st.days))+
                 ' \u00b7 '+fdate(a.expiry)+'</span>'+
-            '</span></button>').join('')+'</div>'+
-        '<div class="hint" style="margin-top:12px">Tap any alert to open that truck\u2019s documents and update the date.</div>'
+            '</span></button>').join('')+'</div>'+ podBlock +
+        '<div class="hint" style="margin-top:12px">Tap an alert to open the page where you can update it.</div>'
       : '<div class="empty" style="padding:30px 10px"><div class="empty-title">Nothing needs attention</div>'+
-        '<div class="empty-text">Every truck document is valid for more than '+SOON_DAYS+' days. '+
-        'Add expiry dates under Trucks \u2192 Documents and alerts will appear here.</div></div>'
+        '<div class="empty-text">Truck papers are valid, and no delivery is waiting on paperwork.</div></div>'
   });
 }
 function openTruckDocs(id){ route='trucks'; sub={tab:'docs', truck:id}; window.scrollTo(0,0); render(); }
@@ -4331,6 +5244,9 @@ function migrateAdvances(){
     if(t.advCash===undefined){ t.advCash = num(t.advance); changed = true; }
     if(t.fuelAmt===undefined){ t.fuelAmt = 0; changed = true; }
     if(t.brokerage===undefined){ t.brokerage = 0; changed = true; }
+    if(t.deliveredAt===undefined){ t.deliveredAt = ''; t.podReceivedAt = ''; t.podSubmittedAt = ''; changed = true; }
+    if(t.hireAdvance===undefined){ t.hireAdvance = 0; changed = true; }
+    if(t.supplierId===undefined){ t.supplierId = ''; changed = true; }
     const total = tripAdvance(t);
     if(num(t.advance)!==total){ t.advance = total; changed = true; }
     const st = tripStatus(t);
@@ -4793,7 +5709,7 @@ const FB = {
   app:null, auth:null, db:null, api:null, user:null,
   state:'off',            // off | loading | signedout | syncing | on | error
   keep: localStorage.getItem('mvl_keep_signed_in')==='1',   // default: ask every time
-  message:'', unsub:null, pushTimer:null, lastPhoto:{}, applying:false,
+  message:'', unsub:null, pushTimer:null, lastPhoto:{}, lastPod:{}, applying:false,
   lastSync: localStorage.getItem('mvl_last_sync') || ''
 };
 
@@ -4986,10 +5902,12 @@ async function signOutNow(){
 /* ---------- reading and writing the cloud copy ---------- */
 function mainDocRef(){ return FB.api.doc(FB.db, 'users', FB.user.uid, 'app', 'main'); }
 function photoDocRef(id){ return FB.api.doc(FB.db, 'users', FB.user.uid, 'photos', id); }
+function podDocRef(id){ return FB.api.doc(FB.db, 'users', FB.user.uid, 'pods', id); }
 
 function mainPayload(){
   const copy = JSON.parse(JSON.stringify(DB));
   copy.seeded = true;
+  delete copy.pods;              // POD images sync as their own documents
   copy.drivers = (copy.drivers||[]).map(d=>{ const c = {...d}; delete c.docs; return c; });
   copy.updatedAt = DB.updatedAt || new Date().toISOString();
   return copy;
@@ -5037,6 +5955,14 @@ function watchRemote(){
   }, err=>syncSet('error', err.message));
 }
 
+async function loadPods(){
+  const out = {};
+  try{
+    const snaps = await FB.api.getDocs(FB.api.collection(FB.db, 'users', FB.user.uid, 'pods'));
+    snaps.forEach(s=>{ const pages = s.data().pages || []; if(pages.length) out[s.id] = pages; });
+  }catch(e){}
+  return out;
+}
 async function loadPhotos(){
   const out = {};
   try{
@@ -5049,7 +5975,9 @@ async function loadPhotos(){
 async function applyRemote(remote, quiet){
   FB.applying = true;
   const photos = await loadPhotos();
+  const pods = await loadPods();
   const merged = Object.assign(JSON.parse(JSON.stringify(BLANK)), remote);
+  merged.pods = pods;
   merged.seeded = true;      // a cloud copy is real data, never re-seed over it
   merged.drivers = (merged.drivers||[]).map(d=>({...d, docs: photos[d.id] || {}}));
   DB = merged;
@@ -5105,6 +6033,13 @@ async function syncPush(now){
       if(FB.lastPhoto[d.id] === stamp) continue;
       await api.setDoc(photoDocRef(d.id), {docs});
       FB.lastPhoto[d.id] = stamp;
+    }
+    for(const tripId of Object.keys(DB.pods||{})){
+      const list = DB.pods[tripId] || [];
+      const stamp = list.map(p=>p.id).join(',')+':'+list.reduce((n,p)=>n+(p.data?p.data.length:0),0);
+      if(FB.lastPod[tripId] === stamp) continue;
+      await api.setDoc(podDocRef(tripId), {pages:list});
+      FB.lastPod[tripId] = stamp;
     }
     FB.lastSync = new Date().toISOString();
     localStorage.setItem('mvl_last_sync', FB.lastSync);
