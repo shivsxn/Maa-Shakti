@@ -10,32 +10,47 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --asphalt: #151A21;
-  --asphalt-2: #1E2530;
-  --asphalt-3: #2A323E;
-  --paper: #F6F4EF;
+  --asphalt: #111621;
+  --asphalt-2: #1A2130;
+  --asphalt-3: #28313F;
+  --paper: #F5F4F1;
   --card: #FFFFFF;
-  --line: #E4E0D6;
-  --line-soft: #EFECE4;
-  --ink: #1B1F24;
-  --muted: #6E6A62;
-  --amber: #E9A13B;
-  --amber-soft: #FBF0DC;
-  --red: #B3372C;
-  --red-soft: #FAEAE8;
-  --green: #1C7A57;
-  --green-soft: #E6F2EC;
-  --blue: #2C5D7C;
-  --blue-soft: #E8F0F5;
-  --r: 10px;
-  --shadow: 0 1px 2px rgba(21,26,33,.06),0 8px 24px rgba(21,26,33,.05);
+  --line: #E4E1DA;
+  --line-soft: #EFEDE7;
+  --ink: #161A20;
+  --muted: #6E6A63;
+  --amber: #E09A2E;
+  --amber-soft: #FDF4E4;
+  --red: #B03428;
+  --red-soft: #FBEEEC;
+  --green: #1B7355;
+  --green-soft: #E8F2ED;
+  --blue: #28577A;
+  --blue-soft: #EBF1F6;
+  --r: 11px;
+  --shadow: var(--sh-2);
   --sans: 'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   --mono: 'IBM Plex Mono',ui-monospace,'Courier New',monospace;
+  --paper-2: #EFEDE8;
+  --line-strong: #D2CEC4;
+  --ink-2: #3A414C;
+  --muted-2: #8C877E;
+  --amber-line: #EEDCB8;
+  --red-line: #E9D0CB;
+  --green-line: #C7E2D5;
+  --blue-line: #CCDDE9;
+  --r-sm: 8px;
+  --r-lg: 14px;
+  --sh-1: 0 1px 2px rgba(17,22,33,.05);
+  --sh-2: 0 1px 2px rgba(17,22,33,.05), 0 4px 12px rgba(17,22,33,.05);
+  --sh-3: 0 2px 4px rgba(17,22,33,.06), 0 14px 30px rgba(17,22,33,.09);
 }
 
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
 html,
@@ -49,8 +64,12 @@ body {
   color: var(--ink);
   font-family: var(--sans);
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(120% 90% at 100% 0%, rgba(224,154,46,.055) 0%, transparent 55%), radial-gradient(90% 70% at 0% 100%, rgba(40,87,122,.04) 0%, transparent 60%);
+  background-attachment: fixed;
+  letter-spacing: -.005em;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -76,20 +95,21 @@ textarea {
 }
 
 .sidebar {
-  width: 238px;
+  width: 246px;
   flex: none;
-  background: var(--asphalt);
+  background: linear-gradient(180deg, #131924 0%, #10151E 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
   position: sticky;
   top: 0;
   height: 100vh;
+  border-right: 1px solid rgba(255,255,255,.06);
 }
 
 .brand {
-  padding: 22px 20px 18px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 22px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
 }
 
 .brand-mark {
@@ -99,24 +119,25 @@ textarea {
 }
 
 .brand-badge {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: var(--amber);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(150deg, #EFAE47 0%, #D8912A 100%);
   color: var(--asphalt);
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 14.5px;
   letter-spacing: -.02em;
   flex: none;
+  box-shadow: 0 2px 10px rgba(224,154,46,.30);
 }
 
 .brand-name {
   font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -.01em;
-  line-height: 1.2;
+  font-size: 15.5px;
+  letter-spacing: -.02em;
+  line-height: 1.25;
 }
 
 .brand-tag {
@@ -128,7 +149,7 @@ textarea {
 }
 
 .nav {
-  padding: 12px 10px;
+  padding: 14px 12px 18px;
   overflow-y: auto;
   flex: 1;
 }
@@ -138,27 +159,29 @@ textarea {
   align-items: center;
   gap: 11px;
   width: 100%;
-  padding: 9px 11px;
-  margin-bottom: 2px;
+  padding: 9px 12px;
+  margin-bottom: 1px;
   background: none;
   border: 0;
-  border-radius: 8px;
-  color: rgba(255,255,255,.68);
-  font-size: 14px;
+  border-radius: 9px;
+  color: rgba(255,255,255,.62);
+  font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
-  transition: background .12s,color .12s;
+  transition: background .14s, color .14s;
+  position: relative;
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,.06);
+  background: rgba(255,255,255,.055);
   color: #fff;
 }
 
 .nav-item.on {
-  background: var(--asphalt-3);
+  background: rgba(255,255,255,.09);
   color: #fff;
+  font-weight: 600;
 }
 
 .nav-item.on .ic {
@@ -178,9 +201,10 @@ textarea {
 
 .side-foot {
   padding: 14px 20px 18px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  font-size: 11px;
-  color: rgba(255,255,255,.35);
+  border-top: 1px solid rgba(255,255,255,.07);
+  font-size: 10.5px;
+  color: rgba(255,255,255,.30);
+  letter-spacing: .03em;
 }
 
 .main {
@@ -194,25 +218,27 @@ textarea {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px 26px;
-  background: var(--paper);
+  padding: 16px 28px;
+  background: rgba(245,244,241,.86);
   border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
   z-index: 20;
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
 }
 
 .page-title {
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -.02em;
+  letter-spacing: -.028em;
   margin: 0;
 }
 
 .page-sub {
   font-size: 12.5px;
   color: var(--muted);
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 .topbar-actions {
@@ -229,8 +255,8 @@ textarea {
 }
 
 .content {
-  padding: 22px 26px 60px;
-  max-width: 1240px;
+  padding: 24px 28px 72px;
+  max-width: 1320px;
   width: 100%;
 }
 
@@ -240,20 +266,23 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 9px 15px;
-  border-radius: 8px;
+  padding: 0 15px;
+  border-radius: var(--r-sm);
   border: 1px solid var(--line);
   background: var(--card);
   font-weight: 600;
   font-size: 13.5px;
   cursor: pointer;
-  transition: .12s;
+  transition: background .14s, border-color .14s, box-shadow .14s, transform .1s;
   white-space: nowrap;
+  height: 38px;
+  box-shadow: var(--sh-1);
 }
 
 .btn:hover {
-  border-color: #CFC9BB;
-  background: #FCFBF8;
+  border-color: var(--line-strong);
+  background: #FCFBF9;
+  box-shadow: var(--sh-2);
 }
 
 .btn-primary {
@@ -263,14 +292,15 @@ textarea {
 }
 
 .btn-primary:hover {
-  background: #232B36;
-  border-color: #232B36;
+  background: var(--asphalt-2);
+  border-color: var(--asphalt-2);
 }
 
 .btn-amber {
   background: var(--amber);
   border-color: var(--amber);
   color: var(--asphalt);
+  box-shadow: 0 1px 2px rgba(224,154,46,.35), 0 6px 16px rgba(224,154,46,.22);
 }
 
 .btn-amber:hover {
@@ -288,14 +318,16 @@ textarea {
 }
 
 .btn-sm {
-  padding: 6px 11px;
+  padding: 0 11px;
   font-size: 12.5px;
   border-radius: 7px;
+  height: 32px;
 }
 
 .btn-icon {
-  padding: 7px;
+  padding: 0;
   border-radius: 7px;
+  width: 38px;
 }
 
 .btn:focus-visible,
@@ -331,7 +363,7 @@ textarea:focus-visible,
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  box-shadow: var(--shadow);
+  box-shadow: var(--sh-2);
 }
 
 .card-pad {
@@ -342,14 +374,14 @@ textarea:focus-visible,
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 18px;
+  padding: 15px 18px;
   border-bottom: 1px solid var(--line-soft);
 }
 
 .card-title {
   font-size: 14.5px;
   font-weight: 700;
-  letter-spacing: -.01em;
+  letter-spacing: -.015em;
   margin: 0;
 }
 
@@ -361,23 +393,23 @@ textarea:focus-visible,
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: 15px 17px;
-  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  box-shadow: var(--sh-2);
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: .07em;
+  letter-spacing: .09em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 .stat-value {
   font-family: var(--mono);
-  font-size: 24px;
+  font-size: 23px;
   font-weight: 600;
-  letter-spacing: -.03em;
+  letter-spacing: -.035em;
   margin-top: 7px;
   font-variant-numeric: tabular-nums;
 }
@@ -404,6 +436,8 @@ textarea:focus-visible,
 
 .tbl-wrap {
   overflow-x: auto;
+  overflow: auto;
+  border-radius: var(--r);
 }
 
 table {
@@ -413,19 +447,22 @@ table {
 
 th {
   text-align: left;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 10px 14px;
+  padding: 11px 15px;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
-  background: #FCFBF8;
+  background: var(--paper-2);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 td {
-  padding: 12px 14px;
+  padding: 13px 15px;
   border-bottom: 1px solid var(--line-soft);
   font-size: 14px;
   vertical-align: middle;
@@ -436,7 +473,7 @@ tr:last-child td {
 }
 
 tbody tr:hover {
-  background: #FCFBF8;
+  background: #FBFAF7;
 }
 
 .t-r {
@@ -469,9 +506,9 @@ tbody tr:hover {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: 20px;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: .01em;
   white-space: nowrap;
@@ -605,9 +642,9 @@ tbody tr:hover {
 }
 
 label {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
-  color: #3C4048;
+  color: var(--ink-2);
   letter-spacing: .01em;
 }
 
@@ -615,12 +652,13 @@ input,
 select,
 textarea {
   width: 100%;
-  padding: 9px 11px;
+  padding: 0 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-  font-size: 14.5px;
-  transition: border-color .12s;
+  border-radius: var(--r-sm);
+  background: var(--card);
+  font-size: 14px;
+  transition: border-color .14s, box-shadow .14s;
+  height: 40px;
 }
 
 input:focus,
@@ -628,6 +666,8 @@ select:focus,
 textarea:focus {
   border-color: var(--asphalt-3);
   outline-offset: 1px;
+  box-shadow: 0 0 0 3px rgba(40,49,63,.10);
+  outline: none;
 }
 
 input[type=number] {
@@ -636,7 +676,10 @@ input[type=number] {
 
 textarea {
   resize: vertical;
-  min-height: 62px;
+  min-height: 76px;
+  height: auto;
+  padding: 11px 12px;
+  line-height: 1.5;
 }
 
 .hint {
@@ -675,14 +718,16 @@ textarea {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(21,26,33,.5);
+  background: rgba(17,22,33,.46);
   z-index: 100;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 28px 18px;
   overflow-y: auto;
   animation: fade .15s ease-out;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 @keyframes fade {
@@ -697,11 +742,11 @@ textarea {
 
 .modal {
   background: var(--card);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   width: 100%;
   max-width: 640px;
   margin: auto;
-  box-shadow: 0 24px 60px rgba(21,26,33,.28);
+  box-shadow: 0 30px 70px rgba(17,22,33,.24);
   animation: pop .18s cubic-bezier(.2,.9,.3,1.1);
 }
 
@@ -720,8 +765,13 @@ textarea {
 .modal-head {
   display: flex;
   align-items: center;
-  padding: 17px 20px;
+  padding: 18px 22px;
   border-bottom: 1px solid var(--line-soft);
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 3;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
 }
 
 .modal-title {
@@ -732,7 +782,7 @@ textarea {
 }
 
 .modal-body {
-  padding: 18px 20px;
+  padding: 20px 22px;
   max-height: 65vh;
   overflow-y: auto;
 }
@@ -741,10 +791,13 @@ textarea {
   display: flex;
   gap: 9px;
   justify-content: flex-end;
-  padding: 15px 20px;
+  padding: 14px 22px;
   border-top: 1px solid var(--line-soft);
-  background: #FCFBF8;
+  background: var(--card);
   border-radius: 0 0 14px 14px;
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
 }
 
 .x {
@@ -772,8 +825,8 @@ textarea {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  box-shadow: var(--shadow);
-  padding: 12px 14px;
+  box-shadow: var(--sh-1);
+  padding: 13px 15px;
   margin-bottom: 14px;
 }
 
@@ -1067,21 +1120,23 @@ textarea {
 }
 
 .empty {
-  padding: 44px 22px;
+  padding: 52px 24px;
   text-align: center;
 }
 
 .empty-title {
   font-weight: 700;
-  font-size: 15px;
-  margin-bottom: 5px;
+  font-size: 15.5px;
+  margin-bottom: 6px;
+  letter-spacing: -.015em;
 }
 
 .empty-text {
   font-size: 13.5px;
   color: var(--muted);
-  max-width: 380px;
+  max-width: 400px;
   margin: 0 auto 16px;
+  line-height: 1.6;
 }
 
 .money-pos {
@@ -1096,14 +1151,14 @@ textarea {
 
 .tabs {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 16px;
   overflow-x: auto;
 }
 
 .tab {
-  padding: 9px 14px;
+  padding: 10px 15px;
   background: none;
   border: 0;
   border-bottom: 2px solid transparent;
@@ -1112,6 +1167,7 @@ textarea {
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
+  transition: color .14s, background .14s;
 }
 
 .tab.on {
@@ -1120,12 +1176,12 @@ textarea {
 }
 
 .sec-title {
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: .11em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 24px 0 10px;
+  margin: 26px 0 11px;
 }
 
 .divide {
@@ -1137,9 +1193,11 @@ textarea {
 .note {
   background: var(--amber-soft);
   border: 1px solid #EBDCBD;
-  border-radius: 8px;
-  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
   font-size: 13px;
+  line-height: 1.55;
+  border-color: var(--amber-line);
 }
 
 .pl-line {
@@ -1688,34 +1746,36 @@ tbody tr {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: 16px 18px;
-  box-shadow: var(--shadow);
+  padding: 17px 18px;
+  box-shadow: var(--sh-2);
   display: flex;
   flex-direction: column;
   min-height: 118px;
+  position: relative;
+  overflow: hidden;
 }
 
 .kpi-label {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: .07em;
+  letter-spacing: .09em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 .kpi-value {
   font-family: var(--mono);
-  font-size: 26px;
+  font-size: 25px;
   font-weight: 600;
-  letter-spacing: -.03em;
-  margin-top: 8px;
+  letter-spacing: -.035em;
+  margin-top: 9px;
   font-variant-numeric: tabular-nums;
 }
 
 .kpi-foot {
   margin-top: auto;
-  padding-top: 8px;
-  font-size: 12px;
+  padding-top: 10px;
+  font-size: 11.5px;
   color: var(--muted);
   display: flex;
   align-items: flex-end;
@@ -1748,8 +1808,8 @@ tbody tr {
 .fleet-line {
   font-size: 12.5px;
   color: var(--muted);
-  padding: 14px 2px 0;
-  letter-spacing: .01em;
+  padding: 16px 4px 0;
+  letter-spacing: .005em;
 }
 
 .g-wide {
@@ -1988,129 +2048,836 @@ tbody tr {
   }
 }
 
-
-.mobile-nav { display: none; }
+.mobile-nav {
+  display: none;
+}
 
 /* ---------- Responsive ---------- */
+
 @media (max-width: 900px) {
-  .g4 { grid-template-columns: 1fr 1fr; }
-  .g3, .g2 { grid-template-columns: 1fr; }
-  .slip-body { grid-template-columns: 1fr 1fr; }
+  .g4 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .g3,
+  .g2 {
+    grid-template-columns: 1fr;
+  }
+
+  .slip-body {
+    grid-template-columns: 1fr 1fr;
+  }
 }
+
 @media (max-width: 760px) {
-  .sidebar { display: none; }
-  .content { padding: 16px 14px 92px; }
-  .topbar { padding: 14px 16px; }
-  .page-title { font-size: 18px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .g4 { grid-template-columns: 1fr 1fr; }
-  .stat-value { font-size: 21px; }
-  .slip-body { grid-template-columns: 1fr; }
-  .modal { max-width: none; border-radius: 14px 14px 0 0; margin: auto auto 0; }
-  .modal-body { max-height: none; }
-  .overlay { padding: 0; }
-  .gate-card { padding: 24px 20px 22px; }
-  .doc-grid { grid-template-columns: 1fr 1fr; }
-  .docrow { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .docrow .rmdoc { grid-column: 2; justify-self: end; }
-  .filter-row select, .filter-row input { min-width: 0; flex: 1 1 46%; }
-  .filter-row .search { flex: 1 1 100%; max-width: none; }
-  .fpair { flex: 1 1 100%; }
-  .fpair input { flex: 1; }
-  .range { padding: 11px 12px; }
-  .range-dates { width: 100%; }
-  .range-dates input { flex: 1; min-width: 0; }
-  .range-presets { margin-left: 0; width: 100%; }
-  .kpi-value { font-size: 22px; }
-  .kpi { min-height: 104px; }
-  .cloud-pill span { display: none; }
-  .cloud-pill { padding: 7px 9px; }
-  .topbar-actions .btn span { display: none; }
-  th, td { padding: 10px 11px; font-size: 13.5px; }
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 16px 14px 92px;
+  }
+
+  .topbar {
+    padding: 14px 16px;
+  }
+
+  .page-title {
+    font-size: 18px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .g4 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-value {
+    font-size: 21px;
+  }
+
+  .slip-body {
+    grid-template-columns: 1fr;
+  }
+
+  .modal {
+    max-width: none;
+    border-radius: 14px 14px 0 0;
+    margin: auto auto 0;
+  }
+
+  .modal-body {
+    max-height: none;
+  }
+
+  .overlay {
+    padding: 0;
+  }
+
+  .gate-card {
+    padding: 24px 20px 22px;
+  }
+
+  .doc-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .docrow {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .docrow .rmdoc {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .filter-row select,
+  .filter-row input {
+    min-width: 0;
+    flex: 1 1 46%;
+  }
+
+  .filter-row .search {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  .fpair {
+    flex: 1 1 100%;
+  }
+
+  .fpair input {
+    flex: 1;
+  }
+
+  .range {
+    padding: 11px 12px;
+  }
+
+  .range-dates {
+    width: 100%;
+  }
+
+  .range-dates input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .range-presets {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .kpi-value {
+    font-size: 22px;
+  }
+
+  .kpi {
+    min-height: 104px;
+  }
+
+  .cloud-pill span {
+    display: none;
+  }
+
+  .cloud-pill {
+    padding: 7px 9px;
+  }
+
+  .topbar-actions .btn span {
+    display: none;
+  }
+
+  th,
+  td {
+    padding: 10px 11px;
+    font-size: 13.5px;
+  }
+
   .mobile-nav {
     display: flex;
     position: fixed;
-    bottom: 0; left: 0; right: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     background: var(--asphalt);
     z-index: 50;
     padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
     border-top: 1px solid rgba(255,255,255,.1);
   }
+
   .mnav {
-    flex: 1; background: none; border: 0; color: rgba(255,255,255,.6);
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 5px 2px; font-size: 10px; font-weight: 600; cursor: pointer; border-radius: 8px;
+    flex: 1;
+    background: none;
+    border: 0;
+    color: rgba(255,255,255,.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 5px 2px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
   }
-  .mnav.on { color: var(--amber); }
+
+  .mnav.on {
+    color: var(--amber);
+  }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-  .chart .series-line { stroke-dashoffset: 0; }
-  .chart .series-dashed { opacity: 1; }
-  .donut-seg { stroke-dashoffset: var(--off); }
-  .bar-fill { transform: none; }
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .chart .series-line {
+    stroke-dashoffset: 0;
+  }
+
+  .chart .series-dashed {
+    opacity: 1;
+  }
+
+  .donut-seg {
+    stroke-dashoffset: var(--off);
+  }
+
+  .bar-fill {
+    transform: none;
+  }
 }
+
 @media print {
-  .sidebar, .topbar, .mobile-nav, .toolbar, .filters, .range, .btn, .row-actions, .bell { display: none !important; }
-  .content { padding: 0; max-width: none; }
-  .card { box-shadow: none; break-inside: avoid; }
-  body { background: #fff; }
+  .sidebar,
+  .topbar,
+  .mobile-nav,
+  .toolbar,
+  .filters,
+  .range,
+  .btn,
+  .row-actions,
+  .bell {
+    display: none !important;
+  }
+
+  .content {
+    padding: 0;
+    max-width: none;
+  }
+
+  .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  body {
+    background: #fff;
+  }
 }
 
-.pod-track{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#FCFBF8}
-.pod-head{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:11px}
-.pod-step{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13.5px}
-.pod-dot{width:10px;height:10px;border-radius:50%;background:var(--line);flex:none;box-shadow:0 0 0 3px var(--paper)}
-.pod-step.done .pod-dot{background:var(--green)}
-.pod-label{font-weight:600;min-width:120px}
-.pod-step:not(.done) .pod-label{color:var(--muted);font-weight:500}
-.pod-date{width:auto;padding:6px 9px;font-size:13px}
-.pod-go{margin-left:auto}
-.pod-step .btn-sm{padding:5px 10px;font-size:12px}
-.pod-group{margin-bottom:20px}
-.pod-group-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
-.pod-group-head h3{font-size:14.5px;font-weight:700;margin:0;letter-spacing:-.01em}
-.pod-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
-  border-radius:10px;background:var(--card);margin-bottom:8px;flex-wrap:wrap}
-.pod-row .who{flex:1;min-width:180px}
-.pod-row .amt{font-family:var(--mono);font-weight:600;white-space:nowrap}
-.pod-age{font-size:12px;font-weight:600}
-.pod-age.old{color:var(--red)}
-@media (max-width:760px){
-  .pod-step{flex-wrap:wrap}
-  .pod-label{min-width:0;flex:1}
-  .pod-go{margin-left:0;width:100%}
-  .pod-row .btn{width:100%}
+.pod-track {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 13px 15px;
+  background: #FCFBF8;
 }
-.modal-full{max-width:1180px;width:94vw;height:90vh;display:flex;flex-direction:column}
-.modal-full .modal-body{flex:1;overflow-y:auto;max-height:none}
-.trip-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
-.trip-tabs{margin-bottom:18px}
-.trip-tabs .tab{display:inline-flex;align-items:center;font-size:14px;padding:10px 16px}
-.trip-pane{min-height:220px}
-.form-grid.three{grid-template-columns:repeat(3,1fr)}
-@media (max-width:900px){.form-grid.three{grid-template-columns:1fr 1fr}}
-@media (max-width:640px){.form-grid.three{grid-template-columns:1fr}}
-.trip-cols{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}
-.trip-nav{display:flex;align-items:center;gap:12px;margin-left:auto;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
 
-.trip-nav .hint{margin:0 6px}
-.trip-nav .btn[disabled]{opacity:.4;cursor:default}
-.trip-actions{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-.trip-actions .btn{justify-content:center}
-@media (max-width:900px){
-  .trip-cols{grid-template-columns:1fr}
-  .trip-actions{flex-direction:row;flex-wrap:wrap}
-  .trip-actions .btn{flex:1}
+.pod-head {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 11px;
 }
-.pod-files{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#FCFBF8;margin-top:14px;position:relative}
-.pod-thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.pod-thumb{position:relative;width:104px;height:104px;border-radius:9px;overflow:hidden;border:1px solid var(--line);background:var(--card)}
-.pod-thumb img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block}
-.pod-page{position:absolute;left:6px;top:6px;background:rgba(21,26,33,.75);color:#fff;font-size:10px;
-  font-family:var(--mono);padding:1px 6px;border-radius:4px}
-.pod-buttons{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-@media (max-width:760px){.pod-buttons .btn{flex:1}}
+
+.pod-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13.5px;
+}
+
+.pod-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--line);
+  flex: none;
+  box-shadow: 0 0 0 3px var(--paper);
+}
+
+.pod-step.done .pod-dot {
+  background: var(--green);
+}
+
+.pod-label {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.pod-step:not(.done) .pod-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pod-date {
+  width: auto;
+  padding: 6px 9px;
+  font-size: 13px;
+}
+
+.pod-go {
+  margin-left: auto;
+}
+
+.pod-step .btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.pod-group {
+  margin-bottom: 20px;
+}
+
+.pod-group-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 9px;
+}
+
+.pod-group-head h3 {
+  font-size: 14.5px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -.01em;
+}
+
+.pod-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pod-row .who {
+  flex: 1;
+  min-width: 180px;
+}
+
+.pod-row .amt {
+  font-family: var(--mono);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pod-age {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pod-age.old {
+  color: var(--red);
+}
+
+@media (max-width:760px) {
+  .pod-step {
+    flex-wrap: wrap;
+  }
+
+  .pod-label {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .pod-go {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .pod-row .btn {
+    width: 100%;
+  }
+}
+
+.modal-full {
+  max-width: 1180px;
+  width: 94vw;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-full .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  max-height: none;
+}
+
+.trip-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.trip-tabs {
+  margin-bottom: 18px;
+}
+
+.trip-pane {
+  min-height: 220px;
+}
+
+.trip-tabs .tab {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  padding: 10px 16px;
+  transition: color .12s,border-color .12s;
+}
+
+@keyframes paneIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pane-in {
+  animation: paneIn .16s ease-out;
+}
+
+.form-grid.three {
+  grid-template-columns: repeat(3,1fr);
+}
+
+@media (max-width:900px) {
+  .form-grid.three {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width:640px) {
+  .form-grid.three {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trip-cols {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.trip-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.trip-nav .hint {
+  margin: 0 6px;
+}
+
+.trip-nav .btn[disabled] {
+  opacity: .4;
+  cursor: default;
+}
+
+.trip-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.trip-actions .btn {
+  justify-content: center;
+}
+
+@media (max-width:900px) {
+  .trip-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .trip-actions .btn {
+    flex: 1;
+  }
+}
+
+.pod-files {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 13px 15px;
+  background: #FCFBF8;
+  margin-top: 14px;
+  position: relative;
+}
+
+.pod-thumbs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pod-thumb {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  border-radius: 9px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.pod-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: zoom-in;
+  display: block;
+}
+
+.pod-page {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  background: rgba(21,26,33,.75);
+  color: #fff;
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.pod-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width:760px) {
+  .pod-buttons .btn {
+    flex: 1;
+  }
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -.022em;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-2);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.sidebar * {
+  scrollbar-color: rgba(255,255,255,.16) transparent;
+}
+
+.sidebar ::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.16);
+  background-clip: content-box;
+}
+
+.nav-item.on::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: 0 3px 3px 0;
+  background: var(--amber);
+}
+
+.nav-group {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.28);
+  padding: 16px 12px 7px;
+}
+
+.nav-group:first-child {
+  padding-top: 4px;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,.38);
+  margin-top: 3px;
+  letter-spacing: .01em;
+}
+
+.toast {
+  border-radius: var(--r-sm);
+  box-shadow: 0 12px 34px rgba(17,22,33,.30);
+  padding: 12px 18px;
+}
+
+.tab:hover {
+  color: var(--ink);
+  background: rgba(17,22,33,.03);
+}
+
+.kpi:hover {
+  box-shadow: var(--sh-3);
+}
+
+.card,
+.kpi,
+.stat {
+  transition: box-shadow .18s ease;
+}
+
+.empty-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  background: var(--paper-2);
+  color: var(--muted-2);
+}
+
+.row-actions .btn {
+  box-shadow: none;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 18px;
+  background: linear-gradient(140deg, #131924 0%, #1B2432 55%, #232E3E 100%);
+  border-radius: var(--r-lg);
+  padding: 26px 28px;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(17,22,33,.10), 0 18px 44px rgba(17,22,33,.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -60px;
+  top: -60px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(224,154,46,.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.52);
+}
+
+.hero-value {
+  font-size: 46px;
+  font-weight: 600;
+  letter-spacing: -.045em;
+  margin: 10px 0 6px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.hero-note {
+  font-size: 13px;
+  color: rgba(255,255,255,.60);
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.hero-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.88);
+  border-radius: 9px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-family: inherit;
+  transition: background .14s, border-color .14s;
+}
+
+.hero-chip:hover {
+  background: rgba(255,255,255,.11);
+  border-color: rgba(255,255,255,.18);
+}
+
+.hero-chip .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--muted-2);
+}
+
+.hero-chip.red .dot {
+  background: #E06A5C;
+}
+
+.hero-chip.amber .dot {
+  background: var(--amber);
+}
+
+.hero-chip .go {
+  margin-left: auto;
+  color: rgba(255,255,255,.55);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hero-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-content: center;
+}
+
+.hero-stat {
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: var(--r);
+  padding: 13px 15px;
+}
+
+.hero-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.48);
+}
+
+.hero-stat-value {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -.035em;
+  margin-top: 7px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-stat-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,.52);
+}
+
+.hero-stat-foot .trend {
+  font-size: 11.5px;
+}
+
+.hero-stat-foot .trend-up {
+  color: #6FCBA4;
+}
+
+.hero-stat-foot .trend-down {
+  color: #E58C80;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 22px;
+    gap: 20px;
+  }
+
+  .hero-value {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-side {
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+
+  .hero-value {
+    font-size: 32px;
+  }
+}
 </style>
 </head>
 <body>
@@ -2123,10 +2890,10 @@ tbody tr {
           <div class="brand-name" id="brandName">Maa Vandana<br>Logistics</div>
         </div>
       </div>
-      <div class="brand-tag">Blessed by Maa Vandana</div>
+      <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 6.3 &middot; 22 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 7.0 &middot; 23 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -2325,6 +3092,12 @@ const ICONS = {
   insights:'<path d="M3 17l5-6 4 3 5-7"/><path d="M17 7h4v4"/><path d="M3 21h18"/>',
   settings:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/>'
 };
+const NAV_GROUPS = [
+  {after:'dashboard', label:'Operations'},
+  {after:'trucks',    label:'Money'},
+  {after:'shops',     label:'Records'},
+  {after:'drivers',   label:'Analysis'}
+];
 const PAGES = [
   {id:'dashboard', label:'Dashboard', sub:'Today at a glance'},
   {id:'trips',     label:'Trips',     sub:'Every load you have moved'},
@@ -2346,9 +3119,12 @@ let sub = {};   // per-page temporary state (filters, open party, etc.)
 function icon(id){ return '<svg class="ic" viewBox="0 0 24 24">'+ICONS[id]+'</svg>'; }
 
 function buildNav(){
-  $('#nav').innerHTML = PAGES.map(p=>
-    '<button class="nav-item'+(p.id===route?' on':'')+'" onclick="go(\''+p.id+'\')">'+icon(p.id)+'<span>'+p.label+'</span></button>'
-  ).join('');
+  $('#nav').innerHTML = PAGES.map(p=>{
+    const group = NAV_GROUPS.find(g=>g.after===p.id);
+    return '<button class="nav-item'+(p.id===route?' on':'')+'" onclick="go(\''+p.id+'\')">'+
+      icon(p.id)+'<span>'+p.label+'</span></button>'+
+      (group? '<div class="nav-group">'+group.label+'</div>' : '');
+  }).join('');
   const short = {dashboard:'Home',trips:'Trips',parties:'Parties',expenses:'Expenses',reports:'Reports'};
   $('#mnav').innerHTML = MOBILE.map(id=>
     '<button class="mnav'+(id===route?' on':'')+'" onclick="go(\''+id+'\')">'+icon(id)+'<span>'+short[id]+'</span></button>'
@@ -2475,7 +3251,12 @@ function moreBar(shown, total, fn){
       Math.min(PAGE, total-shown)+' more</button></div>';
 }
 function empty(title,text,btn){
-  return '<div class="card empty"><div class="empty-title">'+esc(title)+'</div><div class="empty-text">'+esc(text)+'</div>'+(btn||'')+'</div>';
+  return '<div class="card empty">'+
+    '<div class="empty-icon"><svg class="ic" viewBox="0 0 24 24" style="width:22px;height:22px">'+
+      '<path d="M4 7h11v10H4z"/><path d="M15 10h3.5L21 13v4h-6"/>'+
+      '<circle cx="7.5" cy="18.5" r="1.6"/><circle cx="17" cy="18.5" r="1.6"/></svg></div>'+
+    '<div class="empty-title">'+esc(title)+'</div>'+
+    '<div class="empty-text">'+esc(text)+'</div>'+(btn||'')+'</div>';
 }
 /* ============================================================
    DASHBOARD
@@ -2492,40 +3273,63 @@ function viewDashboard(){
   const p = pnl(m+'-01', m+'-31');
   const byCat = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
   const costItems = (p.hire? [{label:'Market truck hire', value:p.hire}]:[])
+    .concat(p.brokerage? [{label:'Brokerage', value:p.brokerage}]:[])
     .concat(byCat.slice(0,5).map(([c,v])=>({label:c, value:v})))
     .concat(p.driverPaid? [{label:'Driver payouts', value:p.driverPaid}]:[]);
 
-  $('#pageSub').textContent = monthName(m)+' · '+p.tripCount+' trip'+(p.tripCount===1?'':'s')+' so far';
+  /* what needs a decision today, in one line each */
+  const attention = [];
+  if(alertCount()) attention.push({tone:'red', label:plural(alertCount(),'reminder')+' need attention',
+    action:'notifications()', cta:'Open'});
+  const podHeld = lockedByPod();
+  if(podHeld) attention.push({tone:'amber', label:money(podHeld)+' waiting on paperwork',
+    action:"go('pod')", cta:'Deliveries'});
+  if(recv) attention.push({tone:'amber', label:money(recv)+' to collect from '+plural(dues.length,'party'),
+    action:"go('parties')", cta:'Ledgers'});
+  const owed = totalSupplierPayable()+totalShopPayable()+totalDriverPayable();
+  if(owed) attention.push({tone:'grey', label:money(owed)+' owed out to suppliers, shops and drivers',
+    action:"go('suppliers')", cta:'Suppliers'});
+
+  $('#pageSub').textContent = monthName(m)+' · '+plural(p.tripCount,'trip')+' so far';
   $('#pageActions').innerHTML =
     '<button class="btn" onclick="go(\'insights\')"><span>Insights</span></button>'+
     '<button class="btn btn-amber" onclick="tripForm()">+ <span>New trip</span></button>';
 
   $('#view').innerHTML =
-  '<div class="grid g4 rise">'+
-    kpi('To collect', recv, {note:dues.length+' part'+(dues.length===1?'y':'ies')+' pending', tone:recv>0?'neg':''})+
-    kpi('Freight this month', cur.freight, {trend:pctChange(cur.freight, prev.freight),
-      spark:series.map(s=>s.freight), sparkColor:'#E9A13B'})+
-    kpi('Costs this month', cur.cost, {trend:pctChange(cur.cost, prev.cost),
-      spark:series.map(s=>s.cost), sparkColor:'#4A5568'})+
-    kpi('Profit this month', cur.profit, {tone:cur.profit>=0?'pos':'neg',
-      note:(cur.freight?Math.round(cur.profit/cur.freight*100):0)+'% margin',
-      spark:series.map(s=>s.profit), sparkColor:'#1C7A57'})+
+  '<div class="hero">'+
+    '<div class="hero-main">'+
+      '<div class="hero-label">Outstanding from parties</div>'+
+      '<div class="hero-value num" data-count="'+recv+'" data-fmt="money">'+money(0)+'</div>'+
+      '<div class="hero-note">'+(dues.length
+        ? 'Largest is '+esc(dues[0].name)+' at '+money(dues[0].bal)
+        : 'Every party is settled up')+'</div>'+
+      (attention.length? '<div class="hero-actions">'+attention.slice(0,3).map(x=>
+        '<button class="hero-chip '+x.tone+'" onclick="'+x.action+'">'+
+          '<span class="dot"></span>'+esc(x.label)+
+          '<span class="go">'+esc(x.cta)+' →</span></button>').join('')+'</div>':'')+
+    '</div>'+
+    '<div class="hero-side">'+
+      heroStat('Freight', cur.freight, pctChange(cur.freight, prev.freight))+
+      heroStat('Costs', cur.cost, pctChange(cur.cost, prev.cost), true)+
+      heroStat('Profit', cur.profit, null, false, cur.freight? Math.round(cur.profit/cur.freight*100)+'% margin':'')+
+      heroStat('Trips', cur.trips, null, false, 'this month', 'plain')+
+    '</div>'+
   '</div>'+
 
   '<div class="fleet-line">'+
     DB.trucks.length+' trucks · '+DB.parties.length+' parties · '+DB.drivers.length+' drivers · '+
     DB.trips.length+' trips recorded'+
     (totalDriverPayable()? ' · '+money(totalDriverPayable())+' owed to drivers':'')+
-    (totalShopPayable()? ' · '+money(totalShopPayable())+' owed to shops':'')+
     (totalSupplierPayable()? ' · '+money(totalSupplierPayable())+' owed to suppliers':'')+
-    (lockedByPod()? ' · '+money(lockedByPod())+' held up by pending PODs':'')+
+    (totalShopPayable()? ' · '+money(totalShopPayable())+' owed to shops':'')+
   '</div>'+
+
   '<div class="g-wide" style="margin-top:14px">'+
     '<div class="card chart-card">'+
       '<h3 class="chart-title">Freight against costs</h3>'+
       '<div class="chart-sub">Last six months</div>'+
       lineChart(series, [
-        {key:'freight', label:'Freight earned', color:'#E9A13B', fill:true},
+        {key:'freight', label:'Freight earned', color:'#E09A2E', fill:true},
         {key:'cost',    label:'Costs',          color:'#4A5568', dash:true}
       ])+
     '</div>'+
@@ -2546,7 +3350,7 @@ function viewDashboard(){
           '<td><div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
             '<div class="t-sub">'+fdate(t.date)+' · '+esc(truckName(t.truckId))+' · '+esc(partyName(t.partyId))+'</div></td>'+
           '<td class="t-r"><div class="num t-strong">'+money(t.freight)+'</div>'+
-            '<div class="t-sub">'+statusChip(t.status)+'</div></td>'+
+            '<div class="t-sub">'+statusChip(tripStatus(t))+'</div></td>'+
         '</tr>').join('')+'</tbody></table></div>'
         : '<div class="empty"><div class="empty-text">No trips recorded yet. Add your first load to get started.</div>'+
           '<button class="btn btn-amber" onclick="tripForm()">+ New trip</button></div>')+
@@ -2555,11 +3359,24 @@ function viewDashboard(){
       '<div style="display:flex;align-items:center;margin-bottom:14px">'+
         '<div><h3 class="chart-title">Top pending dues</h3><div class="chart-sub" style="margin:0">Largest balances first</div></div>'+
         '<button class="btn btn-sm" style="margin-left:auto" onclick="go(\'parties\')">Open ledger</button></div>'+
-      (dues.length ? barList(dues.map(d=>({label:d.name, value:d.bal, color:'#B3372C'})))
+      (dues.length ? barList(dues.map(d=>({label:d.name, value:d.bal, color:'#B03428'})))
         : '<div class="empty" style="padding:26px 10px"><div class="empty-text">Nothing pending. Every party is settled up.</div></div>')+
     '</div>'+
   '</div>';
 }
+
+function heroStat(label, value, trend, invert, note, fmt){
+  const dir = trend==null || !isFinite(trend) ? '' :
+    '<span class="trend '+((trend>=0)!==!!invert?'trend-up':'trend-down')+'">'+
+      (trend>=0?'▲':'▼')+' '+Math.abs(Math.round(trend))+'%</span>';
+  return '<div class="hero-stat">'+
+    '<div class="hero-stat-label">'+esc(label)+'</div>'+
+    '<div class="hero-stat-value num" data-count="'+num(value)+'" data-fmt="'+(fmt||'money')+'">'+
+      (fmt==='plain'?'0':money(0))+'</div>'+
+    '<div class="hero-stat-foot">'+(note?esc(note):'')+dir+'</div>'+
+  '</div>';
+}
+
 
 /* ============================================================
    INSIGHTS — the numbers behind the numbers
@@ -2576,25 +3393,25 @@ function viewInsights(){
   const winPerTrip  = inWindow.tripCount ? inWindow.freight/inWindow.tripCount : 0;
   const winCostTrip = inWindow.tripCount ? inWindow.costs/inWindow.tripCount : 0;
   const winMargin   = inWindow.freight ? inWindow.profit/inWindow.freight*100 : 0;
-  const billed    = all.freight + DB.parties.reduce((s,p)=>s+Math.max(0,num(p.opening)),0);
-  const collected = billed - outstanding;
-  const collRate  = billed ? collected/billed*100 : 0;
+  const billed      = all.freight + DB.parties.reduce((s,p)=>s+Math.max(0,num(p.opening)),0);
+  const collected   = billed - outstanding;
+  const collRate    = billed ? collected/billed*100 : 0;
 
-  // how long the oldest unpaid trip has been sitting
-  const unpaid = trips.filter(t=>t.status!=='paid').sort((a,b)=>a.date.localeCompare(b.date));
+  const unpaid = trips.filter(t=>tripStatus(t)!=='paid').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const oldestDays = unpaid.length ? Math.round((Date.now()-new Date(unpaid[0].date).getTime())/86400000) : 0;
 
   const from = sub.from, to = sub.to;
   const win = trips.filter(t=>t.date>=from && t.date<=to);
+
   const perTruck = DB.trucks.map(tr=>{
     const ts = win.filter(t=>t.truckId===tr.id);
     const freight = ts.reduce((s,t)=>s+num(t.freight),0);
     const hire = ts.reduce((s,t)=>s+num(t.hire),0);
-    const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from && e.date<=to).reduce((s,e)=>s+num(e.amount),0);
+    const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from && e.date<=to)
+      .reduce((s,e)=>s+num(e.amount),0);
     return {label:tr.number, trips:ts.length, value:freight-hire-exp, freight};
   }).filter(x=>x.trips||x.value).sort((a,b)=>b.value-a.value);
 
-  // routes ranked by what they actually leave behind
   const routes = {};
   win.forEach(t=>{
     const k = (t.from||'?')+' → '+(t.to||'?');
@@ -2603,7 +3420,6 @@ function viewInsights(){
   });
   const routeRows = Object.values(routes).sort((a,b)=>b.margin-a.margin).slice(0,6);
 
-  // which parties bring the work in
   const partyMix = DB.parties.map(p=>({label:p.name,
     value: win.filter(t=>t.partyId===p.id).reduce((s,t)=>s+num(t.freight),0)}))
     .filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,6);
@@ -2614,7 +3430,7 @@ function viewInsights(){
   $('#view').innerHTML =
   rangeBar('insights')+
   '<div class="grid g4 rise">'+
-    kpi('Freight per trip', winPerTrip, {note:inWindow.tripCount+' trips in this period'})+
+    kpi('Freight per trip', winPerTrip, {note:plural(inWindow.tripCount,'trip')+' in this period'})+
     kpi('Cost per trip', winCostTrip, {note:'Hire, expenses, driver pay'})+
     kpi('Net margin', winMargin, {fmt:'pct', tone:winMargin>=0?'pos':'neg', note:'Profit as share of freight'})+
     kpi('Collection rate', collRate, {fmt:'pct', note:money(outstanding)+' outstanding, all time'})+
@@ -2624,9 +3440,9 @@ function viewInsights(){
     '<h3 class="chart-title">Profit trend</h3>'+
     '<div class="chart-sub">Month by month across '+rangeCaption()+'</div>'+
     lineChart(series, [
-      {key:'freight', label:'Freight', color:'#E9A13B', fill:true},
+      {key:'freight', label:'Freight', color:'#E09A2E', fill:true},
       {key:'cost',    label:'Costs',   color:'#4A5568', dash:true},
-      {key:'profit',  label:'Profit',  color:'#1C7A57'}
+      {key:'profit',  label:'Profit',  color:'#1B7355'}
     ], {height:250})+
   '</div>'+
 
@@ -2635,7 +3451,7 @@ function viewInsights(){
       '<h3 class="chart-title">Which truck earns most</h3>'+
       '<div class="chart-sub">Freight minus hire and expenses booked to it</div>'+
       (perTruck.length? barList(perTruck.map(t=>({label:t.label, value:t.value,
-        color:t.value>=0?'#2C5D7C':'#B3372C', note:plural(t.trips,'trip')+' · '+money(t.freight)+' freight'})))
+        color:t.value>=0?'#28577A':'#B03428', note:plural(t.trips,'trip')+' · '+money(t.freight)+' freight'})))
         : '<div class="empty" style="padding:26px 10px"><div class="empty-text">No truck activity in this period.</div></div>')+
     '</div>'+
     '<div class="card chart-card">'+
@@ -2651,11 +3467,11 @@ function viewInsights(){
     (routeRows.length? '<div class="tbl-wrap"><table>'+
       '<thead><tr><th>Route</th><th class="t-r">Trips</th><th class="t-r">Freight</th>'+
       '<th class="t-r">After hire</th><th class="t-r">Per trip</th></tr></thead><tbody>'+
-      routeRows.map(r=>'<tr><td class="t-strong">'+esc(r.label)+'</td>'+
-        '<td class="t-r num">'+r.n+'</td>'+
-        '<td class="t-r num">'+money(r.freight)+'</td>'+
-        '<td class="t-r num '+(r.margin>=0?'money-pos':'money-neg')+'">'+money(r.margin)+'</td>'+
-        '<td class="t-r num">'+money(r.margin/r.n)+'</td></tr>').join('')+
+      routeRows.map(r=>'<tr><td data-label="Route" class="t-strong">'+esc(r.label)+'</td>'+
+        '<td data-label="Trips" class="t-r num">'+r.n+'</td>'+
+        '<td data-label="Freight" class="t-r num">'+money(r.freight)+'</td>'+
+        '<td data-label="After hire" class="t-r num '+(r.margin>=0?'money-pos':'money-neg')+'">'+money(r.margin)+'</td>'+
+        '<td data-label="Per trip" class="t-r num">'+money(r.margin/r.n)+'</td></tr>').join('')+
       '</tbody></table></div>'
       : '<div class="empty"><div class="empty-text">Record a few trips and your strongest routes will show up here.</div></div>')+
   '</div>'+
@@ -2922,40 +3738,32 @@ function readTripForm(){
 function switchTripTab(tab){
   readTripForm();
   tripTab = tab;
-  tripScreen(tripDraft && tripDraft.id ? tripDraft.id : null);
+  if(!repaintTripPane()) tripScreen(tripDraft && tripDraft.id ? tripDraft.id : null);
+}
+/* rebuild the panel and the tab strip in place; returns false if the
+   trip screen is not actually open */
+function repaintTripPane(){
+  const pane = document.querySelector('.overlay .trip-pane');
+  const strip = document.querySelector('.overlay .trip-tabs');
+  if(!pane || !strip || !tripDraft) return false;
+  const existing = tripDraft.id ? DB.trips.find(x=>x.id===tripDraft.id) : null;
+  if(existing) tripDraft = Object.assign(tripDraft, {
+    deliveredAt: existing.deliveredAt, podReceivedAt: existing.podReceivedAt,
+    podSubmittedAt: existing.podSubmittedAt
+  });
+  pane.innerHTML = tripPaneHtml(tripDraft, existing, tripTab);
+  strip.innerHTML = tabStripHtml(tripDraft, existing);
+  pane.classList.remove('pane-in'); void pane.offsetWidth; pane.classList.add('pane-in');
+  fuelDirty = !!(num(tripDraft.fuelAmt) && !(num(tripDraft.fuelQty)>0 && num(tripDraft.fuelRate)>0
+    && Math.abs(num(tripDraft.fuelQty)*num(tripDraft.fuelRate) - num(tripDraft.fuelAmt)) < 0.5));
+  if(document.getElementById('f_advTotal')) recalcAdvance();
+  return true;
 }
 
-function tripScreen(id, tab){
-  if(tab) tripTab = tab;
-  const existing = id ? DB.trips.find(x=>x.id===id) : null;
-  if(existing && (!tripDraft || tripDraft.id !== existing.id)) tripDraft = Object.assign(blankTrip(), existing);
-  if(!existing && (!tripDraft || tripDraft.id)) tripDraft = blankTrip();
-  const t = tripDraft;
-
-  if(!existing && (!DB.parties.length || !DB.trucks.length)){
-    openModal({title:'Add a truck and a party first',
-      body:'<p style="margin:0 0 10px">A trip needs a truck and a party to link to.</p>'+
-        '<p style="margin:0;color:var(--muted);font-size:13.5px">Go to <b>Trucks</b> to add your vehicle, and '+
-        '<b>Parties &amp; Ledger</b> to add the customer who pays the freight.</p>'});
-    return;
-  }
-
-  const pos  = existing ? tripNav.indexOf(id) : -1;
-  const prev = pos > 0 ? tripNav[pos-1] : null;
-  const next = pos > -1 && pos < tripNav.length-1 ? tripNav[pos+1] : null;
-  const stage = stageInfo(tripStage(existing || t));
-  const bal = tripBalance(t);
-
-  const TABS = [
-    {k:'details',  label:'Trip details'},
-    {k:'money',    label:'Money', chip: num(t.freight)
-        ? '<span class="chip '+(bal>0?'chip-red':'chip-green')+'" style="margin-left:7px">'+
-          (bal>0? money(bal)+' due' : 'Settled')+'</span>' : ''},
-    {k:'delivery', label:'Delivery & POD',
-      chip: existing? '<span class="chip '+stage.chip+'" style="margin-left:7px">'+stage.label+'</span>' : ''}
-  ];
-
-  const details = '<div class="form-grid three">'+
+/* the tab strip and the panel are built separately so a tab change
+   can swap only the panel, instead of rebuilding the whole popup */
+function tripDetailsPane(t){
+  return '<div class="form-grid three">'+
       fText('f_date','Trip date', t.date,'date')+
       fText('f_lr','LR / bilty number', t.lr)+
       qSelect('f_party','Party (who pays freight)', 'party', t.partyId)+
@@ -2970,8 +3778,10 @@ function tripScreen(id, tab){
       '<div class="field"><label>&nbsp;</label><span class="hint">Leave hire blank for your own trucks.</span></div>'+
       fArea('f_notes','Notes', t.notes)+
     '</div>';
+}
 
-  const moneyTab = '<div class="adv-block">'+
+function tripMoneyPane(t, existing){
+  return  '<div class="adv-block">'+
       '<div class="adv-head">Advance and brokerage</div>'+
       '<div class="form-grid three">'+
         fText('f_advCash','Advance in cash (₹)', t.advCash||'','number','min="0" step="1" oninput="recalcAdvance()"')+
@@ -2997,12 +3807,63 @@ function tripScreen(id, tab){
     supplierBlock(t)+
     (existing && t.partyId ? '<div style="margin-top:14px"><button class="btn" '+
       'onclick="closeModal();partyLedger(\'' + t.partyId + '\')">Open '+esc(partyName(t.partyId))+'\u2019s ledger</button></div>' : '');
+}
 
-  const delivery = existing
+function tripDeliveryPane(existing){
+  return existing
     ? podTracker(existing)+ podUploader(existing)+
       '<div class="hint" style="margin-top:12px">Each step stamps today\'s date, and saves anything you have changed on the other tabs.</div>'
     : '<div class="empty" style="padding:34px 16px"><div class="empty-title">Save the trip first</div>'+
       '<div class="empty-text">Once the trip exists you can mark it delivered and track the POD from here.</div></div>';
+}
+
+/* always built from the live draft, so a repaint shows what you just typed */
+function tripPaneHtml(t, existing, k){
+  return k==='delivery' ? tripDeliveryPane(existing)
+       : k==='money'    ? tripMoneyPane(t, existing)
+       : tripDetailsPane(t);
+}
+
+function tripTabList(t, existing){
+  const bal = tripBalance(t);
+  const stage = stageInfo(tripStage(existing || t));
+  return [
+    {k:'details',  label:'Trip details'},
+    {k:'money',    label:'Money', chip: num(t.freight)
+        ? '<span class="chip '+(bal>0?'chip-red':'chip-green')+'" style="margin-left:7px">'+
+          (bal>0? money(bal)+' due' : 'Settled')+'</span>' : ''},
+    {k:'delivery', label:'Delivery & POD',
+      chip: existing? '<span class="chip '+stage.chip+'" style="margin-left:7px">'+stage.label+'</span>' : ''}
+  ];
+}
+function tabStripHtml(t, existing){
+  return tripTabList(t, existing).map(x=>
+    '<button class="tab'+(tripTab===x.k?' on':'')+'" onclick="switchTripTab(\''+x.k+'\')">'+
+      esc(x.label)+(x.chip||'')+'</button>').join('');
+}
+
+function tripScreen(id, tab){
+  if(tab) tripTab = tab;
+  const existing = id ? DB.trips.find(x=>x.id===id) : null;
+  if(existing && (!tripDraft || tripDraft.id !== existing.id)) tripDraft = Object.assign(blankTrip(), existing);
+  if(!existing && (!tripDraft || tripDraft.id)) tripDraft = blankTrip();
+  const t = tripDraft;
+
+  if(!existing && (!DB.parties.length || !DB.trucks.length)){
+    openModal({title:'Add a truck and a party first',
+      body:'<p style="margin:0 0 10px">A trip needs a truck and a party to link to.</p>'+
+        '<p style="margin:0;color:var(--muted);font-size:13.5px">Go to <b>Trucks</b> to add your vehicle, and '+
+        '<b>Parties &amp; Ledger</b> to add the customer who pays the freight.</p>'});
+    return;
+  }
+
+  const pos  = existing ? tripNav.indexOf(id) : -1;
+  const prev = pos > 0 ? tripNav[pos-1] : null;
+  const next = pos > -1 && pos < tripNav.length-1 ? tripNav[pos+1] : null;
+  const stage = stageInfo(tripStage(existing || t));
+  const bal = tripBalance(t);
+
+  const TABS = tripTabList(t, existing);
 
   openModal({
     title: existing ? ((t.from||'—')+' → '+(t.to||'—')) : 'New trip',
@@ -3021,12 +3882,8 @@ function tripScreen(id, tab){
             '<button class="btn btn-sm"'+(next?' onclick="gotoTrip(\''+next+'\')"':' disabled')+'>Next →</button>'+
           '</div>' : '')+
     '</div>'+
-    '<div class="tabs trip-tabs">'+TABS.map(x=>
-      '<button class="tab'+(tripTab===x.k?' on':'')+'" onclick="switchTripTab(\''+x.k+'\')">'+
-        esc(x.label)+(x.chip||'')+'</button>').join('')+'</div>'+
-    '<div class="trip-pane">'+
-      (tripTab==='delivery'? delivery : tripTab==='money'? moneyTab : details)+
-    '</div>'+
+    '<div class="tabs trip-tabs">'+tabStripHtml(t, existing)+'</div>'+
+    '<div class="trip-pane pane-in">'+tripPaneHtml(t, existing, tripTab)+'</div>'+
     (existing? '<div class="trip-actions"><button class="btn btn-danger" '+
       'onclick="closeModal();delTrip(\''+existing.id+'\')">Delete this trip</button></div>' : '')
   });
@@ -4507,7 +5364,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>6.3</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>7.0</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -4807,7 +5664,7 @@ function removePodPhoto(tripId, id){
   }, true);
 }
 function refreshPodScreen(tripId){
-  if(document.querySelector('.overlay .trip-tabs')){ tripDraft = null; closeModal(); tripScreen(tripId); }
+  if(tripDraft && tripDraft.id === tripId && repaintTripPane()){ /* refreshed in place */ }
   else if(route==='pod') viewPod();
   else render();
   paintBell();
@@ -5021,8 +5878,7 @@ function setStage(id, field, value){
     order.slice(from).forEach(f=>{ t[f]=''; });
   }
   save();
-  const open = document.querySelector('.overlay .trip-tabs');
-  if(open){ tripDraft = null; closeModal(); tripScreen(id); }
+  if(tripDraft && tripDraft.id === id && repaintTripPane()){ /* refreshed in place */ }
   else if(route==='pod') viewPod();
   else if(route==='trips') renderTripList();
   else render();
