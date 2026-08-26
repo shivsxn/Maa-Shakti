@@ -2893,6 +2893,16 @@ tbody tr:last-child td {
   .alloc-what{flex:1 1 100%}
   .alloc-amt{flex:1}
 }
+.line-block{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#FCFBF8;margin-top:14px}
+.line-row{display:grid;grid-template-columns:150px 1fr 130px auto;gap:9px;align-items:center;margin-bottom:9px}
+.line-row select,.line-row input{padding:8px 10px;font-size:13.5px}
+.line-row input[type=number]{font-family:var(--mono)}
+.line-add{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 9px}
+@media (max-width:760px){
+  .line-row{grid-template-columns:1fr 1fr;gap:8px}
+  .line-row input:nth-of-type(1){grid-column:1/-1}
+  .line-add .btn{flex:1}
+}
 </style>
 </head>
 <body>
@@ -2908,7 +2918,7 @@ tbody tr:last-child td {
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 7.0 &middot; 23 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 7.2 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3037,7 +3047,7 @@ const driverName = id => { const d=driverById(id); return d? d.name : '—'; };
 function partyBalance(pid){
   const p = partyById(pid); if(!p) return 0;
   let bal = num(p.opening);
-  DB.trips.filter(t=>t.partyId===pid).forEach(t=>{ bal += num(t.freight); bal -= tripDeducted(t); });
+  DB.trips.filter(t=>t.partyId===pid).forEach(t=>{ bal += tripFreightNet(t); bal -= tripDeducted(t); });
   DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{ bal += l.type==='debit' ? num(l.amount) : -num(l.amount); });
   return bal;
 }
@@ -3045,7 +3055,7 @@ function partyBalance(pid){
 function allBalances(){
   const m = {};
   DB.parties.forEach(p=>{ m[p.id] = num(p.opening); });
-  DB.trips.forEach(t=>{ if(t.partyId in m) m[t.partyId] += num(t.freight) - tripDeducted(t); });
+  DB.trips.forEach(t=>{ if(t.partyId in m) m[t.partyId] += tripFreightNet(t) - tripDeducted(t); });
   DB.ledger.forEach(l=>{ if(l.partyId in m) m[l.partyId] += l.type==='debit' ? num(l.amount) : -num(l.amount); });
   return m;
 }
@@ -3068,16 +3078,17 @@ function totalDriverPayable(){ return DB.drivers.reduce((s,d)=>s+Math.max(0,driv
 function pnl(from, to){
   const inR = d => (!from || d>=from) && (!to || d<=to);
   const trips = DB.trips.filter(t=>inR(t.date));
-  const freight = trips.reduce((s,t)=>s+num(t.freight),0);
+  const freightBase = trips.reduce((s,t)=>s+num(t.freight),0);
   const hire    = trips.reduce((s,t)=>s+num(t.hire),0);
   const byCat = {};
   DB.expenses.filter(e=>inR(e.date)).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
   const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
   const driverPaid = DB.driverTxns.filter(t=>inR(t.date) && t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
-  /* Brokerage never reaches you — the broker keeps it out of the freight —
-     so it belongs with the costs, not with what you collected. */
-  const brokerage = trips.reduce((s,t)=>s+num(t.brokerage),0);
-  const costs = hire + expense + driverPaid + brokerage;
+  /* Charges add to what you bill, deductions take away. Income is what the
+     party is actually billed, so neither belongs in the cost column. */
+  const charges    = trips.reduce((s,t)=>s+tripCharges(t),0);
+  const deductions = trips.reduce((s,t)=>s+tripDeductions(t),0);
+  const costs = hire + expense + driverPaid;
 
   /* Money actually in hand. Advances taken against a trip plus receipts
      entered in a party ledger. Advances live on the trip and are never
@@ -3089,7 +3100,9 @@ function pnl(from, to){
   const adjusted = credits.filter(l=>l.mode==='Adjustment').reduce((s,l)=>s+num(l.amount),0);
   const collected = advances + receipts;
 
-  return {trips, tripCount:trips.length, freight, hire, byCat, expense, driverPaid, brokerage, costs,
+  const freight = freightBase + charges - deductions;
+  return {trips, tripCount:trips.length, freight, freightBase, charges, deductions,
+    hire, byCat, expense, driverPaid, costs,
     profit:freight-costs, advances, receipts, adjusted, collected, actual:collected-costs};
 }
 
@@ -3289,7 +3302,7 @@ function viewDashboard(){
   const p = pnl(m+'-01', m+'-31');
   const byCat = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
   const costItems = (p.hire? [{label:'Market truck hire', value:p.hire}]:[])
-    .concat(p.brokerage? [{label:'Brokerage', value:p.brokerage}]:[])
+
     .concat(byCat.slice(0,5).map(([c,v])=>({label:c, value:v})))
     .concat(p.driverPaid? [{label:'Driver payouts', value:p.driverPaid}]:[]);
 
@@ -3642,19 +3655,19 @@ function recalcAdvance(){
   const tot = document.getElementById('f_advTotal');
   if(tot) tot.textContent = money(total);
 
-  const brok = num(val('f_brokerage'));
-  const net = total + brok;
-  const brokRow = document.getElementById('f_brokRow');
-  const netRow  = document.getElementById('f_netRow');
-  if(brokRow) brokRow.hidden = !brok;
-  if(netRow)  netRow.hidden  = !brok;
-  const brokEl = document.getElementById('f_brokOut');
-  const netEl  = document.getElementById('f_advNet');
-  if(brokEl) brokEl.textContent = '+ '+money(brok);
-  if(netEl){
-    netEl.textContent = money(net);
-    netEl.className = 'num adv-total-value';
-  }
+  const lines = (tripDraft && tripDraft.lines) || [];
+  const charges = lines.filter(x=>x.type==='charge').reduce((s,x)=>s+num(x.amount),0);
+  const deducts = lines.filter(x=>x.type==='deduction').reduce((s,x)=>s+num(x.amount),0);
+  const chgRow = document.getElementById('f_chgRow');
+  const dedRow = document.getElementById('f_dedRow');
+  const netRow = document.getElementById('f_netRow');
+  if(chgRow) chgRow.hidden = !charges;
+  if(dedRow) dedRow.hidden = !deducts;
+  if(netRow) netRow.hidden = !(charges || deducts);
+  const chgEl = document.getElementById('f_chgOut');
+  const dedEl = document.getElementById('f_dedOut');
+  if(chgEl) chgEl.textContent = '+ '+money(charges);
+  if(dedEl) dedEl.textContent = '\u2212 '+money(deducts);
 
   const freight = document.getElementById('f_freight')
     ? num(val('f_freight'))
@@ -3673,7 +3686,10 @@ function recalcAdvance(){
     hireDue.textContent = money(due);
     hireDue.className = 'num adv-total-value'+(due>0?' money-neg':'');
   }
-  const bal = freight - net - alloc;
+  const billed = freight + charges - deducts;
+  const billedEl = document.getElementById('f_freightNet');
+  if(billedEl) billedEl.textContent = money(billed);
+  const bal = billed - total - alloc;
   const balEl = document.getElementById('f_balance');
   const labEl = document.getElementById('f_balanceLabel');
   if(balEl){
@@ -3685,13 +3701,13 @@ function recalcAdvance(){
   }
   const prev = document.getElementById('f_statusPreview');
   if(prev) prev.innerHTML = statusChip(tripStatus({id:(tripDraft&&tripDraft.id)||'',
-    advCash:total, fuelAmt:0, brokerage:brok, freight:freight}));
+    advCash:total, fuelAmt:0, freight:freight, lines:lines}));
   const warn = document.getElementById('brokWarn');
   if(warn){
-    const over = freight > 0 && net > freight;
+    const over = billed > 0 && total > billed;
     warn.hidden = !over;
     warn.textContent = over
-      ? 'Advance and brokerage together come to '+money(net)+', which is more than the '+money(freight)+' freight.'
+      ? 'The advance of '+money(total)+' is more than the '+money(billed)+' billed to the party.'
       : '';
   }
 }
@@ -3737,11 +3753,61 @@ function syncHire(){
   recalcAdvance();
 }
 
+let lineDraft = [];
+function paintTripLines(){
+  const box = document.getElementById('lineRows');
+  if(!box) return;
+  box.innerHTML = lineDraft.length ? lineDraft.map((x,i)=>
+    '<div class="line-row">'+
+      '<select id="ln_t'+i+'" onchange="readTripLines();recalcAdvance()">'+
+        '<option value="charge"'+(x.type==='charge'?' selected':'')+'>Charge (+)</option>'+
+        '<option value="deduction"'+(x.type==='deduction'?' selected':'')+'>Deduction (\u2212)</option>'+
+      '</select>'+
+      '<input id="ln_l'+i+'" value="'+esc(x.label||'')+'" placeholder="What is it for" '+
+        'list="lineLabels" oninput="readTripLines()">'+
+      '<input id="ln_a'+i+'" type="number" min="0" step="1" value="'+(num(x.amount)||'')+'" '+
+        'placeholder="0" oninput="readTripLines();recalcAdvance()">'+
+      '<button type="button" class="rmdoc" onclick="removeTripLine('+i+')">Remove</button>'+
+    '</div>').join('')
+    : '<div class="hint" style="margin-bottom:9px">Nothing added \u2014 the party is billed the freight as it stands.</div>';
+}
+function readTripLines(){
+  lineDraft = lineDraft.map((x,i)=>{
+    const ty=document.getElementById('ln_t'+i), la=document.getElementById('ln_l'+i), am=document.getElementById('ln_a'+i);
+    return {id:x.id||uid(), type:ty?ty.value:x.type, label:la?la.value.trim():x.label, amount:am?num(am.value):num(x.amount)};
+  });
+  if(tripDraft) tripDraft.lines = lineDraft;
+  return lineDraft;
+}
+function addTripLine(type){
+  readTripLines();
+  lineDraft.push({id:uid(), type:type||'charge', label:'', amount:0});
+  paintTripLines(); recalcAdvance();
+  const last = document.getElementById('ln_l'+(lineDraft.length-1));
+  if(last) last.focus();
+}
+function removeTripLine(i){
+  readTripLines();
+  lineDraft.splice(i,1);
+  paintTripLines(); recalcAdvance();
+}
+function buildLineLabels(){
+  let dl = document.getElementById('lineLabels');
+  if(!dl){ dl=document.createElement('datalist'); dl.id='lineLabels'; document.body.appendChild(dl); }
+  const common = ['Brokerage','Detention','Loading charge','Unloading charge','Extra point','Halting',
+    'Shortage','Damage','Discount','Late delivery penalty'];
+  const used = [];
+  DB.trips.forEach(t=>tripLines(t).forEach(x=>{
+    if(x.label && !common.includes(x.label) && !used.includes(x.label)) used.push(x.label);
+  }));
+  dl.innerHTML = used.concat(common).map(v=>'<option value="'+esc(v)+'"></option>').join('');
+}
+
 function blankTrip(){
   return {id:'', date:today(), lr:'', from:'', to:'', partyId:'', truckId:'', driverId:'',
     material:'', weight:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
     advCash:0, fuelQty:'', fuelRate:'', fuelAmt:0,
-    brokerage:0, notes:'', deliveredAt:'', podReceivedAt:'', podSubmittedAt:''};
+    brokerage:0, lines:[], notes:'', deliveredAt:'', podReceivedAt:'', podSubmittedAt:''};
 }
 /* pull whatever fields are on screen into the draft */
 function readTripForm(){
@@ -3751,7 +3817,8 @@ function readTripForm(){
     f_truck:'truckId', f_driver:'driverId', f_material:'material', f_weight:'weight', f_notes:'notes',
     f_fuelQty:'fuelQty', f_fuelRate:'fuelRate'};
   Object.entries(map).forEach(([el,key])=>{ if(g(el)) tripDraft[key] = g(el).value.trim(); });
-  ['freight','hire','advCash','fuelAmt','brokerage','hireAdvance'].forEach(key=>{
+  if(document.getElementById('lineRows')) readTripLines();
+  ['freight','hire','advCash','fuelAmt','hireAdvance'].forEach(key=>{
     const el = g('f_'+key); if(el) tripDraft[key] = num(el.value);
   });
   if(g('f_hire2')) tripDraft.hire = num(g('f_hire2').value);
@@ -3778,6 +3845,8 @@ function repaintTripPane(){
   pane.classList.remove('pane-in'); void pane.offsetWidth; pane.classList.add('pane-in');
   fuelDirty = !!(num(tripDraft.fuelAmt) && !(num(tripDraft.fuelQty)>0 && num(tripDraft.fuelRate)>0
     && Math.abs(num(tripDraft.fuelQty)*num(tripDraft.fuelRate) - num(tripDraft.fuelAmt)) < 0.5));
+  lineDraft = JSON.parse(JSON.stringify((tripDraft && tripDraft.lines) || []));
+  if(document.getElementById('lineRows')) paintTripLines();
   if(document.getElementById('f_advTotal')) recalcAdvance();
   return true;
 }
@@ -3804,23 +3873,35 @@ function tripDetailsPane(t){
 
 function tripMoneyPane(t, existing){
   return  '<div class="adv-block">'+
-      '<div class="adv-head">Advance and brokerage</div>'+
+      '<div class="adv-head">Advance</div>'+
       '<div class="form-grid three">'+
         fText('f_advCash','Advance in cash (₹)', t.advCash||'','number','min="0" step="1" oninput="recalcAdvance()"')+
         fText('f_fuelQty','Fuel quantity (litres)', t.fuelQty,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
         fText('f_fuelRate','Fuel rate (₹ per litre)', t.fuelRate,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
         fText('f_fuelAmt','Fuel amount (₹)', t.fuelAmt||'','number','min="0" step="1" oninput="fuelEdited()"')+
-        fText('f_brokerage','Brokerage amount (₹)', t.brokerage||'','number','min="0" step="1" oninput="recalcAdvance()"')+
         '<div class="field"><label>&nbsp;</label><span class="hint" id="fuelHint"></span></div>'+
+        '<div class="field"></div>'+
+      '</div>'+
+      '<div class="line-block">'+
+        '<div class="adv-head" style="margin-bottom:9px">Charges and deductions</div>'+
+        '<div id="lineRows"></div>'+
+        '<div class="line-add">'+
+          '<button type="button" class="btn btn-sm" onclick="addTripLine(\'charge\')">+ Add charge</button>'+
+          '<button type="button" class="btn btn-sm" onclick="addTripLine(\'deduction\')">\u2212 Add deduction</button>'+
+        '</div>'+
+        '<span class="hint">A charge adds to what the party owes \u2014 detention, loading, an extra point. '+
+        'A deduction takes away \u2014 brokerage, shortage, a discount.</span>'+
       '</div>'+
       '<div class="adv-total"><span>Freight</span>'+
         '<span class="num adv-total-value" id="f_freightEcho">'+money(t.freight)+'</span></div>'+
       '<div class="adv-total adv-balance"><span>Total advance received</span>'+
         '<span class="num adv-total-value" id="f_advTotal">₹0</span></div>'+
-      '<div class="adv-total adv-balance" id="f_brokRow" hidden><span>Brokerage charged</span>'+
-        '<span class="num adv-total-value" id="f_brokOut">₹0</span></div>'+
-      '<div class="adv-total adv-balance" id="f_netRow" hidden><span>Advance plus brokerage</span>'+
-        '<span class="num adv-total-value" id="f_advNet">₹0</span></div>'+
+      '<div class="adv-total adv-balance" id="f_chgRow" hidden><span>Charges added</span>'+
+        '<span class="num adv-total-value" id="f_chgOut">₹0</span></div>'+
+      '<div class="adv-total adv-balance" id="f_dedRow" hidden><span>Deductions</span>'+
+        '<span class="num adv-total-value" id="f_dedOut">₹0</span></div>'+
+      '<div class="adv-total adv-balance" id="f_netRow" hidden><span>Amount billed to party</span>'+
+        '<span class="num adv-total-value" id="f_freightNet">₹0</span></div>'+
       '<div class="adv-total adv-balance" id="f_allocRow" hidden><span>Payments allocated to this trip</span>'+
         '<span class="num adv-total-value" id="f_allocOut">₹0</span></div>'+
       '<div class="adv-total adv-balance"><span id="f_balanceLabel">Balance pending</span>'+
@@ -3853,7 +3934,7 @@ function tripTabList(t, existing){
   const stage = stageInfo(tripStage(existing || t));
   return [
     {k:'details',  label:'Trip details'},
-    {k:'money',    label:'Money', chip: num(t.freight)
+    {k:'money',    label:'Money', chip: tripFreightNet(t)
         ? '<span class="chip '+(bal>0?'chip-red':'chip-green')+'" style="margin-left:7px">'+
           (bal>0? money(bal)+' due' : 'Settled')+'</span>' : ''},
     {k:'delivery', label:'Delivery & POD',
@@ -3914,6 +3995,8 @@ function tripScreen(id, tab){
 
   fuelDirty = !!(num(t.fuelAmt) && !(num(t.fuelQty)>0 && num(t.fuelRate)>0
     && Math.abs(num(t.fuelQty)*num(t.fuelRate) - num(t.fuelAmt)) < 0.5));
+  lineDraft = JSON.parse(JSON.stringify(t.lines || []));
+  if($('#lineRows')) paintTripLines();
   if($('#f_advTotal')) recalcAdvance();
 }
 
@@ -3931,9 +4014,9 @@ function saveTripScreen(existing, quiet){
   const t = tripDraft;
   if(!t.partyId){ toast('Choose the party for this trip'); switchTripTab('details'); return false; }
   if(!t.truckId){ toast('Choose the truck for this trip'); switchTripTab('details'); return false; }
-  const settled = num(t.advCash) + num(t.fuelAmt) + num(t.brokerage);
-  if(num(t.freight) > 0 && settled > num(t.freight)){
-    toast('Advance and brokerage together are more than the freight.');
+  const settled = num(t.advCash) + num(t.fuelAmt);
+  if(tripFreightNet(t) > 0 && settled > tripFreightNet(t)){
+    toast('The advance is more than the amount billed to the party.');
     if(!quiet) switchTripTab('money');
     return false;
   }
@@ -4093,8 +4176,15 @@ function ledgerRows(pid){
     if(num(t.fuelAmt)) rows.push({date:t.date, label:'Advance given as fuel',
       ref:[fuelNote(t), t.lr?('LR '+t.lr):''].filter(Boolean).join(' · '),
       debit:0, credit:num(t.fuelAmt), kind:'trip', tripId:t.id});
-    if(num(t.brokerage)) rows.push({date:t.date, label:'Brokerage charged',
-      ref:t.lr?('LR '+t.lr):'', debit:0, credit:num(t.brokerage), kind:'trip', tripId:t.id});
+    tripLines(t).forEach(x=>{
+      if(!num(x.amount)) return;
+      rows.push({date:t.date,
+        label:(x.label||(x.type==='charge'?'Extra charge':'Deduction'))+(x.type==='charge'?' (charge)':' (deduction)'),
+        ref:t.lr?('LR '+t.lr):'',
+        debit: x.type==='charge' ? num(x.amount) : 0,
+        credit: x.type==='deduction' ? num(x.amount) : 0,
+        kind:'trip', tripId:t.id});
+    });
   });
   DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{
     const spread = (l.alloc||[]).length
@@ -4164,7 +4254,7 @@ function allocTrips(pid, eid){
   return DB.trips.filter(t=>t.partyId===pid)
     .filter(t=>{
       const mine = eid ? (allocDraft[t.id]||0) : 0;
-      return num(t.freight) - tripDeducted(t) - allocatedTo(t.id, eid) > 0 || mine > 0;
+      return tripFreightNet(t) - tripDeducted(t) - allocatedTo(t.id, eid) > 0 || mine > 0;
     })
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
 }
@@ -4172,7 +4262,7 @@ function allocOpen(pid, eid){
   const rows = allocTrips(pid, eid);
   if(!rows.length) return '<div class="hint">No trip of this party has anything outstanding, so this stays a general payment.</div>';
   return '<div class="alloc-list">'+rows.map(t=>{
-    const owed = num(t.freight) - tripDeducted(t) - allocatedTo(t.id, eid);
+    const owed = tripFreightNet(t) - tripDeducted(t) - allocatedTo(t.id, eid);
     return '<div class="alloc-row">'+
       '<div class="alloc-what">'+
         '<div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
@@ -4268,7 +4358,7 @@ function ledgerForm(pid, eid){
       if(spread > amt){ toast('You have allocated more than the payment amount.'); return; }
       for(const a of alloc){
         const t = DB.trips.find(x=>x.id===a.tripId);
-        const owed = t ? num(t.freight) - tripDeducted(t) - allocatedTo(t.id, e?e.id:null) : 0;
+        const owed = t ? tripFreightNet(t) - tripDeducted(t) - allocatedTo(t.id, e?e.id:null) : 0;
         if(num(a.amount) > owed){ toast('A trip cannot take more than its outstanding amount.'); return; }
       }
       const rec = {id:e?e.id:uid(), partyId:pid, date:val('l_date')||today(), type:type,
@@ -5347,10 +5437,13 @@ function viewReports(){
       '<h3 class="card-title" style="margin-bottom:6px">Profit &amp; Loss statement</h3>'+
       '<div class="hint" style="margin-bottom:10px">'+fdate(sub.from)+' to '+fdate(sub.to)+'</div>'+
       '<div class="sec-title">Income</div>'+
-      pl('Freight billed on trips', p.freight)+
+      pl('Freight on trips', p.freightBase)+
+      (p.charges?    pl('Charges added to parties', p.charges):'')+
+      (p.deductions? pl('Deductions given to parties', -p.deductions):'')+
+      pl('Billed to parties', p.freight)+
       '<div class="sec-title">Costs</div>'+
       (p.hire? pl('Hire paid to market trucks', p.hire):'')+
-      (p.brokerage? pl('Brokerage on trips', p.brokerage):'')+
+
       exps.map(([c,v])=>pl(c, v)).join('')+
       (p.driverPaid? pl('Driver salary &amp; advances paid', p.driverPaid):'')+
       (p.costs===0? '<div class="pl-line"><span>No costs recorded in this period</span><span class="num">'+money(0)+'</span></div>':'')+
@@ -5498,7 +5591,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>7.0</b>, built 18 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>7.2</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -5579,7 +5672,7 @@ function seed(){
     {date:day(6),lr:'MV-1042',from:'Bhiwadi',to:'Ahmedabad',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'TMT bars',weight:'30',freight:64000,advance:0,hire:0,status:'pending',notes:''},
     {date:day(9),lr:'MV-1043',from:'Delhi (Delhi)',to:'Lucknow (Uttar Pradesh)',partyId:p3.id,truckId:t3.id,driverId:'',material:'Wheat',weight:'27',freight:47000,advCash:6000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,advance:15000,hire:36000,hireAdvance:20000,status:'partial',notes:'Market vehicle arranged through Rajesh Transport'},
     {date:day(12),lr:'MV-1044',from:'Jaipur',to:'Gurugram',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Empty return load',weight:'18',freight:26000,advance:0,hire:0,status:'paid',notes:''},
-    {date:day(16),lr:'MV-1045',from:'Gurugram (Haryana)',to:'Indore (Madhya Pradesh)',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advCash:11000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,brokerage:2000,advance:20000,hire:0,status:'partial',notes:''}
+    {date:day(16),lr:'MV-1045',from:'Gurugram (Haryana)',to:'Indore (Madhya Pradesh)',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advCash:11000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,lines:[{id:uid(),type:'deduction',label:'Brokerage',amount:2000},{id:uid(),type:'charge',label:'Detention',amount:1500}],advance:20000,hire:0,status:'partial',notes:''}
   ];
   const stageDay = n => new Date(Date.now()-n*86400000).toISOString().slice(0,10);
   trips.forEach((t,i)=>{
@@ -5630,14 +5723,14 @@ function download(name, rows){
 function exportCSV(what){
   if(what==='trips'){
     download('trips-'+today()+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
-      'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance','Brokerage',
-      'Advance plus brokerage','Balance pending','Hire','Status',
+      'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance',
+      'Charges','Deductions','Billed to party','Balance pending','Hire','Status',
       'Delivery stage','Delivered on','POD received','POD submitted',
       'Supplier','Hire advance','Hire balance','Notes']]
       .concat(DB.trips.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
         [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',
          t.material,t.weight,num(t.freight),num(t.advCash),t.fuelQty||'',t.fuelRate||'',num(t.fuelAmt),
-         num(t.advance),num(t.brokerage),tripDeducted(t),tripBalance(t),
+         num(t.advance),tripCharges(t),tripDeductions(t),tripFreightNet(t),tripBalance(t),
          num(t.hire),tripStatus(t),stageInfo(tripStage(t)).label,
          t.deliveredAt||'',t.podReceivedAt||'',t.podSubmittedAt||'',
          tripSupplier(t)?supplierName(tripSupplier(t)):'',num(t.hireAdvance),tripSupplierBalance(t),t.notes])));
@@ -6204,10 +6297,16 @@ function tripAdvance(t){
   if(t.advCash===undefined && t.fuelAmt===undefined && t.advance!==undefined) return num(t.advance);
   return num(t.advCash) + num(t.fuelAmt);
 }
-/* Advance is money received; brokerage is charged on top of it. Both
-   reduce what is still due, so everything downstream — pending balance,
-   status, ledger — reads this one figure. */
-function tripDeducted(t){ return tripAdvance(t) + num(t.brokerage); }
+/* A trip can carry any number of extra lines. A charge adds to what the
+   party owes, a deduction takes away from it. Together they turn the
+   quoted freight into the amount actually billed. */
+function tripLines(t){ return (t && t.lines) || []; }
+function tripCharges(t){ return tripLines(t).filter(x=>x.type==='charge').reduce((s,x)=>s+num(x.amount),0); }
+function tripDeductions(t){ return tripLines(t).filter(x=>x.type==='deduction').reduce((s,x)=>s+num(x.amount),0); }
+/* what the party is actually billed for this trip */
+function tripFreightNet(t){ return num(t.freight) + tripCharges(t) - tripDeductions(t); }
+/* money already settled against it */
+function tripDeducted(t){ return tripAdvance(t); }
 
 /* A payment in the party ledger can be earmarked against particular trips.
    The earmarks live on the payment, so editing or deleting the payment
@@ -6232,10 +6331,10 @@ function allocatedTo(tripId, exceptEntry){
 }
 /* everything settled against the freight: advance, brokerage, and payments earmarked to it */
 function tripSettledTotal(t){ return tripDeducted(t) + allocatedTo(t.id); }
-function tripBalance(t){ return num(t.freight) - tripSettledTotal(t); }
+function tripBalance(t){ return tripFreightNet(t) - tripSettledTotal(t); }
 /* No advance = pending. Some advance = part paid. Nothing left = paid. */
 function tripStatus(t){
-  const adv = tripSettledTotal(t), fr = num(t.freight);
+  const adv = tripSettledTotal(t), fr = tripFreightNet(t);
   if(adv <= 0) return 'pending';
   if(adv >= fr) return 'paid';
   return 'partial';
@@ -6257,7 +6356,12 @@ function migrateAdvances(){
   DB.trips.forEach(t=>{
     if(t.advCash===undefined){ t.advCash = num(t.advance); changed = true; }
     if(t.fuelAmt===undefined){ t.fuelAmt = 0; changed = true; }
-    if(t.brokerage===undefined){ t.brokerage = 0; changed = true; }
+    if(t.lines===undefined){
+      t.lines = [];
+      if(num(t.brokerage)) t.lines.push({id:uid(), type:'deduction', label:'Brokerage', amount:num(t.brokerage)});
+      t.brokerage = 0;
+      changed = true;
+    }
     if(t.deliveredAt===undefined){ t.deliveredAt = ''; t.podReceivedAt = ''; t.podSubmittedAt = ''; changed = true; }
     if(t.hireAdvance===undefined){ t.hireAdvance = 0; changed = true; }
     if(t.supplierId===undefined){ t.supplierId = ''; changed = true; }
