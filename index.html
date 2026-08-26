@@ -2878,6 +2878,21 @@ tbody tr:last-child td {
     font-size: 32px;
   }
 }
+.check-line{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;cursor:pointer}
+.check-line input{width:auto;margin:0}
+.alloc-list{max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:#FCFBF8}
+.alloc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-soft)}
+.alloc-row:last-child{border-bottom:0}
+.alloc-what{flex:1;min-width:0}
+.alloc-amt{width:120px;padding:8px 10px;font-size:14px;font-family:var(--mono)}
+.alloc-foot{display:flex;align-items:center;margin-top:10px;padding-top:10px;
+  border-top:1.5px solid var(--asphalt);font-weight:700;font-size:14.5px}
+.alloc-foot .num{margin-left:auto;font-size:16px}
+@media (max-width:760px){
+  .alloc-row{flex-wrap:wrap}
+  .alloc-what{flex:1 1 100%}
+  .alloc-amt{flex:1}
+}
 </style>
 </head>
 <body>
@@ -3002,6 +3017,7 @@ function reindex(){
   DB.drivers.forEach(d=>IDX.driver[d.id]=d);
   IDX.shop = {}; (DB.shops||[]).forEach(s=>IDX.shop[s.id]=s);
   IDX.supplier = {}; (DB.suppliers||[]).forEach(s=>IDX.supplier[s.id]=s);
+  IDX.alloc = allocIndex();
 }
 // index first, with a safety net in case anything was added without a save
 const truckById  = id => IDX.truck[id]  || DB.trucks.find(t=>t.id===id);
@@ -3645,6 +3661,11 @@ function recalcAdvance(){
     : num(tripDraft && tripDraft.freight);
   const echo = document.getElementById('f_freightEcho');
   if(echo) echo.textContent = money(freight);
+  const alloc = tripDraft && tripDraft.id ? allocatedTo(tripDraft.id) : 0;
+  const allocRow = document.getElementById('f_allocRow');
+  const allocOut = document.getElementById('f_allocOut');
+  if(allocRow) allocRow.hidden = !alloc;
+  if(allocOut) allocOut.textContent = money(alloc);
   const hireEl = document.getElementById('f_hire2');
   const hireDue = document.getElementById('f_hireDue');
   if(hireDue){
@@ -3652,7 +3673,7 @@ function recalcAdvance(){
     hireDue.textContent = money(due);
     hireDue.className = 'num adv-total-value'+(due>0?' money-neg':'');
   }
-  const bal = freight - net;
+  const bal = freight - net - alloc;
   const balEl = document.getElementById('f_balance');
   const labEl = document.getElementById('f_balanceLabel');
   if(balEl){
@@ -3663,7 +3684,8 @@ function recalcAdvance(){
                                 : 'Balance pending';
   }
   const prev = document.getElementById('f_statusPreview');
-  if(prev) prev.innerHTML = statusChip(tripStatus({advCash:total, fuelAmt:0, brokerage:brok, freight:freight}));
+  if(prev) prev.innerHTML = statusChip(tripStatus({id:(tripDraft&&tripDraft.id)||'',
+    advCash:total, fuelAmt:0, brokerage:brok, freight:freight}));
   const warn = document.getElementById('brokWarn');
   if(warn){
     const over = freight > 0 && net > freight;
@@ -3799,6 +3821,8 @@ function tripMoneyPane(t, existing){
         '<span class="num adv-total-value" id="f_brokOut">₹0</span></div>'+
       '<div class="adv-total adv-balance" id="f_netRow" hidden><span>Advance plus brokerage</span>'+
         '<span class="num adv-total-value" id="f_advNet">₹0</span></div>'+
+      '<div class="adv-total adv-balance" id="f_allocRow" hidden><span>Payments allocated to this trip</span>'+
+        '<span class="num adv-total-value" id="f_allocOut">₹0</span></div>'+
       '<div class="adv-total adv-balance"><span id="f_balanceLabel">Balance pending</span>'+
         '<span class="num adv-total-value" id="f_balance">₹0</span></div>'+
       '<div class="adv-status"><span>Status will be set to</span><span id="f_statusPreview"></span></div>'+
@@ -4055,7 +4079,7 @@ function partyForm(id, onSaved){
     }
   });
 }
-function partyLedger(id){ route='parties'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderLedger(id); }
+function partyLedger(id){ route='parties'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderLedger(id); afterDirectRender(); }
 
 function ledgerRows(pid){
   const rows = [];
@@ -4073,8 +4097,14 @@ function ledgerRows(pid){
       ref:t.lr?('LR '+t.lr):'', debit:0, credit:num(t.brokerage), kind:'trip', tripId:t.id});
   });
   DB.ledger.filter(l=>l.partyId===pid).forEach(l=>{
+    const spread = (l.alloc||[]).length
+      ? 'allocated to '+(l.alloc||[]).map(a=>{
+          const tp = DB.trips.find(x=>x.id===a.tripId);
+          return (tp && tp.lr ? 'LR '+tp.lr : 'a trip')+' '+money(a.amount);
+        }).join(', ')
+      : '';
     rows.push({date:l.date, label:l.note||(l.type==='credit'?'Payment received':'Charge added'),
-      ref:[l.mode,l.ref].filter(Boolean).join(' · '), debit:l.type==='debit'?num(l.amount):0,
+      ref:[l.mode,l.ref,spread].filter(Boolean).join(' · '), debit:l.type==='debit'?num(l.amount):0,
       credit:l.type==='credit'?num(l.amount):0, kind:'entry', entryId:l.id});
   });
   rows.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
@@ -4126,8 +4156,89 @@ function renderLedger(pid){
       '<div class="note" style="margin-top:14px">Debit increases what the party owes you. Credit reduces it — payments, advances and discounts all go in the credit column.</div>');
 }
 
+let allocDraft = {};
+
+/* trips of this party that still owe something, plus any this payment
+   is already spread across, so editing shows the full picture */
+function allocTrips(pid, eid){
+  return DB.trips.filter(t=>t.partyId===pid)
+    .filter(t=>{
+      const mine = eid ? (allocDraft[t.id]||0) : 0;
+      return num(t.freight) - tripDeducted(t) - allocatedTo(t.id, eid) > 0 || mine > 0;
+    })
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+}
+function allocOpen(pid, eid){
+  const rows = allocTrips(pid, eid);
+  if(!rows.length) return '<div class="hint">No trip of this party has anything outstanding, so this stays a general payment.</div>';
+  return '<div class="alloc-list">'+rows.map(t=>{
+    const owed = num(t.freight) - tripDeducted(t) - allocatedTo(t.id, eid);
+    return '<div class="alloc-row">'+
+      '<div class="alloc-what">'+
+        '<div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
+        '<div class="t-sub">'+(t.lr?'LR '+esc(t.lr)+' · ':'')+fdate(t.date)+' · '+money(owed)+' outstanding</div>'+
+      '</div>'+
+      '<input type="number" min="0" step="1" class="alloc-amt" id="al_'+t.id+'" '+
+        'data-owed="'+owed+'" value="'+(allocDraft[t.id]||'')+'" placeholder="0" oninput="recalcAlloc()">'+
+      '<button type="button" class="btn btn-sm" onclick="fillAlloc(\''+t.id+'\')">Fill</button>'+
+    '</div>';
+  }).join('')+'</div>'+
+  '<div class="alloc-foot">'+
+    '<span>Left to allocate</span><span class="num" id="allocLeft">₹0</span>'+
+  '</div>'+
+  '<div class="gate-error" id="allocWarn" hidden style="margin-top:10px"></div>';
+}
+function readAlloc(){
+  const out = {};
+  document.querySelectorAll('.alloc-amt').forEach(el=>{
+    const v = num(el.value);
+    if(v > 0) out[el.id.slice(3)] = v;
+  });
+  return out;
+}
+function recalcAlloc(){
+  allocDraft = readAlloc();
+  const total = Object.values(allocDraft).reduce((s,v)=>s+v,0);
+  const amount = num(val('l_amount'));
+  const left = amount - total;
+  const leftEl = document.getElementById('allocLeft');
+  if(leftEl){
+    leftEl.textContent = money(Math.abs(left));
+    leftEl.className = 'num '+(left<0?'money-neg':left>0?'':'money-pos');
+  }
+  const warn = document.getElementById('allocWarn');
+  if(warn){
+    let msg = '';
+    if(left < 0) msg = 'You have allocated '+money(total)+', which is more than the '+money(amount)+' payment.';
+    document.querySelectorAll('.alloc-amt').forEach(el=>{
+      const owed = num(el.dataset.owed);
+      if(num(el.value) > owed) msg = 'A trip cannot take more than its outstanding '+money(owed)+'.';
+    });
+    warn.hidden = !msg; warn.textContent = msg;
+  }
+}
+function fillAlloc(tripId){
+  const el = document.getElementById('al_'+tripId);
+  if(!el) return;
+  const owed = num(el.dataset.owed);
+  const amount = num(val('l_amount'));
+  const others = Object.entries(readAlloc()).reduce((s,[k,v])=>k===tripId?s:s+v,0);
+  el.value = Math.max(0, Math.min(owed, amount - others));
+  recalcAlloc();
+}
+function toggleAlloc(){
+  const box = document.getElementById('allocBox');
+  const on = document.getElementById('l_allocate').checked;
+  if(box) box.hidden = !on;
+  if(!on) allocDraft = {};
+  recalcAlloc();
+}
+
 function ledgerForm(pid, eid){
   const e = eid ? DB.ledger.find(x=>x.id===eid) : null;
+  allocDraft = {};
+  ((e && e.alloc) || []).forEach(a=>{ allocDraft[a.tripId] = num(a.amount); });
+  const hasAlloc = Object.keys(allocDraft).length > 0;
   openModal({
     title: e? 'Edit ledger entry':'Add ledger entry', okText: e?'Save changes':'Save entry',
     body:'<div class="form-grid">'+
@@ -4139,14 +4250,37 @@ function ledgerForm(pid, eid){
       fSelect('l_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Cheque',t:'Cheque'},{v:'Adjustment',t:'Adjustment / discount'}], e?e.mode:'Cash')+
       fText('l_ref','Reference', e?e.ref:'','text','placeholder="Cheque no., UTR, remark"')+
       fText('l_note','Description', e?e.note:'','text','placeholder="e.g. Part payment for Nov trips"')+
+      '<div class="field full" id="allocField">'+
+        '<label class="check-line"><input type="checkbox" id="l_allocate"'+(hasAlloc?' checked':'')+
+          ' onchange="toggleAlloc()"> Allocate this payment to specific trips</label>'+
+        '<span class="hint">Optional. Anything you do not allocate stays as a general payment against the party.</span>'+
+        '<div id="allocBox"'+(hasAlloc?'':' hidden')+' style="margin-top:12px">'+allocOpen(pid, eid)+'</div>'+
+      '</div>'+
     '</div>',
     onOk(){
       const amt = num(val('l_amount'));
       if(amt<=0){ toast('Enter an amount greater than zero'); return; }
-      const rec = {id:e?e.id:uid(), partyId:pid, date:val('l_date')||today(), type:checked('l_type')||'credit',
-        amount:amt, mode:val('l_mode'), ref:val('l_ref'), note:val('l_note')};
+      const type = checked('l_type')||'credit';
+      const box = document.getElementById('l_allocate');
+      const wants = type==='credit' && box && box.checked;
+      const alloc = wants ? Object.entries(readAlloc()).map(([tripId, amount])=>({tripId, amount})) : [];
+      const spread = alloc.reduce((s,a)=>s+num(a.amount),0);
+      if(spread > amt){ toast('You have allocated more than the payment amount.'); return; }
+      for(const a of alloc){
+        const t = DB.trips.find(x=>x.id===a.tripId);
+        const owed = t ? num(t.freight) - tripDeducted(t) - allocatedTo(t.id, e?e.id:null) : 0;
+        if(num(a.amount) > owed){ toast('A trip cannot take more than its outstanding amount.'); return; }
+      }
+      const rec = {id:e?e.id:uid(), partyId:pid, date:val('l_date')||today(), type:type,
+        amount:amt, mode:val('l_mode'), ref:val('l_ref'), note:val('l_note'), alloc:alloc};
       if(e) DB.ledger[DB.ledger.findIndex(x=>x.id===e.id)] = rec; else DB.ledger.push(rec);
-      save(); closeModal(); renderLedger(pid); toast(e?'Entry updated':'Entry saved');
+      save(); allocDraft = {}; closeModal(); renderLedger(pid); afterDirectRender();
+      const paid = rec.alloc.filter(a=>{
+        const t = DB.trips.find(x=>x.id===a.tripId);
+        return t && tripStatus(t)==='paid';
+      }).length;
+      toast((e?'Entry updated':'Entry saved') + (rec.alloc.length
+        ? ' · '+plural(rec.alloc.length,'trip')+' updated'+(paid? ', '+paid+' now paid':'') : ''));
     }
   });
 }
@@ -4578,7 +4712,7 @@ function viewDrivers(){
           '<button class="btn btn-sm" onclick="driverForm(\''+d.id+'\')">Edit</button>'+
         '</div></td></tr>';}).join('')+'</tbody></table></div></div>');
 }
-function openDriver(id){ route='drivers'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderDriver(id); }
+function openDriver(id){ route='drivers'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderDriver(id); afterDirectRender(); }
 
 function renderDriver(did){
   const d = driverById(did); if(!d){ sub={}; return viewDrivers(); }
@@ -4686,7 +4820,7 @@ function driverTxnForm(did, tid){
       const rec = {id:t?t.id:uid(), driverId:did, date:val('dt_date')||today(),
         type:checked('dt_type')||'salary', amount:amt, note:val('dt_note')};
       if(t) DB.driverTxns[DB.driverTxns.findIndex(x=>x.id===t.id)] = rec; else DB.driverTxns.push(rec);
-      save(); closeModal(); renderDriver(did); toast(t?'Entry updated':'Entry saved');
+      save(); closeModal(); renderDriver(did); afterDirectRender(); toast(t?'Entry updated':'Entry saved');
     }
   });
 }
@@ -4877,7 +5011,7 @@ function supplierForm(id, onSaved){
     }
   });
 }
-function supplierLedger(id){ route='suppliers'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderSupplierLedger(id); }
+function supplierLedger(id){ route='suppliers'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderSupplierLedger(id); afterDirectRender(); }
 
 function renderSupplierLedger(sid){
   const s = supplierById(sid);
@@ -4952,7 +5086,7 @@ function supplierEntryForm(sid, eid){
         amount:amt, truckId:val('sl_truck'), reason:val('sl_reason'), mode:val('sl_mode'), note:val('sl_note')};
       DB.supplierLedger = DB.supplierLedger || [];
       if(e) DB.supplierLedger[DB.supplierLedger.findIndex(x=>x.id===e.id)] = rec; else DB.supplierLedger.push(rec);
-      save(); closeModal(); renderSupplierLedger(sid); toast(e?'Entry updated':'Entry saved');
+      save(); closeModal(); renderSupplierLedger(sid); afterDirectRender(); toast(e?'Entry updated':'Entry saved');
     }
   });
 }
@@ -5075,7 +5209,7 @@ function shopForm(id, onSaved){
     }
   });
 }
-function shopLedger(id){ route='shops'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderShopLedger(id); }
+function shopLedger(id){ route='shops'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderShopLedger(id); afterDirectRender(); }
 
 function renderShopLedger(sid){
   const s = shopById(sid);
@@ -5142,7 +5276,7 @@ function shopEntryForm(sid, eid){
         amount:amt, truckId:val('sl_truck'), mode:val('sl_mode'), note:val('sl_note')};
       DB.shopLedger = DB.shopLedger || [];
       if(e) DB.shopLedger[DB.shopLedger.findIndex(x=>x.id===e.id)] = rec; else DB.shopLedger.push(rec);
-      save(); closeModal(); renderShopLedger(sid); toast(e?'Entry updated':'Entry saved');
+      save(); closeModal(); renderShopLedger(sid); afterDirectRender(); toast(e?'Entry updated':'Entry saved');
     }
   });
 }
@@ -6074,10 +6208,34 @@ function tripAdvance(t){
    reduce what is still due, so everything downstream — pending balance,
    status, ledger — reads this one figure. */
 function tripDeducted(t){ return tripAdvance(t) + num(t.brokerage); }
-function tripBalance(t){ return num(t.freight) - tripDeducted(t); }
+
+/* A payment in the party ledger can be earmarked against particular trips.
+   The earmarks live on the payment, so editing or deleting the payment
+   puts every trip balance back where it was, with nothing to clean up. */
+function allocIndex(){
+  const m = {};
+  (DB.ledger||[]).forEach(l=>{
+    if(l.type!=='credit') return;
+    (l.alloc||[]).forEach(a=>{ m[a.tripId] = (m[a.tripId]||0) + num(a.amount); });
+  });
+  return m;
+}
+function allocatedTo(tripId, exceptEntry){
+  if(!tripId) return 0;
+  if(exceptEntry===undefined && IDX.alloc) return IDX.alloc[tripId] || 0;
+  let n = 0;
+  (DB.ledger||[]).forEach(l=>{
+    if(l.type!=='credit' || l.id===exceptEntry) return;
+    (l.alloc||[]).forEach(a=>{ if(a.tripId===tripId) n += num(a.amount); });
+  });
+  return n;
+}
+/* everything settled against the freight: advance, brokerage, and payments earmarked to it */
+function tripSettledTotal(t){ return tripDeducted(t) + allocatedTo(t.id); }
+function tripBalance(t){ return num(t.freight) - tripSettledTotal(t); }
 /* No advance = pending. Some advance = part paid. Nothing left = paid. */
 function tripStatus(t){
-  const adv = tripDeducted(t), fr = num(t.freight);
+  const adv = tripSettledTotal(t), fr = num(t.freight);
   if(adv <= 0) return 'pending';
   if(adv >= fr) return 'paid';
   return 'partial';
@@ -6496,7 +6654,10 @@ function spark(values, color){
 /* KPI tile. Numbers count up once the view settles. */
 function kpi(label, value, opts={}){
   const fmt = opts.fmt||'money';
-  const shown = fmt==='money'? money(0) : fmt==='pct'? '0%' : '0';
+  /* Render the real figure straight away. The count-up only runs when a
+     screen goes through render(); anything drawn on another path — a
+     ledger, a refresh after saving — must still show the true number. */
+  const shown = fmtBy(fmt, num(value));
   return '<div class="kpi"><div class="kpi-label">'+esc(label)+'</div>'+
     '<div class="kpi-value'+(opts.tone==='pos'?' money-pos':opts.tone==='neg'?' money-neg':'')+
       '" data-count="'+num(value)+'" data-fmt="'+fmt+'">'+shown+'</div>'+
@@ -6514,11 +6675,15 @@ function fmtBy(mode, v){
   if(mode==='one')   return (Math.round(v*10)/10).toLocaleString('en-IN');
   return money(v);
 }
+/* every screen drawn outside render() ends with this */
+function afterDirectRender(){ animateCounts(); paintBell(); }
 function animateCounts(){
   const els = document.querySelectorAll('[data-count]');
   const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   els.forEach(el=>{
     const to = parseFloat(el.dataset.count)||0, mode = el.dataset.fmt||'money';
+    if(el.dataset.counted==='1'){ el.textContent = fmtBy(mode,to); return; }
+    el.dataset.counted = '1';
     if(still || !window.requestAnimationFrame){ el.textContent = fmtBy(mode,to); return; }
     const t0 = performance.now(), dur = 620;
     (function tick(t){
