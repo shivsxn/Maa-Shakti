@@ -2903,6 +2903,51 @@ tbody tr:last-child td {
   .line-row input:nth-of-type(1){grid-column:1/-1}
   .line-add .btn{flex:1}
 }
+/* ---------- printed documents ---------- */
+#printRoot{display:none}
+@media print{
+  @page{size:A4;margin:14mm 12mm}
+  html,body{background:#fff!important}
+  body>*{display:none!important}
+  body.printing #printRoot{display:block!important}
+  #printRoot{font-family:var(--sans);color:#111;font-size:11pt;line-height:1.45}
+  .pr-page{max-width:100%}
+  .pr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;
+    padding-bottom:10px;border-bottom:2px solid #111}
+  .pr-biz{font-size:17pt;font-weight:700;letter-spacing:-.02em}
+  .pr-biz-sub{font-size:8.5pt;color:#444;margin-top:3px;line-height:1.4}
+  .pr-doc{text-align:right}
+  .pr-title{font-size:12pt;font-weight:700;text-transform:uppercase;letter-spacing:.09em}
+  .pr-sub{font-size:10pt;color:#333;margin-top:2px}
+  .pr-issued{font-size:8.5pt;color:#555;margin-top:3px}
+  .pr-facts{display:flex;flex-wrap:wrap;gap:6px 26px;margin:10px 0 14px;font-size:9.5pt}
+  .pr-facts span{color:#555;margin-right:6px}
+  .pr-h2{font-size:9.5pt;text-transform:uppercase;letter-spacing:.09em;color:#555;
+    margin:16px 0 6px;font-weight:700}
+  .pr-table{width:100%;border-collapse:collapse;margin-bottom:6px}
+  .pr-table th,.pr-table td{padding:5px 7px;border-bottom:.5pt solid #ccc;text-align:left;
+    vertical-align:top;font-size:9.5pt}
+  .pr-table thead th{border-bottom:1pt solid #111;font-size:8pt;text-transform:uppercase;
+    letter-spacing:.07em;color:#333}
+  .pr-table tfoot th{border-top:1pt solid #111;border-bottom:0;font-size:9.5pt;padding-top:7px}
+  .pr-table .r{text-align:right}
+  .pr-table td.r,.pr-table tfoot th.r{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pr-table thead{display:table-header-group}
+  .pr-table tr{break-inside:avoid}
+  .pr-ref{display:block;font-size:8pt;color:#666;margin-top:1px}
+  .pr-none{color:#666;font-style:italic;padding:14px 7px}
+  .pr-summary{margin-top:14px;border-top:1pt solid #111;padding-top:8px;break-inside:avoid}
+  .pr-summary div{display:flex;justify-content:space-between;padding:3px 0;font-size:10pt}
+  .pr-summary b{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .pr-summary .strong{font-size:11.5pt;font-weight:700;border-top:.5pt solid #999;margin-top:4px;padding-top:6px}
+  .pr-note{font-size:8.5pt;color:#555;margin:14px 0 0}
+  .pr-sign{display:flex;justify-content:space-between;gap:40px;margin-top:34px;break-inside:avoid}
+  .pr-sign > div{width:45%;font-size:9pt;color:#444}
+  .pr-sign .r{text-align:right}
+  .pr-line{border-bottom:.5pt solid #111;height:34px;margin-bottom:4px}
+  .pr-foot{margin-top:18px;padding-top:6px;border-top:.5pt solid #ccc;
+    font-size:8pt;color:#666;text-align:center}
+}
 </style>
 </head>
 <body>
@@ -2918,7 +2963,7 @@ tbody tr:last-child td {
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 7.4 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 7.5 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3473,7 +3518,7 @@ function viewInsights(){
     .filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,6);
 
   $('#pageSub').textContent = rangeCaption();
-  $('#pageActions').innerHTML = '<button class="btn" onclick="window.print()">Print</button>';
+  $('#pageActions').innerHTML = '<button class="btn" onclick="printReport()">Print statement</button>';
 
   $('#view').innerHTML =
   rangeBar('insights')+
@@ -4242,7 +4287,7 @@ function renderLedger(pid){
     '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance to collect':'Advance held')+'</div>'+
       '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm" onclick="window.print()">Print ledger</button>'+
+  '<div class="toolbar"><button class="btn btn-sm" onclick="printPartyStatement(\''+pid+'\')">Print statement</button>'+
     '<button class="btn btn-sm" onclick="exportLedger(\''+pid+'\')">Export CSV</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delParty(\''+pid+'\')">Delete party</button></div>'+
   (rows.length===0
@@ -4880,7 +4925,8 @@ function renderDriver(did){
     '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance payable':'Advance recoverable')+'</div>'+
       '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delDriver(\''+did+'\')">Delete driver</button></div>'+
+  '<div class="toolbar"><button class="btn btn-sm" onclick="printDriverStatement(\''+did+'\')">Print account</button>'+
+    '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delDriver(\''+did+'\')">Delete driver</button></div>'+
   (rows.length===0
     ? empty('No entries yet','Add the monthly salary as "salary due", then record each payment or advance you give.',
         '<button class="btn btn-amber" onclick="driverTxnForm(\''+did+'\')">+ Add entry</button>')
@@ -4997,7 +5043,7 @@ function viewPod(){
   const locked = lockedByPod();
   const chase = podAlerts().length;
 
-  $('#pageActions').innerHTML = '<button class="btn" onclick="window.print()">Print</button>';
+  $('#pageActions').innerHTML = '<button class="btn" onclick="printReport()">Print statement</button>';
   $('#pageSub').textContent = (delivered.length+received.length)+' waiting on paperwork';
 
   const row = (t, field, action) => {
@@ -5182,7 +5228,7 @@ function renderSupplierLedger(sid){
     kpi(bal>=0?'Outstanding':'Paid ahead', Math.abs(bal), {tone:bal>0?'neg':'pos'})+
     kpi('Held pending POD', held, {note:'You can hold this until the POD is back'})+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm" onclick="window.print()">Print ledger</button>'+
+  '<div class="toolbar"><button class="btn btn-sm" onclick="printPayableStatement(\'supplier\',\''+sid+'\')">Print statement</button>'+
     '<button class="btn btn-sm" onclick="exportSupplierLedger(\''+sid+'\')">Export CSV</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delSupplier(\''+sid+'\')">Delete supplier</button></div>'+
   (rows.length===0
@@ -5377,7 +5423,7 @@ function renderShopLedger(sid){
     kpi('Paid to shop', paid, {tone:'pos'})+
     kpi(bal>=0?'Outstanding payable':'Paid ahead', Math.abs(bal), {tone:bal>0?'neg':'pos'})+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm" onclick="window.print()">Print ledger</button>'+
+  '<div class="toolbar"><button class="btn btn-sm" onclick="printPayableStatement(\'shop\',\''+sid+'\')">Print statement</button>'+
     '<button class="btn btn-sm" onclick="exportShopLedger(\''+sid+'\')">Export CSV</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delShop(\''+sid+'\')">Delete shop</button></div>'+
   (rows.length===0
@@ -5460,7 +5506,7 @@ function viewReports(){
   defaultRange('month');
   if(!sub.tab) sub.tab = 'pnl';
   const p = pnl(sub.from, sub.to);
-  $('#pageActions').innerHTML = '<button class="btn" onclick="window.print()">Print</button>';
+  $('#pageActions').innerHTML = '<button class="btn" onclick="printReport()">Print statement</button>';
 
   const filters = rangeBar('reports');
 
@@ -5648,7 +5694,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>7.4</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>7.5</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -5766,6 +5812,201 @@ function seed(){
   DB.seeded = true;
 }
 
+
+/* ============================================================
+   PRINTED DOCUMENTS
+   A print is a document, not a screenshot. Everything on screen is
+   hidden and a clean statement is built instead: letterhead, title,
+   the figures, totals, and a place to sign. Nothing on it is a
+   button, a filter or a chip.
+   ============================================================ */
+function printMeta(){
+  const s = DB.settings || {};
+  return {
+    business: s.business || 'Maa Vandana Logistics',
+    lines: [s.address, [s.phone, s.gst && 'GST '+s.gst].filter(Boolean).join('  ·  ')]
+             .filter(x=>x && String(x).trim())
+  };
+}
+function printHead(title, subtitle, facts){
+  const m = printMeta();
+  return '<header class="pr-head">'+
+      '<div class="pr-brand">'+
+        '<div class="pr-biz">'+esc(m.business)+'</div>'+
+        (m.lines.length? '<div class="pr-biz-sub">'+m.lines.map(esc).join('<br>')+'</div>':'')+
+      '</div>'+
+      '<div class="pr-doc">'+
+        '<div class="pr-title">'+esc(title)+'</div>'+
+        (subtitle? '<div class="pr-sub">'+esc(subtitle)+'</div>':'')+
+        '<div class="pr-issued">Issued '+fdate(today())+'</div>'+
+      '</div>'+
+    '</header>'+
+    (facts && facts.length
+      ? '<section class="pr-facts">'+facts.filter(Boolean).map(f=>
+          '<div><span>'+esc(f[0])+'</span><b>'+f[1]+'</b></div>').join('')+'</section>'
+      : '');
+}
+function printTable(cols, rows, foot){
+  return '<table class="pr-table"><thead><tr>'+
+    cols.map(c=>'<th'+(c.right?' class="r"':'')+(c.w?' style="width:'+c.w+'"':'')+'>'+esc(c.label)+'</th>').join('')+
+    '</tr></thead><tbody>'+
+    (rows.length ? rows.map(r=>'<tr>'+r.map((cell,i)=>
+        '<td'+(cols[i]&&cols[i].right?' class="r"':'')+(cols[i]&&cols[i].num?' class="n"':'')+'>'+
+        (cell===''||cell==null?'—':cell)+'</td>').join('')+'</tr>').join('')
+      : '<tr><td colspan="'+cols.length+'" class="pr-none">Nothing to show for this period.</td></tr>')+
+    '</tbody>'+
+    (foot? '<tfoot><tr>'+foot.map((cell,i)=>
+      '<th'+(cols[i]&&cols[i].right?' class="r"':'')+'>'+(cell||'')+'</th>').join('')+'</tr></tfoot>':'')+
+  '</table>';
+}
+function printSummary(items){
+  return '<section class="pr-summary">'+items.filter(Boolean).map(i=>
+    '<div'+(i[2]?' class="strong"':'')+'><span>'+esc(i[0])+'</span><b>'+i[1]+'</b></div>').join('')+'</section>';
+}
+function printSign(note){
+  return (note? '<p class="pr-note">'+esc(note)+'</p>' : '')+
+    '<section class="pr-sign">'+
+      '<div><div class="pr-line"></div><span>Receiver\'s signature</span></div>'+
+      '<div class="r"><div class="pr-line"></div><span>For '+esc(printMeta().business)+'</span></div>'+
+    '</section>'+
+    '<footer class="pr-foot">'+esc(printMeta().business)+' · generated '+fdate(today())+
+      ' · this is a computer generated statement</footer>';
+}
+/* build the document, print it, then put the screen back */
+function printDoc(html){
+  let root = document.getElementById('printRoot');
+  if(!root){ root = document.createElement('div'); root.id='printRoot'; document.body.appendChild(root); }
+  root.innerHTML = '<article class="pr-page">'+html+'</article>';
+  document.body.classList.add('printing');
+  const done = ()=>{ document.body.classList.remove('printing'); root.innerHTML=''; };
+  window.addEventListener('afterprint', done, {once:true});
+  setTimeout(()=>{ window.print(); setTimeout(done, 800); }, 60);
+}
+
+/* ---------- party statement ---------- */
+function printPartyStatement(pid){
+  const p = partyById(pid); if(!p) return;
+  const rows = ledgerRows(pid);
+  const bal = partyBalance(pid);
+  const billed = rows.reduce((s,r)=>s+r.debit,0);
+  const paid   = rows.reduce((s,r)=>s+r.credit,0);
+  printDoc(
+    printHead('Statement of account', p.name, [
+      ['Party', esc(p.name)],
+      p.city ? ['City', esc(p.city)] : null,
+      p.phone ? ['Phone', esc(p.phone)] : null,
+      ['Entries', String(rows.length)]
+    ])+
+    printTable(
+      [{label:'Date', w:'15%'},{label:'Particulars'},{label:'Debit', right:true, w:'15%'},
+       {label:'Credit', right:true, w:'15%'},{label:'Balance', right:true, w:'16%'}],
+      rows.map(r=>[ r.date?fdate(r.date):'—',
+        esc(r.label)+(r.ref?'<span class="pr-ref">'+esc(r.ref)+'</span>':''),
+        r.debit?money(r.debit):'', r.credit?money(r.credit):'', money(r.running) ]),
+      ['Totals','', money(billed), money(paid), money(bal)]
+    )+
+    printSummary([
+      ['Total billed', money(billed)],
+      ['Total received', money(paid)],
+      [bal>=0?'Balance receivable':'Advance held', money(Math.abs(bal)), true]
+    ])+
+    printSign('Debit increases what is owed. Credit reduces it. Please confirm the closing balance.')
+  );
+}
+
+/* ---------- supplier and shop statements ---------- */
+function printPayableStatement(kind, sid){
+  const isShop = kind==='shop';
+  const s = isShop ? shopById(sid) : supplierById(sid);
+  if(!s) return;
+  const rows = isShop ? shopLedgerRows(sid) : supplierLedgerRows(sid);
+  const bal  = isShop ? shopBalance(sid) : supplierBalance(sid);
+  const taken = rows.reduce((a,r)=>a+r.debit,0);
+  const paid  = rows.reduce((a,r)=>a+r.credit,0);
+  const cols = [{label:'Date', w:'14%'},{label:'Particulars'},{label:'Truck', w:'14%'},
+    {label:'Debit', right:true, w:'14%'},{label:'Credit', right:true, w:'14%'},{label:'Balance', right:true, w:'15%'}];
+  printDoc(
+    printHead('Statement of account', s.name, [
+      [isShop?'Shop':'Supplier', esc(s.name)],
+      s.person ? ['Contact', esc(s.person)] : null,
+      s.phone ? ['Phone', esc(s.phone)] : null,
+      ['Entries', String(rows.length)]
+    ])+
+    printTable(cols, rows.map(r=>[ r.date?fdate(r.date):'—',
+        esc(String(r.label).replace(/<[^>]+>/g,''))+(r.ref?'<span class="pr-ref">'+esc(r.ref)+'</span>':''),
+        esc(r.truck||'—'), r.debit?money(r.debit):'', r.credit?money(r.credit):'', money(r.running) ]),
+      ['Totals','','', money(taken), money(paid), money(bal)])+
+    printSummary([
+      [isShop?'Total taken on credit':'Total hire billed', money(taken)],
+      ['Total paid', money(paid)],
+      [bal>=0?'Balance payable':'Paid ahead', money(Math.abs(bal)), true]
+    ])+
+    printSign('Please confirm the closing balance against your records.')
+  );
+}
+
+/* ---------- driver account ---------- */
+function printDriverStatement(did){
+  const d = driverById(did); if(!d) return;
+  const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  let run = 0;
+  const rows = txns.map(t=>{
+    run += t.type==='due' ? num(t.amount) : -num(t.amount);
+    return [ fdate(t.date),
+      ({due:'Salary due', salary:'Salary paid', advance:'Advance paid'})[t.type] || 'Payment',
+      esc(t.note||''), t.type==='due'?money(t.amount):'', t.type!=='due'?money(t.amount):'', money(run) ];
+  });
+  const due = txns.filter(t=>t.type==='due').reduce((s,t)=>s+num(t.amount),0);
+  const out = txns.filter(t=>t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
+  printDoc(
+    printHead('Driver account', d.name, [
+      ['Driver', esc(d.name)],
+      d.licence ? ['Licence', esc(d.licence)] : null,
+      d.phone ? ['Phone', esc(d.phone)] : null,
+      d.salary ? ['Monthly salary', money(d.salary)] : null
+    ])+
+    printTable([{label:'Date', w:'14%'},{label:'Entry', w:'18%'},{label:'Note'},
+      {label:'Salary due', right:true, w:'14%'},{label:'Paid', right:true, w:'14%'},{label:'Balance', right:true, w:'14%'}],
+      rows, ['Totals','','', money(due), money(out), money(due-out)])+
+    printSummary([
+      ['Salary due to date', money(due)],
+      ['Total paid', money(out)],
+      [(due-out)>=0?'Balance payable':'Advance recoverable', money(Math.abs(due-out)), true]
+    ])+
+    printSign('Only money actually paid is counted as an expense in the accounts.')
+  );
+}
+
+/* ---------- profit and loss ---------- */
+function printReport(){
+  const p = pnl(sub.from, sub.to);
+  const period = rangeCaption();
+  const costRows = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>[esc(c), money(v)]);
+  if(p.hire) costRows.unshift(['Hire paid to market trucks', money(p.hire)]);
+  if(p.driverPaid) costRows.push(['Driver salary and advances paid', money(p.driverPaid)]);
+  printDoc(
+    printHead('Profit and loss statement', period, [
+      ['Period', period], ['Trips', String(p.tripCount)]
+    ])+
+    '<h2 class="pr-h2">Income</h2>'+
+    printTable([{label:'Particulars'},{label:'Amount', right:true, w:'24%'}],
+      [['Freight on trips', money(p.freightBase)]]
+        .concat(p.charges ? [['Charges added to parties', money(p.charges)]] : [])
+        .concat(p.deductions ? [['Deductions given to parties', '− '+money(p.deductions)]] : []),
+      ['Billed to parties', money(p.freight)])+
+    '<h2 class="pr-h2">Costs</h2>'+
+    printTable([{label:'Particulars'},{label:'Amount', right:true, w:'24%'}],
+      costRows, ['Total costs', money(p.costs)])+
+    printSummary([
+      ['Billed to parties', money(p.freight)],
+      ['Actually collected', money(p.collected)],
+      ['Total costs', money(p.costs)],
+      [(p.profit>=0?'Net profit':'Net loss'), money(Math.abs(p.profit)), true],
+      [(p.actual>=0?'Actual profit':'Actual loss'), money(Math.abs(p.actual)), true]
+    ])+
+    printSign('Net profit is based on the full amount billed. Actual profit counts only money received.')
+  );
+}
 /* ============================================================
    CSV EXPORT
    ============================================================ */
