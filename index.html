@@ -2918,7 +2918,7 @@ tbody tr:last-child td {
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 7.2 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 7.3 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3290,10 +3290,27 @@ function empty(title,text,btn){
 /* ============================================================
    DASHBOARD
    ============================================================ */
+/* The headline figures describe a month. Default to this one, but if
+   nothing has happened in it yet — a quiet start, or trips entered with
+   earlier dates — show the most recent month that does have activity,
+   and say which month that is. A dashboard of zeros tells you nothing. */
+function dashboardMonth(){
+  const now = thisMonth();
+  const has = k => DB.trips.some(t=>monthKey(t.date)===k) || DB.expenses.some(e=>monthKey(e.date)===k);
+  if(has(now)) return now;
+  const keys = [...new Set(DB.trips.map(t=>monthKey(t.date))
+    .concat(DB.expenses.map(e=>monthKey(e.date))).filter(Boolean))].sort();
+  return keys.length ? keys[keys.length-1] : now;
+}
+
 function viewDashboard(){
-  const m = thisMonth();
-  const series = monthlySeries(6);
-  const cur = series[series.length-1], prev = series[series.length-2] || {freight:0,cost:0,profit:0,trips:0};
+  const m = dashboardMonth();
+  const isNow = m === thisMonth();
+  const label = isNow ? 'this month' : monthName(m).toLowerCase();
+  const back = monthsBetween(m, thisMonth()).length;   // 1 when m is the current month
+  const series = seriesFor(monthsBetween(monthsBack(6)[0] < m ? monthsBack(6)[0] : m, m).slice(-6));
+  const cur = series[series.length-1] || {freight:0,cost:0,profit:0,trips:0};
+  const prev = series[series.length-2] || {freight:0,cost:0,profit:0,trips:0};
   const bmap = allBalances();
   const recv = Object.values(bmap).reduce((s,b)=>s+Math.max(0,b),0);
   const dues = DB.parties.map(x=>({name:x.name, id:x.id, bal:bmap[x.id]||0}))
@@ -3319,7 +3336,8 @@ function viewDashboard(){
   if(owed) attention.push({tone:'grey', label:money(owed)+' owed out to suppliers, shops and drivers',
     action:"go('suppliers')", cta:'Suppliers'});
 
-  $('#pageSub').textContent = monthName(m)+' · '+plural(p.tripCount,'trip')+' so far';
+  $('#pageSub').textContent = monthName(m)+' · '+plural(p.tripCount,'trip')+
+    (isNow ? ' so far' : ' · your most recent activity');
   $('#pageActions').innerHTML =
     '<button class="btn" onclick="go(\'insights\')"><span>Insights</span></button>'+
     '<button class="btn btn-amber" onclick="tripForm()">+ <span>New trip</span></button>';
@@ -3341,7 +3359,7 @@ function viewDashboard(){
       heroStat('Freight', cur.freight, pctChange(cur.freight, prev.freight))+
       heroStat('Costs', cur.cost, pctChange(cur.cost, prev.cost), true)+
       heroStat('Profit', cur.profit, null, false, cur.freight? Math.round(cur.profit/cur.freight*100)+'% margin':'')+
-      heroStat('Trips', cur.trips, null, false, 'this month', 'plain')+
+      heroStat('Trips', cur.trips, null, false, label, 'plain')+
     '</div>'+
   '</div>'+
 
@@ -3366,7 +3384,8 @@ function viewDashboard(){
       '<h3 class="chart-title">Where the money went</h3>'+
       '<div class="chart-sub">'+monthName(m)+'</div>'+
       (costItems.length? donutChart(costItems,'costs')
-        : '<div class="empty" style="padding:30px 10px"><div class="empty-text">No costs recorded this month yet.</div></div>')+
+        : '<div class="empty" style="padding:30px 10px"><div class="empty-text">No costs recorded in '+
+          esc(monthName(m))+'.</div></div>')+
     '</div>'+
   '</div>'+
 
@@ -5591,7 +5610,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>7.2</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>7.3</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
