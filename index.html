@@ -2918,7 +2918,7 @@ tbody tr:last-child td {
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 7.3 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 7.4 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -2951,7 +2951,7 @@ const KEY = 'mvl_db_v1';
 const BLANK = {
   settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:''},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
-  shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{},
+  shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{}, categories:[],
   seeded:false
 };
 let DB = load();
@@ -4662,8 +4662,45 @@ function delTruck(id){
 /* ============================================================
    EXPENSES
    ============================================================ */
-const CATEGORIES = ['Fuel / Diesel','Toll & Parking','Truck maintenance','Repairs','Tyres','EMI payment',
+const BASE_CATEGORIES = ['Fuel / Diesel','Toll & Parking','Truck maintenance','Repairs','Tyres','EMI payment',
   'Insurance & permits','Office expense','Loading / unloading','Commission','Fine / challan','Miscellaneous'];
+
+/* Built-in types plus any you have added. One list, no duplicates,
+   and anything already used on an expense is kept even if it was
+   added before this feature existed. */
+function allCategories(){
+  const seen = new Set(), out = [];
+  const add = v => {
+    const k = String(v||'').trim().toLowerCase();
+    if(!k || seen.has(k)) return;
+    seen.add(k); out.push(String(v).trim());
+  };
+  BASE_CATEGORIES.forEach(add);
+  (DB.categories||[]).forEach(add);
+  (DB.expenses||[]).forEach(e=>add(e.category));
+  return out;
+}
+
+function categoryForm(id, onSaved){
+  const nest = typeof onSaved === 'function';
+  (nest ? stackForm : openModal)({
+    title:'New expense type', okText:'Save type',
+    body:'<div class="form-grid">'+
+      fText('cat_name','Expense type', '', 'text', 'placeholder="e.g. Weighbridge, Driver bata, GPS rent"')+
+      '<div class="field"><label>&nbsp;</label><span class="hint">It joins the list for every expense from now on.</span></div>'+
+    '</div>',
+    onOk(){
+      const name = val('cat_name');
+      if(!name){ toast('Enter a name for the expense type'); return; }
+      const clash = allCategories().find(c=>c.toLowerCase()===name.toLowerCase());
+      if(clash){ toast('"'+clash+'" is already in the list.'); return; }
+      DB.categories = (DB.categories||[]).concat([name]);
+      save();
+      if(nest){ closeModal(); onSaved(name); toast('Expense type added'); return; }
+      closeModal(); render(); toast('Expense type added');
+    }
+  });
+}
 
 function viewExpenses(){
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="expenseForm()">+ <span>New expense</span></button>';
@@ -4673,7 +4710,7 @@ function viewExpenses(){
     '<select onchange="sub.month=this.value;sub.limit=0;renderExpenseList()"><option value="">All months</option>'+
       months.map(m=>'<option value="'+m+'"'+(m===(sub.month||'')?' selected':'')+'>'+monthName(m)+'</option>').join('')+'</select>'+
     '<select onchange="sub.cat=this.value;sub.limit=0;renderExpenseList()"><option value="">All categories</option>'+
-      CATEGORIES.map(c=>'<option value="'+esc(c)+'"'+(c===(sub.cat||'')?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>'+
+      allCategories().map(c=>'<option value="'+esc(c)+'"'+(c===(sub.cat||'')?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>'+
     '<select onchange="sub.truck=this.value;sub.limit=0;renderExpenseList()"><option value="">All trucks</option>'+
       DB.trucks.map(t=>'<option value="'+t.id+'"'+(t.id===(sub.truck||'')?' selected':'')+'>'+esc(t.number)+'</option>').join('')+'</select>'+
     '<button class="btn btn-sm" onclick="exportCSV(\'expenses\')">Export CSV</button>'+
@@ -4734,7 +4771,7 @@ function expenseForm(id, preselectShop){
     body:'<div class="form-grid">'+
       fText('e_date','Date', e?e.date:today(),'date')+
       fText('e_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
-      fSelect('e_cat','Category', CATEGORIES.map(c=>({v:c,t:c})), e?e.category:'Fuel / Diesel')+
+      qSelect('e_cat','Category', 'category', e?e.category:'Fuel / Diesel')+
       qSelect('e_truck','Truck (optional)', 'truck', e?e.truckId:'')+
       fText('e_paidTo','Paid to', e?e.paidTo:'','text','placeholder="Pump, mechanic, bank…"')+
       fSelect('e_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Card',t:'Card'},{v:'Credit',t:'On credit'}],
@@ -4749,6 +4786,7 @@ function expenseForm(id, preselectShop){
     onOk(){
       const amt = num(val('e_amount'));
       if(amt<=0){ toast('Enter an amount greater than zero'); return; }
+      if(!val('e_cat')){ toast('Choose a category for this expense'); return; }
       const mode = val('e_mode');
       const shopId = mode==='Credit' ? val('e_shop') : '';
       if(mode==='Credit' && (!shopId || shopId==='__new')){
@@ -5610,7 +5648,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>7.3</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>7.4</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -5808,6 +5846,11 @@ const QUICK = {
     add:'+ Add New Shop', blank:'— select the shop —',
     opts:()=>(DB.shops||[]).map(s=>({v:s.id, t:s.name + (shopBalance(s.id)>0? ' · '+money(shopBalance(s.id))+' owed':'')})),
     open:cb=>shopForm(null, cb)
+  },
+  category: {
+    add:'+ Add New Expense Type', blank:'— select category —',
+    opts:()=>allCategories().map(c=>({v:c, t:c})),
+    open:cb=>categoryForm(null, cb)
   },
   supplier: {
     add:'+ Add New Supplier', blank:'— not linked —',
