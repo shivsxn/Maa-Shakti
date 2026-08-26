@@ -2906,12 +2906,12 @@ tbody tr:last-child td {
 /* ---------- printed documents ---------- */
 #printRoot{display:none}
 @media print{
-  @page{size:A4;margin:14mm 12mm}
+  @page{size:A4;margin:0}
   html,body{background:#fff!important}
   body>*{display:none!important}
   body.printing #printRoot{display:block!important}
   #printRoot{font-family:var(--sans);color:#111;font-size:11pt;line-height:1.45}
-  .pr-page{max-width:100%}
+  .pr-page{max-width:100%;padding:14mm 12mm;box-sizing:border-box}
   .pr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;
     padding-bottom:10px;border-bottom:2px solid #111}
   .pr-biz{font-size:17pt;font-weight:700;letter-spacing:-.02em}
@@ -2963,7 +2963,7 @@ tbody tr:last-child td {
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 7.5 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 7.6 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5694,7 +5694,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>7.5</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>7.6</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
