@@ -2027,7 +2027,7 @@ tbody tr {
 
 .docrow {
   display: grid;
-  grid-template-columns: 1.2fr .9fr 1fr auto;
+  grid-template-columns: 1.1fr .85fr .95fr .8fr auto;
   gap: 9px;
   align-items: end;
   margin-bottom: 9px;
@@ -3209,6 +3209,88 @@ th{z-index:10}
 .card{overflow:hidden}
 .card > .tbl-wrap{border-radius:0}
 
+/* ---------- date picker ----------
+   Ours, not the browser's: a year you can type into and a year
+   list that glides instead of jumping.                          */
+input.dp-input{cursor:pointer}
+input.dp-input::-webkit-calendar-picker-indicator{display:none}
+input.dp-input::-webkit-inner-spin-button,
+input.dp-input::-webkit-clear-button{display:none}
+.dp{position:fixed;z-index:400;width:288px;background:var(--card);color:var(--ink);
+  border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(17,22,33,.22);
+  padding:10px;font-size:13.5px}
+.dp[hidden]{display:none}
+.dp-head{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.dp-nav,.dp-chev{flex:0 0 auto;width:28px;height:28px;border:1px solid var(--line);background:var(--bg);
+  color:var(--ink);border-radius:8px;cursor:pointer;font-size:15px;line-height:1;padding:0}
+.dp-nav:hover,.dp-chev:hover{background:var(--bg-2);border-color:var(--line-strong)}
+.dp-chev.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent-2)}
+.dp-month{flex:1 1 auto;min-width:0;height:28px;padding:0 4px;border:1px solid var(--line);
+  border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.dp-year{flex:0 0 58px;width:58px;height:28px;text-align:center;border:1px solid var(--line);
+  border-radius:8px;background:var(--card);color:var(--ink);font:inherit;
+  font-family:var(--mono);letter-spacing:.02em}
+.dp-year:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.dp-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px}
+.dp-dows span{text-align:center;font-size:11px;color:var(--muted);font-weight:600}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-day{height:32px;border:1px solid transparent;background:none;color:var(--ink);
+  border-radius:8px;cursor:pointer;font:inherit;font-variant-numeric:tabular-nums;padding:0}
+.dp-day:hover:not(:disabled){background:var(--bg-2)}
+.dp-day:disabled{color:var(--muted-2);cursor:default;opacity:.45}
+.dp-day.now{border-color:var(--line-strong);font-weight:700}
+.dp-day.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.dp-blank{height:32px}
+.dp-years{max-height:216px;overflow-y:auto;scroll-behavior:smooth;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;
+  padding:2px;scrollbar-width:thin}
+.dp-years::-webkit-scrollbar{width:8px}
+.dp-years::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:8px}
+.dp-year-btn{height:30px;border:1px solid transparent;background:none;color:var(--ink);
+  border-radius:8px;cursor:pointer;font:inherit;font-family:var(--mono);font-size:12.5px;padding:0}
+.dp-year-btn:hover{background:var(--bg-2)}
+.dp-year-btn.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.dp-foot{display:flex;gap:6px;align-items:center;margin-top:9px;padding-top:8px;
+  border-top:1px solid var(--line-soft)}
+.dp-foot button{border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:8px;cursor:pointer;font:inherit;font-size:12.5px;padding:5px 10px}
+.dp-foot button:hover{background:var(--bg-2)}
+.dp-foot .dp-close{margin-left:auto}
+.dp-hint{font-size:11.5px;color:var(--muted);margin-top:7px;text-align:center}
+.dp-year{padding:0}
+.dp-month{padding:0 4px}
+
+/* ---------- remove buttons on editable rows ---------- */
+.rmdoc{padding:9px 11px;border:1px solid var(--red-line);background:var(--card);color:var(--red);
+  border-radius:8px;cursor:pointer;font-weight:600;font-size:12.5px}
+
+/* ---------- type a truck number and it picks itself ---------- */
+.truck-pick .truck-find{text-transform:uppercase;font-family:var(--mono);letter-spacing:.02em}
+.truck-find-note{min-height:14px}
+.truck-find-note.ok{color:var(--green);font-weight:600}
+.truck-find-note.miss{color:var(--amber)}
+
+/* ---------- money at the head of a trip ---------- */
+.trip-totals{display:flex;flex-wrap:wrap;gap:7px 20px;align-items:center;margin:0 0 13px;
+  padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2);
+  font-size:12.5px;color:var(--muted)}
+.trip-totals b{color:var(--ink);font-size:14.5px;margin-left:6px;font-family:var(--mono);
+  font-variant-numeric:tabular-nums}
+
+/* ---------- expenses booked straight onto a trip ---------- */
+.exp-row{display:grid;grid-template-columns:.85fr 1fr 1.1fr .7fr auto;gap:9px;
+  align-items:center;margin-bottom:9px}
+.exp-row input{padding:8px 10px;font-size:13.5px}
+.exp-row input[type=number]{font-family:var(--mono)}
+.exp-head{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:2px}
+@media (max-width:760px){ .exp-head{display:none} }
+@media (max-width:760px){
+  .exp-row{grid-template-columns:1fr 1fr;gap:8px}
+  .exp-row input:nth-of-type(3){grid-column:1/-1}
+  .exp-row .rmdoc{grid-column:2;justify-self:end}
+}
+
 </style>
 </head>
 <body>
@@ -3312,12 +3394,247 @@ function clampDates(){
   document.querySelectorAll('input[type="date"]').forEach(el=>{
     if(!el.getAttribute('min')) el.setAttribute('min', DATE_MIN);
     if(!el.getAttribute('max')) el.setAttribute('max', DATE_MAX);
+    manageDate(el);
   });
 }
 function sensibleDate(v){
   if(!v) return true;
   return v >= DATE_MIN && v <= DATE_MAX;
 }
+
+/* ============================================================
+   DATE PICKER
+   The browser's own calendar fights you over a year: half-typed,
+   "202" counts as the year 202, and its year list jumps a decade
+   at a time. This one owns both ends of that — the year box takes
+   four digits and only acts once it has them, and the year list
+   glides to wherever you are.
+   ============================================================ */
+const DP_MONTHS = ['January','February','March','April','May','June',
+                   'July','August','September','October','November','December'];
+let dpEl = null, dpBox = null, dpView = null;
+
+function dpRoot(){
+  if(!dpBox){
+    dpBox = document.createElement('div');
+    dpBox.className = 'dp';
+    dpBox.hidden = true;
+    dpBox.addEventListener('mousedown', e=>{
+      if(e.target.tagName!=='INPUT' && e.target.tagName!=='SELECT') e.preventDefault();
+    });
+    document.body.appendChild(dpBox);
+  }
+  return dpBox;
+}
+function dpOpen(){ return dpBox && !dpBox.hidden; }
+function dpHasFocus(){ return !!(dpBox && dpBox.contains(document.activeElement)); }
+function dpLimits(){
+  const min = (dpEl && dpEl.getAttribute('min')) || DATE_MIN;
+  const max = (dpEl && dpEl.getAttribute('max')) || DATE_MAX;
+  return {min, max, minY:parseInt(min.slice(0,4),10), maxY:parseInt(max.slice(0,4),10)};
+}
+function dpIso(y, m, d){
+  return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+function openDatePicker(el){
+  if(!el) return;
+  dpEl = el;
+  const v = /^\d{4}-\d{2}-\d{2}$/.test(el.value) ? el.value : today();
+  dpView = {y:parseInt(v.slice(0,4),10), m:parseInt(v.slice(5,7),10)-1, mode:'days'};
+  paintDatePicker();
+}
+function closeDatePicker(){
+  if(dpBox) dpBox.hidden = true;
+  dpEl = null;
+}
+function paintDatePicker(){
+  const box = dpRoot();
+  if(!dpEl){ box.hidden = true; return; }
+  const L = dpLimits();
+  box.innerHTML =
+    '<div class="dp-head">'+
+      '<button type="button" class="dp-nav" onclick="dpMove(-1)" title="Previous month">\u2039</button>'+
+      '<select class="dp-month" onchange="dpSetMonth(this.value)">'+
+        DP_MONTHS.map((n,i)=>'<option value="'+i+'"'+(i===dpView.m?' selected':'')+'>'+n+'</option>').join('')+
+      '</select>'+
+      '<input class="dp-year" id="dpYear" type="text" inputmode="numeric" maxlength="4" '+
+        'autocomplete="off" value="'+dpView.y+'" title="Type a year" '+
+        'oninput="dpYearTyped(this)" onkeydown="dpYearKey(event)" onblur="dpYearBlur(this)">'+
+      '<button type="button" class="dp-chev'+(dpView.mode==='years'?' on':'')+'" '+
+        'onclick="dpToggleYears()" title="Pick a year from the list">\u25BE</button>'+
+      '<button type="button" class="dp-nav" onclick="dpMove(1)" title="Next month">\u203A</button>'+
+    '</div>'+
+    '<div id="dpBody"></div>'+
+    '<div class="dp-foot">'+
+      '<button type="button" onclick="dpPick(\''+today()+'\')">Today</button>'+
+      '<button type="button" onclick="dpClear()">Clear</button>'+
+      '<button type="button" class="dp-close" onclick="closeDatePicker()">Close</button>'+
+    '</div>'+
+    (dpView.mode==='years'
+      ? '<div class="dp-hint">Scroll the list, or type the year in the box above.</div>'
+      : '<div class="dp-hint">'+fdate(L.min)+' to '+fdate(L.max)+'</div>');
+  box.hidden = false;
+  dpPaintBody();
+  placeDatePicker();
+}
+function dpPaintBody(){
+  const body = document.getElementById('dpBody');
+  if(!body || !dpEl) return;
+  if(dpView.mode==='years'){ body.innerHTML = dpYearsHtml(); dpCentreYear(false); return; }
+  body.innerHTML = dpDaysHtml();
+}
+function dpDaysHtml(){
+  const L = dpLimits(), y = dpView.y, m = dpView.m, now = today();
+  const lead = (new Date(y, m, 1).getDay()+6)%7;     /* weeks start on Monday */
+  const days = new Date(y, m+1, 0).getDate();
+  const cells = [];
+  for(let i=0;i<lead;i++) cells.push('<span class="dp-blank"></span>');
+  for(let d=1; d<=days; d++){
+    const iso = dpIso(y, m, d);
+    const off = iso < L.min || iso > L.max;
+    cells.push('<button type="button" class="dp-day'+(iso===dpEl.value?' on':'')+(iso===now?' now':'')+'"'+
+      (off?' disabled':'')+' onclick="dpPick(\''+iso+'\')">'+d+'</button>');
+  }
+  return '<div class="dp-dows">'+['Mo','Tu','We','Th','Fr','Sa','Su']
+      .map(x=>'<span>'+x+'</span>').join('')+'</div>'+
+    '<div class="dp-grid">'+cells.join('')+'</div>';
+}
+/* A window of years around the one in hand, rather than all thousand
+   the field will accept: the list stays quick, and it follows whatever
+   year is typed into the box, so nothing is out of reach. */
+const DP_YEAR_SPAN = 60;
+function dpYearsHtml(){
+  const L = dpLimits(), out = [];
+  const from = Math.max(L.minY, dpView.y - DP_YEAR_SPAN);
+  const to   = Math.min(L.maxY, dpView.y + DP_YEAR_SPAN);
+  for(let y=from; y<=to; y++){
+    out.push('<button type="button" class="dp-year-btn'+(y===dpView.y?' on':'')+'" '+
+      'onclick="dpPickYear('+y+')">'+y+'</button>');
+  }
+  return '<div class="dp-years" id="dpYears">'+out.join('')+'</div>';
+}
+/* the list glides to the year in hand instead of snapping to it */
+function dpCentreYear(smooth){
+  const list = document.getElementById('dpYears');
+  if(!list) return;
+  const on = list.querySelector('.dp-year-btn.on');
+  if(!on) return;
+  const top = on.offsetTop - list.clientHeight/2 + on.offsetHeight/2;
+  if(smooth){ list.scrollTo({top, behavior:'smooth'}); return; }
+  list.style.scrollBehavior = 'auto';
+  list.scrollTop = top;
+  requestAnimationFrame(()=>{ list.style.scrollBehavior = ''; });
+}
+function dpToggleYears(){
+  dpView.mode = dpView.mode==='years' ? 'days' : 'years';
+  paintDatePicker();
+}
+function dpPickYear(y){
+  dpSetYear(y);
+  dpView.mode = 'days';
+  paintDatePicker();
+}
+function dpSetYear(y){
+  const L = dpLimits();
+  dpView.y = Math.min(L.maxY, Math.max(L.minY, y));
+  const box = document.getElementById('dpYear');
+  if(box && box.value !== String(dpView.y)) box.value = dpView.y;
+  dpPaintBody();
+}
+function dpSetMonth(v){ dpView.m = parseInt(v,10)||0; dpPaintBody(); }
+function dpMove(step){
+  let m = dpView.m + step, y = dpView.y;
+  if(m < 0){ m = 11; y--; }
+  if(m > 11){ m = 0; y++; }
+  const L = dpLimits();
+  if(y < L.minY || y > L.maxY) return;
+  dpView.y = y; dpView.m = m;
+  paintDatePicker();
+}
+/* Four digits or nothing: a half-typed "20" must not become year 20 */
+function dpYearTyped(inp){
+  const clean = inp.value.replace(/[^0-9]/g,'').slice(0,4);
+  if(clean !== inp.value) inp.value = clean;
+  if(clean.length < 4) return;
+  const L = dpLimits();
+  const y = Math.min(L.maxY, Math.max(L.minY, parseInt(clean,10)));
+  if(y === dpView.y) return;
+  dpView.y = y;
+  dpPaintBody();
+  if(dpView.mode==='years') dpCentreYear(true);
+}
+function dpYearKey(e){
+  if(e.key==='Enter'){ e.preventDefault(); dpYearTyped(e.target); dpView.mode='days'; paintDatePicker(); return; }
+  if(e.key==='ArrowUp'){ e.preventDefault(); dpSetYear(dpView.y+1); if(dpView.mode==='years') dpCentreYear(true); return; }
+  if(e.key==='ArrowDown'){ e.preventDefault(); dpSetYear(dpView.y-1); if(dpView.mode==='years') dpCentreYear(true); return; }
+  if(e.key==='Escape'){ e.preventDefault(); closeDatePicker(); }
+}
+/* an unfinished year snaps back to the one on show, never to zero */
+function dpYearBlur(inp){ if(dpView) inp.value = dpView.y; }
+function dpPick(iso){
+  const el = dpEl;
+  if(!el) return;
+  const L = dpLimits();
+  if(iso < L.min || iso > L.max){ toast('That date is outside what this field accepts'); return; }
+  closeDatePicker();
+  el.value = iso;
+  el.dispatchEvent(new Event('input', {bubbles:true}));
+  el.dispatchEvent(new Event('change', {bubbles:true}));
+}
+function dpClear(){
+  const el = dpEl;
+  if(!el) return;
+  closeDatePicker();
+  el.value = '';
+  el.dispatchEvent(new Event('input', {bubbles:true}));
+  el.dispatchEvent(new Event('change', {bubbles:true}));
+}
+function placeDatePicker(){
+  if(!dpEl || !dpOpen()) return;
+  const r = dpEl.getBoundingClientRect();
+  const w = dpBox.offsetWidth || 288, h = dpBox.offsetHeight || 330;
+  const left = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+  let top = r.bottom + 6;
+  if(top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6);
+  dpBox.style.left = Math.round(left)+'px';
+  dpBox.style.top  = Math.round(top)+'px';
+}
+/* every date field on the page hands its calendar over to ours */
+const dpManaged = new WeakSet();
+function manageDate(el){
+  if(dpManaged.has(el)) return;
+  dpManaged.add(el);
+  el.classList.add('dp-input');
+  el.readOnly = true;
+  el.setAttribute('autocomplete','off');
+  el.addEventListener('mousedown', e=>{
+    e.preventDefault();
+    if(dpEl === el && dpOpen()) return closeDatePicker();
+    el.focus();
+    openDatePicker(el);
+  });
+  /* opened by hand only: a form that focuses its first field must not
+     have the calendar spring open before anything has been typed */
+  el.addEventListener('keydown', e=>{
+    if(e.key==='Enter' || e.key===' ' || e.key==='ArrowDown'){ e.preventDefault(); openDatePicker(el); }
+    else if(e.key==='Escape') closeDatePicker();
+  });
+  /* tabbing away shuts it; a click into the year box does not, so the
+     check waits a tick for the focus to land where it is going */
+  el.addEventListener('blur', ()=>{
+    setTimeout(()=>{ if(dpEl === el && !dpHasFocus()) closeDatePicker(); }, 0);
+  });
+}
+document.addEventListener('mousedown', e=>{
+  if(!dpOpen()) return;
+  if(dpBox.contains(e.target) || e.target === dpEl) return;
+  closeDatePicker();
+}, true);
+window.addEventListener('resize', placeDatePicker);
+window.addEventListener('scroll', e=>{
+  if(dpBox && dpBox.contains(e.target)) return;    /* scrolling the year list */
+  placeDatePicker();
+}, true);
 
 function toast(msg){
   const t = document.createElement('div');
@@ -3498,6 +3815,7 @@ function moreMenu(){
 }
 
 function render(){
+  closeDatePicker();
   const p = PAGES.find(x=>x.id===route) || PAGES[0];
   $('#pageTitle').textContent = p.label;
   $('#pageSub').textContent = p.sub;
@@ -3557,11 +3875,13 @@ function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk,
   if(f && window.innerWidth>760) f.focus();
 }
 function closeModal(){
+  closeDatePicker();
   if(modalStack.length){          // step back to the form underneath
     const s = modalStack.pop();
     $('#modalRoot').innerHTML = s.html;
     restoreModal(s.vals);
     modalOnOk = s.onOk;
+    clampDates();                 // the restored fields are new elements
     if(s.after) s.after();
     return;
   }
@@ -3960,7 +4280,7 @@ function renderTripList(){
           '<td data-label="To" class="t-strong"'+go+'>'+esc(t.to||'\u2014')+
             (t.material?'<div class="t-sub">'+esc(t.material)+'</div>':'')+'</td>'+
           '<td data-label="Party"'+go+'>'+esc(partyName(t.partyId))+'</td>'+
-          '<td data-label="Truck"'+go+'>'+esc(truckName(t.truckId))+
+          '<td data-label="Truck" style="white-space:nowrap"'+go+'><span class="num t-strong">'+esc(truckName(t.truckId))+'</span>'+
             (t.hire?'<div class="t-sub">Hire '+money(t.hire)+'</div>':'')+'</td>'+
           '<td data-label="Freight" class="t-r num t-strong">'+money(t.freight)+'</td>'+
           '<td data-label="Advance" class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+
@@ -3984,7 +4304,13 @@ let fuelDirty = false;
 function fuelEdited(){ fuelDirty = true; recalcAdvance(); }
 function recalcAdvance(){
   const amtEl = document.getElementById('f_fuelAmt');
-  if(!amtEl) return;
+  if(!amtEl){
+    /* the details tab has freight but no advance boxes — still worth a total */
+    const fr = document.getElementById('f_freight');
+    if(fr && tripDraft) tripDraft.freight = num(fr.value);
+    paintTripTotals();
+    return;
+  }
   const q = num(val('f_fuelQty')), r = num(val('f_fuelRate'));
   if(!fuelDirty && q>0 && r>0) amtEl.value = Math.round(q*r*100)/100;
   const hint = document.getElementById('fuelHint');
@@ -4044,6 +4370,12 @@ function recalcAdvance(){
   const prev = document.getElementById('f_statusPreview');
   if(prev) prev.innerHTML = statusChip(tripStatus({id:(tripDraft&&tripDraft.id)||'',
     advCash:total, fuelAmt:0, freight:freight, lines:lines}));
+  if(tripDraft){
+    tripDraft.advCash = num(val('f_advCash'));
+    tripDraft.fuelAmt = num(amtEl.value);
+    tripDraft.freight = freight;
+  }
+  paintTripTotals();
   const warn = document.getElementById('brokWarn');
   if(warn){
     const over = billed > 0 && total > billed;
@@ -4062,6 +4394,7 @@ function recalcAdvance(){
    ============================================================ */
 let tripTab = 'details';
 let tripDraft = null;
+let tripNav = [];   // the ids the previous/next arrows step through
 
 /* Shown when the trip runs on a market truck: who supplied it,
    what you owe them and what you have already paid at loading. */
@@ -4093,6 +4426,90 @@ function syncHire(){
   if(b && tripDraft) tripDraft.hire = num(b.value);
   if(a && b) a.value = b.value;
   recalcAdvance();
+}
+
+/* ------------------------------------------------------------
+   TRIP EXPENSES
+   Diesel bought on the road, a toll, loading labour. They are kept
+   nowhere new: each line is an ordinary record in Expenses carrying
+   the trip it belongs to, so the Expenses tab, the truck's net and
+   the P&L all see it without anything being copied.
+   ------------------------------------------------------------ */
+let tripExpDraft = [];
+function loadTripExpenses(tripId){
+  tripExpDraft = tripId
+    ? (DB.expenses||[]).filter(e=>e.tripId===tripId)
+        .sort((a,b)=>(a.date||'').localeCompare(b.date||''))
+        .map(e=>({id:e.id, date:e.date, category:e.category, note:e.note||'', amount:num(e.amount)}))
+    : [];
+}
+function tripExpenseTotal(){ return tripExpDraft.reduce((s,x)=>s+num(x.amount),0); }
+function tripExpensesOf(tripId){
+  return (DB.expenses||[]).filter(e=>e.tripId===tripId).reduce((s,e)=>s+num(e.amount),0);
+}
+function paintTripExpenses(){
+  const box = document.getElementById('tripExpRows');
+  if(!box) return;
+  buildExpCatList();
+  box.innerHTML = tripExpDraft.length ? '<div class="exp-row exp-head">'+
+      '<span>Date</span><span>What for</span><span>Details</span><span>Amount (₹)</span><span></span>'+
+    '</div>' + tripExpDraft.map((x,i)=>
+    '<div class="exp-row">'+
+      '<input id="tx_d'+i+'" type="date" value="'+esc(x.date||'')+'" onchange="readTripExpenses()">'+
+      '<input id="tx_c'+i+'" list="expCatList" value="'+esc(x.category||'')+'" '+
+        'placeholder="Diesel, toll, labour…" oninput="readTripExpenses()">'+
+      '<input id="tx_n'+i+'" value="'+esc(x.note||'')+'" placeholder="Details (optional)" oninput="readTripExpenses()">'+
+      '<input id="tx_a'+i+'" type="number" min="0" step="1" value="'+(num(x.amount)||'')+'" '+
+        'placeholder="0" oninput="readTripExpenses();recalcTripExpenses()">'+
+      '<button type="button" class="rmdoc" onclick="removeTripExpense('+i+')">Remove</button>'+
+    '</div>').join('')
+    : '<div class="hint" style="margin-bottom:9px">Nothing booked to this trip yet.</div>';
+  clampDates();
+  recalcTripExpenses();
+}
+function readTripExpenses(){
+  tripExpDraft = tripExpDraft.map((x,i)=>{
+    const d=document.getElementById('tx_d'+i), c=document.getElementById('tx_c'+i),
+          n=document.getElementById('tx_n'+i), a=document.getElementById('tx_a'+i);
+    return {id:x.id||uid(), date:d?d.value:x.date, category:c?c.value.trim():x.category,
+      note:n?n.value.trim():x.note, amount:a?num(a.value):num(x.amount)};
+  });
+  return tripExpDraft;
+}
+function addTripExpense(){
+  readTripExpenses();
+  tripExpDraft.push({id:uid(), date:(tripDraft&&tripDraft.date)||today(), category:'', note:'', amount:0});
+  paintTripExpenses();
+  const last = document.getElementById('tx_c'+(tripExpDraft.length-1));
+  if(last) last.focus();
+}
+function removeTripExpense(i){
+  readTripExpenses();
+  tripExpDraft.splice(i,1);
+  paintTripExpenses();
+}
+function recalcTripExpenses(){
+  const out = document.getElementById('f_expTotal');
+  if(out) out.textContent = money(tripExpenseTotal());
+  const adv = document.getElementById('f_expAdvEcho');
+  if(adv && tripDraft) adv.textContent = money(tripAdvance(tripDraft));
+  paintTripTotals();
+}
+/* the draft becomes real Expenses records the moment the trip is saved */
+function syncTripExpenses(tripId, truckId){
+  DB.expenses = DB.expenses || [];
+  const keep = tripExpDraft.filter(x=>num(x.amount) > 0);
+  const ids  = new Set(keep.map(x=>x.id));
+  DB.expenses = DB.expenses.filter(e=>e.tripId!==tripId || ids.has(e.id));
+  keep.forEach(x=>{
+    const cur = DB.expenses.find(e=>e.id===x.id);
+    const row = {id:x.id, date:x.date||today(), amount:num(x.amount),
+      category:(x.category||'').trim() || 'Trip expense', truckId:truckId||'', tripId:tripId,
+      paidTo:(cur&&cur.paidTo)||'', mode:(cur&&cur.mode)||'Cash', shopId:(cur&&cur.shopId)||'',
+      note:x.note||''};
+    if(cur) Object.assign(cur, row); else DB.expenses.push(row);
+  });
+  buildExpCatList();
 }
 
 let lineDraft = [];
@@ -4161,6 +4578,7 @@ function readTripForm(){
     f_fuelQty:'fuelQty', f_fuelRate:'fuelRate'};
   Object.entries(map).forEach(([el,key])=>{ if(g(el)) tripDraft[key] = g(el).value.trim(); });
   if(document.getElementById('lineRows')) readTripLines();
+  if(document.getElementById('tripExpRows')) readTripExpenses();
   ['freight','hire','advCash','fuelAmt','hireAdvance'].forEach(key=>{
     const el = g('f_'+key); if(el) tripDraft[key] = num(el.value);
   });
@@ -4190,7 +4608,10 @@ function repaintTripPane(){
     && Math.abs(num(tripDraft.fuelQty)*num(tripDraft.fuelRate) - num(tripDraft.fuelAmt)) < 0.5));
   lineDraft = JSON.parse(JSON.stringify((tripDraft && tripDraft.lines) || []));
   if(document.getElementById('lineRows')) paintTripLines();
+  if(document.getElementById('tripExpRows')) paintTripExpenses();
   if(document.getElementById('f_advTotal')) recalcAdvance();
+  clampDates();
+  paintTripTotals();
   return true;
 }
 
@@ -4203,7 +4624,7 @@ function tripDetailsPane(t){
       qSelect('f_party','Party (who pays freight)', 'party', t.partyId)+
       fPlace('f_from','From', t.from, 'Type a district or town')+
       fPlace('f_to','To', t.to, 'Type a district or town')+
-      qSelect('f_truck','Truck', 'truck', t.truckId)+
+      qTruck('f_truck','Truck', t.truckId)+
       qSelect('f_driver','Driver', 'driver', t.driverId)+
       fText('f_material','Material', t.material,'text','placeholder="Cement, steel, grain…"')+
       fText('f_weight','Weight (tonnes)', t.weight,'number','step="0.01" min="0"')+
@@ -4218,7 +4639,7 @@ function tripMoneyPane(t, existing){
   return  '<div class="adv-block">'+
       '<div class="adv-head">Advance</div>'+
       '<div class="form-grid three">'+
-        fText('f_advCash','Advance in cash (₹)', t.advCash||'','number','min="0" step="1" oninput="recalcAdvance()"')+
+        fText('f_advCash','Advance amount (₹)', t.advCash||'','number','min="0" step="1" oninput="recalcAdvance()"')+
         fText('f_fuelQty','Fuel quantity (litres)', t.fuelQty,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
         fText('f_fuelRate','Fuel rate (₹ per litre)', t.fuelRate,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
         fText('f_fuelAmt','Fuel amount (₹)', t.fuelAmt||'','number','min="0" step="1" oninput="fuelEdited()"')+
@@ -4257,6 +4678,25 @@ function tripMoneyPane(t, existing){
       'onclick="closeModal();partyLedger(\'' + t.partyId + '\')">Open '+esc(partyName(t.partyId))+'\u2019s ledger</button></div>' : '');
 }
 
+function tripExpensePane(t, existing){
+  return '<div class="adv-block">'+
+      '<div class="adv-head">Expenses on this trip</div>'+
+      '<div id="tripExpRows"></div>'+
+      '<div class="line-add">'+
+        '<button type="button" class="btn btn-sm" onclick="addTripExpense()">+ Add expense</button>'+
+      '</div>'+
+      '<span class="hint">Diesel bought on the road, tolls, loading labour, a roadside repair. '+
+        'Each line is saved into the main <b>Expenses</b> tab against this trip and this truck, '+
+        'so it is counted once and your profit stays right.</span>'+
+      '<div class="adv-total"><span>Total advance money</span>'+
+        '<span class="num adv-total-value" id="f_expAdvEcho">'+money(tripAdvance(t))+'</span></div>'+
+      '<div class="adv-total adv-balance"><span>Total expense money</span>'+
+        '<span class="num adv-total-value" id="f_expTotal">₹0</span></div>'+
+    '</div>'+
+    (existing ? '<div style="margin-top:14px"><button class="btn" onclick="closeModal();go(\'expenses\')">'+
+      'Open the Expenses tab</button></div>' : '');
+}
+
 function tripDeliveryPane(existing){
   return existing
     ? podTracker(existing)+ podUploader(existing)+
@@ -4268,18 +4708,38 @@ function tripDeliveryPane(existing){
 /* always built from the live draft, so a repaint shows what you just typed */
 function tripPaneHtml(t, existing, k){
   return k==='delivery' ? tripDeliveryPane(existing)
+       : k==='expenses' ? tripExpensePane(t, existing)
        : k==='money'    ? tripMoneyPane(t, existing)
        : tripDetailsPane(t);
 }
 
+/* the two figures the trip is judged on, kept at the top of the screen */
+function tripTotalsHtml(t){
+  const adv = tripAdvance(t), exp = tripExpenseTotal(), billed = tripFreightNet(t);
+  const bal = billed - tripSettledTotal(t);
+  return '<span>Advance money <b class="num">'+money(adv)+'</b></span>'+
+    '<span>Expense money <b class="num">'+money(exp)+'</b></span>'+
+    (billed ? '<span>'+(bal>0?'Balance pending':'Settled')+
+      ' <b class="'+(bal>0?'money-neg':'money-pos')+'">'+money(Math.abs(bal))+'</b></span>' : '');
+}
+function paintTripTotals(){
+  if(!tripDraft) return;
+  const box = document.getElementById('tripTotals');
+  if(box) box.innerHTML = tripTotalsHtml(tripDraft);
+  const strip = document.querySelector('.overlay .trip-tabs');
+  if(strip) strip.innerHTML = tabStripHtml(tripDraft,
+    tripDraft.id ? DB.trips.find(x=>x.id===tripDraft.id) : null);
+}
+
 function tripTabList(t, existing){
-  const bal = tripBalance(t);
   const stage = stageInfo(tripStage(existing || t));
+  const adv = tripAdvance(t), exp = tripExpenseTotal();
   return [
     {k:'details',  label:'Trip details'},
-    {k:'money',    label:'Money', chip: tripFreightNet(t)
-        ? '<span class="chip '+(bal>0?'chip-red':'chip-green')+'" style="margin-left:7px">'+
-          (bal>0? money(bal)+' due' : 'Settled')+'</span>' : ''},
+    {k:'money',    label:'Advance Money', chip: adv
+        ? '<span class="chip chip-blue" style="margin-left:7px">'+money(adv)+'</span>' : ''},
+    {k:'expenses', label:'Expense Money', chip: exp
+        ? '<span class="chip chip-amber" style="margin-left:7px">'+money(exp)+'</span>' : ''},
     {k:'delivery', label:'Delivery & POD',
       chip: existing? '<span class="chip '+stage.chip+'" style="margin-left:7px">'+stage.label+'</span>' : ''}
   ];
@@ -4293,8 +4753,14 @@ function tabStripHtml(t, existing){
 function tripScreen(id, tab){
   if(tab) tripTab = tab;
   const existing = id ? DB.trips.find(x=>x.id===id) : null;
-  if(existing && (!tripDraft || tripDraft.id !== existing.id)) tripDraft = Object.assign(blankTrip(), existing);
-  if(!existing && (!tripDraft || tripDraft.id)) tripDraft = blankTrip();
+  if(existing && (!tripDraft || tripDraft.id !== existing.id)){
+    tripDraft = Object.assign(blankTrip(), existing);
+    loadTripExpenses(existing.id);
+  }
+  if(!existing && (!tripDraft || tripDraft.id)){
+    tripDraft = blankTrip();
+    loadTripExpenses('');
+  }
   const t = tripDraft;
 
   if(!existing && (!DB.parties.length || !DB.trucks.length)){
@@ -4330,6 +4796,7 @@ function tripScreen(id, tab){
             '<button class="btn btn-sm"'+(next?' onclick="gotoTrip(\''+next+'\')"':' disabled')+'>Next →</button>'+
           '</div>' : '')+
     '</div>'+
+    '<div class="trip-totals" id="tripTotals">'+tripTotalsHtml(t)+'</div>'+
     '<div class="tabs trip-tabs">'+tabStripHtml(t, existing)+'</div>'+
     '<div class="trip-pane pane-in">'+tripPaneHtml(t, existing, tripTab)+'</div>'+
     (existing? '<div class="trip-actions"><button class="btn btn-danger" '+
@@ -4340,7 +4807,9 @@ function tripScreen(id, tab){
     && Math.abs(num(t.fuelQty)*num(t.fuelRate) - num(t.fuelAmt)) < 0.5));
   lineDraft = JSON.parse(JSON.stringify(t.lines || []));
   if($('#lineRows')) paintTripLines();
+  if($('#tripExpRows')) paintTripExpenses();
   if($('#f_advTotal')) recalcAdvance();
+  paintTripTotals();
 }
 
 /* moving to another trip keeps whatever you typed */
@@ -4375,6 +4844,7 @@ function saveTripScreen(existing, quiet){
   rememberPlace(rec.from); rememberPlace(rec.to);
   if(existing) DB.trips[DB.trips.findIndex(x=>x.id===existing.id)] = rec;
   else DB.trips.push(rec);
+  syncTripExpenses(rec.id, rec.truckId);
   save();
   if(quiet) return true;
   tripDraft = null;
@@ -4416,8 +4886,13 @@ function podTracker(t){
 function fv(label,value){ return '<div><div class="field-label">'+esc(label)+'</div><div class="field-value">'+value+'</div></div>'; }
 
 function delTrip(id){
-  confirmAsk('Delete this trip? The freight will also be removed from the party ledger.', ()=>{
-    DB.trips = DB.trips.filter(x=>x.id!==id); save(); render(); toast('Trip deleted');
+  const exp = tripExpensesOf(id);
+  confirmAsk('Delete this trip? The freight will also be removed from the party ledger.'+
+    (exp ? ' The '+money(exp)+' of expenses booked to it go too.' : ''), ()=>{
+    DB.trips = DB.trips.filter(x=>x.id!==id);
+    DB.expenses = (DB.expenses||[]).filter(e=>e.tripId!==id);
+    if(tripDraft && tripDraft.id===id){ tripDraft = null; tripExpDraft = []; }
+    save(); render(); toast('Trip deleted');
   }, true);
 }
 /* ============================================================
@@ -4813,7 +5288,7 @@ function viewTruckDocs(){
         '<button class="btn btn-amber" onclick="truckDocForm()">+ Add your first document</button>')
     : shown.length===0 ? empty('Nothing in this group','Try a different status.','')
     : '<div class="card"><div class="tbl-wrap"><table>'+
-      '<thead><tr><th>Truck</th><th>Document</th><th>Expiry date</th><th>Status</th><th>Notes</th><th></th></tr></thead><tbody>'+
+      '<thead><tr><th>Truck</th><th>Document</th><th>Expiry date</th><th>Status</th><th class="t-r">Cost</th><th>Notes</th><th></th></tr></thead><tbody>'+
       shown.map(r=>
         '<tr'+(sub.truck===r.t.id?' style="background:var(--amber-soft)"':'')+'>'+
         '<td data-label="Truck" class="num t-strong">'+esc(r.t.number)+'</td>'+
@@ -4821,6 +5296,7 @@ function viewTruckDocs(){
         '<td data-label="Expiry" style="white-space:nowrap">'+fdate(r.d.expiry)+'</td>'+
         '<td data-label="Status"><span class="chip '+r.st.chip+'">'+r.st.label+'</span>'+
           '<div class="t-sub">'+esc(docWhen(r.st.days))+'</div></td>'+
+        '<td data-label="Cost" class="t-r num">'+(docExpenseAmount(r.d.id)?money(docExpenseAmount(r.d.id)):'\u2014')+'</td>'+
         '<td class="t-sub">'+esc(r.d.notes||'—')+'</td>'+
         '<td><div class="row-actions">'+
           '<button class="btn btn-sm" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">Edit</button>'+
@@ -4839,11 +5315,15 @@ function truckDocForm(truckId, docId){
   openModal({
     title: doc?'Edit document':'Add document', okText: doc?'Save changes':'Save document',
     body:'<div class="form-grid">'+
-      fSelect('dc_truck','Truck', truckOptions(), t?t.id:(sub.truck||''))+
+      qTruck('dc_truck','Truck', t?t.id:(sub.truck||''))+
       '<div class="field"><label for="dc_header">Document <span style="color:var(--red)">*</span></label>'+
         '<input id="dc_header" list="docTypeList" autocomplete="off" value="'+esc(doc?doc.header:'')+'" placeholder="Insurance, PUC, permit…"></div>'+
       fText('dc_expiry','Expiry date', doc?doc.expiry:'','date')+
       fText('dc_notes','Notes', doc?doc.notes:'','text','placeholder="Optional"')+
+      fText('dc_expense','What it cost (₹)', doc?(doc.expense||''):'','number','min="0" step="1" placeholder="Premium, fee — optional"')+
+      fText('dc_expenseDate','Paid on', doc?(doc.expenseDate||''):today(),'date')+
+      '<div class="field full"><span class="hint">An amount here is filed in <b>Expenses</b> under the document\u2019s own name, '+
+        'against this truck. Clear it and that expense goes away again.</span></div>'+
       '<div class="field full"><span class="hint">Renewed it? Just change the date here — the old warning disappears and a fresh one is worked out from the new date.</span></div>'+
     '</div>',
     onOk(){
@@ -4851,22 +5331,32 @@ function truckDocForm(truckId, docId){
       if(!tid){ toast('Choose the truck this document belongs to'); return; }
       if(!header){ toast('Enter the document name'); return; }
       if(!expiry){ toast('Enter the expiry date'); return; }
+      if(!sensibleDate(expiry)){ toast('Check the expiry date — the year looks wrong.'); return; }
+      const expense = num(val('dc_expense'));
+      const expenseDate = val('dc_expenseDate') || today();
       const target = truckById(tid);
       target.docs = target.docs || [];
+      let saved;
       if(doc && t && t.id===tid){
-        Object.assign(doc, {header, expiry, notes:val('dc_notes')});
+        saved = Object.assign(doc, {header, expiry, notes:val('dc_notes'), expense, expenseDate});
       } else {
         if(doc && t) t.docs = t.docs.filter(x=>x.id!==doc.id);   // moved to another truck
-        target.docs.push({id:doc?doc.id:uid(), header, expiry, notes:val('dc_notes')});
+        saved = {id:doc?doc.id:uid(), header, expiry, notes:val('dc_notes'), expense, expenseDate};
+        target.docs.push(saved);
       }
-      save(); buildDocTypeList(); closeModal(); render(); toast(doc?'Document updated':'Document saved');
+      syncDocExpense(saved, tid);
+      save(); buildDocTypeList(); buildExpCatList(); closeModal(); render();
+      toast(doc?'Document updated':'Document saved');
     }
   });
 }
 function delTruckDoc(truckId, docId){
   const t = truckById(truckId); if(!t) return;
-  confirmAsk('Delete this document and its expiry reminder?', ()=>{
+  const cost = docExpenseAmount(docId);
+  confirmAsk('Delete this document and its expiry reminder?'+
+    (cost ? ' The '+money(cost)+' expense recorded on it goes too.' : ''), ()=>{
     t.docs = (t.docs||[]).filter(x=>x.id!==docId);
+    dropDocExpense(docId);
     save(); render(); toast('Document deleted');
   }, true);
 }
@@ -4914,16 +5404,18 @@ function renderTruckList(){
 
 let pendingTruckDocs = [];
 function addDocRow(header, expiry, notes){
-  pendingTruckDocs.push({id:uid(), header:header||'', expiry:expiry||'', notes:notes||''});
+  pendingTruckDocs.push({id:uid(), header:header||'', expiry:expiry||'', notes:notes||'', expense:0, expenseDate:today()});
   paintTruckDocs();
 }
 function removeDocRow(i){ pendingTruckDocs.splice(i,1); paintTruckDocs(); }
 function readDocRows(){
   pendingTruckDocs.forEach((d,i)=>{
-    const hEl=document.getElementById('td_h'+i), eEl=document.getElementById('td_e'+i), nEl=document.getElementById('td_n'+i);
+    const hEl=document.getElementById('td_h'+i), eEl=document.getElementById('td_e'+i),
+          nEl=document.getElementById('td_n'+i), xEl=document.getElementById('td_x'+i);
     if(hEl) d.header = hEl.value.trim();
     if(eEl) d.expiry = eEl.value;
     if(nEl) d.notes  = nEl.value.trim();
+    if(xEl) d.expense = num(xEl.value);
   });
 }
 function paintTruckDocs(){
@@ -4938,6 +5430,9 @@ function paintTruckDocs(){
         '" onchange="readDocRows();paintTruckDocs()"></div>'+
       '<div class="field"><label for="td_n'+i+'">Notes</label>'+
         '<input id="td_n'+i+'" value="'+esc(d.notes)+'" placeholder="Optional" onchange="readDocRows()"></div>'+
+      '<div class="field"><label for="td_x'+i+'">Cost (₹)</label>'+
+        '<input id="td_x'+i+'" type="number" min="0" step="1" value="'+(num(d.expense)||'')+
+        '" placeholder="Optional" onchange="readDocRows()"></div>'+
       '<button type="button" class="rmdoc" onclick="readDocRows();removeDocRow('+i+')">Remove</button>'+
       (d.expiry?'<div style="grid-column:1/-1;margin-top:-4px"><span class="chip '+st.chip+'">'+st.label+'</span>'+
         '<span class="hint" style="margin-left:8px">'+esc(docWhen(st.days))+'</span></div>':'')+
@@ -4966,7 +5461,8 @@ function truckForm(id, onSaved){
         '<div id="truckDocs"></div>'+
         '<button type="button" class="btn btn-sm" onclick="addDocRow()">+ Add a document</button>'+
         '<span class="hint">Insurance, PUC, fitness, permit, road tax — anything with a date. '+
-        'You will be warned in the bell as each one nears expiry.</span>'+
+        'You will be warned in the bell as each one nears expiry. A cost against any of them is filed in '+
+        '<b>Expenses</b> under that document\u2019s name.</span>'+
       '</div>'+
     '</div>',
     onOk(){
@@ -4980,12 +5476,15 @@ function truckForm(id, onSaved){
       const odd = pendingTruckDocs.find(d=>d.expiry && !sensibleDate(d.expiry));
       if(odd){ toast('Check the expiry date on '+(odd.header||'that document')+' — the year looks wrong.'); return; }
       const docs = pendingTruckDocs.filter(d=>d.header && d.expiry);
+      const dropped = ((t && t.docs) || []).filter(old=>!docs.some(d=>d.id===old.id));
       const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number'),
         model:val('t_model'), capacity:val('t_capacity'), driverId:val('t_driver'), owner:val('t_owner'),
         ownerPhone:val('t_ownerPhone'), supplierId:val('t_supplier'), notes:val('t_notes'), docs:docs};
       rec.number = formatPlate(rec.number);
       if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
-      save(); buildDocTypeList();
+      dropped.forEach(d=>dropDocExpense(d.id));
+      docs.forEach(d=>syncDocExpense(d, rec.id));
+      save(); buildDocTypeList(); buildExpCatList(); truckPlateList();
       if(nest){ closeModal(); onSaved(rec.id); toast('Truck added'); return; }
       closeModal(); render(); toast(t?'Truck updated':'Truck saved');
     }
@@ -5017,6 +5516,55 @@ function allCategories(){
   (DB.categories||[]).forEach(add);
   (DB.expenses||[]).forEach(e=>add(e.category));
   return out;
+}
+
+/* a datalist of every expense type, for the boxes that are typed into */
+function buildExpCatList(){
+  let dl = document.getElementById('expCatList');
+  if(!dl){ dl = document.createElement('datalist'); dl.id = 'expCatList'; document.body.appendChild(dl); }
+  dl.innerHTML = allCategories().map(c=>'<option value="'+esc(c)+'"></option>').join('');
+  return dl;
+}
+
+/* ------------------------------------------------------------
+   DOCUMENT EXPENSES
+   A document can carry what it cost — the insurance premium, the
+   permit fee. That amount is not kept apart: it is written into
+   the ordinary Expenses list under the document's own name, so it
+   counts once, in the P&L, against the right truck.
+   ------------------------------------------------------------ */
+function docExpense(docId){ return docId ? ((DB.expenses||[]).find(e=>e.docId===docId) || null) : null; }
+function docExpenseAmount(docId){ return num((docExpense(docId)||{}).amount); }
+function syncDocExpense(doc, truckId){
+  DB.expenses = DB.expenses || [];
+  const cur = docExpense(doc.id);
+  const amt = num(doc.expense);
+  if(amt <= 0){
+    if(cur) DB.expenses = DB.expenses.filter(e=>e.id!==cur.id);
+    return;
+  }
+  const head = (doc.header || 'Document').trim();
+  if(cur){
+    cur.amount = amt;
+    cur.category = head;
+    cur.truckId = truckId || '';
+    if(doc.expenseDate) cur.date = doc.expenseDate;
+  } else {
+    DB.expenses.push({id:uid(), date: doc.expenseDate || today(), amount:amt, category:head,
+      truckId: truckId||'', paidTo:'', mode:'Cash', shopId:'', docId:doc.id,
+      note: head + (truckId ? ' \u2014 ' + truckName(truckId) : '')});
+  }
+}
+function dropDocExpense(docId){
+  DB.expenses = (DB.expenses||[]).filter(e=>e.docId!==docId);
+}
+/* the other direction: an amount changed in the Expenses tab goes
+   back onto the document it came from, so the two never disagree */
+function pushExpenseToDoc(rec){
+  if(!rec.docId) return;
+  (DB.trucks||[]).forEach(t=>(t.docs||[]).forEach(d=>{
+    if(d.id === rec.docId){ d.expense = num(rec.amount); d.expenseDate = rec.date; }
+  }));
 }
 
 function categoryForm(id, onSaved){
@@ -5087,6 +5635,8 @@ function renderExpenseList(){
         '<td data-label="Category"><span class="chip chip-grey">'+esc(e.category)+'</span>'+
           (e.mode==='Credit'?'<div class="t-sub"><span class="chip chip-amber">On credit</span></div>':'')+'</td>'+
         '<td data-label="Details">'+esc(e.note||'\u2014')+
+          (e.tripId?'<div class="t-sub"><span class="chip chip-blue">Trip</span> '+esc(tripLabel(e.tripId))+'</div>':'')+
+          (e.docId?'<div class="t-sub"><span class="chip chip-grey">Document</span></div>':'')+
           (e.mode==='Credit'&&e.shopId?'<div class="t-sub">'+esc(shopName(e.shopId))+'</div>'
             :e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
         '<td data-label="Truck" class="num">'+esc(e.truckId?truckName(e.truckId):'\u2014')+'</td>'+
@@ -5110,7 +5660,11 @@ function expenseForm(id, preselectShop){
       fText('e_date','Date', e?e.date:today(),'date')+
       fText('e_amount','Amount (₹)', e?e.amount:'','number','min="0" step="1"')+
       qSelect('e_cat','Category', 'category', e?e.category:'Fuel / Diesel')+
-      qSelect('e_truck','Truck (optional)', 'truck', e?e.truckId:'')+
+      (e && e.tripId ? '<div class="field full"><span class="hint">Booked to the trip '+
+          esc(tripLabel(e.tripId))+'. Editing it here changes it there too.</span></div>' : '')+
+      (e && e.docId ? '<div class="field full"><span class="hint">Recorded on the document '+
+          esc(e.category)+'. The amount you set here goes back onto that document.</span></div>' : '')+
+      qTruck('e_truck','Truck (optional)', e?e.truckId:'')+
       fText('e_paidTo','Paid to', e?e.paidTo:'','text','placeholder="Pump, mechanic, bank…"')+
       fSelect('e_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Card',t:'Card'},{v:'Credit',t:'On credit'}],
         isCredit?'Credit':(e?e.mode:'Cash'), 'onchange="toggleShopField()"')+
@@ -5136,7 +5690,12 @@ function expenseForm(id, preselectShop){
       const existing = e && e.id ? DB.expenses.findIndex(x=>x.id===e.id) : -1;
       const rec = {id: existing>=0 ? e.id : uid(), date:val('e_date')||today(), amount:amt, category:val('e_cat'),
         truckId:val('e_truck'), paidTo:val('e_paidTo'), mode:mode, shopId:shopId, note:val('e_note')};
+      /* a linked expense stays linked, and the change travels back */
+      if(e && e.tripId) rec.tripId = e.tripId;
+      if(e && e.docId)  rec.docId  = e.docId;
       if(existing>=0) DB.expenses[existing] = rec; else DB.expenses.push(rec);
+      pushExpenseToDoc(rec);
+      if(rec.tripId && tripDraft && tripDraft.id===rec.tripId) loadTripExpenses(rec.tripId);
       save(); closeModal();
       if(route==='shops' && sub.open) renderShopLedger(sub.open); else render();
       toast(e?'Expense updated':'Expense saved');
@@ -5159,7 +5718,24 @@ function toggleShopField(){
 /* "+ Add a new shop" without losing what has been typed so far */
 
 function delExpense(id){
-  confirmAsk('Delete this expense?', ()=>{ DB.expenses = DB.expenses.filter(x=>x.id!==id); save(); render(); toast('Expense deleted'); }, true);
+  const e = DB.expenses.find(x=>x.id===id);
+  const where = e && e.tripId ? ' It is booked to the trip '+tripLabel(e.tripId)+', and goes from there too.'
+              : e && e.docId  ? ' It was recorded on a truck document, and the cost is cleared from it.' : '';
+  confirmAsk('Delete this expense?'+where, ()=>{
+    if(e && e.docId){
+      (DB.trucks||[]).forEach(t=>(t.docs||[]).forEach(d=>{ if(d.id===e.docId) d.expense = 0; }));
+    }
+    DB.expenses = DB.expenses.filter(x=>x.id!==id);
+    if(e && e.tripId && tripDraft && tripDraft.id===e.tripId) loadTripExpenses(e.tripId);
+    save(); render(); toast('Expense deleted');
+  }, true);
+}
+
+/* short, readable name for a trip, used wherever an expense points at one */
+function tripLabel(tripId){
+  const t = DB.trips.find(x=>x.id===tripId);
+  if(!t) return 'a deleted trip';
+  return (t.lr ? 'LR '+t.lr+' · ' : '') + (t.from||'?') + ' \u2192 ' + (t.to||'?');
 }
 
 /* ============================================================
@@ -5241,6 +5817,7 @@ function showDriverDocs(id){
   const have = DOC_SLOTS.filter(s=>d.docs[s.k]);
   if(!have.length) return;
   pendingDocs = Object.assign({}, d.docs);
+  pendingDocOrigs = Object.assign({}, d.origs || {});
   openModal({
     title: d.name+' — documents', wide:true,
     body:'<div class="doc-grid">'+have.map(s=>
@@ -5263,6 +5840,7 @@ function driverForm(id, onSaved){
   const d = id ? driverById(id) : null;
   const nest = typeof onSaved === 'function';
   pendingDocs = Object.assign({}, (d && d.docs) || {});
+  pendingDocOrigs = Object.assign({}, (d && d.origs) || {});
   (nest ? stackForm : openModal)({
     title: d?'Edit driver':'New driver', okText: d?'Save changes':'Save driver',
     body:'<div class="form-grid">'+
@@ -5276,20 +5854,25 @@ function driverForm(id, onSaved){
       '<div class="field full"><label>Documents</label>'+
         '<div class="doc-grid" id="docGrid"></div>'+
         '<span class="hint" id="docNote"></span>'+
-        '<span class="hint">Photos are shrunk to keep the app fast, and stay on this device and in your own Drive.</span>'+
+        '<span class="hint">Photos are shrunk to keep the app fast, and stay on this device and in your own Drive. '+
+        'The file you uploaded is kept as it is, so Download gives you the original.</span>'+
       '</div>'+
     '</div>',
     onOk(){
       if(!val('d_name')){ toast('Enter the driver name'); return; }
       const clash = alreadyExists(DB.drivers, 'name', val('d_name'), d?d.id:null);
       if(clash){ toast('This driver is already in the system.'); return; }
-      const docs = {};
-      DOC_SLOTS.forEach(s=>{ if(pendingDocs[s.k]) docs[s.k] = pendingDocs[s.k]; });
+      const docs = {}, origs = {};
+      DOC_SLOTS.forEach(s=>{
+        if(!pendingDocs[s.k]) return;
+        docs[s.k] = pendingDocs[s.k];
+        if(pendingDocOrigs[s.k]) origs[s.k] = pendingDocOrigs[s.k];
+      });
       const rec = {id:d?d.id:uid(), name:val('d_name'), phone:val('d_phone'), licence:val('d_licence'),
         salary:num(val('d_salary')), join:val('d_join'), aadhaar:val('d_aadhaar'), address:val('d_address'),
-        docs:docs};
+        docs:docs, origs:origs};
       if(d) DB.drivers[DB.drivers.findIndex(x=>x.id===d.id)] = rec; else DB.drivers.push(rec);
-      save(); pendingDocs = {};
+      save(); pendingDocs = {}; pendingDocOrigs = {};
       if(nest){ closeModal(); onSaved(rec.id); toast('Driver added'); return; }
       closeModal(); render(); toast(d?'Driver updated':'Driver saved');
     }
@@ -6449,9 +7032,10 @@ function exportCSV(what){
       .concat(DB.parties.map(p=>[p.name,p.phone,p.city,p.gst,num(p.opening),tc[p.id]||0,bal[p.id]||0])));
   }
   if(what==='expenses'){
-    download('expenses-'+today()+'.csv', [['Date','Category','Amount','Truck','Paid to','Mode','Details']]
+    download('expenses-'+today()+'.csv', [['Date','Category','Amount','Truck','Paid to','Mode','Details','Trip','On document']]
       .concat(DB.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
-        [e.date,e.category,num(e.amount),e.truckId?truckName(e.truckId):'',e.paidTo,e.mode,e.note])));
+        [e.date,e.category,num(e.amount),e.truckId?truckName(e.truckId):'',e.paidTo,e.mode,e.note,
+         e.tripId?tripLabel(e.tripId):'', e.docId?'Yes':''])));
   }
 }
 function exportLedger(pid){
@@ -6509,6 +7093,72 @@ const QUICK = {
   }
 };
 
+/* ------------------------------------------------------------
+   TRUCK PICKER
+   The dropdown is still there, but the box above it takes a
+   vehicle number straight from the keyboard: type one that
+   exists and the truck selects itself.
+   ------------------------------------------------------------ */
+function truckPlateList(){
+  let dl = document.getElementById('truckPlateList');
+  if(!dl){ dl = document.createElement('datalist'); dl.id = 'truckPlateList'; document.body.appendChild(dl); }
+  dl.innerHTML = DB.trucks.map(t=>'<option value="'+esc(t.number)+'"></option>').join('');
+  return dl;
+}
+const plateKey = v => upperTruck(v).replace(/[^A-Z0-9]/g,'');
+function findTruckByNumber(v){
+  const k = plateKey(v);
+  return k ? (DB.trucks.find(t=>plateKey(t.number)===k) || null) : null;
+}
+function qTruck(id, label, v, extra){
+  truckPlateList();
+  const cur = v ? ((truckById(v)||{}).number || '') : '';
+  return '<div class="field truck-pick">'+
+    '<label for="'+id+'_find">'+label+'</label>'+
+    '<input id="'+id+'_find" class="truck-find" type="text" list="truckPlateList" autocomplete="off" '+
+      'placeholder="Type the vehicle number\u2026" value="'+esc(cur)+'" '+
+      'oninput="truckTyped(\''+id+'\',this)" onblur="truckTypedBlur(\''+id+'\',this)" '+
+      'onchange="truckTyped(\''+id+'\',this)">'+
+    '<span class="hint truck-find-note" id="'+id+'_note"></span>'+
+    '<select id="'+id+'" '+(extra||'')+' onchange="quickPick(\''+id+'\',\'truck\');truckPicked(\''+id+'\')">'+
+      quickOptions('truck').map(o=>'<option value="'+esc(o.v)+'"'+(String(o.v)===String(v)?' selected':'')+'>'+
+        esc(o.t)+'</option>').join('')+
+    '</select>'+
+  '</div>';
+}
+function truckTyped(selId, inp){
+  const el = document.getElementById(selId);
+  if(!el) return;
+  const typed = inp.value.trim();
+  const t = findTruckByNumber(typed);
+  if(t && el.value !== t.id){
+    el.value = t.id;
+    el.dataset.prev = t.id;
+    if(typeof afterQuickChange==='function') afterQuickChange(selId);
+  }
+  const note = document.getElementById(selId+'_note');
+  if(!note) return;
+  note.textContent = !typed ? ''
+    : t ? '\u2713 '+t.number+' selected'
+    : plateKey(typed).length >= 4 ? 'No truck with that number yet \u2014 add it from the list below'
+    : '';
+  note.className = 'hint truck-find-note'+(t ? ' ok' : (typed && plateKey(typed).length>=4 ? ' miss' : ''));
+}
+function truckTypedBlur(selId, inp){
+  const t = findTruckByNumber(inp.value);
+  if(t) inp.value = t.number;
+  else if(inp.value.trim()) inp.value = formatPlate(inp.value);
+}
+/* the box follows the dropdown whenever the dropdown is used */
+function truckPicked(selId){
+  const el = document.getElementById(selId), inp = document.getElementById(selId+'_find');
+  if(!el || !inp) return;
+  const t = el.value ? truckById(el.value) : null;
+  inp.value = t ? t.number : '';
+  const note = document.getElementById(selId+'_note');
+  if(note){ note.textContent = ''; note.className = 'hint truck-find-note'; }
+}
+
 function quickOptions(kind){
   const q = QUICK[kind];
   return [{v:'', t:q.blank}, {v:'__new', t:q.add}].concat(q.opts());
@@ -6532,6 +7182,8 @@ function refreshQuick(id, kind, newId){
     '<option value="'+esc(o.v)+'">'+esc(o.t)+'</option>').join('');
   el.value = newId || '';
   el.dataset.prev = el.value;
+  if(kind==='truck') truckPlateList();
+  if(document.getElementById(id+'_find')) truckPicked(id);
   if(typeof afterQuickChange==='function') afterQuickChange(id);
 }
 /* forms that need to react when a dropdown changes hook in here */
@@ -6576,8 +7228,9 @@ async function addPodPhoto(tripId, input){
     try{
       const data = await shrinkImage(file);
       if(storeUsed() + data.length > STORE_LIMIT){ toast('Storage is nearly full. Remove an old photo first.'); break; }
+      const origKey = await keepOriginal(file);
       DB.pods = DB.pods || {};
-      DB.pods[tripId] = podImages(tripId).concat([{id:uid(), data, name:file.name||'POD', addedAt:today()}]);
+      DB.pods[tripId] = podImages(tripId).concat([{id:uid(), data, origKey, name:file.name||'POD', addedAt:today()}]);
     }catch(e){ toast(e.message); }
   }
   const busy = document.getElementById('podBusy'); if(busy) busy.remove();
@@ -6597,6 +7250,7 @@ async function addPodPhoto(tripId, input){
 
 function removePodPhoto(tripId, id){
   confirmAsk('Remove this POD page?', ()=>{
+    dropOriginal((podImages(tripId).find(p=>p.id===id)||{}).origKey);
     DB.pods[tripId] = podImages(tripId).filter(p=>p.id!==id);
     if(!DB.pods[tripId].length) delete DB.pods[tripId];
     save(); refreshPodScreen(tripId); toast('Page removed');
@@ -6621,16 +7275,24 @@ function viewPodImage(tripId, id){
     title:'POD — '+((t&&t.lr)||'trip'), wide:'xl',
     body:'<img src="'+img.data+'" alt="POD" style="width:100%;border-radius:8px;display:block">'+
       '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
-        '<a class="btn" href="'+img.data+'" download="'+esc(podFileName(t,i))+'">Download this page</a>'+
+        '<button class="btn btn-primary" onclick="downloadPodPage(\''+tripId+'\',\''+id+'\')">Download this page</button>'+
         '<button class="btn btn-danger" onclick="closeModal();removePodPhoto(\''+tripId+'\',\''+id+'\')">Remove</button>'+
       '</div>'
   });
+}
+function downloadPodPage(tripId, id){
+  const t = DB.trips.find(x=>x.id===tripId);
+  const list = podImages(tripId);
+  const i = list.findIndex(p=>p.id===id);
+  if(i<0){ toast('That page is no longer here'); return; }
+  saveBest(list[i].origKey, list[i].data, podFileName(t, i));
 }
 function downloadPod(tripId){
   const t = DB.trips.find(x=>x.id===tripId);
   const list = podImages(tripId);
   if(!list.length){ toast('No POD uploaded for this trip'); return; }
-  list.forEach((img,i)=>saveImage(img.data, podFileName(t,i)));
+  list.forEach((img,i)=>saveBest(img.origKey, img.data, podFileName(t,i), true));
+  toast('Downloading '+plural(list.length,'page')+' at the best quality on file');
 }
 
 /* the upload area shown on the Delivery tab */
@@ -6657,7 +7319,8 @@ function podUploader(t){
       'onchange="addPodPhoto(\''+t.id+'\',this)">'+
     '<input type="file" id="podFile" accept="image/*" multiple style="display:none" '+
       'onchange="addPodPhoto(\''+t.id+'\',this)">'+
-    '<div class="hint" style="margin-top:9px">Photos are shrunk before saving. Uploading one marks the POD as received.</div>'+
+    '<div class="hint" style="margin-top:9px">Photos are shrunk before saving, and the file you uploaded is kept as it is \u2014 '+
+      'Download gives you the original. Uploading one marks the POD as received.</div>'+
   '</div>';
 }
 /* ============================================================
@@ -7096,6 +7759,110 @@ const DOC_TARGET  = 210*1024;  // aim per photo, before base64 padding
 const STORE_LIMIT = 4.6*1024*1024;
 
 let pendingDocs = {};
+let pendingDocOrigs = {};
+
+/* ------------------------------------------------------------
+   ORIGINALS
+   localStorage holds only a few megabytes, so the copy filed with
+   a record is always a shrunk one. The untouched upload is kept
+   beside it in IndexedDB, which is far roomier, and every download
+   reaches for that first — falling back to the shrunk copy only
+   when the original is no longer on the device.
+   ------------------------------------------------------------ */
+const ORIG_DB = 'mvl_originals', ORIG_STORE = 'files';
+let origDbPromise = null;
+function origDb(){
+  if(origDbPromise) return origDbPromise;
+  origDbPromise = new Promise((resolve, reject)=>{
+    if(!window.indexedDB) return reject(new Error('This browser cannot keep original files.'));
+    const req = indexedDB.open(ORIG_DB, 1);
+    req.onupgradeneeded = ()=>{
+      if(!req.result.objectStoreNames.contains(ORIG_STORE)) req.result.createObjectStore(ORIG_STORE);
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror   = ()=>reject(req.error || new Error('Original file storage is blocked.'));
+  }).catch(e=>{ origDbPromise = null; throw e; });
+  return origDbPromise;
+}
+function origTx(mode, fn){
+  return origDb().then(db=>new Promise((resolve, reject)=>{
+    const tx  = db.transaction(ORIG_STORE, mode);
+    const req = fn(tx.objectStore(ORIG_STORE));
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror   = ()=>reject(req.error);
+  }));
+}
+/* files it away and hands back the key, or '' if the browser refused */
+async function keepOriginal(file){
+  if(!file) return '';
+  const key = 'o'+uid();
+  try{
+    await origTx('readwrite', st=>st.put(
+      {blob:file, name:file.name||'', type:file.type||'', size:file.size||0, at:today()}, key));
+    return key;
+  }catch(e){ return ''; }
+}
+async function readOriginal(key){
+  if(!key) return null;
+  try{ return (await origTx('readonly', st=>st.get(key))) || null; }
+  catch(e){ return null; }
+}
+function dropOriginal(key){
+  if(!key) return;
+  origTx('readwrite', st=>st.delete(key)).catch(()=>{});
+}
+/* every key any record still points at */
+function originalKeysInUse(){
+  const keys = new Set();
+  (DB.drivers||[]).forEach(d=>Object.values(d.origs||{}).forEach(k=>{ if(k) keys.add(k); }));
+  Object.values(DB.pods||{}).forEach(list=>(list||[]).forEach(p=>{ if(p.origKey) keys.add(p.origKey); }));
+  return keys;
+}
+/* Photos abandoned in a form that was never saved would sit there for
+   ever, so once per start-up anything nothing points at is cleared out. */
+async function pruneOriginals(){
+  try{
+    const all  = await origTx('readonly', st=>st.getAllKeys());
+    const used = originalKeysInUse();
+    (all||[]).forEach(k=>{ if(!used.has(k)) dropOriginal(k); });
+  }catch(e){ /* no store, nothing to tidy */ }
+}
+function origExt(rec){
+  const n = String((rec && rec.name) || '');
+  const dot = n.lastIndexOf('.');
+  if(dot > 0 && n.length - dot <= 6) return n.slice(dot).toLowerCase();
+  return ({'image/png':'.png','image/webp':'.webp','image/heic':'.heic','image/heif':'.heif',
+           'image/gif':'.gif','image/tiff':'.tif','application/pdf':'.pdf'})[String((rec&&rec.type)||'').toLowerCase()] || '.jpg';
+}
+function dataUrlToBlob(u){
+  const parts = String(u).split(',');
+  const type = (parts[0].match(/data:([^;]+)/) || [,'image/jpeg'])[1];
+  const bin  = atob(parts[1] || '');
+  const arr  = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type});
+}
+function saveBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 8000);
+}
+/* The one download used by every button: original quality when the
+   untouched file is still here, the stored copy when it is not. */
+async function saveBest(origKey, dataUrl, filename, quiet){
+  const rec = await readOriginal(origKey);
+  if(rec && rec.blob){
+    saveBlob(rec.blob, filename.replace(/\.[A-Za-z0-9]+$/,'') + origExt(rec));
+    if(!quiet) toast('Downloaded at original quality');
+    return true;
+  }
+  if(!dataUrl){ if(!quiet) toast('Nothing to download'); return false; }
+  saveBlob(dataUrlToBlob(dataUrl), filename);
+  if(!quiet) toast('Downloaded');
+  return true;
+}
 
 function docTotal(){
   let n=0;
@@ -7151,6 +7918,7 @@ async function pickDoc(slot, input){
       toast('Storage is nearly full. Remove an old photo first.');
     } else {
       pendingDocs[slot] = data;
+      pendingDocOrigs[slot] = await keepOriginal(file);
     }
   }catch(e){
     toast(e.message);
@@ -7158,15 +7926,12 @@ async function pickDoc(slot, input){
   const b = document.getElementById('busy_'+slot); if(b) b.remove();
   paintDocs();
 }
-function removeDoc(slot){ pendingDocs[slot] = null; paintDocs(); }
+function removeDoc(slot){ pendingDocs[slot] = null; pendingDocOrigs[slot] = ''; paintDocs(); }
 
-/* One place that turns a stored image into a file on disk, used by
-   every download button so the naming and behaviour never diverge. */
+/* kept for anything that only ever has the stored copy to hand */
 function saveImage(dataUrl, filename){
   if(!dataUrl){ toast('Nothing to download'); return; }
-  const a = document.createElement('a');
-  a.href = dataUrl; a.download = filename;
-  document.body.appendChild(a); a.click(); a.remove();
+  saveBlob(dataUrlToBlob(dataUrl), filename);
   toast('Downloaded');
 }
 function driverFileName(driver, slot){
@@ -7177,13 +7942,15 @@ function driverFileName(driver, slot){
 function downloadDriverDoc(slot, driverId){
   const d = driverId ? driverById(driverId) : null;
   const data = (d && d.docs && d.docs[slot]) || pendingDocs[slot];
-  saveImage(data, driverFileName(d, slot));
+  const key  = (d && d.origs && d.origs[slot]) || pendingDocOrigs[slot];
+  saveBest(key, data, driverFileName(d, slot));
 }
 function downloadAllDriverDocs(driverId){
   const d = driverById(driverId); if(!d || !d.docs) return;
   const have = DOC_SLOTS.filter(s=>d.docs[s.k]);
   if(!have.length){ toast('No documents on file'); return; }
-  have.forEach(s=>saveImage(d.docs[s.k], driverFileName(d, s.k)));
+  have.forEach(s=>saveBest((d.origs||{})[s.k], d.docs[s.k], driverFileName(d, s.k), true));
+  toast('Downloading '+plural(have.length,'document')+' at the best quality on file');
 }
 
 function docTile(slot, label){
@@ -7219,12 +7986,14 @@ function docCount(d){ return DOC_SLOTS.filter(s=>d && d[s.k]).length; }
 function viewDoc(slot, label){
   const v = pendingDocs[slot] || '';
   if(!v) return;
+  const file = (label||'document').replace(/[^A-Za-z0-9]+/g,'-').toLowerCase().replace(/^-|-$/g,'')+'.jpg';
   openModal({
     title: label || 'Document', wide:true,
     body:'<img src="'+v+'" alt="'+esc(label||'')+'" style="width:100%;border-radius:8px;display:block">'+
       '<div style="display:flex;gap:8px;margin-top:12px">'+
-        '<a class="btn" href="'+v+'" download="'+esc((label||'document').replace(/\s+/g,'-').toLowerCase())+'.jpg">Download</a>'+
-      '</div>'
+        '<button class="btn btn-primary" onclick="saveBest(pendingDocOrigs[\''+slot+'\'], pendingDocs[\''+slot+'\'], \''+file+'\')">Download</button>'+
+      '</div>'+
+      '<div class="hint" style="margin-top:10px">You get the original file you uploaded whenever it is still on this device.</div>'
   });
 }
 
@@ -7350,9 +8119,14 @@ const SERIES = ['#E9A13B','#2C5D7C','#1C7A57','#B3372C','var(--amber)','#4A5568'
 // Indian short form: 1.2L, 85k — keeps axis labels readable
 function shortMoney(n){
   const v = Math.abs(Math.round(num(n)));
-  const s = v>=10000000 ? (v/10000000).toFixed(v%10000000?1:0)+'Cr'
-          : v>=100000   ? (v/100000).toFixed(v%100000?1:0)+'L'
-          : v>=1000     ? (v/1000).toFixed(v%1000&&v<10000?1:0)+'k'
+  /* 12,500 must read 12.5k, not 13k — axis ticks land on halves */
+  const cut = (unit, label) => {
+    const r = v/unit;
+    return (Math.abs(r - Math.round(r)) < 0.005 ? String(Math.round(r)) : r.toFixed(1)) + label;
+  };
+  const s = v>=10000000 ? cut(10000000,'Cr')
+          : v>=100000   ? cut(100000,'L')
+          : v>=1000     ? cut(1000,'k')
           : String(v);
   return (num(n)<0?'-₹':'₹')+s;
 }
@@ -7401,13 +8175,19 @@ function niceStep(rough){
 }
 function lineChart(rows, series, opts={}){
   const W=760, H=opts.height||250, L=62, R=26, T=22, B=44;
-  const raw = Math.max(1, ...rows.map(r=>Math.max(...series.map(s=>num(r[s.key])))));
-  const step = niceStep(raw/4);
-  const max  = Math.max(step, Math.ceil(raw/step)*step);
-  const ticks = Math.round(max/step);
+  /* The scale is read off every series, and always includes zero, so a
+     month that lost money is drawn below the line instead of vanishing. */
+  const vals = [];
+  rows.forEach(r=>series.forEach(s=>vals.push(num(r[s.key]))));
+  const hiRaw = Math.max(0, ...vals);
+  const loRaw = Math.min(0, ...vals);
+  const step  = niceStep(Math.max(1, hiRaw-loRaw)/4);
+  const min   = Math.floor(loRaw/step)*step;
+  const max   = Math.max(Math.ceil(hiRaw/step)*step, min+step);
   const dx = rows.length>1 ? (W-L-R)/(rows.length-1) : 0;
   const x = i => L + i*dx;
-  const y = v => T + (H-T-B) * (1 - num(v)/max);
+  const y = v => T + (H-T-B) * (1 - (num(v)-min)/(max-min));
+  const zeroY = y(0);
   const uid_ = 'g'+Math.random().toString(36).slice(2,8);
   const plotW = W-L-R;
 
@@ -7423,10 +8203,11 @@ function lineChart(rows, series, opts={}){
   });
   svg += '</defs>';
 
-  /* grid on round numbers, with the baseline picked out */
+  /* grid on round numbers, with the zero line picked out */
+  const ticks = Math.round((max-min)/step);
   for(let t=0;t<=ticks;t++){
-    const v = step*t, yy = y(v);
-    svg += '<line class="grid-line'+(t===0?' grid-base':'')+'" x1="'+L+'" y1="'+yy.toFixed(1)+
+    const v = min + step*t, yy = y(v);
+    svg += '<line class="grid-line'+(Math.abs(v)<step/1000?' grid-base':'')+'" x1="'+L+'" y1="'+yy.toFixed(1)+
            '" x2="'+(W-R)+'" y2="'+yy.toFixed(1)+'"/>'+
            '<text class="axis-text" x="'+(L-10)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end">'+shortMoney(v)+'</text>';
   }
@@ -7441,8 +8222,8 @@ function lineChart(rows, series, opts={}){
   series.forEach((s,si)=>{
     const pts = rows.map((r,i)=>x(i).toFixed(1)+','+y(r[s.key]).toFixed(1));
     if(s.fill && rows.length>1){
-      svg += '<path d="M'+pts.join(' L')+' L'+x(rows.length-1).toFixed(1)+','+(H-B)+' L'+L+','+(H-B)+
-             ' Z" fill="url(#'+uid_+si+')"/>';
+      svg += '<path d="M'+pts.join(' L')+' L'+x(rows.length-1).toFixed(1)+','+zeroY.toFixed(1)+
+             ' L'+L+','+zeroY.toFixed(1)+' Z" fill="url(#'+uid_+si+')"/>';
     }
     svg += '<polyline class="'+(s.dash?'series-dashed':'series-line')+'" points="'+pts.join(' ')+
            '" stroke="'+s.color+'" style="animation-delay:'+(si*0.12)+'s"/>';
@@ -7496,11 +8277,9 @@ function lineChart(rows, series, opts={}){
 
   svg += '</svg>';
 
-  const last = rows[rows.length-1] || {};
   const legend = '<div class="legend">'+series.map(s=>
     '<span class="legend-item"><span class="legend-key" style="background:'+s.color+'"></span>'+
-      esc(s.label)+'<b class="legend-val">'+shortMoney(last[s.key])+'</b></span>').join('')+
-    '<span class="legend-note">latest month · hover any month for detail</span></div>';
+      esc(s.label)+'</span>').join('')+'</div>';
   return svg + legend;
 }
 
@@ -7594,7 +8373,7 @@ function fmtBy(mode, v){
   return money(v);
 }
 /* every screen drawn outside render() ends with this */
-function afterDirectRender(){ animateCounts(); paintBell(); }
+function afterDirectRender(){ animateCounts(); paintBell(); clampDates(); }
 function animateCounts(){
   const els = document.querySelectorAll('[data-count]');
   const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -8108,6 +8887,7 @@ applyBrand();
 render();
 startAuth();
 buildDocTypeList();
+setTimeout(pruneOriginals, 3000);
 
 window.addEventListener('online', ()=>{ if(syncReady()) syncPush(true); });
 </script>
