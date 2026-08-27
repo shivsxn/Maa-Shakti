@@ -3180,6 +3180,16 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .theme-name{font-weight:700;font-size:14px;color:var(--ink)}
 .theme-note{font-size:11.5px;color:var(--muted-2)}
 @media (max-width:760px){ .theme-picks{grid-template-columns:1fr} }
+.kpi-link{cursor:pointer}
+.kpi-link:hover{border-color:var(--accent);box-shadow:0 4px 14px -6px rgba(17,24,39,.2)}
+.kpi-link:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-soft),0 0 0 1px var(--accent)}
+.kpi-label{display:flex;align-items:center;gap:8px}
+.kpi-go{
+  margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:none;
+  color:var(--accent);opacity:0;transition:opacity .13s;
+}
+.kpi-go::after{content:' →'}
+.kpi-link:hover .kpi-go,.kpi-link:focus-visible .kpi-go{opacity:1}
 @media print{ body{background:#fff!important} }
 
 
@@ -3214,7 +3224,7 @@ th{z-index:10}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.3 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.4 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4421,12 +4431,17 @@ function viewParties(){
   const adv = Object.values(bal).reduce((s,b)=>s+Math.min(0,b),0);
   $('#view').innerHTML =
   '<div class="grid g3" style="margin-bottom:16px">'+
-    '<div class="stat accent"><div class="stat-label">Total to collect</div><div class="stat-value">'+money(due)+'</div></div>'+
-    '<div class="stat"><div class="stat-label">Advance held from parties</div><div class="stat-value">'+money(Math.abs(adv))+'</div></div>'+
+    kpi('Total to collect', due, {tone:due>0?'neg':'', go:"sub={due:'due'};render()",
+      note:Object.values(bal).filter(b=>b>0).length+' with a balance'})+
+    kpi('Advance held from parties', Math.abs(adv), {go:"sub={due:'adv'};render()",
+      note:Object.values(bal).filter(b=>b<0).length+' holding an advance'})+
     '<div class="stat"><div class="stat-label">Parties</div><div class="stat-value">'+DB.parties.length+'</div></div>'+
   '</div>'+
   '<div class="toolbar">'+
     '<input class="search" type="search" autocomplete="off" placeholder="Search party name, phone, city\u2026" value="'+esc(sub.q||'')+'" oninput="sub.q=this.value;sub.limit=0;defer(renderPartyList)">'+
+    '<select onchange="sub.due=this.value;renderPartyList()"><option value="">All parties</option>'+
+      '<option value="due"'+(sub.due==='due'?' selected':'')+'>With dues only</option>'+
+      '<option value="adv"'+(sub.due==='adv'?' selected':'')+'>Holding an advance</option></select>'+
     '<button class="btn btn-sm" onclick="exportCSV(\'parties\')">Export CSV</button>'+
   '</div><div id="listBox"></div>';
   renderPartyList();
@@ -4442,6 +4457,8 @@ function renderPartyList(){
   let list = DB.parties.map(p=>({...p, bal:bal[p.id]||0, trips:tripCount[p.id]||0}));
   if(q) list = list.filter(p=>
     (p.name+' '+(p.phone||'')+' '+(p.city||'')).toLowerCase().includes(q));
+  if(sub.due==='due') list = list.filter(p=>p.bal>0);
+  else if(sub.due==='adv') list = list.filter(p=>p.bal<0);
   list.sort((a,b)=>b.bal-a.bal);
   const full = list.length;
   list = list.slice(0, pageLimit());
@@ -4778,9 +4795,12 @@ function viewTruckDocs(){
   $('#view').innerHTML =
   truckTabs()+
   '<div class="grid g3 rise" style="margin-bottom:16px">'+
-    kpi('Expired', count('expired'), {fmt:'plain', tone:count('expired')?'neg':'', note:'Needs renewing now'})+
-    kpi('Expiring within '+SOON_DAYS+' days', count('soon'), {fmt:'plain', note:'Plan these'})+
-    kpi('Valid', count('active'), {fmt:'plain', tone:'pos', note:'Nothing due soon'})+
+    kpi('Expired', count('expired'), {fmt:'plain', tone:count('expired')?'neg':'', note:'Needs renewing now',
+      go:"sub={tab:'docs',status:'expired'};render()"})+
+    kpi('Expiring within '+SOON_DAYS+' days', count('soon'), {fmt:'plain', note:'Plan these',
+      go:"sub={tab:'docs',status:'soon'};render()"})+
+    kpi('Valid', count('active'), {fmt:'plain', tone:'pos', note:'Nothing due soon',
+      go:"sub={tab:'docs',status:'active'};render()"})+
   '</div>'+
   '<div class="filters"><div class="filter-row">'+
     '<select onchange="sub.status=this.value;render()"><option value="">All documents</option>'+
@@ -5357,12 +5377,14 @@ function viewPod(){
   $('#view').innerHTML =
   '<div class="grid g4 rise" style="margin-bottom:18px">'+
     kpi('Waiting on paperwork', delivered.length+received.length, {fmt:'plain',
+      go:"route='trips';sub={stage:'podpending',adv:true};render()",
       note:'Delivered, POD not submitted'})+
     kpi('Money held up', locked, {tone:locked>0?'neg':'pos',
       note:'Cannot be chased until POD goes in'})+
     kpi('Older than '+POD_CHASE_DAYS+' days', chase, {fmt:'plain', tone:chase?'neg':'',
       note:'Worth a phone call'})+
-    kpi('Still on the road', transit.length, {fmt:'plain', note:'Not marked delivered'})+
+    kpi('Still on the road', transit.length, {fmt:'plain', note:'Not marked delivered',
+      go:"route='trips';sub={stage:'transit',adv:true};render()"})+
   '</div>'+
 
   group('Delivered — POD not received from driver', 'chip-blue', delivered,
@@ -5399,7 +5421,7 @@ function viewSuppliers(){
 
   $('#view').innerHTML =
   '<div class="grid g3 rise" style="margin-bottom:16px">'+
-    kpi('Owed to suppliers', owed, {tone:owed>0?'neg':'pos',
+    kpi('Owed to suppliers', owed, {tone:owed>0?'neg':'pos', go:"sub={due:'due'};render()",
       note: Object.values(bal).filter(b=>b>0).length+' with a balance'})+
     kpi('Held pending POD', held, {note:'POD not back from the driver yet'})+
     kpi('Hire this month', month, {note:monthName(thisMonth())})+
@@ -5604,7 +5626,7 @@ function viewShops(){
 
   $('#view').innerHTML =
   '<div class="grid g3 rise" style="margin-bottom:16px">'+
-    kpi('Total outstanding to shops', owed, {tone:owed>0?'neg':'pos',
+    kpi('Total outstanding to shops', owed, {tone:owed>0?'neg':'pos', go:"sub={due:'due'};render()",
       note: withDues? plural(withDues,'shop')+' waiting to be paid' : 'Nothing pending'})+
     kpi('Taken on credit this month', creditThisMonth, {note:monthName(thisMonth())})+
     kpi('Shops', (DB.shops||[]).length, {fmt:'plain', note:'On your books'})+
@@ -5986,7 +6008,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.3</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.4</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -7548,7 +7570,13 @@ function kpi(label, value, opts={}){
      screen goes through render(); anything drawn on another path — a
      ledger, a refresh after saving — must still show the true number. */
   const shown = fmtBy(fmt, num(value));
-  return '<div class="kpi"><div class="kpi-label">'+esc(label)+'</div>'+
+  /* A drillable tile hands off to the very filter the list already uses,
+     so what opens is the same set the figure was counted from — there is
+     no second query to drift out of step. */
+  const go = opts.go ? ' onclick="'+esc(opts.go).replace(/&quot;/g,'&#34;')+'" role="button" tabindex="0"'+
+      ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}"' : '';
+  return '<div class="kpi'+(opts.go?' kpi-link':'')+'"'+go+'>'+
+    '<div class="kpi-label">'+esc(label)+(opts.go?'<span class="kpi-go">View</span>':'')+'</div>'+
     '<div class="kpi-value'+(opts.tone==='pos'?' money-pos':opts.tone==='neg'?' money-neg':'')+
       '" data-count="'+num(value)+'" data-fmt="'+fmt+'">'+shown+'</div>'+
     '<div class="kpi-foot">'+
