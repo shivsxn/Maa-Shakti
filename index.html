@@ -3347,6 +3347,20 @@ input.dp-input::-webkit-clear-button{display:none}
   color:var(--muted);margin-bottom:2px}
 .field.exp-credit{max-width:440px;margin:0 0 10px}
 .field.exp-credit[hidden]{display:none}
+
+/* ---------- a trip that has finished and locked itself ---------- */
+.trip-lock{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;margin:0 0 14px;
+  padding:11px 14px;border:1px solid var(--green-line);border-radius:10px;
+  background:var(--green-soft);color:var(--ink-2);font-size:12.8px;line-height:1.55}
+.trip-lock b{color:var(--green);font-weight:700}
+.trip-lock.open{border-color:var(--amber-line);background:var(--amber-soft)}
+.trip-lock.open b{color:var(--amber)}
+.trip-lock a{color:var(--accent-2);font-weight:600}
+.pane-locked{opacity:.72}
+.pane-locked input:disabled,.pane-locked select:disabled,.pane-locked textarea:disabled{
+  background:var(--bg-2);cursor:not-allowed}
+.pane-locked button:disabled{opacity:.5;cursor:not-allowed}
+.lock-note{font-size:11.5px;color:var(--green);font-weight:600}
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 @media (max-width:760px){
   .exp-head{display:none}
@@ -3402,7 +3416,7 @@ input.dp-input::-webkit-clear-button{display:none}
 /* ---------- 1. Storage ---------- */
 const KEY = 'mvl_db_v1';
 const BLANK = {
-  settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:''},
+  settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:'', editLocked:false},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
   shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{}, categories:[],
   seeded:false
@@ -4389,12 +4403,16 @@ function renderTripList(){
           '<td data-label="Freight" class="t-r num t-strong">'+money(t.freight)+'</td>'+
           '<td data-label="Advance" class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+
             '</td>'+
-          '<td data-label="Status">'+statusChip(tripStatus(t))+'</td>'+
+          '<td data-label="Status">'+(tripCompleted(t)
+            ? '<span class="chip chip-green">Completed</span>'+
+              (tripLocked(t)?'<div class="t-sub lock-note">\u2713 Locked</div>':'')
+            : statusChip(tripStatus(t)))+'</td>'+
           '<td data-label="Delivery">'+stageChip(t)+
             (podCount(t.id)?'<div class="t-sub">'+plural(podCount(t.id),'page')+' on file</div>':'')+'</td>'+
           '<td><div class="row-actions">'+
-            '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">Edit</button>'+
-            '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>'+
+            '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">'+(tripLocked(t)?'View':'Edit')+'</button>'+
+            (tripLocked(t) ? ''
+              : '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>')+
           '</div></td>'+
         '</tr>';}).join('')+
       '</tbody><tfoot><tr><th colspan="7">'+plural(full,'trip')+
@@ -4520,7 +4538,7 @@ function supplierBlock(t){
     (!sid && (isMarket||num(t.hire))
       ? '<div class="hint" style="margin-top:8px">Link a supplier and this hire lands in their ledger. '+
         'Add one under <b>Suppliers</b>.</div>' : '')+
-    (sid ? '<div style="margin-top:12px"><button class="btn btn-sm" onclick="closeModal();supplierLedger(\''+sid+'\')">'+
+    (sid ? '<div style="margin-top:12px"><button class="btn btn-sm" data-keep onclick="closeModal();supplierLedger(\''+sid+'\')">'+
       'Open '+esc(supplierName(sid))+'\u2019s ledger</button></div>' : '')+
   '</div>';
 }
@@ -4757,6 +4775,7 @@ function repaintTripPane(){
   if(document.getElementById('f_advTotal')) recalcAdvance();
   clampDates();
   paintTripTotals();
+  applyTripLock();
   return true;
 }
 
@@ -4819,7 +4838,7 @@ function tripMoneyPane(t, existing){
       '<div class="gate-error" id="brokWarn" hidden style="margin-top:10px"></div>'+
     '</div>'+
     supplierBlock(t)+
-    (existing && t.partyId ? '<div style="margin-top:14px"><button class="btn" '+
+    (existing && t.partyId ? '<div style="margin-top:14px"><button class="btn" data-keep '+
       'onclick="closeModal();partyLedger(\'' + t.partyId + '\')">Open '+esc(partyName(t.partyId))+'\u2019s ledger</button></div>' : '');
 }
 
@@ -4838,7 +4857,7 @@ function tripExpensePane(t, existing){
       '<div class="adv-total adv-balance"><span>Total expense money</span>'+
         '<span class="num adv-total-value" id="f_expTotal">₹0</span></div>'+
     '</div>'+
-    (existing ? '<div style="margin-top:14px"><button class="btn" onclick="closeModal();go(\'expenses\')">'+
+    (existing ? '<div style="margin-top:14px"><button class="btn" data-keep onclick="closeModal();go(\'expenses\')">'+
       'Open the Expenses tab</button></div>' : '');
 }
 
@@ -4895,6 +4914,31 @@ function tabStripHtml(t, existing){
       esc(x.label)+(x.chip||'')+'</button>').join('');
 }
 
+function tripLockBanner(t){
+  if(!t || !tripCompleted(t)) return '';
+  const open = allowLockedEdits();
+  const when = t.completedAt ? ' on '+fdate(t.completedAt) : '';
+  return '<div class="trip-lock'+(open?' open':'')+'">'+
+    '<b>'+(open ? 'Completed \u2014 editing allowed' : 'Completed and locked')+'</b>'+
+    '<span>Nothing is left to collect and the POD went to the party'+when+'. '+
+      (open
+        ? 'Editing of completed trips is switched on in Settings, so this one can still be changed.'
+        : 'It is read-only. Switch on <b>Allow editing of completed trips</b> in '+
+          '<a href="#" onclick="event.preventDefault();closeModal();go(\'settings\')">Settings</a> to change it.')+
+    '</span></div>';
+}
+/* Enforcement is at the source, in the functions that write; this only
+   makes the screen say so, by greying what can no longer be touched. */
+function applyTripLock(){
+  const pane = document.querySelector('.overlay .trip-pane');
+  if(!pane || !tripDraft || !tripDraft.id) return;
+  const t = DB.trips.find(x=>x.id===tripDraft.id);
+  if(!t || !tripLocked(t)) return;
+  pane.classList.add('pane-locked');
+  pane.querySelectorAll('input, select, textarea').forEach(el=>{ el.disabled = true; });
+  pane.querySelectorAll('button').forEach(b=>{ if(!b.hasAttribute('data-keep')) b.disabled = true; });
+}
+
 function tripScreen(id, tab){
   if(tab) tripTab = tab;
   const existing = id ? DB.trips.find(x=>x.id===id) : null;
@@ -4924,12 +4968,15 @@ function tripScreen(id, tab){
 
   const TABS = tripTabList(t, existing);
 
+  const locked = !!existing && tripLocked(existing);
+
   openModal({
     title: existing ? ((t.from||'—')+' → '+(t.to||'—')) : 'New trip',
     wide:'full',
     okText: existing ? 'Save changes' : 'Save trip',
-    onOk(){ saveTripScreen(existing); },
+    onOk: locked ? null : function(){ saveTripScreen(existing); },
     body:
+    tripLockBanner(existing)+
     '<div class="trip-top">'+
       '<div class="slip-lr">'+(existing
         ? 'LR '+esc(t.lr||'—')+' · '+fdate(t.date)+' · '+esc(partyName(t.partyId))
@@ -4944,7 +4991,7 @@ function tripScreen(id, tab){
     '<div class="trip-totals" id="tripTotals">'+tripTotalsHtml(t)+'</div>'+
     '<div class="tabs trip-tabs">'+tabStripHtml(t, existing)+'</div>'+
     '<div class="trip-pane pane-in">'+tripPaneHtml(t, existing, tripTab)+'</div>'+
-    (existing? '<div class="trip-actions"><button class="btn btn-danger" '+
+    (existing && !locked ? '<div class="trip-actions"><button class="btn btn-danger" '+
       'onclick="closeModal();delTrip(\''+existing.id+'\')">Delete this trip</button></div>' : '')
   });
 
@@ -4955,6 +5002,7 @@ function tripScreen(id, tab){
   if($('#tripExpRows')) paintTripExpenses();
   if($('#f_advTotal')) recalcAdvance();
   paintTripTotals();
+  applyTripLock();
 }
 
 /* moving to another trip keeps whatever you typed */
@@ -4967,6 +5015,7 @@ function gotoTrip(id){
 }
 
 function saveTripScreen(existing, quiet){
+  if(lockedStop(existing)) return false;
   readTripForm();
   const t = tripDraft;
   /* Both are checked together, so one trip back to the details tab shows
@@ -5008,6 +5057,7 @@ function saveTripScreen(existing, quiet){
     if(tr && tr.type==='market' && tr.supplierId) rec.supplierId = tr.supplierId;
   }
   rememberPlace(rec.from); rememberPlace(rec.to);
+  stampCompletion(rec);
   if(existing) DB.trips[DB.trips.findIndex(x=>x.id===existing.id)] = rec;
   else DB.trips.push(rec);
   syncTripExpenses(rec.id, rec.truckId);
@@ -5052,6 +5102,7 @@ function podTracker(t){
 function fv(label,value){ return '<div><div class="field-label">'+esc(label)+'</div><div class="field-value">'+value+'</div></div>'; }
 
 function delTrip(id){
+  if(lockedStop(DB.trips.find(x=>x.id===id))) return;
   const exp = tripExpensesOf(id);
   confirmAsk('Delete this trip? The freight will also be removed from the party ledger.'+
     (exp ? ' The '+money(exp)+' of expenses booked to it go too.' : ''), ()=>{
@@ -6801,6 +6852,21 @@ function viewSettings(){
   '</div>'+
 
   '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<h3 class="card-title" style="margin-bottom:6px">Completed trips</h3>'+
+    '<p class="hint" style="margin:0 0 14px;max-width:620px">A trip with nothing left to collect and its '+
+      'POD submitted to the party is finished. It is marked <b>Completed</b> and locked, so a closed '+
+      'record cannot be changed by accident. Switch this on if you need to correct one.</p>'+
+    '<label class="check-line"><input type="checkbox" id="s_editLocked"'+(s.editLocked?' checked':'')+
+      ' onchange="setEditLocked(this.checked)"> Allow editing of completed / locked trips</label>'+
+    '<div class="hint" style="margin-top:10px">'+
+      (completedCount()
+        ? plural(completedCount(),'trip')+' completed so far \u2014 '+
+          (s.editLocked ? 'all of them can be edited right now.' : 'they are read-only.')
+        : 'No trip has finished yet.')+
+      ' A trip unlocks itself if a payment is reversed or the POD is un-submitted.</div>'+
+  '</div>'+
+
+  '<div class="card card-pad" style="margin-bottom:16px">'+
     '<h3 class="card-title" style="margin-bottom:6px">Appearance</h3>'+
     '<p class="hint" style="margin:0 0 14px;max-width:600px">Pick the colour scheme you find easiest to read. '+
       'It is remembered on this device.</p>'+
@@ -6846,9 +6912,16 @@ function viewSettings(){
   '</div>';
 }
 function saveSettings(){
-  DB.settings = {business:val('s_business')||'Maa Vandana Logistics', owner:val('s_owner'),
-    phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')};
+  /* merged, not replaced — the lock switch lives here too */
+  DB.settings = Object.assign({}, DB.settings, {
+    business:val('s_business')||'Maa Vandana Logistics', owner:val('s_owner'),
+    phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')});
   save(); applyBrand(); toast('Details saved');
+}
+function setEditLocked(on){
+  DB.settings = Object.assign({}, DB.settings, {editLocked: !!on});
+  save(); viewSettings();
+  toast(on ? 'Completed trips can be edited again' : 'Completed trips are locked');
 }
 const THEMES = [
   {k:'slate',  name:'Slate',  note:'Cool neutral, blue accent'},
@@ -7644,6 +7717,7 @@ async function addPodPhoto(tripId, input){
   const files = input.files ? [...input.files] : [];
   input.value = '';
   if(!files.length) return;
+  if(lockedStop(DB.trips.find(x=>x.id===tripId))) return;
   const box = document.getElementById('podFiles');
   if(box) box.insertAdjacentHTML('beforeend','<div class="doc-busy" id="podBusy">Shrinking photo…</div>');
   for(const file of files){
@@ -7672,6 +7746,7 @@ async function addPodPhoto(tripId, input){
 }
 
 function removePodPhoto(tripId, id){
+  if(lockedStop(DB.trips.find(x=>x.id===tripId))) return;
   confirmAsk('Remove this POD page?', ()=>{
     dropOriginal((podImages(tripId).find(p=>p.id===id)||{}).origKey);
     DB.pods[tripId] = podImages(tripId).filter(p=>p.id!==id);
@@ -7699,7 +7774,8 @@ function viewPodImage(tripId, id){
     body:'<img src="'+img.data+'" alt="POD" style="width:100%;border-radius:8px;display:block">'+
       '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
         '<button class="btn btn-primary" onclick="downloadPodPage(\''+tripId+'\',\''+id+'\')">Download this page</button>'+
-        '<button class="btn btn-danger" onclick="closeModal();removePodPhoto(\''+tripId+'\',\''+id+'\')">Remove</button>'+
+        (tripLocked(t) ? ''
+          : '<button class="btn btn-danger" onclick="closeModal();removePodPhoto(\''+tripId+'\',\''+id+'\')">Remove</button>')+
       '</div>'
   });
 }
@@ -7736,7 +7812,7 @@ function podUploader(t){
         ? '<button class="btn btn-sm" onclick="document.getElementById(\'podCam\').click()">Take photo</button>'+
           '<button class="btn btn-sm" onclick="document.getElementById(\'podFile\').click()">Choose file</button>'
         : '<span class="hint">Maximum '+POD_MAX+' pages reached.</span>')+
-      (list.length? '<button class="btn btn-sm btn-primary" onclick="downloadPod(\''+t.id+'\')">Download</button>':'')+
+      (list.length? '<button class="btn btn-sm btn-primary" data-keep onclick="downloadPod(\''+t.id+'\')">Download</button>':'')+
     '</div>'+
     '<input type="file" id="podCam" accept="image/*" capture="environment" style="display:none" '+
       'onchange="addPodPhoto(\''+t.id+'\',this)">'+
@@ -7890,6 +7966,7 @@ function podAlerts(){
 
 function setStage(id, field, value){
   const t = DB.trips.find(x=>x.id===id); if(!t) return;
+  if(lockedStop(t)) return;
   t[field] = value || '';
   /* clearing a stage clears the ones after it, so the chain stays honest */
   const order = ['deliveredAt','podReceivedAt','podSubmittedAt'];
@@ -7897,6 +7974,7 @@ function setStage(id, field, value){
     const from = order.indexOf(field);
     order.slice(from).forEach(f=>{ t[f]=''; });
   }
+  stampCompletion(t);
   save();
   if(tripDraft && tripDraft.id === id && repaintTripPane()){ /* refreshed in place */ }
   else if(route==='pod') viewPod();
@@ -8125,6 +8203,34 @@ function allocatedTo(tripId, exceptEntry){
 /* everything settled against the freight: advance, brokerage, and payments earmarked to it */
 function tripSettledTotal(t){ return tripDeducted(t) + allocatedTo(t.id); }
 function tripBalance(t){ return tripFreightNet(t) - tripSettledTotal(t); }
+/* ------------------------------------------------------------
+   COMPLETED TRIPS
+   Nothing left to collect and the POD in the party's hands means
+   the trip is finished. A finished record should not drift, so it
+   marks itself Completed and locks. Both halves are worked out
+   from the trip itself rather than stored, so a payment reversed
+   or a POD un-submitted opens it again on its own.
+   ------------------------------------------------------------ */
+function tripCompleted(t){
+  return !!(t && t.podSubmittedAt) && tripBalance(t) <= 0;
+}
+function allowLockedEdits(){ return !!(DB.settings && DB.settings.editLocked); }
+function tripLocked(t){ return tripCompleted(t) && !allowLockedEdits(); }
+function completedCount(){ return DB.trips.filter(tripCompleted).length; }
+/* the day it finished, kept for the record only */
+function stampCompletion(t){
+  if(!t) return t;
+  if(tripCompleted(t)){ if(!t.completedAt) t.completedAt = today(); }
+  else if(t.completedAt) t.completedAt = '';
+  return t;
+}
+/* every path that changes a trip asks first */
+function lockedStop(t){
+  if(!tripLocked(t)) return false;
+  toast('This trip is completed and locked. Allow editing in Settings to change it.');
+  return true;
+}
+
 /* No advance = pending. Some advance = part paid. Nothing left = paid. */
 function tripStatus(t){
   const adv = tripSettledTotal(t), fr = tripFreightNet(t);
