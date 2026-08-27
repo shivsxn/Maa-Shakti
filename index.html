@@ -11,10 +11,11 @@
 <style>
 :root {
   /* Surfaces: warm paper against asphalt — the two materials of the trade */
-  --asphalt: #12161C;
-  --asphalt-2: #1A202A;
-  --asphalt-3: #262E3A;
-  --asphalt-line: rgba(255,255,255,.08);
+  /* retained as aliases of the theme tokens */
+  --asphalt: var(--side);
+  --asphalt-2: var(--side-2);
+  --asphalt-3: rgba(255,255,255,.14);
+  --asphalt-line: var(--side-line);
   --paper: #F4F2EC;
   --paper-2: #EEECE4;
   --card: #FFFFFF;
@@ -135,7 +136,7 @@ textarea {
   height: 36px;
   border-radius: 10px;
   background: linear-gradient(150deg, #EFAE47 0%, #D8912A 100%);
-  color: var(--asphalt);
+  color: var(--side);
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -298,31 +299,31 @@ textarea {
 }
 
 .btn-primary {
-  background: var(--asphalt);
-  border-color: var(--asphalt);
+  background: var(--side);
+  border-color: var(--side);
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: var(--asphalt-2);
-  border-color: var(--asphalt-2);
+  background: var(--side-2);
+  border-color: var(--side-2);
 }
 
 .btn-amber {
   background: var(--amber);
   border-color: var(--amber);
-  color: var(--asphalt);
+  color: var(--side);
   box-shadow: 0 1px 2px rgba(224,154,46,.35), 0 6px 16px rgba(224,154,46,.22);
 }
 
 .btn-amber:hover {
-  background: #F0AC4C;
-  border-color: #F0AC4C;
+  background: var(--accent-2);
+  border-color: var(--accent-2);
 }
 
 .btn-danger {
   color: var(--red);
-  border-color: #E8CFCB;
+  border-color: var(--red-line);
 }
 
 .btn-danger:hover {
@@ -533,7 +534,7 @@ tbody tr:hover {
 
 .chip-amber {
   background: var(--amber-soft);
-  color: #8A5D12;
+  color: var(--amber);
 }
 
 .chip-red {
@@ -576,7 +577,7 @@ tbody tr:hover {
 }
 
 .stamp-part {
-  color: #8A5D12;
+  color: var(--amber);
 }
 
 /* LR slip */
@@ -676,7 +677,7 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: var(--asphalt-3);
+  border-color: rgba(255,255,255,.14);
   outline-offset: 1px;
   box-shadow: 0 0 0 3px rgba(40,49,63,.10);
   outline: none;
@@ -720,8 +721,8 @@ textarea {
 }
 
 .seg input:checked+label {
-  background: var(--asphalt);
-  border-color: var(--asphalt);
+  background: var(--side);
+  border-color: var(--side);
   color: #fff;
 }
 
@@ -890,7 +891,7 @@ textarea {
   align-items: center;
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1.5px solid var(--asphalt);
+  border-top: 1.5px solid var(--side);
   font-weight: 700;
   font-size: 14.5px;
 }
@@ -915,7 +916,7 @@ textarea {
 }
 
 .money-amber {
-  color: #8A5D12;
+  color: var(--amber);
   font-weight: 600;
 }
 
@@ -1024,7 +1025,7 @@ textarea {
 
 .doc-bar .rm {
   color: var(--red);
-  border-color: #E8CFCB;
+  border-color: var(--red-line);
 }
 
 .doc-size {
@@ -1204,7 +1205,7 @@ textarea {
 
 .note {
   background: var(--amber-soft);
-  border: 1px solid #EBDCBD;
+  border: 1px solid var(--amber-line);
   border-radius: var(--r-sm);
   padding: 13px 15px;
   font-size: 13px;
@@ -1228,7 +1229,7 @@ textarea {
 }
 
 .pl-total {
-  border-top: 2px solid var(--asphalt);
+  border-top: 2px solid var(--side);
   border-bottom: 0;
   margin-top: 6px;
   padding-top: 13px;
@@ -1391,7 +1392,7 @@ textarea {
 
 .gate-error {
   background: var(--red-soft);
-  border: 1px solid #E8CFCB;
+  border: 1px solid var(--red-line);
   color: var(--red);
   border-radius: 8px;
   padding: 10px 12px;
@@ -1427,8 +1428,8 @@ textarea {
 }
 
 .rules {
-  background: var(--asphalt);
-  color: #E8E6E1;
+  background: var(--side);
+  color: rgba(255,255,255,.88);
   border-radius: 9px;
   padding: 14px 16px;
   font-family: var(--mono);
@@ -1465,7 +1466,7 @@ textarea {
 }
 
 .cloud-pill:hover {
-  border-color: #CFC9BB;
+  border-color: var(--line-strong);
 }
 
 /* A class that sets display will override the hidden attribute, so every
@@ -1488,7 +1489,7 @@ textarea {
 
 .cloud-pill.on {
   color: var(--green);
-  border-color: #C8E2D6;
+  border-color: var(--green-line);
   background: var(--green-soft);
 }
 
@@ -1497,8 +1498,8 @@ textarea {
 }
 
 .cloud-pill.busy {
-  color: #8A5D12;
-  border-color: #EBDCBD;
+  color: var(--amber);
+  border-color: var(--amber-line);
   background: var(--amber-soft);
 }
 
@@ -1509,7 +1510,7 @@ textarea {
 
 .cloud-pill.bad {
   color: var(--red);
-  border-color: #E8CFCB;
+  border-color: var(--red-line);
   background: var(--red-soft);
 }
 
@@ -1940,13 +1941,13 @@ tbody tr {
 }
 
 .bell:hover {
-  border-color: #CFC9BB;
+  border-color: var(--line-strong);
   color: var(--ink);
 }
 
 .bell.has {
   color: var(--red);
-  border-color: #E8CFCB;
+  border-color: var(--red-line);
   background: var(--red-soft);
 }
 
@@ -1988,7 +1989,7 @@ tbody tr {
 
 .notif:hover {
   background: #FCFBF8;
-  border-color: #CFC9BB;
+  border-color: var(--line-strong);
 }
 
 .notif-dot {
@@ -2039,7 +2040,7 @@ tbody tr {
 
 .docrow .rmdoc {
   padding: 9px 11px;
-  border: 1px solid #E8CFCB;
+  border: 1px solid var(--red-line);
   background: var(--card);
   color: var(--red);
   border-radius: 8px;
@@ -2215,7 +2216,7 @@ tbody tr {
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--asphalt);
+    background: var(--side);
     z-index: 50;
     padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
     border-top: 1px solid rgba(255,255,255,.1);
@@ -2861,11 +2862,11 @@ tbody tr:last-child td {
 }
 
 .hero-stat-foot .trend-up {
-  color: #6FCBA4;
+  color: #7FD6B0;
 }
 
 .hero-stat-foot .trend-down {
-  color: #E58C80;
+  color: #F0A79C;
 }
 
 @media (max-width: 900px) {
@@ -2898,7 +2899,7 @@ tbody tr:last-child td {
 .alloc-what{flex:1;min-width:0}
 .alloc-amt{width:120px;padding:8px 10px;font-size:14px;font-family:var(--mono)}
 .alloc-foot{display:flex;align-items:center;margin-top:10px;padding-top:10px;
-  border-top:1.5px solid var(--asphalt);font-weight:700;font-size:14.5px}
+  border-top:1.5px solid var(--side);font-weight:700;font-size:14.5px}
 .alloc-foot .num{margin-left:auto;font-size:16px}
 @media (max-width:760px){
   .alloc-row{flex-wrap:wrap}
@@ -2967,7 +2968,7 @@ tbody tr:last-child td {
 .chart .hz .hz-show{opacity:0;transition:opacity .12s}
 .chart .hz:hover .hz-show{opacity:1}
 .chart .hz-line{stroke:var(--line-strong,#D6D1C4);stroke-width:1;stroke-dasharray:3 3}
-.chart .hz-box{fill:var(--asphalt);opacity:.96}
+.chart .hz-box{fill:var(--side);opacity:.96}
 .chart .hz-title{fill:#fff;font-size:11px;font-weight:700;letter-spacing:.01em}
 .chart .hz-key{fill:rgba(255,255,255,.68);font-size:10.5px}
 .chart .hz-val{font-family:var(--mono);font-size:10.5px;font-weight:600}
@@ -3110,7 +3111,10 @@ th{
   background:var(--card);color:var(--muted);font-size:10.5px;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;
   border-bottom:1px solid var(--line);
-  position:sticky;top:var(--topbar-h);z-index:10;
+  /* The wrapper is the scroll container, so the offset is measured from
+     the top of the card — not from the top bar. Anything else pushes the
+     header down over the first row. */
+  position:sticky;top:0;z-index:10;
 }
 td{border-bottom:1px solid var(--line-soft);padding:13px 15px;font-size:13.5px;color:var(--ink-2)}
 td.t-strong,.t-strong{color:var(--ink)}
@@ -3178,6 +3182,23 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 @media (max-width:760px){ .theme-picks{grid-template-columns:1fr} }
 @media print{ body{background:#fff!important} }
 
+
+/* ---------- stacking order, stated once ----------
+   cards 1 · table headers 10 · top bar 20 · bottom bar 50
+   modals 100 · login 150 · messages 300                      */
+#toast{position:fixed;z-index:300}
+.toast{border-radius:10px;box-shadow:0 12px 34px rgba(17,22,33,.3);padding:12px 18px}
+.overlay{z-index:100}
+.gate{z-index:150}
+.topbar{z-index:20}
+.mobile-nav{z-index:50}
+th{z-index:10}
+
+/* rounded cards must clip what sits inside them, or the table
+   corners square off against the border */
+.card{overflow:hidden}
+.card > .tbl-wrap{border-radius:0}
+
 </style>
 </head>
 <body>
@@ -3193,7 +3214,7 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.2 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.3 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5965,7 +5986,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.2</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.3</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -7302,7 +7323,7 @@ function rangeCaption(){ return fdate(sub.from)+' to '+fdate(sub.to); }
 /* ============================================================
    CHARTS — hand drawn as SVG so the app stays one offline file
    ============================================================ */
-const SERIES = ['#E9A13B','#2C5D7C','#1C7A57','#B3372C','#8A5D12','#4A5568','#7C6A9E','#C97B4A'];
+const SERIES = ['#E9A13B','#2C5D7C','#1C7A57','#B3372C','var(--amber)','#4A5568','#7C6A9E','#C97B4A'];
 
 // Indian short form: 1.2L, 85k — keeps axis labels readable
 function shortMoney(n){
