@@ -10,40 +10,52 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --asphalt: #111621;
-  --asphalt-2: #1A2130;
-  --asphalt-3: #28313F;
-  --paper: #F5F4F1;
+  /* Surfaces: warm paper against asphalt — the two materials of the trade */
+  --asphalt: #12161C;
+  --asphalt-2: #1A202A;
+  --asphalt-3: #262E3A;
+  --asphalt-line: rgba(255,255,255,.08);
+  --paper: #F4F2EC;
+  --paper-2: #EEECE4;
   --card: #FFFFFF;
-  --line: #E4E1DA;
-  --line-soft: #EFEDE7;
-  --ink: #161A20;
-  --muted: #6E6A63;
-  --amber: #E09A2E;
-  --amber-soft: #FDF4E4;
-  --red: #B03428;
-  --red-soft: #FBEEEC;
-  --green: #1B7355;
-  --green-soft: #E8F2ED;
-  --blue: #28577A;
-  --blue-soft: #EBF1F6;
-  --r: 11px;
+  --line: #E2DED4;
+  --line-soft: #EEEBE3;
+  --line-strong: #D4CFC2;
+  --ink: #14181E;
+  --ink-2: #39404A;
+  --muted: #6C6860;
+  --muted-2: #8B867C;
+
+  /* One accent, used sparingly: highway gold */
+  --amber: #C9902A;
+  --amber-deep: #A8761A;
+  --amber-soft: #FAF0DB;
+  --amber-line: #E9D6A8;
+  --red: #A83227;
+  --red-soft: #FAEAE8;
+  --red-line: #E9CDC8;
+  --green: #1A6A4E;
+  --green-soft: #E6F0EB;
+  --green-line: #C6DFD3;
+  --blue: #27536F;
+  --blue-soft: #E8EFF4;
+  --blue-line: #CDDCE8;
+
+  /* Elevation stays shallow — this is a working tool, not a toy */
+  --sh-1: 0 1px 2px rgba(18,22,28,.05);
+  --sh-2: 0 1px 2px rgba(18,22,28,.05), 0 6px 16px -10px rgba(18,22,28,.16);
+  --sh-3: 0 2px 4px rgba(18,22,28,.06), 0 18px 40px -18px rgba(18,22,28,.24);
+  --sh-4: 0 30px 70px -24px rgba(18,22,28,.38);
   --shadow: var(--sh-2);
-  --sans: 'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  --mono: 'IBM Plex Mono',ui-monospace,'Courier New',monospace;
-  --paper-2: #EFEDE8;
-  --line-strong: #D2CEC4;
-  --ink-2: #3A414C;
-  --muted-2: #8C877E;
-  --amber-line: #EEDCB8;
-  --red-line: #E9D0CB;
-  --green-line: #C7E2D5;
-  --blue-line: #CCDDE9;
+
   --r-sm: 8px;
+  --r: 11px;
   --r-lg: 14px;
-  --sh-1: 0 1px 2px rgba(17,22,33,.05);
-  --sh-2: 0 1px 2px rgba(17,22,33,.05), 0 4px 12px rgba(17,22,33,.05);
-  --sh-3: 0 2px 4px rgba(17,22,33,.06), 0 14px 30px rgba(17,22,33,.09);
+  --r-pill: 999px;
+  --ring: 0 0 0 3px rgba(201,144,42,.26);
+  --sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
+  --topbar-h: 60px;
 }
 
 * {
@@ -2948,6 +2960,224 @@ tbody tr:last-child td {
   .pr-foot{margin-top:18px;padding-top:6px;border-top:.5pt solid #ccc;
     font-size:8pt;color:#666;text-align:center}
 }
+.chart .grid-line{stroke:var(--line-soft);stroke-width:1}
+.chart .grid-base{stroke:var(--line-strong,#D6D1C4);stroke-width:1.25}
+.chart .axis-text{fill:var(--muted);font-family:var(--mono);font-size:10.5px;letter-spacing:-.02em}
+.chart .peak-text{fill:var(--muted);font-size:10.5px;font-weight:700;letter-spacing:.02em}
+.chart .hz .hz-show{opacity:0;transition:opacity .12s}
+.chart .hz:hover .hz-show{opacity:1}
+.chart .hz-line{stroke:var(--line-strong,#D6D1C4);stroke-width:1;stroke-dasharray:3 3}
+.chart .hz-box{fill:var(--asphalt);opacity:.96}
+.chart .hz-title{fill:#fff;font-size:11px;font-weight:700;letter-spacing:.01em}
+.chart .hz-key{fill:rgba(255,255,255,.68);font-size:10.5px}
+.chart .hz-val{font-family:var(--mono);font-size:10.5px;font-weight:600}
+.legend-val{margin-left:6px;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.legend-note{font-size:11.5px;color:var(--muted-2,#8C877D);margin-left:auto}
+@media (max-width:760px){ .legend-note{display:none} }
+
+
+/* ============================================================
+   DESIGN SYSTEM
+   Cool neutral surfaces, one restrained accent, and colour used
+   only to mean something: green settled, amber waiting, red owed.
+   Three themes; the one in use is set on <html data-theme>.
+   ============================================================ */
+
+/* ---------- palette ---------- */
+:root, [data-theme="slate"]{
+  --bg:#F6F7F9; --bg-2:#EFF1F4; --card:#FFFFFF;
+  --side:#131720; --side-2:#0E1219; --side-line:rgba(255,255,255,.07);
+  --line:#E4E7EB; --line-soft:#EFF1F4; --line-strong:#CFD4DB;
+  --ink:#111827; --ink-2:#374151; --muted:#6B7280; --muted-2:#9AA1AC;
+  --accent:#2F5FE0; --accent-2:#1E47B8; --accent-soft:#EAF0FE; --accent-line:#C9D9FB;
+  --amber:#B7791F; --amber-soft:#FDF3E2; --amber-line:#EEDCB6;
+  --red:#B42318; --red-soft:#FDECEA; --red-line:#F2CFCB;
+  --green:#116B4E; --green-soft:#E7F2ED; --green-line:#C4E0D4;
+  --blue:#1E5A86; --blue-soft:#E9F1F7; --blue-line:#CBDFEC;
+  --topbar-h:58px;
+}
+[data-theme="indigo"]{
+  --bg:#F7F7FB; --bg-2:#F0F0F7; --side:#171531; --side-2:#110F25;
+  --line:#E6E5EF; --line-soft:#F0EFF6; --line-strong:#D2D0E0;
+  --ink:#15132B; --ink-2:#3A3757; --muted:#6B6785; --muted-2:#9A96B0;
+  --accent:#5A45D6; --accent-2:#4632B4; --accent-soft:#EFEBFD; --accent-line:#D6CDF8;
+}
+[data-theme="forest"]{
+  --bg:#F5F7F5; --bg-2:#EDF1ED; --side:#101A16; --side-2:#0B1310;
+  --line:#E1E7E2; --line-soft:#EDF1EE; --line-strong:#CBD5CD;
+  --ink:#0F1A15; --ink-2:#31413A; --muted:#63736B; --muted-2:#94A29A;
+  --accent:#0F7A55; --accent-2:#0A5B3F; --accent-soft:#E6F3EC; --accent-line:#C2E2D1;
+}
+
+/* ---------- page ---------- */
+body{
+  background:var(--bg);
+  background-image:none;
+  color:var(--ink);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+h1,h2,h3{letter-spacing:-.021em}
+
+/* ---------- scrollbars ---------- */
+*{scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:999px;
+  border:3.5px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--muted-2);background-clip:content-box}
+.sidebar *{scrollbar-color:rgba(255,255,255,.18) transparent}
+.sidebar ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);background-clip:content-box}
+
+/* ---------- sidebar ---------- */
+.sidebar{background:linear-gradient(180deg,var(--side) 0%,var(--side-2) 100%);border-right:0}
+.brand{padding:20px 18px 16px;border-bottom:1px solid var(--side-line)}
+.brand-badge{background:var(--accent);color:#fff;border-radius:10px;box-shadow:none;font-weight:700}
+.brand-name{font-size:14.5px;line-height:1.25;color:#fff}
+.brand-tag{font-size:10px;color:rgba(255,255,255,.34);letter-spacing:.14em;margin-top:8px}
+.nav{padding:10px 10px}
+.nav-item{
+  border-radius:8px;padding:9px 11px;gap:11px;font-size:13.5px;font-weight:500;
+  color:rgba(255,255,255,.62);transition:background .13s,color .13s;
+}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.on{background:rgba(255,255,255,.10);color:#fff;font-weight:600}
+.nav-item.on .ic{color:#fff}
+.nav-item .ic{opacity:.9}
+.side-foot{color:rgba(255,255,255,.28);font-size:10.5px;border-top:1px solid var(--side-line)}
+
+/* ---------- top bar ---------- */
+.topbar{
+  background:rgba(246,247,249,.9);
+  backdrop-filter:saturate(1.4) blur(8px);
+  -webkit-backdrop-filter:saturate(1.4) blur(8px);
+  border-bottom:1px solid var(--line);
+  padding:14px 26px;
+}
+.page-title{font-size:20px;font-weight:700;color:var(--ink)}
+.page-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+
+/* ---------- surfaces ---------- */
+.card,.stat,.kpi,.filters,.range{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 1px 2px rgba(17,24,39,.04);
+}
+.card{overflow:visible}
+.card-head{padding:14px 18px;border-bottom:1px solid var(--line-soft);background:transparent}
+
+/* ---------- KPI: one primary number, the rest subordinate ---------- */
+.kpi{padding:16px 18px;transition:box-shadow .16s,border-color .16s}
+.kpi:hover{box-shadow:0 4px 14px -6px rgba(17,24,39,.18);border-color:var(--line-strong)}
+.kpi-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.kpi-value{font-size:26px;letter-spacing:-.035em;margin-top:8px;color:var(--ink)}
+.kpi-foot{font-size:11.5px;color:var(--muted-2);padding-top:9px}
+
+/* ---------- buttons ---------- */
+.btn{
+  border-radius:8px;font-weight:600;min-height:38px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink-2);
+  transition:background .13s,border-color .13s,color .13s;
+}
+.btn:hover{background:var(--bg-2);border-color:var(--line-strong);color:var(--ink)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn-primary:hover{background:#000;border-color:#000;color:#fff}
+.btn-amber{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-amber:hover{background:var(--accent-2);border-color:var(--accent-2);color:#fff}
+.btn-danger{color:var(--red);border-color:var(--red-line);background:var(--card)}
+.btn-danger:hover{background:var(--red-soft);border-color:var(--red)}
+.btn:focus-visible,.nav-item:focus-visible,.tab:focus-visible,
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:none;box-shadow:0 0 0 3px var(--accent-soft),0 0 0 1px var(--accent);
+}
+
+/* ---------- fields ---------- */
+input,select,textarea{
+  border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  transition:border-color .13s,box-shadow .13s;
+}
+input:hover,select:hover,textarea:hover{border-color:var(--line-strong)}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);
+}
+label{color:var(--ink-2);font-size:12px;font-weight:600}
+.hint{color:var(--muted-2)}
+
+/* ---------- tables ---------- */
+.card > .tbl-wrap{border-radius:0 0 12px 12px;overflow-x:auto;overflow-y:visible}
+th{
+  background:var(--card);color:var(--muted);font-size:10.5px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;
+  border-bottom:1px solid var(--line);
+  position:sticky;top:var(--topbar-h);z-index:10;
+}
+td{border-bottom:1px solid var(--line-soft);padding:13px 15px;font-size:13.5px;color:var(--ink-2)}
+td.t-strong,.t-strong{color:var(--ink)}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:var(--bg-2)}
+tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line);border-bottom:0}
+.t-sub{color:var(--muted-2);font-size:11.5px;margin-top:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- chips: colour means state, nothing else ---------- */
+.chip{border-radius:999px;font-size:11px;font-weight:600;padding:3.5px 10px;letter-spacing:.01em}
+.chip-grey{background:var(--bg-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.chip-amber{background:var(--amber-soft);color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber-line)}
+.chip-red{background:var(--red-soft);color:var(--red);box-shadow:inset 0 0 0 1px var(--red-line)}
+.chip-green{background:var(--green-soft);color:var(--green);box-shadow:inset 0 0 0 1px var(--green-line)}
+.chip-blue{background:var(--blue-soft);color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue-line)}
+
+/* ---------- modals ---------- */
+.overlay{background:rgba(17,24,39,.45);backdrop-filter:blur(2px)}
+.modal{border-radius:14px;box-shadow:0 24px 60px -16px rgba(17,24,39,.35);border:1px solid var(--line)}
+.modal-head{border-bottom:1px solid var(--line-soft);background:var(--card);position:sticky;top:0;z-index:12}
+.modal-foot{background:var(--bg);border-top:1px solid var(--line-soft)}
+
+/* ---------- tabs ---------- */
+.tabs{border-bottom:1px solid var(--line)}
+.tab{color:var(--muted);font-weight:600;transition:color .13s,border-color .13s}
+.tab:hover{color:var(--ink-2)}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* ---------- empty states ---------- */
+.empty{padding:46px 24px}
+.empty-title{font-size:15.5px;font-weight:700;margin-bottom:6px;color:var(--ink)}
+.empty-text{color:var(--muted);font-size:13.5px;line-height:1.6}
+
+/* ---------- misc ---------- */
+.bell,.cloud-pill{border-radius:8px;border:1px solid var(--line);background:var(--card)}
+.cloud-pill{border-radius:999px}
+.bell.has{background:var(--red-soft);border-color:var(--red-line);color:var(--red)}
+.note{background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--ink-2);border-radius:10px}
+.money-pos{color:var(--green)}
+.money-neg{color:var(--red)}
+.legend-item{color:var(--muted)}
+.fleet-line{color:var(--muted-2)}
+.theme-picks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.theme-pick{
+  display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+  padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--card);
+  cursor:pointer;text-align:left;transition:border-color .13s,box-shadow .13s;
+}
+.theme-pick:hover{border-color:var(--line-strong)}
+.theme-pick.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.theme-swatch{display:flex;gap:4px;margin-bottom:6px}
+.theme-swatch i{width:18px;height:18px;border-radius:5px;display:block}
+.theme-pick[data-theme="slate"] .s1{background:#131720}
+.theme-pick[data-theme="slate"] .s2{background:#2F5FE0}
+.theme-pick[data-theme="slate"] .s3{background:#E4E7EB}
+.theme-pick[data-theme="indigo"] .s1{background:#171531}
+.theme-pick[data-theme="indigo"] .s2{background:#5A45D6}
+.theme-pick[data-theme="indigo"] .s3{background:#E6E5EF}
+.theme-pick[data-theme="forest"] .s1{background:#101A16}
+.theme-pick[data-theme="forest"] .s2{background:#0F7A55}
+.theme-pick[data-theme="forest"] .s3{background:#E1E7E2}
+.theme-name{font-weight:700;font-size:14px;color:var(--ink)}
+.theme-note{font-size:11.5px;color:var(--muted-2)}
+@media (max-width:760px){ .theme-picks{grid-template-columns:1fr} }
+@media print{ body{background:#fff!important} }
+
 </style>
 </head>
 <body>
@@ -2963,7 +3193,7 @@ tbody tr:last-child td {
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 7.6 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.2 &middot; 26 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3043,6 +3273,21 @@ function monthName(k){
   const M=['January','February','March','April','May','June','July','August','September','October','November','December'];
   return M[parseInt(k.slice(5,7),10)-1]+' '+k.slice(0,4);
 }
+const DATE_MIN = '2000-01-01', DATE_MAX = '3000-12-31';
+/* Native date fields accept year 0002 if you type into them, which then
+   reads as "expired 739186 days ago". Bound every one of them, wherever
+   it was created, rather than hunting each field down. */
+function clampDates(){
+  document.querySelectorAll('input[type="date"]').forEach(el=>{
+    if(!el.getAttribute('min')) el.setAttribute('min', DATE_MIN);
+    if(!el.getAttribute('max')) el.setAttribute('max', DATE_MAX);
+  });
+}
+function sensibleDate(v){
+  if(!v) return true;
+  return v >= DATE_MIN && v <= DATE_MAX;
+}
+
 function toast(msg){
   const t = document.createElement('div');
   t.className = 'toast ok'; t.textContent = msg;
@@ -3231,6 +3476,7 @@ function render(){
     expenses:viewExpenses, drivers:viewDrivers, shops:viewShops, suppliers:viewSuppliers, pod:viewPod, reports:viewReports,
     insights:viewInsights, settings:viewSettings}[route])();
   paintBell();
+  clampDates();
   const v = $('#view');
   v.classList.remove('view-in'); void v.offsetWidth; v.classList.add('view-in');
   animateCounts();
@@ -3272,6 +3518,7 @@ function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk,
         '<button class="'+okClass+'" onclick="modalOk()">'+esc(okText)+'</button></div>' : '')+
       '</div></div>';
   document.body.style.overflow='hidden';
+  clampDates();
   if($('#docGrid')) paintDocs();
   if($('#truckDocs')) paintTruckDocs();
   if($('#f_advTotal')) recalcAdvance();
@@ -3518,7 +3765,7 @@ function viewInsights(){
     .filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,6);
 
   $('#pageSub').textContent = rangeCaption();
-  $('#pageActions').innerHTML = '<button class="btn" onclick="printReport()">Print statement</button>';
+  $('#pageActions').innerHTML = '<button class="btn" onclick="printInsights()">Print statement</button>';
 
   $('#view').innerHTML =
   rangeBar('insights')+
@@ -3819,6 +4066,7 @@ function syncHire(){
 
 let lineDraft = [];
 function paintTripLines(){
+  setTimeout(clampDates, 0);
   const box = document.getElementById('lineRows');
   if(!box) return;
   box.innerHTML = lineDraft.length ? lineDraft.map((x,i)=>
@@ -4645,7 +4893,8 @@ function paintTruckDocs(){
       '<div class="field"><label for="td_h'+i+'">Document</label>'+
         '<input id="td_h'+i+'" list="docTypeList" value="'+esc(d.header)+'" placeholder="Insurance" onchange="readDocRows()"></div>'+
       '<div class="field"><label for="td_e'+i+'">Expires</label>'+
-        '<input id="td_e'+i+'" type="date" value="'+esc(d.expiry)+'" onchange="readDocRows();paintTruckDocs()"></div>'+
+        '<input id="td_e'+i+'" type="date" min="'+DATE_MIN+'" max="'+DATE_MAX+'" value="'+esc(d.expiry)+
+        '" onchange="readDocRows();paintTruckDocs()"></div>'+
       '<div class="field"><label for="td_n'+i+'">Notes</label>'+
         '<input id="td_n'+i+'" value="'+esc(d.notes)+'" placeholder="Optional" onchange="readDocRows()"></div>'+
       '<button type="button" class="rmdoc" onclick="readDocRows();removeDocRow('+i+')">Remove</button>'+
@@ -4653,6 +4902,7 @@ function paintTruckDocs(){
         '<span class="hint" style="margin-left:8px">'+esc(docWhen(st.days))+'</span></div>':'')+
     '</div>';
   }).join('') || '<div class="hint" style="margin-bottom:9px">No documents added yet.</div>';
+  clampDates();
 }
 
 function truckForm(id, onSaved){
@@ -4686,6 +4936,8 @@ function truckForm(id, onSaved){
       readDocRows();
       const bad = pendingTruckDocs.find(d=>(d.header && !d.expiry) || (!d.header && d.expiry));
       if(bad){ toast('Every document needs both a name and an expiry date'); return; }
+      const odd = pendingTruckDocs.find(d=>d.expiry && !sensibleDate(d.expiry));
+      if(odd){ toast('Check the expiry date on '+(odd.header||'that document')+' — the year looks wrong.'); return; }
       const docs = pendingTruckDocs.filter(d=>d.header && d.expiry);
       const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number'),
         model:val('t_model'), capacity:val('t_capacity'), driverId:val('t_driver'), owner:val('t_owner'),
@@ -4955,8 +5207,14 @@ function showDriverDocs(id){
         '<div class="doc-label">'+esc(s.label)+'</div>'+
         '<img class="doc-thumb" src="'+d.docs[s.k]+'" alt="'+esc(s.label)+'" style="min-height:150px" '+
           'onclick="viewDoc(\''+s.k+'\',\''+esc(s.label)+'\')">'+
+        '<div class="doc-bar">'+
+          '<button type="button" onclick="downloadDriverDoc(\''+s.k+'\',\''+id+'\')">Download</button>'+
+        '</div>'+
       '</div>').join('')+'</div>'+
-      '<div class="hint" style="margin-top:12px">Tap a photo to see it full size or download it.</div>'
+      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+        '<button class="btn btn-sm btn-primary" onclick="downloadAllDriverDocs(\''+id+'\')">Download all</button>'+
+      '</div>'+
+      '<div class="hint" style="margin-top:10px">Tap a photo to see it full size.</div>'
   });
 }
 
@@ -5043,7 +5301,7 @@ function viewPod(){
   const locked = lockedByPod();
   const chase = podAlerts().length;
 
-  $('#pageActions').innerHTML = '<button class="btn" onclick="printReport()">Print statement</button>';
+  $('#pageActions').innerHTML = '<button class="btn" onclick="printPodList()">Print statement</button>';
   $('#pageSub').textContent = (delivered.length+received.length)+' waiting on paperwork';
 
   const row = (t, field, action) => {
@@ -5665,6 +5923,19 @@ function viewSettings(){
     '<div style="margin-top:14px"><button class="btn btn-primary" onclick="saveSettings()">Save details</button></div>'+
   '</div>'+
 
+  '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<h3 class="card-title" style="margin-bottom:6px">Appearance</h3>'+
+    '<p class="hint" style="margin:0 0 14px;max-width:600px">Pick the colour scheme you find easiest to read. '+
+      'It is remembered on this device.</p>'+
+    '<div class="theme-picks">'+THEMES.map(t=>
+      '<button class="theme-pick'+(currentTheme()===t.k?' on':'')+'" data-theme="'+t.k+'" '+
+        'onclick="setTheme(\''+t.k+'\')">'+
+        '<span class="theme-swatch"><i class="s1"></i><i class="s2"></i><i class="s3"></i></span>'+
+        '<span class="theme-name">'+esc(t.name)+'</span>'+
+        '<span class="theme-note">'+esc(t.note)+'</span>'+
+      '</button>').join('')+
+    '</div>'+
+  '</div>'+
   syncPanel()+
   '<div class="card card-pad" style="margin-bottom:16px">'+
     '<h3 class="card-title" style="margin-bottom:6px">Backup file</h3>'+
@@ -5694,7 +5965,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>7.6</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.2</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -5702,6 +5973,22 @@ function saveSettings(){
     phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')};
   save(); applyBrand(); toast('Details saved');
 }
+const THEMES = [
+  {k:'slate',  name:'Slate',  note:'Cool neutral, blue accent'},
+  {k:'indigo', name:'Indigo', note:'Deeper, softer, violet accent'},
+  {k:'forest', name:'Forest', note:'Muted green, calmer on the eye'}
+];
+function currentTheme(){ return localStorage.getItem('mvl_theme') || 'slate'; }
+function applyTheme(k){
+  const t = THEMES.some(x=>x.k===k) ? k : 'slate';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('mvl_theme', t);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', getComputedStyle(document.documentElement)
+    .getPropertyValue('--side').trim() || '#131720');
+}
+function setTheme(k){ applyTheme(k); if(route==='settings') viewSettings(); toast('Theme changed'); }
+
 function applyBrand(){
   const n = DB.settings.business || 'Maa Vandana Logistics';
   document.title = n;
@@ -5977,6 +6264,85 @@ function printDriverStatement(did){
   );
 }
 
+
+/* ---------- business summary (Insights) ---------- */
+function printInsights(){
+  const period = rangeCaption();
+  const win = pnl(sub.from, sub.to);
+  const series = seriesForRange(sub.from, sub.to);
+  const inR = d => (!sub.from || d>=sub.from) && (!sub.to || d<=sub.to);
+  const trips = DB.trips.filter(t=>inR(t.date));
+
+  const routes = {};
+  trips.forEach(t=>{
+    const k = (t.from||'?')+' to '+(t.to||'?');
+    routes[k] = routes[k] || {n:0, freight:0, margin:0};
+    routes[k].n++; routes[k].freight += tripFreightNet(t); routes[k].margin += tripFreightNet(t)-num(t.hire);
+  });
+  const routeRows = Object.entries(routes).sort((a,b)=>b[1].margin-a[1].margin).slice(0,8)
+    .map(([k,v])=>[esc(k), String(v.n), money(v.freight), money(v.margin), money(v.margin/v.n)]);
+
+  const truckRows = DB.trucks.map(tr=>{
+    const ts = trips.filter(t=>t.truckId===tr.id);
+    const freight = ts.reduce((s,t)=>s+tripFreightNet(t),0);
+    const hire = ts.reduce((s,t)=>s+num(t.hire),0);
+    const exp = DB.expenses.filter(e=>e.truckId===tr.id && inR(e.date)).reduce((s,e)=>s+num(e.amount),0);
+    return {tr, n:ts.length, freight, net:freight-hire-exp};
+  }).filter(r=>r.n||r.net).sort((a,b)=>b.net-a.net)
+    .map(r=>[esc(r.tr.number), String(r.n), money(r.freight), money(r.net)]);
+
+  printDoc(
+    printHead('Business summary', period, [
+      ['Period', period],
+      ['Trips', String(win.tripCount)],
+      ['Margin', (win.freight? Math.round(win.profit/win.freight*100):0)+'%']
+    ])+
+    printSummary([
+      ['Billed to parties', money(win.freight)],
+      ['Total costs', money(win.costs)],
+      ['Freight per trip', money(win.tripCount? win.freight/win.tripCount : 0)],
+      ['Cost per trip', money(win.tripCount? win.costs/win.tripCount : 0)],
+      [(win.profit>=0?'Net profit':'Net loss'), money(Math.abs(win.profit)), true]
+    ])+
+    '<h2 class="pr-h2">Month by month</h2>'+
+    printTable([{label:'Month'},{label:'Trips', right:true, w:'12%'},{label:'Billed', right:true, w:'20%'},
+      {label:'Costs', right:true, w:'20%'},{label:'Profit', right:true, w:'20%'}],
+      series.map(s=>[esc(s.label), String(s.trips), money(s.freight), money(s.cost), money(s.profit)]),
+      ['Total', String(win.tripCount), money(win.freight), money(win.costs), money(win.profit)])+
+    '<h2 class="pr-h2">Strongest routes</h2>'+
+    printTable([{label:'Route'},{label:'Trips', right:true, w:'11%'},{label:'Billed', right:true, w:'19%'},
+      {label:'After hire', right:true, w:'19%'},{label:'Per trip', right:true, w:'17%'}], routeRows)+
+    '<h2 class="pr-h2">Earnings by truck</h2>'+
+    printTable([{label:'Truck'},{label:'Trips', right:true, w:'14%'},{label:'Billed', right:true, w:'22%'},
+      {label:'Net after costs', right:true, w:'24%'}], truckRows)+
+    printSign('Net profit is based on the full amount billed, whether or not it has been collected.')
+  );
+}
+
+/* ---------- paperwork outstanding (Deliveries) ---------- */
+function printPodList(){
+  const rows = DB.trips.filter(t=>['delivered','received'].includes(tripStage(t)))
+    .sort((a,b)=>(a.deliveredAt||a.date||'').localeCompare(b.deliveredAt||b.date||''));
+  const held = rows.reduce((s,t)=>s+Math.max(0,tripBalance(t)),0);
+  printDoc(
+    printHead('Paperwork outstanding', 'Delivered trips awaiting POD', [
+      ['Trips waiting', String(rows.length)],
+      ['Money held up', money(held)]
+    ])+
+    printTable([{label:'Delivered', w:'13%'},{label:'LR', w:'12%'},{label:'Route'},{label:'Party', w:'20%'},
+      {label:'Stage', w:'14%'},{label:'Days', right:true, w:'8%'},{label:'To collect', right:true, w:'15%'}],
+      rows.map(t=>{
+        const since = daysSince(t.podReceivedAt || t.deliveredAt);
+        return [ t.deliveredAt?fdate(t.deliveredAt):'—', esc(t.lr||'—'),
+          esc((t.from||'?')+' to '+(t.to||'?')), esc(partyName(t.partyId)),
+          stageInfo(tripStage(t)).label, since===null?'—':String(since),
+          tripBalance(t)>0?money(tripBalance(t)):'—' ];
+      }),
+      ['Totals','','','','','', money(held)])+
+    printSign('POD not yet submitted to the party. Clearing these is usually the quickest way to unlock a collection.')
+  );
+}
+
 /* ---------- profit and loss ---------- */
 function printReport(){
   const p = pnl(sub.from, sub.to);
@@ -6221,12 +6587,7 @@ function downloadPod(tripId){
   const t = DB.trips.find(x=>x.id===tripId);
   const list = podImages(tripId);
   if(!list.length){ toast('No POD uploaded for this trip'); return; }
-  list.forEach((img,i)=>{
-    const a = document.createElement('a');
-    a.href = img.data; a.download = podFileName(t,i);
-    document.body.appendChild(a); a.click(); a.remove();
-  });
-  toast(list.length>1 ? plural(list.length,'page')+' downloaded' : 'POD downloaded');
+  list.forEach((img,i)=>saveImage(img.data, podFileName(t,i)));
 }
 
 /* the upload area shown on the Delivery tab */
@@ -6687,8 +7048,8 @@ const DOC_SLOTS = [
   {k:'aadhaarBack',  label:'Aadhaar back'},
   {k:'licenceFront', label:'Licence front'}
 ];
-const DOC_MAX_DIM = 1400;      // long edge, keeps printed text readable
-const DOC_TARGET  = 115*1024;  // aim per photo, before base64 padding
+const DOC_MAX_DIM = 1800;      // long edge — enough to read a signed LR or a licence
+const DOC_TARGET  = 210*1024;  // aim per photo, before base64 padding
 const STORE_LIMIT = 4.6*1024*1024;
 
 let pendingDocs = {};
@@ -6721,9 +7082,9 @@ function shrinkImage(file){
           if(!cx || !cv.toDataURL) return resolve(fr.result);   // very old browser: keep as is
           cx.fillStyle = '#fff'; cx.fillRect(0,0,cv.width,cv.height);
           cx.drawImage(img, 0, 0, cv.width, cv.height);
-          let q = 0.72, out = cv.toDataURL('image/jpeg', q);
-          while(out.length > DOC_TARGET*1.37 && q > 0.32){
-            q -= 0.1; out = cv.toDataURL('image/jpeg', q);
+          let q = 0.86, out = cv.toDataURL('image/jpeg', q);
+          while(out.length > DOC_TARGET*1.37 && q > 0.5){
+            q -= 0.07; out = cv.toDataURL('image/jpeg', q);
           }
           resolve(out);
         }catch(e){ resolve(fr.result); }
@@ -6756,6 +7117,32 @@ async function pickDoc(slot, input){
 }
 function removeDoc(slot){ pendingDocs[slot] = null; paintDocs(); }
 
+/* One place that turns a stored image into a file on disk, used by
+   every download button so the naming and behaviour never diverge. */
+function saveImage(dataUrl, filename){
+  if(!dataUrl){ toast('Nothing to download'); return; }
+  const a = document.createElement('a');
+  a.href = dataUrl; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Downloaded');
+}
+function driverFileName(driver, slot){
+  const who = (driver && driver.name ? driver.name : 'driver').replace(/[^A-Za-z0-9]+/g,'-');
+  const what = ({aadhaarFront:'aadhaar-front', aadhaarBack:'aadhaar-back', licenceFront:'licence-front'})[slot] || slot;
+  return (who+'-'+what).replace(/-+/g,'-').toLowerCase()+'.jpg';
+}
+function downloadDriverDoc(slot, driverId){
+  const d = driverId ? driverById(driverId) : null;
+  const data = (d && d.docs && d.docs[slot]) || pendingDocs[slot];
+  saveImage(data, driverFileName(d, slot));
+}
+function downloadAllDriverDocs(driverId){
+  const d = driverById(driverId); if(!d || !d.docs) return;
+  const have = DOC_SLOTS.filter(s=>d.docs[s.k]);
+  if(!have.length){ toast('No documents on file'); return; }
+  have.forEach(s=>saveImage(d.docs[s.k], driverFileName(d, s.k)));
+}
+
 function docTile(slot, label){
   const v = pendingDocs[slot];
   if(v){
@@ -6764,6 +7151,7 @@ function docTile(slot, label){
       '<img class="doc-thumb" src="'+v+'" alt="'+esc(label)+'" onclick="viewDoc(\''+slot+'\',\''+esc(label)+'\')">'+
       '<div class="doc-size">'+kb(v.length*0.75)+'</div>'+
       '<div class="doc-bar">'+
+        '<button type="button" onclick="downloadDriverDoc(\''+slot+'\')">Download</button>'+
         '<button type="button" onclick="document.getElementById(\'file_'+slot+'\').click()">Replace</button>'+
         '<button type="button" class="rm" onclick="removeDoc(\''+slot+'\')">Remove</button>'+
       '</div>'+
@@ -6962,40 +7350,114 @@ function seriesFor(keys){
 function seriesForRange(from, to){ return seriesFor(monthsBetween(from, to)); }
 
 /* Line chart with two series, drawn left to right on load */
+/* Round numbers for the axis: 1, 2, 2.5 or 5 times a power of ten */
+function niceStep(rough){
+  const p = Math.pow(10, Math.floor(Math.log10(rough || 1)));
+  const n = (rough||1) / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
 function lineChart(rows, series, opts={}){
-  const W=720, H=opts.height||230, L=52, R=14, T=14, B=30;
-  const max = Math.max(1, ...rows.map(r=>Math.max(...series.map(s=>num(r[s.key])))));
-  const step = rows.length>1 ? (W-L-R)/(rows.length-1) : 0;
-  const x = i => L + i*step;
+  const W=760, H=opts.height||250, L=62, R=26, T=22, B=44;
+  const raw = Math.max(1, ...rows.map(r=>Math.max(...series.map(s=>num(r[s.key])))));
+  const step = niceStep(raw/4);
+  const max  = Math.max(step, Math.ceil(raw/step)*step);
+  const ticks = Math.round(max/step);
+  const dx = rows.length>1 ? (W-L-R)/(rows.length-1) : 0;
+  const x = i => L + i*dx;
   const y = v => T + (H-T-B) * (1 - num(v)/max);
-  const ticks = 4;
+  const uid_ = 'g'+Math.random().toString(36).slice(2,8);
+  const plotW = W-L-R;
 
   let svg = '<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" role="img">';
+
+  /* a soft wash under the leading series */
+  svg += '<defs>';
+  series.forEach((s,si)=>{
+    if(!s.fill) return;
+    svg += '<linearGradient id="'+uid_+si+'" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="'+s.color+'" stop-opacity=".26"/>'+
+      '<stop offset="100%" stop-color="'+s.color+'" stop-opacity="0"/></linearGradient>';
+  });
+  svg += '</defs>';
+
+  /* grid on round numbers, with the baseline picked out */
   for(let t=0;t<=ticks;t++){
-    const v = max*t/ticks, yy = y(v);
-    svg += '<line class="grid-line" x1="'+L+'" y1="'+yy.toFixed(1)+'" x2="'+(W-R)+'" y2="'+yy.toFixed(1)+'"/>'+
-           '<text class="axis-text" x="'+(L-8)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end">'+shortMoney(v)+'</text>';
+    const v = step*t, yy = y(v);
+    svg += '<line class="grid-line'+(t===0?' grid-base':'')+'" x1="'+L+'" y1="'+yy.toFixed(1)+
+           '" x2="'+(W-R)+'" y2="'+yy.toFixed(1)+'"/>'+
+           '<text class="axis-text" x="'+(L-10)+'" y="'+(yy+3.5).toFixed(1)+'" text-anchor="end">'+shortMoney(v)+'</text>';
   }
+
   const every = rows.length>13 ? Math.ceil(rows.length/12) : 1;
   rows.forEach((r,i)=>{
     if(i%every && i!==rows.length-1) return;
-    svg += '<text class="axis-text" x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle">'+esc(r.label)+'</text>';
+    const anchor = i===0 ? 'start' : i===rows.length-1 ? 'end' : 'middle';
+    svg += '<text class="axis-text" x="'+x(i).toFixed(1)+'" y="'+(H-22)+'" text-anchor="'+anchor+'">'+esc(r.label)+'</text>';
   });
+
   series.forEach((s,si)=>{
     const pts = rows.map((r,i)=>x(i).toFixed(1)+','+y(r[s.key]).toFixed(1));
     if(s.fill && rows.length>1){
-      svg += '<path d="M'+pts.join(' L')+' L'+x(rows.length-1).toFixed(1)+','+(H-B)+' L'+L+','+(H-B)+' Z" fill="'+s.color+'" opacity=".08"/>';
+      svg += '<path d="M'+pts.join(' L')+' L'+x(rows.length-1).toFixed(1)+','+(H-B)+' L'+L+','+(H-B)+
+             ' Z" fill="url(#'+uid_+si+')"/>';
     }
     svg += '<polyline class="'+(s.dash?'series-dashed':'series-line')+'" points="'+pts.join(' ')+
            '" stroke="'+s.color+'" style="animation-delay:'+(si*0.12)+'s"/>';
+  });
+
+  /* dots only where they say something: a real figure, or the latest month */
+  series.forEach(s=>{
     rows.forEach((r,i)=>{
-      svg += '<circle class="series-dot" cx="'+x(i).toFixed(1)+'" cy="'+y(r[s.key]).toFixed(1)+'" r="3.4" fill="'+s.color+'">'+
-             '<title>'+esc(r.label)+': '+money(r[s.key])+'</title></circle>';
+      if(!num(r[s.key]) && i!==rows.length-1) return;
+      svg += '<circle class="series-dot" cx="'+x(i).toFixed(1)+'" cy="'+y(r[s.key]).toFixed(1)+
+             '" r="3.6" fill="'+s.color+'"/>';
     });
   });
+
+  /* call out the best month, so the chart says something at a glance */
+  const lead = series[0];
+  if(lead && rows.length>1){
+    let bi = 0;
+    rows.forEach((r,i)=>{ if(num(r[lead.key]) > num(rows[bi][lead.key])) bi = i; });
+    if(num(rows[bi][lead.key]) > 0){
+      const bx = x(bi), by = y(rows[bi][lead.key]);
+      const side = bx > W-140 ? -1 : 1;
+      svg += '<g class="peak">'+
+        '<circle cx="'+bx.toFixed(1)+'" cy="'+by.toFixed(1)+'" r="6.5" fill="none" stroke="'+lead.color+'" stroke-width="1.5" opacity=".55"/>'+
+        '<text class="peak-text" x="'+(bx + side*11).toFixed(1)+'" y="'+(by-9).toFixed(1)+
+          '" text-anchor="'+(side>0?'start':'end')+'">Best · '+shortMoney(rows[bi][lead.key])+'</text>'+
+      '</g>';
+    }
+  }
+
+  /* hover a month to read every figure for it */
+  rows.forEach((r,i)=>{
+    const cx = x(i);
+    const flip = cx > W - 150;
+    const tw = 138, th = 26 + series.length*17;
+    const tx = flip ? cx - tw - 10 : cx + 10;
+    svg += '<g class="hz">'+
+      '<rect x="'+(cx-dx/2).toFixed(1)+'" y="'+T+'" width="'+(dx||plotW).toFixed(1)+'" height="'+(H-T-B)+'" fill="transparent"/>'+
+      '<g class="hz-show">'+
+        '<line class="hz-line" x1="'+cx.toFixed(1)+'" y1="'+T+'" x2="'+cx.toFixed(1)+'" y2="'+(H-B)+'"/>'+
+        series.map(s=>'<circle cx="'+cx.toFixed(1)+'" cy="'+y(r[s.key]).toFixed(1)+'" r="4.6" fill="'+s.color+
+          '" stroke="var(--card)" stroke-width="2"/>').join('')+
+        '<rect class="hz-box" x="'+tx.toFixed(1)+'" y="'+(T+6)+'" width="'+tw+'" height="'+th+'" rx="8"/>'+
+        '<text class="hz-title" x="'+(tx+11)+'" y="'+(T+24)+'">'+esc(r.label)+'</text>'+
+        series.map((s,si)=>
+          '<text class="hz-key" x="'+(tx+11)+'" y="'+(T+24+17*(si+1))+'">'+esc(s.label)+'</text>'+
+          '<text class="hz-val" x="'+(tx+tw-11)+'" y="'+(T+24+17*(si+1))+'" text-anchor="end" fill="'+s.color+'">'+
+            shortMoney(r[s.key])+'</text>').join('')+
+      '</g></g>';
+  });
+
   svg += '</svg>';
+
+  const last = rows[rows.length-1] || {};
   const legend = '<div class="legend">'+series.map(s=>
-    '<span class="legend-item"><span class="legend-key" style="background:'+s.color+'"></span>'+esc(s.label)+'</span>').join('')+'</div>';
+    '<span class="legend-item"><span class="legend-key" style="background:'+s.color+'"></span>'+
+      esc(s.label)+'<b class="legend-val">'+shortMoney(last[s.key])+'</b></span>').join('')+
+    '<span class="legend-note">latest month · hover any month for detail</span></div>';
   return svg + legend;
 }
 
@@ -7592,6 +8054,7 @@ migrateTrucks();
    then overwrite real records in the cloud. Load it by hand from Settings. */
 if(!DB.seeded && DB.trips.length===0 && !FB.cfg){ seed(); save(); }
 if(!DB.seeded){ DB.seeded = true; try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} }
+applyTheme(currentTheme());
 applyBrand();
 render();
 startAuth();
