@@ -3265,9 +3265,33 @@ input.dp-input::-webkit-clear-button{display:none}
   border-radius:8px;cursor:pointer;font-weight:600;font-size:12.5px}
 
 /* ---------- type a truck number and it picks itself ---------- */
-.truck-pick .truck-find{text-transform:uppercase;font-family:var(--mono);letter-spacing:.02em}
-.truck-find-note{min-height:14px}
-.truck-find-note.ok{color:var(--green);font-weight:600}
+/* one box for the truck: type into it, or open the list from the chevron */
+.combo{position:relative}
+.combo-input{padding-right:38px;text-transform:uppercase;font-family:var(--mono);letter-spacing:.02em}
+.combo-input::placeholder{text-transform:none;font-family:var(--sans,inherit);letter-spacing:0}
+.combo-chev{position:absolute;right:1px;top:1px;bottom:1px;width:36px;display:flex;align-items:center;
+  justify-content:center;border:0;background:none;color:var(--muted);cursor:pointer;padding:0}
+.combo-chev svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.combo-chev:hover{color:var(--ink)}
+.combo-list{position:fixed;z-index:420;max-height:250px;overflow-y:auto;background:var(--card);
+  border:1px solid var(--line);border-radius:11px;box-shadow:0 16px 40px rgba(17,22,33,.2);
+  padding:4px;scroll-behavior:smooth;overscroll-behavior:contain}
+.combo-list[hidden]{display:none}
+.combo-item{display:flex;align-items:center;gap:9px;width:100%;height:auto;padding:8px 10px;border:0;
+  background:none;text-align:left;cursor:pointer;border-radius:8px;font:inherit;font-size:13.5px;
+  color:var(--ink)}
+.combo-item.on{background:var(--bg-2)}
+.combo-item.sel .combo-plate{font-weight:700}
+.combo-plate{font-family:var(--mono);letter-spacing:.02em;white-space:nowrap}
+.combo-tag{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+.combo-sub{color:var(--muted);font-size:12px;margin-left:auto;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.combo-add{color:var(--accent);font-weight:600;border-top:1px solid var(--line-soft);
+  border-radius:0;margin-top:3px;padding-top:10px}
+.combo-clear{color:var(--muted)}
+.combo-empty{padding:9px 10px;color:var(--muted);font-size:12.5px}
 .truck-find-note.miss{color:var(--amber)}
 
 /* ---------- money at the head of a trip ---------- */
@@ -3815,7 +3839,7 @@ function moreMenu(){
 }
 
 function render(){
-  closeDatePicker();
+  closeDatePicker(); comboClose();
   const p = PAGES.find(x=>x.id===route) || PAGES[0];
   $('#pageTitle').textContent = p.label;
   $('#pageSub').textContent = p.sub;
@@ -3875,7 +3899,7 @@ function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk,
   if(f && window.innerWidth>760) f.focus();
 }
 function closeModal(){
-  closeDatePicker();
+  closeDatePicker(); comboClose();
   if(modalStack.length){          // step back to the form underneath
     const s = modalStack.pop();
     $('#modalRoot').innerHTML = s.html;
@@ -5441,7 +5465,7 @@ function paintTruckDocs(){
   clampDates();
 }
 
-function truckForm(id, onSaved){
+function truckForm(id, onSaved, preset){
   const t = id ? truckById(id) : null;
   const nest = typeof onSaved === 'function';
   pendingTruckDocs = JSON.parse(JSON.stringify((t && t.docs) || []));
@@ -5449,7 +5473,7 @@ function truckForm(id, onSaved){
     title: t?'Edit truck':'New truck', okText: t?'Save changes':'Save truck',
     body:'<div class="form-grid">'+
       fSeg('t_type','Truck type',[{v:'owned',t:'Owned by me'},{v:'market',t:'Market / rented'}], t?t.type:'owned')+
-      fText('t_number','Vehicle number', t?t.number:'','text','placeholder="UP83 AT 2470" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="this.value=formatPlate(this.value)"')+
+      fText('t_number','Vehicle number', t?t.number:formatPlate(preset||''),'text','placeholder="UP83 AT 2470" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="this.value=formatPlate(this.value)"')+
       fText('t_model','Make & model', t?t.model:'','text','placeholder="Tata 3118, 14 wheeler"')+
       fText('t_capacity','Capacity (tonnes)', t?t.capacity:'','number','step="0.1" min="0"')+
       qSelect('t_driver','Regular driver', 'driver', t?t.driverId:'')+
@@ -5484,7 +5508,7 @@ function truckForm(id, onSaved){
       if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
       dropped.forEach(d=>dropDocExpense(d.id));
       docs.forEach(d=>syncDocExpense(d, rec.id));
-      save(); buildDocTypeList(); buildExpCatList(); truckPlateList();
+      save(); buildDocTypeList(); buildExpCatList();
       if(nest){ closeModal(); onSaved(rec.id); toast('Truck added'); return; }
       closeModal(); render(); toast(t?'Truck updated':'Truck saved');
     }
@@ -7099,65 +7123,216 @@ const QUICK = {
    vehicle number straight from the keyboard: type one that
    exists and the truck selects itself.
    ------------------------------------------------------------ */
-function truckPlateList(){
-  let dl = document.getElementById('truckPlateList');
-  if(!dl){ dl = document.createElement('datalist'); dl.id = 'truckPlateList'; document.body.appendChild(dl); }
-  dl.innerHTML = DB.trucks.map(t=>'<option value="'+esc(t.number)+'"></option>').join('');
-  return dl;
-}
 const plateKey = v => upperTruck(v).replace(/[^A-Z0-9]/g,'');
 function findTruckByNumber(v){
   const k = plateKey(v);
   return k ? (DB.trucks.find(t=>plateKey(t.number)===k) || null) : null;
 }
+
+/* One field, not two. The box shows the truck you have chosen and takes a
+   vehicle number straight from the keyboard; the chevron opens the same
+   list the old dropdown held, quick-add included. The id itself lives on a
+   hidden input, so everything that reads the field is unchanged. */
 function qTruck(id, label, v, extra){
-  truckPlateList();
-  const cur = v ? ((truckById(v)||{}).number || '') : '';
+  const t = v ? truckById(v) : null;
   return '<div class="field truck-pick">'+
     '<label for="'+id+'_find">'+label+'</label>'+
-    '<input id="'+id+'_find" class="truck-find" type="text" list="truckPlateList" autocomplete="off" '+
-      'placeholder="Type the vehicle number\u2026" value="'+esc(cur)+'" '+
-      'oninput="truckTyped(\''+id+'\',this)" onblur="truckTypedBlur(\''+id+'\',this)" '+
-      'onchange="truckTyped(\''+id+'\',this)">'+
+    '<div class="combo">'+
+      '<input id="'+id+'_find" class="combo-input" type="text" autocomplete="off" role="combobox" '+
+        'aria-expanded="false" aria-autocomplete="list" '+
+        'placeholder="Type or pick a vehicle number\u2026" value="'+esc(t?t.number:'')+'" '+
+        'oninput="comboType(\''+id+'\')" onkeydown="comboKey(\''+id+'\',event)" '+
+        'onmousedown="comboOpen(\''+id+'\')" onblur="comboBlur(\''+id+'\')">'+
+      '<button type="button" class="combo-chev" tabindex="-1" aria-label="Show every truck" '+
+        'onmousedown="event.preventDefault()" onclick="comboToggle(\''+id+'\')">'+
+        '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>'+
+    '</div>'+
+    '<input type="hidden" id="'+id+'" value="'+esc(v||'')+'" '+(extra||'')+'>'+
     '<span class="hint truck-find-note" id="'+id+'_note"></span>'+
-    '<select id="'+id+'" '+(extra||'')+' onchange="quickPick(\''+id+'\',\'truck\');truckPicked(\''+id+'\')">'+
-      quickOptions('truck').map(o=>'<option value="'+esc(o.v)+'"'+(String(o.v)===String(v)?' selected':'')+'>'+
-        esc(o.t)+'</option>').join('')+
-    '</select>'+
   '</div>';
 }
-function truckTyped(selId, inp){
-  const el = document.getElementById(selId);
-  if(!el) return;
-  const typed = inp.value.trim();
-  const t = findTruckByNumber(typed);
-  if(t && el.value !== t.id){
-    el.value = t.id;
-    el.dataset.prev = t.id;
-    if(typeof afterQuickChange==='function') afterQuickChange(selId);
+
+/* The list floats above everything, because the modal body scrolls and
+   would otherwise cut it off. One panel, lent to whichever field is open. */
+let comboOwner = null, comboBox = null, comboIx = 0;
+function comboRoot(){
+  if(!comboBox){
+    comboBox = document.createElement('div');
+    comboBox.className = 'combo-list';
+    comboBox.setAttribute('role','listbox');
+    comboBox.hidden = true;
+    document.body.appendChild(comboBox);
   }
-  const note = document.getElementById(selId+'_note');
-  if(!note) return;
-  note.textContent = !typed ? ''
-    : t ? '\u2713 '+t.number+' selected'
-    : plateKey(typed).length >= 4 ? 'No truck with that number yet \u2014 add it from the list below'
-    : '';
-  note.className = 'hint truck-find-note'+(t ? ' ok' : (typed && plateKey(typed).length>=4 ? ' miss' : ''));
+  return comboBox;
 }
-function truckTypedBlur(selId, inp){
+function comboShowing(id){ return comboOwner === id && comboBox && !comboBox.hidden; }
+function comboParts(id){
+  return {inp:document.getElementById(id+'_find'), hid:document.getElementById(id),
+          note:document.getElementById(id+'_note')};
+}
+/* what the list holds: the fleet, narrowed by whatever has been typed,
+   with a way to clear the field and a way to add a truck that is missing */
+function comboRows(id){
+  const {inp, hid} = comboParts(id);
+  const cur = hid ? hid.value : '';
+  const chosen = cur ? truckById(cur) : null;
+  const typed = inp ? inp.value.trim() : '';
+  /* untouched since it was chosen — show the whole fleet, as a dropdown would */
+  const q = (chosen && plateKey(typed) === plateKey(chosen.number)) ? '' : typed;
+  const key = plateKey(q), text = q.toLowerCase();
+  const rows = DB.trucks.filter(t=>!q
+      || (key && plateKey(t.number).includes(key))
+      || (t.model||'').toLowerCase().includes(text)
+      || (t.owner||'').toLowerCase().includes(text))
+    .map(t=>({kind:'truck', id:t.id, truck:t}));
+  if(cur) rows.unshift({kind:'clear'});
+  rows.push({kind:'add'});
+  return rows;
+}
+function comboPaint(id){
+  const box = comboRoot(), {hid} = comboParts(id);
+  const rows = comboRows(id), cur = hid ? hid.value : '';
+  if(comboIx == null || comboIx < 0 || comboIx >= rows.length){
+    comboIx = rows.findIndex(r=>r.kind==='truck' && r.id===cur);
+    if(comboIx < 0) comboIx = rows.findIndex(r=>r.kind==='truck');
+    if(comboIx < 0) comboIx = rows.length-1;
+  }
+  box.innerHTML =
+    (rows.some(r=>r.kind==='truck') ? '' : '<div class="combo-empty">No truck matches that</div>')+
+    rows.map((r,i)=>{
+      const on = i===comboIx ? ' on' : '';
+      const tap = 'onmousedown="event.preventDefault()" ';
+      if(r.kind==='clear') return '<button type="button" role="option" class="combo-item combo-clear'+on+'" '+
+        tap+'onclick="comboSet(\''+id+'\',\'\')">\u2014 none \u2014</button>';
+      if(r.kind==='add') return '<button type="button" role="option" class="combo-item combo-add'+on+'" '+
+        tap+'onclick="comboAdd(\''+id+'\')">+ Add New Truck</button>';
+      const t = r.truck;
+      return '<button type="button" role="option" class="combo-item'+on+(t.id===cur?' sel':'')+'" '+
+        tap+'onclick="comboSet(\''+id+'\',\''+t.id+'\')">'+
+        '<span class="combo-plate">'+esc(t.number)+'</span>'+
+        (t.type==='market'?'<span class="combo-tag">market</span>':'')+
+        (t.model?'<span class="combo-sub">'+esc(t.model)+'</span>':'')+
+      '</button>';
+    }).join('');
+  const lit = box.querySelector('.combo-item.on');
+  if(lit) lit.scrollIntoView({block:'nearest'});
+}
+function comboPlace(id){
+  const box = comboRoot(), inp = document.getElementById(id+'_find');
+  if(!inp) return comboClose();
+  const r = inp.getBoundingClientRect();
+  box.style.width = Math.round(r.width)+'px';
+  box.style.left  = Math.round(r.left)+'px';
+  const h = box.offsetHeight || 240;
+  let top = r.bottom + 4;
+  if(top + h > window.innerHeight - 8) top = (r.top - 4 - h > 8) ? r.top - 4 - h
+    : Math.max(8, window.innerHeight - h - 8);
+  box.style.top = Math.round(top)+'px';
+}
+function comboOpen(id, keepIx){
+  const box = comboRoot();
+  if(!document.getElementById(id+'_find')) return;
+  comboOwner = id;
+  if(!keepIx) comboIx = null;
+  comboPaint(id);
+  box.hidden = false;
+  comboPlace(id);
+  const inp = document.getElementById(id+'_find');
+  if(inp) inp.setAttribute('aria-expanded','true');
+}
+function comboClose(){
+  if(comboBox) comboBox.hidden = true;
+  if(comboOwner){
+    const inp = document.getElementById(comboOwner+'_find');
+    if(inp) inp.setAttribute('aria-expanded','false');
+  }
+  comboOwner = null;
+}
+function comboToggle(id){
+  if(comboShowing(id)) return comboClose();
+  const inp = document.getElementById(id+'_find');
+  if(inp) inp.focus();
+  comboOpen(id);
+}
+/* a vehicle number typed in full picks its truck without another click */
+function comboType(id){
+  const {inp, hid} = comboParts(id);
+  if(!inp) return;
   const t = findTruckByNumber(inp.value);
-  if(t) inp.value = t.number;
-  else if(inp.value.trim()) inp.value = formatPlate(inp.value);
+  if(hid && t && hid.value !== t.id){
+    hid.value = t.id;
+    if(typeof afterQuickChange==='function') afterQuickChange(id);
+  }
+  comboNote(id, t, inp.value);
+  comboOpen(id);
 }
-/* the box follows the dropdown whenever the dropdown is used */
-function truckPicked(selId){
-  const el = document.getElementById(selId), inp = document.getElementById(selId+'_find');
-  if(!el || !inp) return;
-  const t = el.value ? truckById(el.value) : null;
-  inp.value = t ? t.number : '';
-  const note = document.getElementById(selId+'_note');
-  if(note){ note.textContent = ''; note.className = 'hint truck-find-note'; }
+function comboNote(id, t, typed){
+  const {note} = comboParts(id);
+  if(!note) return;
+  const miss = !t && plateKey(typed||'').length >= 4;
+  note.textContent = miss ? 'No truck with that number yet \u2014 pick one from the list or add it' : '';
+  note.className = 'hint truck-find-note'+(miss ? ' miss' : '');
 }
+function comboSet(id, truckId){
+  const {inp, hid} = comboParts(id);
+  if(!hid) return;
+  hid.value = truckId || '';
+  const t = truckId ? truckById(truckId) : null;
+  if(inp) inp.value = t ? t.number : '';
+  comboNote(id, t, '');
+  comboClose();
+  if(typeof afterQuickChange==='function') afterQuickChange(id);
+}
+/* the box must never show a number the field is not actually set to */
+function comboBlur(id){
+  setTimeout(()=>{
+    const {inp, hid} = comboParts(id);
+    if(!inp || document.activeElement === inp) return;
+    if(comboShowing(id)) comboClose();
+    const t = hid && hid.value ? truckById(hid.value) : null;
+    const typed = inp.value.trim();
+    inp.value = t ? t.number : '';
+    comboNote(id, t, t ? '' : typed);
+  }, 130);
+}
+function comboAdd(id){
+  const inp = document.getElementById(id+'_find');
+  const typed = inp ? inp.value.trim() : '';
+  comboClose();
+  truckForm(null, newId=>comboSet(id, newId), findTruckByNumber(typed) ? '' : typed);
+}
+function comboKey(id, e){
+  const open = comboShowing(id);
+  if(e.key==='ArrowDown' || e.key==='ArrowUp'){
+    e.preventDefault();
+    if(!open) return comboOpen(id);
+    const rows = comboRows(id);
+    comboIx = ((comboIx||0) + (e.key==='ArrowDown'?1:-1) + rows.length) % rows.length;
+    comboOpen(id, true);
+    return;
+  }
+  if(e.key==='Enter' && open){
+    e.preventDefault();
+    const r = comboRows(id)[comboIx||0];
+    if(!r) return;
+    if(r.kind==='add') return comboAdd(id);
+    comboSet(id, r.kind==='truck' ? r.id : '');
+    return;
+  }
+  if(e.key==='Escape' && open){ e.preventDefault(); comboClose(); }
+}
+document.addEventListener('mousedown', e=>{
+  if(!comboOwner) return;
+  if(comboBox && comboBox.contains(e.target)) return;
+  if(e.target.closest && e.target.closest('.combo')) return;
+  comboClose();
+}, true);
+window.addEventListener('resize', ()=>{ if(comboOwner) comboPlace(comboOwner); });
+window.addEventListener('scroll', e=>{
+  if(!comboOwner) return;
+  if(comboBox && comboBox.contains(e.target)) return;
+  comboPlace(comboOwner);
+}, true);
 
 function quickOptions(kind){
   const q = QUICK[kind];
@@ -7182,13 +7357,11 @@ function refreshQuick(id, kind, newId){
     '<option value="'+esc(o.v)+'">'+esc(o.t)+'</option>').join('');
   el.value = newId || '';
   el.dataset.prev = el.value;
-  if(kind==='truck') truckPlateList();
-  if(document.getElementById(id+'_find')) truckPicked(id);
   if(typeof afterQuickChange==='function') afterQuickChange(id);
 }
 /* forms that need to react when a dropdown changes hook in here */
 function afterQuickChange(id){
-  if(id==='e_mode' || id==='e_shop') toggleShopField();
+  if(id==='e_mode' || id==='e_shop' || id==='e_truck') toggleShopField();
   if(id==='f_truck' || id==='f_supplier' || id==='f_party') { if(typeof recalcAdvance==='function') recalcAdvance(); }
 }
 /* open a creation form on top of whatever is already open */
