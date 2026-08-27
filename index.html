@@ -3294,6 +3294,24 @@ input.dp-input::-webkit-clear-button{display:none}
 .combo-empty{padding:9px 10px;color:var(--muted);font-size:12.5px}
 .truck-find-note.miss{color:var(--amber)}
 
+/* ---------- a required field left empty when Save was pressed ---------- */
+.field.field-bad > label{color:var(--red)}
+.field.field-bad > input,
+.field.field-bad > select,
+.field.field-bad > textarea,
+.field.field-bad > .combo > .combo-input{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.field.field-bad > .combo > .combo-input:focus,
+.field.field-bad > input:focus,
+.field.field-bad > select:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
+.field.field-bad > .combo > .combo-chev{color:var(--red)}
+.field-bad-note{font-size:11.5px;font-weight:600;color:var(--red)}
+@keyframes fieldNudge{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-3px)}
+  75%{transform:translateX(3px)}
+}
+.field.field-bad{animation:fieldNudge .2s ease-in-out 2}
+
 /* ---------- money at the head of a trip ---------- */
 .trip-totals{display:flex;flex-wrap:wrap;gap:7px 20px;align-items:center;margin:0 0 13px;
   padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2);
@@ -3915,6 +3933,45 @@ function modalOk(){ if(modalOnOk) modalOnOk(); }
 function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
 function checked(name){ const el=document.querySelector('input[name="'+name+'"]:checked'); return el?el.value:''; }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ------------------------------------------------------------
+   REQUIRED FIELDS
+   A toast alone leaves you hunting for which box it meant. The
+   field itself is ringed and named, and clears the moment it is
+   filled in, so the warning never outstays the mistake.
+   ------------------------------------------------------------ */
+function fieldBox(id){
+  const el = document.getElementById(id);
+  return el && el.closest ? el.closest('.field') : null;
+}
+function markMissing(id, msg){
+  const box = fieldBox(id);
+  if(!box) return;
+  box.classList.remove('field-bad');
+  void box.offsetWidth;                       // replay the nudge on a second try
+  box.classList.add('field-bad');
+  const hint = box.querySelector('.truck-find-note');
+  if(hint){ hint.textContent = ''; hint.className = 'hint truck-find-note'; }
+  let note = box.querySelector('.field-bad-note');
+  if(!note){
+    note = document.createElement('span');
+    note.className = 'field-bad-note';
+    box.appendChild(note);
+  }
+  note.textContent = msg || 'This one is needed';
+}
+function clearMissing(id){
+  const box = fieldBox(id);
+  if(!box) return;
+  box.classList.remove('field-bad');
+  const note = box.querySelector('.field-bad-note');
+  if(note) note.remove();
+}
+/* put the cursor where the first thing missing is */
+function focusField(id){
+  const el = document.getElementById(id+'_find') || document.getElementById(id);
+  if(el && el.focus) el.focus();
+}
 
 /* field builders */
 function fText(id,label,v='',type='text',extra=''){
@@ -4848,8 +4905,20 @@ function gotoTrip(id){
 function saveTripScreen(existing, quiet){
   readTripForm();
   const t = tripDraft;
-  if(!t.partyId){ toast('Choose the party for this trip'); switchTripTab('details'); return false; }
-  if(!t.truckId){ toast('Choose the truck for this trip'); switchTripTab('details'); return false; }
+  /* Both are checked together, so one trip back to the details tab shows
+     everything that is missing rather than one thing at a time. */
+  const missing = [];
+  if(!t.partyId) missing.push(['f_party','Choose the party who pays the freight']);
+  if(!t.truckId) missing.push(['f_truck','Choose the truck that ran this trip']);
+  if(missing.length){
+    if(tripTab !== 'details') switchTripTab('details');
+    missing.forEach(([id, msg])=>markMissing(id, msg));
+    focusField(missing[0][0]);
+    toast(missing.length > 1
+      ? 'This trip needs a party and a truck'
+      : missing[0][1]);
+    return false;
+  }
   const settled = num(t.advCash) + num(t.fuelAmt);
   if(tripFreightNet(t) > 0 && settled > tripFreightNet(t)){
     toast('The advance is more than the amount billed to the party.');
@@ -7361,6 +7430,8 @@ function refreshQuick(id, kind, newId){
 }
 /* forms that need to react when a dropdown changes hook in here */
 function afterQuickChange(id){
+  const el = document.getElementById(id);
+  if(el && el.value) clearMissing(id);
   if(id==='e_mode' || id==='e_shop' || id==='e_truck') toggleShopField();
   if(id==='f_truck' || id==='f_supplier' || id==='f_party') { if(typeof recalcAdvance==='function') recalcAdvance(); }
 }
