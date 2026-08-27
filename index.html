@@ -2427,9 +2427,9 @@ tbody tr {
 }
 
 .modal-full {
-  max-width: 1180px;
-  width: 94vw;
-  height: 90vh;
+  max-width: 1400px;
+  width: 96vw;
+  height: 93vh;
   display: flex;
   flex-direction: column;
 }
@@ -2438,6 +2438,16 @@ tbody tr {
   flex: 1;
   overflow-y: auto;
   max-height: none;
+  padding: 22px 26px 26px;
+}
+
+/* the trip screen carries a lot now — let it breathe */
+.modal-full .form-grid {
+  gap: 16px 18px;
+}
+
+.modal-full .adv-block {
+  padding: 18px 20px;
 }
 
 .trip-top {
@@ -3326,17 +3336,24 @@ input.dp-input::-webkit-clear-button{display:none}
   font-variant-numeric:tabular-nums}
 
 /* ---------- expenses booked straight onto a trip ---------- */
-.exp-row{display:grid;grid-template-columns:.85fr 1fr 1.1fr .7fr auto;gap:9px;
+.exp-entry{margin-bottom:9px}
+.exp-entry.on-credit{border:1px solid var(--amber-line);background:var(--amber-soft);
+  border-radius:10px;padding:10px 12px 2px;margin-bottom:12px}
+.exp-row{display:grid;grid-template-columns:.8fr 1fr 1.05fr .8fr .65fr auto;gap:9px;
   align-items:center;margin-bottom:9px}
-.exp-row input{padding:8px 10px;font-size:13.5px}
+.exp-row input,.exp-row select{padding:8px 10px;font-size:13.5px}
 .exp-row input[type=number]{font-family:var(--mono)}
 .exp-head{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
   color:var(--muted);margin-bottom:2px}
-@media (max-width:760px){ .exp-head{display:none} }
+.field.exp-credit{max-width:440px;margin:0 0 10px}
+.field.exp-credit[hidden]{display:none}
+.field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 @media (max-width:760px){
+  .exp-head{display:none}
   .exp-row{grid-template-columns:1fr 1fr;gap:8px}
   .exp-row input:nth-of-type(3){grid-column:1/-1}
   .exp-row .rmdoc{grid-column:2;justify-self:end}
+  .field.exp-credit{max-width:none}
 }
 
 </style>
@@ -4527,7 +4544,8 @@ function loadTripExpenses(tripId){
   tripExpDraft = tripId
     ? (DB.expenses||[]).filter(e=>e.tripId===tripId)
         .sort((a,b)=>(a.date||'').localeCompare(b.date||''))
-        .map(e=>({id:e.id, date:e.date, category:e.category, note:e.note||'', amount:num(e.amount)}))
+        .map(e=>({id:e.id, date:e.date, category:e.category, note:e.note||'', amount:num(e.amount),
+                  mode:e.mode||'Cash', shopId:e.shopId||''}))
     : [];
 }
 function tripExpenseTotal(){ return tripExpDraft.reduce((s,x)=>s+num(x.amount),0); }
@@ -4539,33 +4557,71 @@ function paintTripExpenses(){
   if(!box) return;
   buildExpCatList();
   box.innerHTML = tripExpDraft.length ? '<div class="exp-row exp-head">'+
-      '<span>Date</span><span>What for</span><span>Details</span><span>Amount (₹)</span><span></span>'+
-    '</div>' + tripExpDraft.map((x,i)=>
+      '<span>Date</span><span>What for</span><span>Details</span><span>Mode</span>'+
+      '<span>Amount (₹)</span><span></span>'+
+    '</div>' + tripExpDraft.map(tripExpenseRow).join('')
+    : '<div class="hint" style="margin-bottom:9px">Nothing booked to this trip yet.</div>';
+  clampDates();
+  recalcTripExpenses();
+}
+/* One line of the trip's expenses. Taken on credit, it grows a shop
+   picker underneath, exactly as the Expenses form does — and lands in
+   that shop's ledger for the same reason: it is an ordinary expense. */
+function tripExpenseRow(x, i){
+  const credit = (x.mode||'Cash') === 'Credit';
+  return '<div class="exp-entry'+(credit?' on-credit':'')+'" id="txrow'+i+'">'+
     '<div class="exp-row">'+
       '<input id="tx_d'+i+'" type="date" value="'+esc(x.date||'')+'" onchange="readTripExpenses()">'+
       '<input id="tx_c'+i+'" list="expCatList" value="'+esc(x.category||'')+'" '+
         'placeholder="Diesel, toll, labour…" oninput="readTripExpenses()">'+
       '<input id="tx_n'+i+'" value="'+esc(x.note||'')+'" placeholder="Details (optional)" oninput="readTripExpenses()">'+
+      '<select id="tx_m'+i+'" onchange="tripExpMode('+i+')">'+
+        EXP_MODES.map(m=>'<option value="'+m.v+'"'+(m.v===(x.mode||'Cash')?' selected':'')+'>'+
+          esc(m.t)+'</option>').join('')+
+      '</select>'+
       '<input id="tx_a'+i+'" type="number" min="0" step="1" value="'+(num(x.amount)||'')+'" '+
         'placeholder="0" oninput="readTripExpenses();recalcTripExpenses()">'+
       '<button type="button" class="rmdoc" onclick="removeTripExpense('+i+')">Remove</button>'+
-    '</div>').join('')
-    : '<div class="hint" style="margin-bottom:9px">Nothing booked to this trip yet.</div>';
-  clampDates();
-  recalcTripExpenses();
+    '</div>'+
+    '<div class="field exp-credit" id="txshop'+i+'"'+(credit?'':' hidden')+'>'+
+      '<label for="tx_s'+i+'">Shop <span style="color:var(--red)">*</span></label>'+
+      '<select id="tx_s'+i+'" onchange="quickPick(\'tx_s'+i+'\',\'shop\')">'+
+        quickOptions('shop').map(o=>'<option value="'+esc(o.v)+'"'+
+          (String(o.v)===String(x.shopId||'')?' selected':'')+'>'+esc(o.t)+'</option>').join('')+
+      '</select>'+
+      '<span class="hint">Taken on credit, so this goes into the shop\u2019s ledger as money you owe.</span>'+
+    '</div>'+
+  '</div>';
 }
+/* the shop picker appears and disappears in place, so nothing typed is lost */
+function tripExpMode(i){
+  readTripExpenses();
+  const credit = (tripExpDraft[i]||{}).mode === 'Credit';
+  const wrap = document.getElementById('txrow'+i);
+  const shop = document.getElementById('txshop'+i);
+  if(wrap) wrap.classList.toggle('on-credit', credit);
+  if(shop) shop.hidden = !credit;
+  if(!credit) clearMissing('tx_s'+i);
+  else { const el = document.getElementById('tx_s'+i); if(el) el.focus(); }
+}
+
 function readTripExpenses(){
   tripExpDraft = tripExpDraft.map((x,i)=>{
     const d=document.getElementById('tx_d'+i), c=document.getElementById('tx_c'+i),
-          n=document.getElementById('tx_n'+i), a=document.getElementById('tx_a'+i);
+          n=document.getElementById('tx_n'+i), a=document.getElementById('tx_a'+i),
+          m=document.getElementById('tx_m'+i), sh=document.getElementById('tx_s'+i);
+    const mode = m ? m.value : (x.mode || 'Cash');
+    const shopId = sh && sh.value !== '__new' ? sh.value : (x.shopId || '');
     return {id:x.id||uid(), date:d?d.value:x.date, category:c?c.value.trim():x.category,
-      note:n?n.value.trim():x.note, amount:a?num(a.value):num(x.amount)};
+      note:n?n.value.trim():x.note, amount:a?num(a.value):num(x.amount),
+      mode: mode, shopId: mode==='Credit' ? shopId : ''};
   });
   return tripExpDraft;
 }
 function addTripExpense(){
   readTripExpenses();
-  tripExpDraft.push({id:uid(), date:(tripDraft&&tripDraft.date)||today(), category:'', note:'', amount:0});
+  tripExpDraft.push({id:uid(), date:(tripDraft&&tripDraft.date)||today(), category:'', note:'',
+    amount:0, mode:'Cash', shopId:''});
   paintTripExpenses();
   const last = document.getElementById('tx_c'+(tripExpDraft.length-1));
   if(last) last.focus();
@@ -4590,9 +4646,11 @@ function syncTripExpenses(tripId, truckId){
   DB.expenses = DB.expenses.filter(e=>e.tripId!==tripId || ids.has(e.id));
   keep.forEach(x=>{
     const cur = DB.expenses.find(e=>e.id===x.id);
+    const mode = x.mode || 'Cash';
     const row = {id:x.id, date:x.date||today(), amount:num(x.amount),
       category:(x.category||'').trim() || 'Trip expense', truckId:truckId||'', tripId:tripId,
-      paidTo:(cur&&cur.paidTo)||'', mode:(cur&&cur.mode)||'Cash', shopId:(cur&&cur.shopId)||'',
+      paidTo:(cur&&cur.paidTo)||'', mode:mode,
+      shopId: mode==='Credit' ? (x.shopId||'') : '',
       note:x.note||''};
     if(cur) Object.assign(cur, row); else DB.expenses.push(row);
   });
@@ -4916,6 +4974,15 @@ function saveTripScreen(existing, quiet){
   const missing = [];
   if(!t.partyId) missing.push(['f_party','Choose the party who pays the freight']);
   if(!t.truckId) missing.push(['f_truck','Choose the truck that ran this trip']);
+  /* on credit means someone is owed — the shop cannot be left out */
+  const noShop = tripExpDraft.findIndex(x=>num(x.amount)>0 && x.mode==='Credit' && !x.shopId);
+  if(noShop >= 0 && !missing.length){
+    if(tripTab !== 'expenses') switchTripTab('expenses');
+    markMissing('tx_s'+noShop, 'Choose the shop this credit is with');
+    focusField('tx_s'+noShop);
+    toast('An expense taken on credit needs the shop it came from');
+    return false;
+  }
   if(missing.length){
     if(tripTab !== 'details') switchTripTab('details');
     missing.forEach(([id, msg])=>markMissing(id, msg));
@@ -5651,6 +5718,15 @@ function delTruck(id){
 /* ============================================================
    EXPENSES
    ============================================================ */
+/* How money left your hands. One list, used by the Expenses form and by
+   the expense rows on a trip, so both behave the same way. */
+const EXP_MODES = [
+  {v:'Cash',   t:'Cash'},
+  {v:'Bank',   t:'Bank transfer'},
+  {v:'UPI',    t:'UPI'},
+  {v:'Card',   t:'Card'},
+  {v:'Credit', t:'On credit'}
+];
 const BASE_CATEGORIES = ['Fuel / Diesel','Toll & Parking','Truck maintenance','Repairs','Tyres','EMI payment',
   'Insurance & permits','Office expense','Loading / unloading','Commission','Fine / challan','Miscellaneous'];
 
@@ -5818,8 +5894,7 @@ function expenseForm(id, preselectShop){
           esc(e.category)+'. The amount you set here goes back onto that document.</span></div>' : '')+
       qTruck('e_truck','Truck (optional)', e?e.truckId:'')+
       fText('e_paidTo','Paid to', e?e.paidTo:'','text','placeholder="Pump, mechanic, bank…"')+
-      fSelect('e_mode','Mode',[{v:'Cash',t:'Cash'},{v:'Bank',t:'Bank transfer'},{v:'UPI',t:'UPI'},{v:'Card',t:'Card'},{v:'Credit',t:'On credit'}],
-        isCredit?'Credit':(e?e.mode:'Cash'), 'onchange="toggleShopField()"')+
+      fSelect('e_mode','Mode', EXP_MODES, isCredit?'Credit':(e?e.mode:'Cash'), 'onchange="toggleShopField()"')+
       '<div class="field full" id="shopField"'+(isCredit?'':' hidden')+'>'+
         qSelect('e_shop','Shop *', 'shop', chosenShop)+
         '<span class="hint">Taken on credit, so this goes into the shop\u2019s ledger as money you owe'+
@@ -7535,6 +7610,7 @@ function refreshQuick(id, kind, newId){
 function afterQuickChange(id){
   const el = document.getElementById(id);
   if(el && el.value) clearMissing(id);
+  if(/^tx_s\d+$/.test(id) && typeof readTripExpenses==='function') readTripExpenses();
   if(id==='e_mode' || id==='e_shop' || id==='e_truck') toggleShopField();
   if(id==='f_truck' || id==='f_supplier' || id==='f_party') { if(typeof recalcAdvance==='function') recalcAdvance(); }
 }
@@ -7984,7 +8060,7 @@ function shopLedgerRows(id){
   creditExpenses(id).forEach(e=>{
     rows.push({date:e.date, label:esc(e.category)+' taken on credit',
       truck: e.truckId ? truckName(e.truckId) : 'N/A',
-      ref: [e.paidTo, e.note].filter(Boolean).join(' · '),
+      ref: [e.paidTo, e.note, e.tripId ? 'Trip '+tripLabel(e.tripId) : ''].filter(Boolean).join(' · '),
       debit:num(e.amount), credit:0, kind:'expense', expenseId:e.id});
   });
   (DB.shopLedger||[]).filter(l=>l.shopId===id).forEach(l=>{
