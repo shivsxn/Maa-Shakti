@@ -3305,6 +3305,12 @@ input.dp-input::-webkit-clear-button{display:none}
 .field.field-bad > select:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-soft)}
 .field.field-bad > .combo > .combo-chev{color:var(--red)}
 .field-bad-note{font-size:11.5px;font-weight:600;color:var(--red)}
+
+/* ---------- narrowing a ledger to one side of the account ---------- */
+.led-view{min-width:170px}
+.led-note{margin:-4px 0 13px;padding:9px 13px;border:1px solid var(--accent-line);
+  border-radius:10px;background:var(--accent-soft);color:var(--ink-2);font-size:12.5px}
+.led-note a{color:var(--accent-2);font-weight:600}
 @keyframes fieldNudge{
   0%,100%{transform:translateX(0)}
   25%{transform:translateX(-3px)}
@@ -5082,6 +5088,52 @@ function partyForm(id, onSaved){
 }
 function partyLedger(id){ route='parties'; sub={open:id}; window.scrollTo(0,0); buildNav(); renderLedger(id); afterDirectRender(); }
 
+/* ------------------------------------------------------------
+   LEDGER VIEW
+   Every ledger can be narrowed to one side of the account. The
+   running balance belongs to the whole ledger, so it is worked
+   out over every line first and only then are the lines you did
+   not ask for dropped — the balance column still reads true, and
+   the print and the CSV show exactly what the screen shows.
+   ------------------------------------------------------------ */
+const LEDGER_VIEWS = [
+  {k:'',       label:'Debit and credit', short:'debit and credit'},
+  {k:'debit',  label:'Debit only',       short:'debit entries only'},
+  {k:'credit', label:'Credit only',      short:'credit entries only'}
+];
+/* the driver account runs on the same two sides under other names */
+const DRIVER_VIEWS = [
+  {k:'',       label:'Everything',       short:'salary due and payments'},
+  {k:'debit',  label:'Salary due only',  short:'salary due only'},
+  {k:'credit', label:'Payments only',    short:'payments only'}
+];
+function ledgerView(){ return sub.led || ''; }
+function ledgerFilter(rows, view){
+  const k = view == null ? ledgerView() : (view || '');
+  if(k==='debit')  return rows.filter(r=>num(r.debit) > 0);
+  if(k==='credit') return rows.filter(r=>num(r.credit) > 0);
+  return rows;
+}
+function ledgerViewInfo(view, list){
+  const k = view == null ? ledgerView() : (view || '');
+  const set = list || LEDGER_VIEWS;
+  return set.find(v=>v.k===k) || set[0];
+}
+/* the picker, plus the line that says what is being left out */
+function ledgerViewPicker(after, list){
+  const set = list || LEDGER_VIEWS;
+  return '<select class="led-view" aria-label="Which entries to show" '+
+    'onchange="sub.led=this.value;'+after+'">'+
+    set.map(v=>'<option value="'+v.k+'"'+(v.k===ledgerView()?' selected':'')+'>'+esc(v.label)+'</option>').join('')+
+  '</select>';
+}
+function ledgerViewNote(shown, total, after, list){
+  if(!ledgerView()) return '';
+  return '<div class="led-note">Showing '+shown+' of '+total+' entries \u2014 '+
+    esc(ledgerViewInfo(null, list).short)+'. The balance column and the totals below are '+
+    'for the whole account. <a href="#" onclick="event.preventDefault();sub.led=\'\';'+after+'">Show everything</a></div>';
+}
+
 function ledgerRows(pid){
   const rows = [];
   const p = partyById(pid);
@@ -5124,10 +5176,12 @@ function ledgerRows(pid){
 function renderLedger(pid){
   const p = partyById(pid);
   if(!p){ sub={}; return viewParties(); }
-  const rows = ledgerRows(pid);
+  const all = ledgerRows(pid);
+  const rows = ledgerFilter(all);
   const bal = partyBalance(pid);
-  const billed = rows.reduce((s,r)=>s+r.debit,0);
-  const paid   = rows.reduce((s,r)=>s+r.credit,0);
+  const billed = all.reduce((s,r)=>s+r.debit,0);
+  const paid   = all.reduce((s,r)=>s+r.credit,0);
+  const again = "renderLedger('"+pid+"');afterDirectRender()";
   $('#pageTitle').textContent = p.name;
   $('#pageSub').textContent = [p.city,p.phone].filter(Boolean).join(' · ') || 'Party ledger';
   $('#pageActions').innerHTML =
@@ -5141,12 +5195,17 @@ function renderLedger(pid){
     '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance to collect':'Advance held')+'</div>'+
       '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm" onclick="printPartyStatement(\''+pid+'\')">Print statement</button>'+
+  '<div class="toolbar">'+ledgerViewPicker(again)+
+    '<button class="btn btn-sm" onclick="printPartyStatement(\''+pid+'\')">Print statement</button>'+
     '<button class="btn btn-sm" onclick="exportLedger(\''+pid+'\')">Export CSV</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delParty(\''+pid+'\')">Delete party</button></div>'+
-  (rows.length===0
+  ledgerViewNote(rows.length, all.length, again)+
+  (all.length===0
     ? empty('Ledger is empty','Record a trip for this party, or add a direct payment, advance or adjustment entry here.',
         '<button class="btn btn-amber" onclick="ledgerForm(\''+pid+'\')">+ Add entry</button>')
+    : rows.length===0
+      ? empty('Nothing on that side','This ledger has no '+ledgerViewInfo().short.replace(' only','')+' yet.',
+          '<button class="btn" onclick="sub.led=\'\';'+again+'">Show everything</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Date</th><th>Particulars</th><th class="t-r">Debit</th><th class="t-r">Credit</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
       rows.map(r=>
@@ -5871,8 +5930,13 @@ function openDriver(id){ route='drivers'; sub={open:id}; window.scrollTo(0,0); b
 function renderDriver(did){
   const d = driverById(did); if(!d){ sub={}; return viewDrivers(); }
   const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  let run = 0; const rows = txns.map(t=>{ run += t.type==='due'? num(t.amount) : -num(t.amount); return {...t, running:run}; }).reverse();
+  let run = 0; const all = txns.map(t=>{
+    run += t.type==='due'? num(t.amount) : -num(t.amount);
+    return {...t, running:run, debit: t.type==='due'?num(t.amount):0, credit: t.type!=='due'?num(t.amount):0};
+  });
+  const rows = ledgerFilter(all).slice().reverse();
   const bal = driverBalance(did);
+  const again = "renderDriver('"+did+"');afterDirectRender()";
   $('#pageTitle').textContent = d.name;
   $('#pageSub').textContent = [d.phone, d.licence].filter(Boolean).join(' · ') || 'Driver account';
   $('#pageActions').innerHTML =
@@ -5887,11 +5951,16 @@ function renderDriver(did){
     '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance payable':'Advance recoverable')+'</div>'+
       '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm" onclick="printDriverStatement(\''+did+'\')">Print account</button>'+
+  '<div class="toolbar">'+ledgerViewPicker(again, DRIVER_VIEWS)+
+    '<button class="btn btn-sm" onclick="printDriverStatement(\''+did+'\')">Print account</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delDriver(\''+did+'\')">Delete driver</button></div>'+
-  (rows.length===0
+  ledgerViewNote(rows.length, all.length, again, DRIVER_VIEWS)+
+  (all.length===0
     ? empty('No entries yet','Add the monthly salary as "salary due", then record each payment or advance you give.',
         '<button class="btn btn-amber" onclick="driverTxnForm(\''+did+'\')">+ Add entry</button>')
+    : rows.length===0
+      ? empty('Nothing on that side','This account has no '+ledgerViewInfo(null, DRIVER_VIEWS).short.replace(' only','')+' yet.',
+          '<button class="btn" onclick="sub.led=\'\';'+again+'">Show everything</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Date</th><th>Entry</th><th class="t-r">Salary due</th><th class="t-r">Paid</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
       rows.map(t=>'<tr><td style="white-space:nowrap">'+fdate(t.date)+'</td>'+
@@ -6186,11 +6255,13 @@ function supplierLedger(id){ route='suppliers'; sub={open:id}; window.scrollTo(0
 function renderSupplierLedger(sid){
   const s = supplierById(sid);
   if(!s){ sub={}; return viewSuppliers(); }
-  const rows = supplierLedgerRows(sid);
+  const all = supplierLedgerRows(sid);
+  const rows = ledgerFilter(all);
   const bal = supplierBalance(sid);
-  const billed = rows.reduce((a,r)=>a+r.debit,0);
-  const paid   = rows.reduce((a,r)=>a+r.credit,0);
+  const billed = all.reduce((a,r)=>a+r.debit,0);
+  const paid   = all.reduce((a,r)=>a+r.credit,0);
   const held   = supplierHeldByPod(sid);
+  const again  = "renderSupplierLedger('"+sid+"');afterDirectRender()";
 
   $('#pageTitle').textContent = s.name;
   $('#pageSub').textContent = [s.person, s.phone, s.city].filter(Boolean).join(' · ') || 'Supplier ledger';
@@ -6205,12 +6276,17 @@ function renderSupplierLedger(sid){
     kpi(bal>=0?'Outstanding':'Paid ahead', Math.abs(bal), {tone:bal>0?'neg':'pos'})+
     kpi('Held pending POD', held, {note:'You can hold this until the POD is back'})+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm" onclick="printPayableStatement(\'supplier\',\''+sid+'\')">Print statement</button>'+
+  '<div class="toolbar">'+ledgerViewPicker(again)+
+    '<button class="btn btn-sm" onclick="printPayableStatement(\'supplier\',\''+sid+'\')">Print statement</button>'+
     '<button class="btn btn-sm" onclick="exportSupplierLedger(\''+sid+'\')">Export CSV</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delSupplier(\''+sid+'\')">Delete supplier</button></div>'+
-  (rows.length===0
+  ledgerViewNote(rows.length, all.length, again)+
+  (all.length===0
     ? empty('Ledger is empty','Record a trip on one of their trucks with a hire amount, or add a payment entry here.',
         '<button class="btn btn-amber" onclick="supplierEntryForm(\''+sid+'\')">+ Add entry</button>')
+    : rows.length===0
+      ? empty('Nothing on that side','This ledger has no '+ledgerViewInfo().short.replace(' only','')+' yet.',
+          '<button class="btn" onclick="sub.led=\'\';'+again+'">Show everything</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Date</th><th>Particulars</th><th>Truck</th><th class="t-r">Debit</th>'+
       '<th class="t-r">Credit</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
@@ -6285,7 +6361,7 @@ function exportSupplierLedger(sid){
   const s = supplierById(sid);
   download('supplier-'+s.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
     [['Date','Particulars','Truck','Debit','Credit','Balance']].concat(
-      supplierLedgerRows(sid).map(r=>[r.date, r.label, r.truck, r.debit||'', r.credit||'', r.running])));
+      ledgerFilter(supplierLedgerRows(sid)).map(r=>[r.date, r.label, r.truck, r.debit||'', r.credit||'', r.running])));
 }
 
 /* ============================================================
@@ -6384,10 +6460,12 @@ function shopLedger(id){ route='shops'; sub={open:id}; window.scrollTo(0,0); bui
 function renderShopLedger(sid){
   const s = shopById(sid);
   if(!s){ sub={}; return viewShops(); }
-  const rows = shopLedgerRows(sid);
+  const all = shopLedgerRows(sid);
+  const rows = ledgerFilter(all);
   const bal = shopBalance(sid);
-  const taken = rows.reduce((a,r)=>a+r.debit,0);
-  const paid  = rows.reduce((a,r)=>a+r.credit,0);
+  const taken = all.reduce((a,r)=>a+r.debit,0);
+  const paid  = all.reduce((a,r)=>a+r.credit,0);
+  const again = "renderShopLedger('"+sid+"');afterDirectRender()";
   $('#pageTitle').textContent = s.name;
   $('#pageSub').textContent = [s.person, s.phone, s.city].filter(Boolean).join(' · ') || 'Shop ledger';
   $('#pageActions').innerHTML =
@@ -6396,16 +6474,21 @@ function renderShopLedger(sid){
 
   $('#view').innerHTML =
   '<div class="grid g3 rise" style="margin-bottom:16px">'+
-    kpi('Taken on credit', taken, {note:plural(rows.filter(r=>r.debit).length,'entry')})+
+    kpi('Taken on credit', taken, {note:plural(all.filter(r=>r.debit).length,'entry')})+
     kpi('Paid to shop', paid, {tone:'pos'})+
     kpi(bal>=0?'Outstanding payable':'Paid ahead', Math.abs(bal), {tone:bal>0?'neg':'pos'})+
   '</div>'+
-  '<div class="toolbar"><button class="btn btn-sm" onclick="printPayableStatement(\'shop\',\''+sid+'\')">Print statement</button>'+
+  '<div class="toolbar">'+ledgerViewPicker(again)+
+    '<button class="btn btn-sm" onclick="printPayableStatement(\'shop\',\''+sid+'\')">Print statement</button>'+
     '<button class="btn btn-sm" onclick="exportShopLedger(\''+sid+'\')">Export CSV</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delShop(\''+sid+'\')">Delete shop</button></div>'+
-  (rows.length===0
+  ledgerViewNote(rows.length, all.length, again)+
+  (all.length===0
     ? empty('Ledger is empty','Mark an expense as "On credit" against this shop, or add a payment entry here.',
         '<button class="btn btn-amber" onclick="shopEntryForm(\''+sid+'\')">+ Add entry</button>')
+    : rows.length===0
+      ? empty('Nothing on that side','This ledger has no '+ledgerViewInfo().short.replace(' only','')+' yet.',
+          '<button class="btn" onclick="sub.led=\'\';'+again+'">Show everything</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Date</th><th>Description</th><th>Truck</th><th class="t-r">Debit</th>'+
       '<th class="t-r">Credit</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
@@ -6473,7 +6556,7 @@ function exportShopLedger(sid){
   const s = shopById(sid);
   download('shop-'+s.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
     [['Date','Description','Truck','Debit','Credit','Balance']].concat(
-      shopLedgerRows(sid).map(r=>[r.date, r.label.replace(/<[^>]+>/g,''), r.truck, r.debit||'', r.credit||'', r.running])));
+      ledgerFilter(shopLedgerRows(sid)).map(r=>[r.date, r.label.replace(/<[^>]+>/g,''), r.truck, r.debit||'', r.credit||'', r.running])));
 }
 
 /* ============================================================
@@ -6892,16 +6975,21 @@ function printDoc(html){
 /* ---------- party statement ---------- */
 function printPartyStatement(pid){
   const p = partyById(pid); if(!p) return;
-  const rows = ledgerRows(pid);
+  const all = ledgerRows(pid);
+  const rows = ledgerFilter(all);
+  const view = ledgerViewInfo();
   const bal = partyBalance(pid);
-  const billed = rows.reduce((s,r)=>s+r.debit,0);
-  const paid   = rows.reduce((s,r)=>s+r.credit,0);
+  const billed = all.reduce((s,r)=>s+r.debit,0);
+  const paid   = all.reduce((s,r)=>s+r.credit,0);
+  const shownD = rows.reduce((s,r)=>s+r.debit,0);
+  const shownC = rows.reduce((s,r)=>s+r.credit,0);
   printDoc(
     printHead('Statement of account', p.name, [
       ['Party', esc(p.name)],
       p.city ? ['City', esc(p.city)] : null,
       p.phone ? ['Phone', esc(p.phone)] : null,
-      ['Entries', String(rows.length)]
+      ['Entries', view.k ? rows.length+' of '+all.length : String(all.length)],
+      view.k ? ['Showing', esc(view.label)] : null
     ])+
     printTable(
       [{label:'Date', w:'15%'},{label:'Particulars'},{label:'Debit', right:true, w:'15%'},
@@ -6909,14 +6997,15 @@ function printPartyStatement(pid){
       rows.map(r=>[ r.date?fdate(r.date):'—',
         esc(r.label)+(r.ref?'<span class="pr-ref">'+esc(r.ref)+'</span>':''),
         r.debit?money(r.debit):'', r.credit?money(r.credit):'', money(r.running) ]),
-      ['Totals','', money(billed), money(paid), money(bal)]
+      [view.k?'Totals shown':'Totals','', money(shownD), money(shownC), money(bal)]
     )+
     printSummary([
       ['Total billed', money(billed)],
       ['Total received', money(paid)],
       [bal>=0?'Balance receivable':'Advance held', money(Math.abs(bal)), true]
     ])+
-    printSign('Debit increases what is owed. Credit reduces it. Please confirm the closing balance.')
+    printSign('Debit increases what is owed. Credit reduces it. Please confirm the closing balance.'+
+      (view.k ? ' This statement lists '+view.short+'; the summary and the closing balance are for the whole account.' : ''))
   );
 }
 
@@ -6925,10 +7014,14 @@ function printPayableStatement(kind, sid){
   const isShop = kind==='shop';
   const s = isShop ? shopById(sid) : supplierById(sid);
   if(!s) return;
-  const rows = isShop ? shopLedgerRows(sid) : supplierLedgerRows(sid);
+  const all  = isShop ? shopLedgerRows(sid) : supplierLedgerRows(sid);
+  const rows = ledgerFilter(all);
+  const view = ledgerViewInfo();
   const bal  = isShop ? shopBalance(sid) : supplierBalance(sid);
-  const taken = rows.reduce((a,r)=>a+r.debit,0);
-  const paid  = rows.reduce((a,r)=>a+r.credit,0);
+  const taken = all.reduce((a,r)=>a+r.debit,0);
+  const paid  = all.reduce((a,r)=>a+r.credit,0);
+  const shownD = rows.reduce((a,r)=>a+r.debit,0);
+  const shownC = rows.reduce((a,r)=>a+r.credit,0);
   const cols = [{label:'Date', w:'14%'},{label:'Particulars'},{label:'Truck', w:'14%'},
     {label:'Debit', right:true, w:'14%'},{label:'Credit', right:true, w:'14%'},{label:'Balance', right:true, w:'15%'}];
   printDoc(
@@ -6936,50 +7029,60 @@ function printPayableStatement(kind, sid){
       [isShop?'Shop':'Supplier', esc(s.name)],
       s.person ? ['Contact', esc(s.person)] : null,
       s.phone ? ['Phone', esc(s.phone)] : null,
-      ['Entries', String(rows.length)]
+      ['Entries', view.k ? rows.length+' of '+all.length : String(all.length)],
+      view.k ? ['Showing', esc(view.label)] : null
     ])+
     printTable(cols, rows.map(r=>[ r.date?fdate(r.date):'—',
         esc(String(r.label).replace(/<[^>]+>/g,''))+(r.ref?'<span class="pr-ref">'+esc(r.ref)+'</span>':''),
         esc(r.truck||'—'), r.debit?money(r.debit):'', r.credit?money(r.credit):'', money(r.running) ]),
-      ['Totals','','', money(taken), money(paid), money(bal)])+
+      [view.k?'Totals shown':'Totals','','', money(shownD), money(shownC), money(bal)])+
     printSummary([
       [isShop?'Total taken on credit':'Total hire billed', money(taken)],
       ['Total paid', money(paid)],
       [bal>=0?'Balance payable':'Paid ahead', money(Math.abs(bal)), true]
     ])+
-    printSign('Please confirm the closing balance against your records.')
+    printSign('Please confirm the closing balance against your records.'+
+      (view.k ? ' This statement lists '+view.short+'; the summary and the closing balance are for the whole account.' : ''))
   );
 }
 
 /* ---------- driver account ---------- */
 function printDriverStatement(did){
   const d = driverById(did); if(!d) return;
+  const view = ledgerViewInfo(null, DRIVER_VIEWS);
   const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   let run = 0;
-  const rows = txns.map(t=>{
+  const lines = txns.map(t=>{
     run += t.type==='due' ? num(t.amount) : -num(t.amount);
-    return [ fdate(t.date),
-      ({due:'Salary due', salary:'Salary paid', advance:'Advance paid'})[t.type] || 'Payment',
-      esc(t.note||''), t.type==='due'?money(t.amount):'', t.type!=='due'?money(t.amount):'', money(run) ];
+    return {t, running:run, debit: t.type==='due'?num(t.amount):0, credit: t.type!=='due'?num(t.amount):0};
   });
+  const shown = ledgerFilter(lines);
+  const rows = shown.map(x=>[ fdate(x.t.date),
+      ({due:'Salary due', salary:'Salary paid', advance:'Advance paid'})[x.t.type] || 'Payment',
+      esc(x.t.note||''), x.debit?money(x.debit):'', x.credit?money(x.credit):'', money(x.running) ]);
   const due = txns.filter(t=>t.type==='due').reduce((s,t)=>s+num(t.amount),0);
   const out = txns.filter(t=>t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
+  const shownD = shown.reduce((a,x)=>a+x.debit,0);
+  const shownC = shown.reduce((a,x)=>a+x.credit,0);
   printDoc(
     printHead('Driver account', d.name, [
       ['Driver', esc(d.name)],
       d.licence ? ['Licence', esc(d.licence)] : null,
       d.phone ? ['Phone', esc(d.phone)] : null,
-      d.salary ? ['Monthly salary', money(d.salary)] : null
+      d.salary ? ['Monthly salary', money(d.salary)] : null,
+      view.k ? ['Showing', esc(view.label)] : null,
+      view.k ? ['Entries', shown.length+' of '+lines.length] : null
     ])+
     printTable([{label:'Date', w:'14%'},{label:'Entry', w:'18%'},{label:'Note'},
       {label:'Salary due', right:true, w:'14%'},{label:'Paid', right:true, w:'14%'},{label:'Balance', right:true, w:'14%'}],
-      rows, ['Totals','','', money(due), money(out), money(due-out)])+
+      rows, [view.k?'Totals shown':'Totals','','', money(shownD), money(shownC), money(due-out)])+
     printSummary([
       ['Salary due to date', money(due)],
       ['Total paid', money(out)],
       [(due-out)>=0?'Balance payable':'Advance recoverable', money(Math.abs(due-out)), true]
     ])+
-    printSign('Only money actually paid is counted as an expense in the accounts.')
+    printSign('Only money actually paid is counted as an expense in the accounts.'+
+      (view.k ? ' This account lists '+view.short+'; the summary and the closing balance cover everything.' : ''))
   );
 }
 
@@ -7135,7 +7238,7 @@ function exportLedger(pid){
   const p = partyById(pid);
   download('ledger-'+p.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
     [['Date','Particulars','Reference','Debit','Credit','Balance']].concat(
-      ledgerRows(pid).map(r=>[r.date,r.label,r.ref,r.debit||'',r.credit||'',r.running])));
+      ledgerFilter(ledgerRows(pid)).map(r=>[r.date,r.label,r.ref,r.debit||'',r.credit||'',r.running])));
 }
 
 
