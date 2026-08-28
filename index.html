@@ -3166,6 +3166,17 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .note{background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--ink-2);border-radius:10px}
 .money-pos{color:var(--green)}
 .money-neg{color:var(--red)}
+
+/* ---------- the same two meanings, on the dark hero panel ----------
+   --green and --red are mixed for white cards; against the hero's
+   near-black gradient they fall to about 2.5:1 and the figure fades
+   into its own tile. These are the same two colours re-mixed for that
+   background, and they read at roughly 9:1. */
+:root{ --pos-dark:#5FE3AE; --neg-dark:#FF9B8D; }
+.hero .money-pos{color:var(--pos-dark);font-weight:700}
+.hero .money-neg{color:var(--neg-dark);font-weight:700}
+.hero-stat-foot .trend-up{color:var(--pos-dark)}
+.hero-stat-foot .trend-down{color:var(--neg-dark)}
 .legend-item{color:var(--muted)}
 .fleet-line{color:var(--muted-2)}
 .theme-picks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -3222,7 +3233,12 @@ th{z-index:10}
 /* ---------- date picker ----------
    Ours, not the browser's: a year you can type into and a year
    list that glides instead of jumping.                          */
-input.dp-input{cursor:pointer}
+/* The field itself is typed into as normal. The calendar opens from the
+   icon on its right, which sits where the browser's own button used to. */
+input.dp-input{padding-right:36px;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;background-size:16px 16px}
+input.dp-input:hover{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E")}
 input.dp-input::-webkit-calendar-picker-indicator{display:none}
 input.dp-input::-webkit-inner-spin-button,
 input.dp-input::-webkit-clear-button{display:none}
@@ -3347,6 +3363,33 @@ input.dp-input::-webkit-clear-button{display:none}
   color:var(--muted);margin-bottom:2px}
 .field.exp-credit{max-width:440px;margin:0 0 10px}
 .field.exp-credit[hidden]{display:none}
+
+/* ---------- a trip that has finished and locked itself ---------- */
+.trip-lock{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;margin:0 0 14px;
+  padding:11px 14px;border:1px solid var(--green-line);border-radius:10px;
+  background:var(--green-soft);color:var(--ink-2);font-size:12.8px;line-height:1.55}
+.trip-lock b{color:var(--green);font-weight:700}
+.trip-lock.open{border-color:var(--amber-line);background:var(--amber-soft)}
+.trip-lock.open b{color:var(--amber)}
+.trip-lock a{color:var(--accent-2);font-weight:600}
+.pane-locked{opacity:.72}
+.pane-locked input:disabled,.pane-locked select:disabled,.pane-locked textarea:disabled{
+  background:var(--bg-2);cursor:not-allowed}
+.pane-locked button:disabled{opacity:.5;cursor:not-allowed}
+.lock-note{font-size:11.5px;color:var(--green);font-weight:600}
+
+/* ---------- renewing a document ---------- */
+.renew-now{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 20px;margin-bottom:18px;
+  padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:var(--bg-2)}
+.renew-now span{display:block;font-size:11px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.renew-now b{font-size:14.5px;color:var(--ink);font-weight:700}
+.renew-past{margin-top:18px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.renew-past-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:13px;color:var(--muted)}
+.renew-past-row:last-child{border-bottom:0}
+.renew-past-row b{color:var(--ink)}
+@media (max-width:640px){ .renew-now{grid-template-columns:1fr} }
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 @media (max-width:760px){
   .exp-head{display:none}
@@ -3371,7 +3414,7 @@ input.dp-input::-webkit-clear-button{display:none}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.4 &middot; 26 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.12 &middot; 28 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3402,7 +3445,7 @@ input.dp-input::-webkit-clear-button{display:none}
 /* ---------- 1. Storage ---------- */
 const KEY = 'mvl_db_v1';
 const BLANK = {
-  settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:''},
+  settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:'', editLocked:false},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
   shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{}, categories:[],
   seeded:false
@@ -3437,7 +3480,13 @@ function money(n, sign){
   if(sign && v>0) return '+₹'+s;
   return (v<0?'−₹':'₹')+s;
 }
-function today(){ return new Date().toISOString().slice(0,10); }
+/* The device's own date. toISOString() is UTC, which in India reads as
+   yesterday until half past five in the morning — an expense entered
+   early would have been filed on the wrong day. */
+function today(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 function fdate(d){
   if(!d) return '—';
   const [y,m,dd] = d.split('-');
@@ -3643,6 +3692,7 @@ function dpPick(iso){
   if(iso < L.min || iso > L.max){ toast('That date is outside what this field accepts'); return; }
   closeDatePicker();
   el.value = iso;
+  el.dataset.good = iso;
   el.dispatchEvent(new Event('input', {bubbles:true}));
   el.dispatchEvent(new Event('change', {bubbles:true}));
 }
@@ -3651,6 +3701,7 @@ function dpClear(){
   if(!el) return;
   closeDatePicker();
   el.value = '';
+  el.dataset.good = '';
   el.dispatchEvent(new Event('input', {bubbles:true}));
   el.dispatchEvent(new Event('change', {bubbles:true}));
 }
@@ -3666,23 +3717,37 @@ function placeDatePicker(){
 }
 /* every date field on the page hands its calendar over to ours */
 const dpManaged = new WeakSet();
+const DP_ICON_ZONE = 34;   /* the strip on the right that opens the calendar */
 function manageDate(el){
   if(dpManaged.has(el)) return;
   dpManaged.add(el);
   el.classList.add('dp-input');
-  el.readOnly = true;
   el.setAttribute('autocomplete','off');
+  el.dataset.good = el.value || '';
+  /* Typing goes to the field, as it always did in the browser's own date
+     box and in the browser's own order. Only the icon opens the calendar. */
   el.addEventListener('mousedown', e=>{
+    if(e.offsetX < el.clientWidth - DP_ICON_ZONE) return;   /* typing area */
     e.preventDefault();
     if(dpEl === el && dpOpen()) return closeDatePicker();
     el.focus();
     openDatePicker(el);
   });
-  /* opened by hand only: a form that focuses its first field must not
-     have the calendar spring open before anything has been typed */
   el.addEventListener('keydown', e=>{
-    if(e.key==='Enter' || e.key===' ' || e.key==='ArrowDown'){ e.preventDefault(); openDatePicker(el); }
+    if(e.altKey && e.key==='ArrowDown'){ e.preventDefault(); openDatePicker(el); }
     else if(e.key==='Escape') closeDatePicker();
+  });
+  /* A typed date is held to the same bounds the calendar offers */
+  el.addEventListener('change', ()=>{
+    const v = el.value;
+    if(!v){ el.dataset.good = ''; return; }
+    const min = el.getAttribute('min') || DATE_MIN, max = el.getAttribute('max') || DATE_MAX;
+    if(v < min || v > max){
+      toast('That date is outside '+fdate(min)+' to '+fdate(max));
+      el.value = el.dataset.good || '';
+      return;
+    }
+    el.dataset.good = v;
   });
   /* tabbing away shuts it; a click into the year box does not, so the
      check waits a tick for the focus to land where it is going */
@@ -4105,7 +4170,9 @@ function viewDashboard(){
     '<div class="hero-side">'+
       heroStat('Freight', cur.freight, pctChange(cur.freight, prev.freight))+
       heroStat('Costs', cur.cost, pctChange(cur.cost, prev.cost), true)+
-      heroStat('Profit', cur.profit, null, false, cur.freight? Math.round(cur.profit/cur.freight*100)+'% margin':'')+
+      heroStat(cur.profit<0?'Loss':'Profit', Math.abs(cur.profit), null, false,
+        cur.freight? Math.round(cur.profit/cur.freight*100)+'% margin':'', '',
+        cur.profit>0?'pos':cur.profit<0?'neg':'')+
       heroStat('Trips', cur.trips, null, false, label, 'plain')+
     '</div>'+
   '</div>'+
@@ -4160,13 +4227,14 @@ function viewDashboard(){
   '</div>';
 }
 
-function heroStat(label, value, trend, invert, note, fmt){
+function heroStat(label, value, trend, invert, note, fmt, tone){
   const dir = trend==null || !isFinite(trend) ? '' :
     '<span class="trend '+((trend>=0)!==!!invert?'trend-up':'trend-down')+'">'+
       (trend>=0?'▲':'▼')+' '+Math.abs(Math.round(trend))+'%</span>';
   return '<div class="hero-stat">'+
     '<div class="hero-stat-label">'+esc(label)+'</div>'+
-    '<div class="hero-stat-value num" data-count="'+num(value)+'" data-fmt="'+(fmt||'money')+'">'+
+    '<div class="hero-stat-value num'+(tone==='pos'?' money-pos':tone==='neg'?' money-neg':'')+
+      '" data-count="'+num(value)+'" data-fmt="'+(fmt||'money')+'">'+
       (fmt==='plain'?'0':money(0))+'</div>'+
     '<div class="hero-stat-foot">'+(note?esc(note):'')+dir+'</div>'+
   '</div>';
@@ -4389,12 +4457,16 @@ function renderTripList(){
           '<td data-label="Freight" class="t-r num t-strong">'+money(t.freight)+'</td>'+
           '<td data-label="Advance" class="t-r num">'+(num(t.advance)?money(t.advance):'\u2014')+
             '</td>'+
-          '<td data-label="Status">'+statusChip(tripStatus(t))+'</td>'+
+          '<td data-label="Status">'+(tripCompleted(t)
+            ? '<span class="chip chip-green">Completed</span>'+
+              (tripLocked(t)?'<div class="t-sub lock-note">\u2713 Locked</div>':'')
+            : statusChip(tripStatus(t)))+'</td>'+
           '<td data-label="Delivery">'+stageChip(t)+
             (podCount(t.id)?'<div class="t-sub">'+plural(podCount(t.id),'page')+' on file</div>':'')+'</td>'+
           '<td><div class="row-actions">'+
-            '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">Edit</button>'+
-            '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>'+
+            '<button class="btn btn-sm" onclick="tripForm(\''+t.id+'\')">'+(tripLocked(t)?'View':'Edit')+'</button>'+
+            (tripLocked(t) ? ''
+              : '<button class="btn btn-sm btn-danger" onclick="delTrip(\''+t.id+'\')">Delete</button>')+
           '</div></td>'+
         '</tr>';}).join('')+
       '</tbody><tfoot><tr><th colspan="7">'+plural(full,'trip')+
@@ -4520,7 +4592,7 @@ function supplierBlock(t){
     (!sid && (isMarket||num(t.hire))
       ? '<div class="hint" style="margin-top:8px">Link a supplier and this hire lands in their ledger. '+
         'Add one under <b>Suppliers</b>.</div>' : '')+
-    (sid ? '<div style="margin-top:12px"><button class="btn btn-sm" onclick="closeModal();supplierLedger(\''+sid+'\')">'+
+    (sid ? '<div style="margin-top:12px"><button class="btn btn-sm" data-keep onclick="closeModal();supplierLedger(\''+sid+'\')">'+
       'Open '+esc(supplierName(sid))+'\u2019s ledger</button></div>' : '')+
   '</div>';
 }
@@ -4757,6 +4829,7 @@ function repaintTripPane(){
   if(document.getElementById('f_advTotal')) recalcAdvance();
   clampDates();
   paintTripTotals();
+  applyTripLock();
   return true;
 }
 
@@ -4819,7 +4892,7 @@ function tripMoneyPane(t, existing){
       '<div class="gate-error" id="brokWarn" hidden style="margin-top:10px"></div>'+
     '</div>'+
     supplierBlock(t)+
-    (existing && t.partyId ? '<div style="margin-top:14px"><button class="btn" '+
+    (existing && t.partyId ? '<div style="margin-top:14px"><button class="btn" data-keep '+
       'onclick="closeModal();partyLedger(\'' + t.partyId + '\')">Open '+esc(partyName(t.partyId))+'\u2019s ledger</button></div>' : '');
 }
 
@@ -4838,7 +4911,7 @@ function tripExpensePane(t, existing){
       '<div class="adv-total adv-balance"><span>Total expense money</span>'+
         '<span class="num adv-total-value" id="f_expTotal">₹0</span></div>'+
     '</div>'+
-    (existing ? '<div style="margin-top:14px"><button class="btn" onclick="closeModal();go(\'expenses\')">'+
+    (existing ? '<div style="margin-top:14px"><button class="btn" data-keep onclick="closeModal();go(\'expenses\')">'+
       'Open the Expenses tab</button></div>' : '');
 }
 
@@ -4895,6 +4968,31 @@ function tabStripHtml(t, existing){
       esc(x.label)+(x.chip||'')+'</button>').join('');
 }
 
+function tripLockBanner(t){
+  if(!t || !tripCompleted(t)) return '';
+  const open = allowLockedEdits();
+  const when = t.completedAt ? ' on '+fdate(t.completedAt) : '';
+  return '<div class="trip-lock'+(open?' open':'')+'">'+
+    '<b>'+(open ? 'Completed \u2014 editing allowed' : 'Completed and locked')+'</b>'+
+    '<span>Nothing is left to collect and the POD went to the party'+when+'. '+
+      (open
+        ? 'Editing of completed trips is switched on in Settings, so this one can still be changed.'
+        : 'It is read-only. Switch on <b>Allow editing of completed trips</b> in '+
+          '<a href="#" onclick="event.preventDefault();closeModal();go(\'settings\')">Settings</a> to change it.')+
+    '</span></div>';
+}
+/* Enforcement is at the source, in the functions that write; this only
+   makes the screen say so, by greying what can no longer be touched. */
+function applyTripLock(){
+  const pane = document.querySelector('.overlay .trip-pane');
+  if(!pane || !tripDraft || !tripDraft.id) return;
+  const t = DB.trips.find(x=>x.id===tripDraft.id);
+  if(!t || !tripLocked(t)) return;
+  pane.classList.add('pane-locked');
+  pane.querySelectorAll('input, select, textarea').forEach(el=>{ el.disabled = true; });
+  pane.querySelectorAll('button').forEach(b=>{ if(!b.hasAttribute('data-keep')) b.disabled = true; });
+}
+
 function tripScreen(id, tab){
   if(tab) tripTab = tab;
   const existing = id ? DB.trips.find(x=>x.id===id) : null;
@@ -4924,12 +5022,15 @@ function tripScreen(id, tab){
 
   const TABS = tripTabList(t, existing);
 
+  const locked = !!existing && tripLocked(existing);
+
   openModal({
     title: existing ? ((t.from||'—')+' → '+(t.to||'—')) : 'New trip',
     wide:'full',
     okText: existing ? 'Save changes' : 'Save trip',
-    onOk(){ saveTripScreen(existing); },
+    onOk: locked ? null : function(){ saveTripScreen(existing); },
     body:
+    tripLockBanner(existing)+
     '<div class="trip-top">'+
       '<div class="slip-lr">'+(existing
         ? 'LR '+esc(t.lr||'—')+' · '+fdate(t.date)+' · '+esc(partyName(t.partyId))
@@ -4944,7 +5045,7 @@ function tripScreen(id, tab){
     '<div class="trip-totals" id="tripTotals">'+tripTotalsHtml(t)+'</div>'+
     '<div class="tabs trip-tabs">'+tabStripHtml(t, existing)+'</div>'+
     '<div class="trip-pane pane-in">'+tripPaneHtml(t, existing, tripTab)+'</div>'+
-    (existing? '<div class="trip-actions"><button class="btn btn-danger" '+
+    (existing && !locked ? '<div class="trip-actions"><button class="btn btn-danger" '+
       'onclick="closeModal();delTrip(\''+existing.id+'\')">Delete this trip</button></div>' : '')
   });
 
@@ -4955,6 +5056,7 @@ function tripScreen(id, tab){
   if($('#tripExpRows')) paintTripExpenses();
   if($('#f_advTotal')) recalcAdvance();
   paintTripTotals();
+  applyTripLock();
 }
 
 /* moving to another trip keeps whatever you typed */
@@ -4967,6 +5069,7 @@ function gotoTrip(id){
 }
 
 function saveTripScreen(existing, quiet){
+  if(lockedStop(existing)) return false;
   readTripForm();
   const t = tripDraft;
   /* Both are checked together, so one trip back to the details tab shows
@@ -5008,6 +5111,7 @@ function saveTripScreen(existing, quiet){
     if(tr && tr.type==='market' && tr.supplierId) rec.supplierId = tr.supplierId;
   }
   rememberPlace(rec.from); rememberPlace(rec.to);
+  stampCompletion(rec);
   if(existing) DB.trips[DB.trips.findIndex(x=>x.id===existing.id)] = rec;
   else DB.trips.push(rec);
   syncTripExpenses(rec.id, rec.truckId);
@@ -5052,6 +5156,7 @@ function podTracker(t){
 function fv(label,value){ return '<div><div class="field-label">'+esc(label)+'</div><div class="field-value">'+value+'</div></div>'; }
 
 function delTrip(id){
+  if(lockedStop(DB.trips.find(x=>x.id===id))) return;
   const exp = tripExpensesOf(id);
   confirmAsk('Delete this trip? The freight will also be removed from the party ledger.'+
     (exp ? ' The '+money(exp)+' of expenses booked to it go too.' : ''), ()=>{
@@ -5515,9 +5620,12 @@ function viewTruckDocs(){
         '<td data-label="Expiry" style="white-space:nowrap">'+fdate(r.d.expiry)+'</td>'+
         '<td data-label="Status"><span class="chip '+r.st.chip+'">'+r.st.label+'</span>'+
           '<div class="t-sub">'+esc(docWhen(r.st.days))+'</div></td>'+
-        '<td data-label="Cost" class="t-r num">'+(docExpenseAmount(r.d.id)?money(docExpenseAmount(r.d.id)):'\u2014')+'</td>'+
+        '<td data-label="Cost" class="t-r num">'+(docExpenseAmount(r.d.id)?money(docExpenseAmount(r.d.id)):'\u2014')+
+          ((r.d.history||[]).length?'<div class="t-sub">'+plural((r.d.history||[]).length,'earlier term')+'</div>':'')+'</td>'+
         '<td class="t-sub">'+esc(r.d.notes||'—')+'</td>'+
         '<td><div class="row-actions">'+
+          '<button class="btn btn-sm'+(r.st.key==='expired'||r.st.key==='soon'?' btn-primary':'')+'" '+
+            'onclick="truckDocRenew(\''+r.t.id+'\',\''+r.d.id+'\')">Renew</button>'+
           '<button class="btn btn-sm" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">Edit</button>'+
           '<button class="btn btn-sm btn-danger" onclick="delTruckDoc(\''+r.t.id+'\',\''+r.d.id+'\')">Delete</button>'+
         '</div></td></tr>').join('')+
@@ -5541,9 +5649,10 @@ function truckDocForm(truckId, docId){
       fText('dc_notes','Notes', doc?doc.notes:'','text','placeholder="Optional"')+
       fText('dc_expense','What it cost (₹)', doc?(doc.expense||''):'','number','min="0" step="1" placeholder="Premium, fee — optional"')+
       fText('dc_expenseDate','Paid on', doc?(doc.expenseDate||''):today(),'date')+
-      '<div class="field full"><span class="hint">An amount here is filed in <b>Expenses</b> under the document\u2019s own name, '+
-        'against this truck. Clear it and that expense goes away again.</span></div>'+
-      '<div class="field full"><span class="hint">Renewed it? Just change the date here — the old warning disappears and a fresh one is worked out from the new date.</span></div>'+
+      '<div class="field full"><span class="hint">These are the details of the <b>current term</b>. An amount here is filed in '+
+        '<b>Expenses</b> under the document\u2019s own name, against this truck, and correcting it corrects that one entry.</span></div>'+
+      (doc ? '<div class="field full"><span class="hint">Renewed it? Do not change the date here \u2014 that would rewrite what you '+
+        'paid last time. Close this and use <b>Renew</b>, which keeps the old expense and writes a new one.</span></div>' : '')+
     '</div>',
     onOk(){
       const tid = val('dc_truck'), header = val('dc_header'), expiry = val('dc_expiry');
@@ -5569,11 +5678,67 @@ function truckDocForm(truckId, docId){
     }
   });
 }
+/* Renewing is deliberately its own screen. Editing corrects the term you
+   are in; renewing starts the next one, and the two must not be reachable
+   by the same button or the history quietly rewrites itself. */
+function truckDocRenew(truckId, docId){
+  const t = truckById(truckId);
+  const doc = t && (t.docs||[]).find(x=>x.id===docId);
+  if(!doc) return;
+  const cur = docExpense(docId);
+  const st = docStatus(doc.expiry);
+  openModal({
+    title:'Renew '+doc.header, okText:'Save renewal', wide:true,
+    body:
+    '<div class="renew-now">'+
+      '<div><span>Truck</span><b class="num">'+esc(t.number)+'</b></div>'+
+      '<div><span>Document</span><b>'+esc(doc.header)+'</b></div>'+
+      '<div><span>Expires now</span><b>'+fdate(doc.expiry)+' <span class="chip '+st.chip+'">'+st.label+'</span></b></div>'+
+      '<div><span>Cost of this term</span><b class="num">'+(num(doc.expense)?money(doc.expense):'\u2014')+'</b></div>'+
+    '</div>'+
+    '<div class="form-grid">'+
+      fText('rn_expiry','New expiry date','','date')+
+      fText('rn_cost','Renewal cost (₹)','','number','min="0" step="1" placeholder="What you paid this time"')+
+      fText('rn_paid','Paid on', today(),'date')+
+      fText('rn_notes','Notes', doc.notes||'','text','placeholder="Optional"')+
+      '<div class="field full"><span class="hint">The '+
+        (cur ? money(cur.amount)+' already booked on '+fdate(cur.date) : 'earlier cost')+
+        ' stays exactly as it is. A renewal cost is written as a <b>new</b> expense under '+
+        esc(doc.header)+', so both terms show up in your books. Leave the cost blank if this renewal was free.</span></div>'+
+    '</div>'+
+    ((doc.history||[]).length
+      ? '<div class="renew-past"><div class="sec-title">Earlier terms</div>'+
+        (doc.history||[]).slice().reverse().map(h=>
+          '<div class="renew-past-row"><span>Expired '+fdate(h.expiry)+'</span>'+
+          '<b class="num">'+(num(h.expense)?money(h.expense):'\u2014')+'</b></div>').join('')+
+        '</div>' : ''),
+    onOk(){
+      const expiry = val('rn_expiry');
+      if(!expiry){ markMissing('rn_expiry','Enter the new expiry date'); focusField('rn_expiry');
+        toast('Enter the new expiry date'); return; }
+      if(!sensibleDate(expiry)){ toast('Check the new expiry date — the year looks wrong.'); return; }
+      if(doc.expiry && expiry <= doc.expiry){
+        markMissing('rn_expiry','A renewal must run past '+fdate(doc.expiry));
+        focusField('rn_expiry');
+        toast('The new expiry must be later than '+fdate(doc.expiry));
+        return;
+      }
+      renewDoc(doc, t.id, {expiry, cost:num(val('rn_cost')), paidOn:val('rn_paid')||today(), notes:val('rn_notes')});
+      save(); buildDocTypeList(); buildExpCatList(); closeModal(); render();
+      toast(num(val('rn_cost'))
+        ? doc.header+' renewed \u2014 a new expense of '+money(val('rn_cost'))+' was added'
+        : doc.header+' renewed');
+    }
+  });
+}
+
 function delTruckDoc(truckId, docId){
   const t = truckById(truckId); if(!t) return;
-  const cost = docExpenseAmount(docId);
+  const linked = docExpenseHistory(docId);
+  const total = linked.reduce((a,e)=>a+num(e.amount),0);
   confirmAsk('Delete this document and its expiry reminder?'+
-    (cost ? ' The '+money(cost)+' expense recorded on it goes too.' : ''), ()=>{
+    (linked.length ? ' The '+plural(linked.length,'expense')+' recorded on it, '+money(total)+
+      ' in all, go too.' : ''), ()=>{
     t.docs = (t.docs||[]).filter(x=>x.id!==docId);
     dropDocExpense(docId);
     save(); render(); toast('Document deleted');
@@ -5761,14 +5926,47 @@ function buildExpCatList(){
    the ordinary Expenses list under the document's own name, so it
    counts once, in the P&L, against the right truck.
    ------------------------------------------------------------ */
-function docExpense(docId){ return docId ? ((DB.expenses||[]).find(e=>e.docId===docId) || null) : null; }
+/* which truck a document sits on, and the document itself */
+function truckOfDoc(docId){
+  return (DB.trucks||[]).find(t=>(t.docs||[]).some(d=>d.id===docId)) || null;
+}
+function docById(docId){
+  const t = truckOfDoc(docId);
+  return t ? (t.docs||[]).find(d=>d.id===docId) : null;
+}
+/* Every expense ever booked against a document, oldest first. A renewal
+   adds to this list; it never rewrites what is already in it. */
+function docExpenseHistory(docId){
+  return docId
+    ? (DB.expenses||[]).filter(e=>e.docId===docId).sort((a,b)=>(a.date||'').localeCompare(b.date||''))
+    : [];
+}
+/* The one the document's own cost box maps to — the current term. The
+   pointer is on the document, so correcting a cost edits this one and
+   leaves earlier terms alone. Documents saved before renewals existed
+   fall back to their newest line. */
+function docExpense(docId){
+  const d = docId ? docById(docId) : null;
+  const list = docExpenseHistory(docId);
+  if(d && d.expenseId){
+    const hit = list.find(e=>e.id===d.expenseId);
+    if(hit) return hit;
+  }
+  return list.length ? list[list.length-1] : null;
+}
 function docExpenseAmount(docId){ return num((docExpense(docId)||{}).amount); }
+/* Keeps the current term's expense in step with the document. It only
+   ever touches that one line, so editing a document corrects the term it
+   belongs to instead of rewriting an earlier one. */
 function syncDocExpense(doc, truckId){
   DB.expenses = DB.expenses || [];
   const cur = docExpense(doc.id);
   const amt = num(doc.expense);
   if(amt <= 0){
-    if(cur) DB.expenses = DB.expenses.filter(e=>e.id!==cur.id);
+    if(cur){
+      DB.expenses = DB.expenses.filter(e=>e.id!==cur.id);
+      if(doc.expenseId === cur.id) doc.expenseId = '';
+    }
     return;
   }
   const head = (doc.header || 'Document').trim();
@@ -5777,11 +5975,44 @@ function syncDocExpense(doc, truckId){
     cur.category = head;
     cur.truckId = truckId || '';
     if(doc.expenseDate) cur.date = doc.expenseDate;
+    doc.expenseId = cur.id;
   } else {
-    DB.expenses.push({id:uid(), date: doc.expenseDate || today(), amount:amt, category:head,
+    const rec = {id:uid(), date: doc.expenseDate || today(), amount:amt, category:head,
       truckId: truckId||'', paidTo:'', mode:'Cash', shopId:'', docId:doc.id,
-      note: head + (truckId ? ' \u2014 ' + truckName(truckId) : '')});
+      note: head + (truckId ? ' \u2014 ' + truckName(truckId) : '')};
+    DB.expenses.push(rec);
+    doc.expenseId = rec.id;
   }
+}
+
+/* ------------------------------------------------------------
+   RENEWING A DOCUMENT
+   A renewal is a fresh transaction, not a correction: the premium
+   paid last year stays on the books at what it was. So the term
+   that is ending is filed into the document's history, the new
+   dates and cost take its place, and a brand new expense is
+   written and pointed at. Nothing already recorded is touched.
+   ------------------------------------------------------------ */
+function renewDoc(doc, truckId, next){
+  doc.history = (doc.history||[]).concat([{
+    expiry: doc.expiry, expense: num(doc.expense),
+    expenseDate: doc.expenseDate || '', expenseId: doc.expenseId || '',
+    renewedOn: today()
+  }]);
+  doc.expiry = next.expiry;
+  doc.notes = next.notes;
+  doc.expense = num(next.cost);
+  doc.expenseDate = next.paidOn || today();
+  doc.expenseId = '';                       // the old line is history now
+  if(num(next.cost) > 0){
+    const head = (doc.header || 'Document').trim();
+    const rec = {id:uid(), date: doc.expenseDate, amount:num(next.cost), category:head,
+      truckId: truckId||'', paidTo:'', mode:'Cash', shopId:'', docId:doc.id,
+      note: head+' renewal to '+fdate(next.expiry)+(truckId ? ' \u2014 '+truckName(truckId) : '')};
+    DB.expenses.push(rec);
+    doc.expenseId = rec.id;
+  }
+  return doc;
 }
 function dropDocExpense(docId){
   DB.expenses = (DB.expenses||[]).filter(e=>e.docId!==docId);
@@ -5791,7 +6022,14 @@ function dropDocExpense(docId){
 function pushExpenseToDoc(rec){
   if(!rec.docId) return;
   (DB.trucks||[]).forEach(t=>(t.docs||[]).forEach(d=>{
-    if(d.id === rec.docId){ d.expense = num(rec.amount); d.expenseDate = rec.date; }
+    if(d.id !== rec.docId) return;
+    /* only the current term follows the amount; an older renewal that is
+       being corrected must not drag the document's cost back with it */
+    const cur = docExpense(d.id);
+    if(cur && cur.id !== rec.id) return;
+    d.expense = num(rec.amount);
+    d.expenseDate = rec.date;
+    d.expenseId = rec.id;
   }));
 }
 
@@ -5909,9 +6147,9 @@ function expenseForm(id, preselectShop){
       const mode = val('e_mode');
       const shopId = mode==='Credit' ? val('e_shop') : '';
       if(mode==='Credit' && (!shopId || shopId==='__new')){
-        toast('Please select a shop for this credit expense.');
-        const el = document.getElementById('e_shop');
-        if(el){ el.focus(); el.style.borderColor = 'var(--red)'; }
+        markMissing('e_shop', 'Please select a Shop for credit expenses.');
+        focusField('e_shop');
+        toast('Please select a Shop for credit expenses.');
         return;
       }
       const existing = e && e.id ? DB.expenses.findIndex(x=>x.id===e.id) : -1;
@@ -5936,6 +6174,7 @@ function toggleShopField(){
   if(!f) return;
   const credit = val('e_mode')==='Credit';
   f.hidden = !credit;
+  if(!credit) clearMissing('e_shop');
   const hint = document.getElementById('shopTruckHint');
   if(hint){
     const t = val('e_truck');
@@ -6434,7 +6673,7 @@ function delSupplier(sid){
 }
 function exportSupplierLedger(sid){
   const s = supplierById(sid);
-  download('supplier-'+s.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
+  download(fileStem('supplier', s.name)+'.csv',
     [['Date','Particulars','Truck','Debit','Credit','Balance']].concat(
       ledgerFilter(supplierLedgerRows(sid)).map(r=>[r.date, r.label, r.truck, r.debit||'', r.credit||'', r.running])));
 }
@@ -6629,7 +6868,7 @@ function delShop(sid){
 }
 function exportShopLedger(sid){
   const s = shopById(sid);
-  download('shop-'+s.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
+  download(fileStem('shop', s.name)+'.csv',
     [['Date','Description','Truck','Debit','Credit','Balance']].concat(
       ledgerFilter(shopLedgerRows(sid)).map(r=>[r.date, r.label.replace(/<[^>]+>/g,''), r.truck, r.debit||'', r.credit||'', r.running])));
 }
@@ -6658,8 +6897,10 @@ function viewReports(){
       kpi('Freight billed', p.freight, {note:plural(p.tripCount,'trip')})+
       kpi('Actually collected', p.collected, {note:p.freight?Math.round(p.collected/p.freight*100)+'% of freight billed':'No freight billed'})+
       kpi('Total costs', p.costs, {note:'Hire, expenses, driver pay'})+
-      kpi('Net profit', p.profit, {tone:p.profit>=0?'pos':'neg', note:'On the full freight'})+
-      kpi('Actual profit', p.actual, {tone:p.actual>=0?'pos':'neg', note:'On money received'})+
+      kpi(p.profit<0?'Net loss':'Net profit', Math.abs(p.profit),
+        {tone:p.profit>=0?'pos':'neg', note:'On the full freight'})+
+      kpi(p.actual<0?'Actual loss':'Actual profit', Math.abs(p.actual),
+        {tone:p.actual>=0?'pos':'neg', note:'On money received'})+
       kpi('Margin', p.freight?p.profit/p.freight*100:0, {fmt:'pct', note:'Net profit ÷ freight'})+
     '</div>'+
     '<div class="card chart-card" style="margin-bottom:16px">'+
@@ -6801,6 +7042,21 @@ function viewSettings(){
   '</div>'+
 
   '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<h3 class="card-title" style="margin-bottom:6px">Completed trips</h3>'+
+    '<p class="hint" style="margin:0 0 14px;max-width:620px">A trip with nothing left to collect and its '+
+      'POD submitted to the party is finished. It is marked <b>Completed</b> and locked, so a closed '+
+      'record cannot be changed by accident. Switch this on if you need to correct one.</p>'+
+    '<label class="check-line"><input type="checkbox" id="s_editLocked"'+(s.editLocked?' checked':'')+
+      ' onchange="setEditLocked(this.checked)"> Allow editing of completed / locked trips</label>'+
+    '<div class="hint" style="margin-top:10px">'+
+      (completedCount()
+        ? plural(completedCount(),'trip')+' completed so far \u2014 '+
+          (s.editLocked ? 'all of them can be edited right now.' : 'they are read-only.')
+        : 'No trip has finished yet.')+
+      ' A trip unlocks itself if a payment is reversed or the POD is un-submitted.</div>'+
+  '</div>'+
+
+  '<div class="card card-pad" style="margin-bottom:16px">'+
     '<h3 class="card-title" style="margin-bottom:6px">Appearance</h3>'+
     '<p class="hint" style="margin:0 0 14px;max-width:600px">Pick the colour scheme you find easiest to read. '+
       'It is remembered on this device.</p>'+
@@ -6842,13 +7098,20 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.4</b>, built 26 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.12</b>, built 28 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
-  DB.settings = {business:val('s_business')||'Maa Vandana Logistics', owner:val('s_owner'),
-    phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')};
+  /* merged, not replaced — the lock switch lives here too */
+  DB.settings = Object.assign({}, DB.settings, {
+    business:val('s_business')||'Maa Vandana Logistics', owner:val('s_owner'),
+    phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')});
   save(); applyBrand(); toast('Details saved');
+}
+function setEditLocked(on){
+  DB.settings = Object.assign({}, DB.settings, {editLocked: !!on});
+  save(); viewSettings();
+  toast(on ? 'Completed trips can be edited again' : 'Completed trips are locked');
 }
 const THEMES = [
   {k:'slate',  name:'Slate',  note:'Cool neutral, blue accent'},
@@ -7037,12 +7300,18 @@ function printSign(note){
       ' · this is a computer generated statement</footer>';
 }
 /* build the document, print it, then put the screen back */
-function printDoc(html){
+function printDoc(html, name){
   let root = document.getElementById('printRoot');
   if(!root){ root = document.createElement('div'); root.id='printRoot'; document.body.appendChild(root); }
   root.innerHTML = '<article class="pr-page">'+html+'</article>';
   document.body.classList.add('printing');
-  const done = ()=>{ document.body.classList.remove('printing'); root.innerHTML=''; };
+  /* Save as PDF takes its filename from the document title */
+  const wasTitle = document.title;
+  if(name) document.title = name;
+  const done = ()=>{
+    document.body.classList.remove('printing'); root.innerHTML='';
+    document.title = wasTitle;
+  };
   window.addEventListener('afterprint', done, {once:true});
   setTimeout(()=>{ window.print(); setTimeout(done, 800); }, 60);
 }
@@ -7080,7 +7349,8 @@ function printPartyStatement(pid){
       [bal>=0?'Balance receivable':'Advance held', money(Math.abs(bal)), true]
     ])+
     printSign('Debit increases what is owed. Credit reduces it. Please confirm the closing balance.'+
-      (view.k ? ' This statement lists '+view.short+'; the summary and the closing balance are for the whole account.' : ''))
+      (view.k ? ' This statement lists '+view.short+'; the summary and the closing balance are for the whole account.' : '')),
+    fileStem('ledger', p.name)
   );
 }
 
@@ -7117,7 +7387,8 @@ function printPayableStatement(kind, sid){
       [bal>=0?'Balance payable':'Paid ahead', money(Math.abs(bal)), true]
     ])+
     printSign('Please confirm the closing balance against your records.'+
-      (view.k ? ' This statement lists '+view.short+'; the summary and the closing balance are for the whole account.' : ''))
+      (view.k ? ' This statement lists '+view.short+'; the summary and the closing balance are for the whole account.' : '')),
+    fileStem(isShop?'shop':'supplier', s.name)
   );
 }
 
@@ -7157,7 +7428,8 @@ function printDriverStatement(did){
       [(due-out)>=0?'Balance payable':'Advance recoverable', money(Math.abs(due-out)), true]
     ])+
     printSign('Only money actually paid is counted as an expense in the accounts.'+
-      (view.k ? ' This account lists '+view.short+'; the summary and the closing balance cover everything.' : ''))
+      (view.k ? ' This account lists '+view.short+'; the summary and the closing balance cover everything.' : '')),
+    fileStem('driver', d.name)
   );
 }
 
@@ -7212,7 +7484,8 @@ function printInsights(){
     '<h2 class="pr-h2">Earnings by truck</h2>'+
     printTable([{label:'Truck'},{label:'Trips', right:true, w:'14%'},{label:'Billed', right:true, w:'22%'},
       {label:'Net after costs', right:true, w:'24%'}], truckRows)+
-    printSign('Net profit is based on the full amount billed, whether or not it has been collected.')
+    printSign('Net profit is based on the full amount billed, whether or not it has been collected.'),
+    fileStem('insights')
   );
 }
 
@@ -7236,7 +7509,8 @@ function printPodList(){
           tripBalance(t)>0?money(tripBalance(t)):'—' ];
       }),
       ['Totals','','','','','', money(held)])+
-    printSign('POD not yet submitted to the party. Clearing these is usually the quickest way to unlock a collection.')
+    printSign('POD not yet submitted to the party. Clearing these is usually the quickest way to unlock a collection.'),
+    fileStem('deliveries')
   );
 }
 
@@ -7267,12 +7541,25 @@ function printReport(){
       [(p.profit>=0?'Net profit':'Net loss'), money(Math.abs(p.profit)), true],
       [(p.actual>=0?'Actual profit':'Actual loss'), money(Math.abs(p.actual)), true]
     ])+
-    printSign('Net profit is based on the full amount billed. Actual profit counts only money received.')
+    printSign('Net profit is based on the full amount billed. Actual profit counts only money received.'),
+    fileStem('report')
   );
 }
 /* ============================================================
    CSV EXPORT
    ============================================================ */
+/* ------------------------------------------------------------
+   DOWNLOAD NAMES
+   Export CSV already names its files <what>-<who>-<date>. The
+   printed statements now ask the same function for their name, so
+   a saved PDF lands beside the CSV of the same record instead of
+   whatever the browser tab happened to be called.
+   ------------------------------------------------------------ */
+const nameSlug = v => String(v||'').replace(/[^a-z0-9]+/gi,'-').toLowerCase();
+function fileStem(kind, who){
+  return [kind, who ? nameSlug(who) : '', today()].filter(Boolean).join('-');
+}
+
 function csvCell(v){ const s = String(v==null?'':v); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
 function download(name, rows){
   const csv = rows.map(r=>r.map(csvCell).join(',')).join('\n');
@@ -7283,7 +7570,7 @@ function download(name, rows){
 }
 function exportCSV(what){
   if(what==='trips'){
-    download('trips-'+today()+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
+    download(fileStem('trips')+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
       'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance',
       'Charges','Deductions','Billed to party','Balance pending','Hire','Status',
       'Delivery stage','Delivered on','POD received','POD submitted',
@@ -7299,11 +7586,11 @@ function exportCSV(what){
   if(what==='parties'){
     const bal = allBalances();
     const tc = {}; DB.trips.forEach(t=>{ tc[t.partyId]=(tc[t.partyId]||0)+1; });
-    download('parties-'+today()+'.csv', [['Party','Phone','City','GST','Opening','Trips','Balance']]
+    download(fileStem('parties')+'.csv', [['Party','Phone','City','GST','Opening','Trips','Balance']]
       .concat(DB.parties.map(p=>[p.name,p.phone,p.city,p.gst,num(p.opening),tc[p.id]||0,bal[p.id]||0])));
   }
   if(what==='expenses'){
-    download('expenses-'+today()+'.csv', [['Date','Category','Amount','Truck','Paid to','Mode','Details','Trip','On document']]
+    download(fileStem('expenses')+'.csv', [['Date','Category','Amount','Truck','Paid to','Mode','Details','Trip','On document']]
       .concat(DB.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
         [e.date,e.category,num(e.amount),e.truckId?truckName(e.truckId):'',e.paidTo,e.mode,e.note,
          e.tripId?tripLabel(e.tripId):'', e.docId?'Yes':''])));
@@ -7311,7 +7598,7 @@ function exportCSV(what){
 }
 function exportLedger(pid){
   const p = partyById(pid);
-  download('ledger-'+p.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-'+today()+'.csv',
+  download(fileStem('ledger', p.name)+'.csv',
     [['Date','Particulars','Reference','Debit','Credit','Balance']].concat(
       ledgerFilter(ledgerRows(pid)).map(r=>[r.date,r.label,r.ref,r.debit||'',r.credit||'',r.running])));
 }
@@ -7644,6 +7931,7 @@ async function addPodPhoto(tripId, input){
   const files = input.files ? [...input.files] : [];
   input.value = '';
   if(!files.length) return;
+  if(lockedStop(DB.trips.find(x=>x.id===tripId))) return;
   const box = document.getElementById('podFiles');
   if(box) box.insertAdjacentHTML('beforeend','<div class="doc-busy" id="podBusy">Shrinking photo…</div>');
   for(const file of files){
@@ -7672,6 +7960,7 @@ async function addPodPhoto(tripId, input){
 }
 
 function removePodPhoto(tripId, id){
+  if(lockedStop(DB.trips.find(x=>x.id===tripId))) return;
   confirmAsk('Remove this POD page?', ()=>{
     dropOriginal((podImages(tripId).find(p=>p.id===id)||{}).origKey);
     DB.pods[tripId] = podImages(tripId).filter(p=>p.id!==id);
@@ -7699,7 +7988,8 @@ function viewPodImage(tripId, id){
     body:'<img src="'+img.data+'" alt="POD" style="width:100%;border-radius:8px;display:block">'+
       '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
         '<button class="btn btn-primary" onclick="downloadPodPage(\''+tripId+'\',\''+id+'\')">Download this page</button>'+
-        '<button class="btn btn-danger" onclick="closeModal();removePodPhoto(\''+tripId+'\',\''+id+'\')">Remove</button>'+
+        (tripLocked(t) ? ''
+          : '<button class="btn btn-danger" onclick="closeModal();removePodPhoto(\''+tripId+'\',\''+id+'\')">Remove</button>')+
       '</div>'
   });
 }
@@ -7736,7 +8026,7 @@ function podUploader(t){
         ? '<button class="btn btn-sm" onclick="document.getElementById(\'podCam\').click()">Take photo</button>'+
           '<button class="btn btn-sm" onclick="document.getElementById(\'podFile\').click()">Choose file</button>'
         : '<span class="hint">Maximum '+POD_MAX+' pages reached.</span>')+
-      (list.length? '<button class="btn btn-sm btn-primary" onclick="downloadPod(\''+t.id+'\')">Download</button>':'')+
+      (list.length? '<button class="btn btn-sm btn-primary" data-keep onclick="downloadPod(\''+t.id+'\')">Download</button>':'')+
     '</div>'+
     '<input type="file" id="podCam" accept="image/*" capture="environment" style="display:none" '+
       'onchange="addPodPhoto(\''+t.id+'\',this)">'+
@@ -7890,6 +8180,7 @@ function podAlerts(){
 
 function setStage(id, field, value){
   const t = DB.trips.find(x=>x.id===id); if(!t) return;
+  if(lockedStop(t)) return;
   t[field] = value || '';
   /* clearing a stage clears the ones after it, so the chain stays honest */
   const order = ['deliveredAt','podReceivedAt','podSubmittedAt'];
@@ -7897,6 +8188,7 @@ function setStage(id, field, value){
     const from = order.indexOf(field);
     order.slice(from).forEach(f=>{ t[f]=''; });
   }
+  stampCompletion(t);
   save();
   if(tripDraft && tripDraft.id === id && repaintTripPane()){ /* refreshed in place */ }
   else if(route==='pod') viewPod();
@@ -8125,6 +8417,34 @@ function allocatedTo(tripId, exceptEntry){
 /* everything settled against the freight: advance, brokerage, and payments earmarked to it */
 function tripSettledTotal(t){ return tripDeducted(t) + allocatedTo(t.id); }
 function tripBalance(t){ return tripFreightNet(t) - tripSettledTotal(t); }
+/* ------------------------------------------------------------
+   COMPLETED TRIPS
+   Nothing left to collect and the POD in the party's hands means
+   the trip is finished. A finished record should not drift, so it
+   marks itself Completed and locks. Both halves are worked out
+   from the trip itself rather than stored, so a payment reversed
+   or a POD un-submitted opens it again on its own.
+   ------------------------------------------------------------ */
+function tripCompleted(t){
+  return !!(t && t.podSubmittedAt) && tripBalance(t) <= 0;
+}
+function allowLockedEdits(){ return !!(DB.settings && DB.settings.editLocked); }
+function tripLocked(t){ return tripCompleted(t) && !allowLockedEdits(); }
+function completedCount(){ return DB.trips.filter(tripCompleted).length; }
+/* the day it finished, kept for the record only */
+function stampCompletion(t){
+  if(!t) return t;
+  if(tripCompleted(t)){ if(!t.completedAt) t.completedAt = today(); }
+  else if(t.completedAt) t.completedAt = '';
+  return t;
+}
+/* every path that changes a trip asks first */
+function lockedStop(t){
+  if(!tripLocked(t)) return false;
+  toast('This trip is completed and locked. Allow editing in Settings to change it.');
+  return true;
+}
+
 /* No advance = pending. Some advance = part paid. Nothing left = paid. */
 function tripStatus(t){
   const adv = tripSettledTotal(t), fr = tripFreightNet(t);
