@@ -3166,6 +3166,17 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .note{background:var(--accent-soft);border:1px solid var(--accent-line);color:var(--ink-2);border-radius:10px}
 .money-pos{color:var(--green)}
 .money-neg{color:var(--red)}
+
+/* ---------- the same two meanings, on the dark hero panel ----------
+   --green and --red are mixed for white cards; against the hero's
+   near-black gradient they fall to about 2.5:1 and the figure fades
+   into its own tile. These are the same two colours re-mixed for that
+   background, and they read at roughly 9:1. */
+:root{ --pos-dark:#5FE3AE; --neg-dark:#FF9B8D; }
+.hero .money-pos{color:var(--pos-dark);font-weight:700}
+.hero .money-neg{color:var(--neg-dark);font-weight:700}
+.hero-stat-foot .trend-up{color:var(--pos-dark)}
+.hero-stat-foot .trend-down{color:var(--neg-dark)}
 .legend-item{color:var(--muted)}
 .fleet-line{color:var(--muted-2)}
 .theme-picks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -3403,7 +3414,7 @@ input.dp-input::-webkit-clear-button{display:none}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.10 &middot; 28 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.11 &middot; 28 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -7085,7 +7096,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.10</b>, built 28 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.11</b>, built 28 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
