@@ -3405,6 +3405,15 @@ input.dp-input::-webkit-clear-button{display:none}
 .assign-who{font-weight:600;color:var(--ink)}
 .assign-when{color:var(--muted);font-family:var(--mono);font-size:12px;margin-left:auto}
 
+/* ---------- copying an advance into Expenses ---------- */
+.copy-lines{margin-bottom:10px}
+.copy-line{display:flex;align-items:center;gap:11px;padding:7px 0;
+  border-bottom:1px solid var(--line-soft);font-size:13.5px}
+.copy-line:last-child{border-bottom:0}
+.copy-line .num{min-width:96px}
+.copy-done{color:var(--green);font-weight:600;font-size:12.5px;margin-left:auto}
+.copy-line .hint{margin-left:auto}
+
 /* ---------- opening one truck out of the report ---------- */
 .bar-link{cursor:pointer;border-radius:9px;padding:7px 9px;margin:0 -9px 6px;
   transition:background .12s}
@@ -3443,7 +3452,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.16 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.17 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4819,6 +4828,92 @@ function syncHire(){
 }
 
 /* ------------------------------------------------------------
+   COPYING AN ADVANCE INTO EXPENSES
+   The advance stays exactly as it is on the trip. What this adds
+   is an ordinary Expenses entry for each half of it, built by the
+   same shape as any other expense, and stamped with the trip and
+   half it came from. That stamp is what stops a second click
+   making a second copy, and what keeps the trip's own expense
+   sweep from treating these as lines it owns.
+   ------------------------------------------------------------ */
+const ADV_COPY = [
+  {k:'cash', field:'advCash', label:'Advance Cash', category:'Advance Cash'},
+  {k:'fuel', field:'fuelAmt', label:'Fuel',         category:'Fuel'}
+];
+function advCopies(tripId){
+  const out = {};
+  ADV_COPY.forEach(a=>{
+    out[a.k] = (DB.expenses||[]).find(e=>e.advOf===tripId && e.advKind===a.k) || null;
+  });
+  return out;
+}
+function copyAdvanceToExpenses(tripId){
+  const t = DB.trips.find(x=>x.id===tripId);
+  if(!t || lockedStop(t)) return;
+  const have = advCopies(tripId);
+  const made = [];
+  ADV_COPY.forEach(a=>{
+    const amount = num(t[a.field]);
+    if(amount <= 0) return;        /* nothing there to copy */
+    if(have[a.k]) return;          /* copied once already, never twice */
+    DB.expenses.push({id:uid(), date:t.date||today(), amount, category:a.category,
+      truckId:t.truckId||'', tripId:t.id, advOf:t.id, advKind:a.k,
+      paidTo:'', mode:'Cash', shopId:'',
+      note:(a.k==='fuel' && fuelNote(t) ? 'Fuel advance, '+fuelNote(t) : a.label+' on this trip')});
+    made.push(a.label+' '+money(amount));
+  });
+  if(!made.length){ toast('Nothing new to copy'); return; }
+  buildExpCatList();
+  save();
+  if(!repaintTripPane()) render();
+  toast('Copied to Expenses \u2014 '+made.join(' and '));
+}
+/* copy what is on screen, not what was last saved */
+function copyAdvanceClick(tripId){
+  const existing = DB.trips.find(x=>x.id===tripId);
+  if(!existing) return;
+  if(tripDraft && tripDraft.id===tripId && !saveTripScreen(existing, true)) return;
+  copyAdvanceToExpenses(tripId);
+}
+function advCopyBlock(t, existing){
+  if(!existing){
+    return '<div class="adv-block" style="margin-top:16px">'+
+      '<div class="adv-head">Copy to Expenses</div>'+
+      '<span class="hint">Save the trip first \u2014 an expense has to point at a trip that exists.</span></div>';
+  }
+  const have = advCopies(existing.id);
+  const lines = ADV_COPY.map(a=>({a, live:num(t[a.field]), rec:have[a.k]}))
+    .filter(x=>x.live>0 || x.rec);
+  const todo = lines.filter(x=>x.live>0 && !x.rec);
+  const any  = lines.some(x=>x.rec);
+  return '<div class="adv-block" style="margin-top:16px">'+
+    '<div class="adv-head">Copy to Expenses</div>'+
+    (lines.length
+      ? '<div class="copy-lines">'+lines.map(x=>
+          '<div class="copy-line">'+
+            '<span class="chip chip-grey">'+esc(x.a.category)+'</span>'+
+            '<span class="num t-strong">'+money(x.rec ? x.rec.amount : x.live)+'</span>'+
+            (x.rec
+              ? '<span class="copy-done">\u2713 already in Expenses'+
+                  (x.live>0 && num(x.rec.amount)!==x.live
+                    ? ' \u2014 the trip now says '+money(x.live) : '')+'</span>'
+              : '<span class="hint">not copied yet</span>')+
+          '</div>').join('')+'</div>'
+      : '<span class="hint">Nothing to copy \u2014 both halves of the advance are zero.</span>')+
+    '<div class="line-add">'+
+      '<button type="button" class="btn btn-sm btn-primary"'+(todo.length?'':' disabled')+
+        ' onclick="copyAdvanceClick(\''+existing.id+'\')">'+
+        (todo.length ? 'Copy to Expense' : any ? 'Already copied' : 'Copy to Expense')+'</button>'+
+      (any ? '<button type="button" class="btn btn-sm" data-keep '+
+        'onclick="closeModal();go(\'expenses\')">View in Expenses</button>' : '')+
+    '</div>'+
+    '<span class="hint">Makes an ordinary Expenses entry for each half of the advance, dated and trucked from this '+
+      'trip. The advance on this tab is left exactly as it is, and clicking again never makes a second copy \u2014 '+
+      'delete the entry in Expenses if you want it back.</span>'+
+  '</div>';
+}
+
+/* ------------------------------------------------------------
    TRIP EXPENSES
    Diesel bought on the road, a toll, loading labour. They are kept
    nowhere new: each line is an ordinary record in Expenses carrying
@@ -4828,7 +4923,7 @@ function syncHire(){
 let tripExpDraft = [];
 function loadTripExpenses(tripId){
   tripExpDraft = tripId
-    ? (DB.expenses||[]).filter(e=>e.tripId===tripId)
+    ? (DB.expenses||[]).filter(e=>e.tripId===tripId && !e.advOf)
         .sort((a,b)=>(a.date||'').localeCompare(b.date||''))
         .map(e=>({id:e.id, date:e.date, category:e.category, note:e.note||'', amount:num(e.amount),
                   mode:e.mode||'Cash', shopId:e.shopId||''}))
@@ -4929,7 +5024,9 @@ function syncTripExpenses(tripId, truckId){
   DB.expenses = DB.expenses || [];
   const keep = tripExpDraft.filter(x=>num(x.amount) > 0);
   const ids  = new Set(keep.map(x=>x.id));
-  DB.expenses = DB.expenses.filter(e=>e.tripId!==tripId || ids.has(e.id));
+  /* copies of the advance carry this trip's id but are not lines of the
+     Expense Money tab, so the sweep must leave them where they are */
+  DB.expenses = DB.expenses.filter(e=>e.tripId!==tripId || e.advOf || ids.has(e.id));
   keep.forEach(x=>{
     const cur = DB.expenses.find(e=>e.id===x.id);
     const mode = x.mode || 'Cash';
@@ -5105,6 +5202,7 @@ function tripMoneyPane(t, existing){
       '<div class="adv-status"><span>Status will be set to</span><span id="f_statusPreview"></span></div>'+
       '<div class="gate-error" id="brokWarn" hidden style="margin-top:10px"></div>'+
     '</div>'+
+    advCopyBlock(t, existing)+
     supplierBlock(t)+
     (existing && t.partyId ? '<div style="margin-top:14px"><button class="btn" data-keep '+
       'onclick="closeModal();partyLedger(\'' + t.partyId + '\')">Open '+esc(partyName(t.partyId))+'\u2019s ledger</button></div>' : '');
@@ -6375,7 +6473,8 @@ function renderExpenseList(){
         '<td data-label="Category"><span class="chip chip-grey">'+esc(e.category)+'</span>'+
           (e.mode==='Credit'?'<div class="t-sub"><span class="chip chip-amber">On credit</span></div>':'')+'</td>'+
         '<td data-label="Details">'+esc(e.note||'\u2014')+
-          (e.tripId?'<div class="t-sub"><span class="chip chip-blue">Trip</span> '+esc(tripLabel(e.tripId))+'</div>':'')+
+          (e.tripId?'<div class="t-sub"><span class="chip chip-blue">Trip</span> '+esc(tripLabel(e.tripId))+
+            (e.advOf?' <span class="chip chip-grey">copied from the advance</span>':'')+'</div>':'')+
           (e.docId?'<div class="t-sub"><span class="chip chip-grey">Document</span></div>':'')+
           (e.mode==='Credit'&&e.shopId?'<div class="t-sub">'+esc(shopName(e.shopId))+'</div>'
             :e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
@@ -6432,6 +6531,7 @@ function expenseForm(id, preselectShop){
       /* a linked expense stays linked, and the change travels back */
       if(e && e.tripId) rec.tripId = e.tripId;
       if(e && e.docId)  rec.docId  = e.docId;
+      if(e && e.advOf){ rec.advOf = e.advOf; rec.advKind = e.advKind; }
       if(existing>=0) DB.expenses[existing] = rec; else DB.expenses.push(rec);
       pushExpenseToDoc(rec);
       if(rec.tripId && tripDraft && tripDraft.id===rec.tripId) loadTripExpenses(rec.tripId);
@@ -7588,7 +7688,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.16</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.17</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
