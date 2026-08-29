@@ -360,6 +360,10 @@ textarea:focus-visible,
   gap: 14px;
 }
 
+.g5 {
+  grid-template-columns: repeat(5,1fr);
+}
+
 .g4 {
   grid-template-columns: repeat(4,1fr);
 }
@@ -2500,6 +2504,9 @@ tbody tr {
   }
 }
 
+@media (max-width:1100px) { .grid.g5{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:760px)  { .grid.g5{grid-template-columns:repeat(2,1fr)} }
+
 @media (max-width:640px) {
   .form-grid.three {
     grid-template-columns: 1fr;
@@ -3436,7 +3443,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.14 &middot; 28 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.15 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4014,6 +4021,27 @@ function paySplitNote(txn){
       ? ' ('+plural(x.days,'day')+')' : '')).join(' · ');
 }
 
+/* Salary and advance are two different things and are counted as two.
+   They are only ever added together to state the total, never folded
+   into one another. Anything older than the current entry types is kept
+   visible as its own line rather than being quietly parcelled into one
+   of them, so the three always reconcile. */
+function driverPayBreak(did, from, to){
+  const inR = d => (!from || d>=from) && (!to || d<=to);
+  const out = {due:0, salary:0, advance:0, other:0, paid:0};
+  (DB.driverTxns||[]).forEach(t=>{
+    if(did && t.driverId!==did) return;
+    if(!inR(t.date)) return;
+    const amt = num(t.amount);
+    if(t.type==='due'){ out.due += amt; return; }
+    if(t.type==='salary') out.salary += amt;
+    else if(t.type==='advance') out.advance += amt;
+    else out.other += amt;
+    out.paid += amt;
+  });
+  return out;
+}
+
 function driverBalance(did){
   let bal = 0;
   DB.driverTxns.filter(t=>t.driverId===did).forEach(t=>{
@@ -4032,7 +4060,8 @@ function pnl(from, to){
   const byCat = {};
   DB.expenses.filter(e=>inR(e.date)).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
   const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
-  const driverPaid = DB.driverTxns.filter(t=>inR(t.date) && t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
+  const dp = driverPayBreak('', from, to);
+  const driverPaid = dp.paid;      /* unchanged: the same total as before */
   /* Charges add to what you bill, deductions take away. Income is what the
      party is actually billed, so neither belongs in the cost column. */
   const charges    = trips.reduce((s,t)=>s+tripCharges(t),0);
@@ -4051,7 +4080,8 @@ function pnl(from, to){
 
   const freight = freightBase + charges - deductions;
   return {trips, tripCount:trips.length, freight, freightBase, charges, deductions,
-    hire, byCat, expense, driverPaid, costs,
+    hire, byCat, expense, driverPaid,
+    driverSalary:dp.salary, driverAdvance:dp.advance, driverOther:dp.other, costs,
     profit:freight-costs, advances, receipts, adjusted, collected, actual:collected-costs};
 }
 
@@ -4314,7 +4344,9 @@ function viewDashboard(){
   const costItems = (p.hire? [{label:'Market truck hire', value:p.hire}]:[])
 
     .concat(byCat.slice(0,5).map(([c,v])=>({label:c, value:v})))
-    .concat(p.driverPaid? [{label:'Driver payouts', value:p.driverPaid}]:[]);
+    .concat(p.driverSalary?  [{label:'Driver salary', value:p.driverSalary}]:[])
+    .concat(p.driverAdvance? [{label:'Driver advances', value:p.driverAdvance}]:[])
+    .concat(p.driverOther?   [{label:'Other driver pay', value:p.driverOther}]:[]);
 
   /* what needs a decision today, in one line each */
   const attention = [];
@@ -6429,29 +6461,39 @@ function tripLabel(tripId){
    ============================================================ */
 function viewDrivers(){
   if(sub.open) return renderDriver(sub.open);
+  const monthPay = driverPayBreak('', thisMonth()+'-01', thisMonth()+'-31');
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="driverForm()">+ <span>New driver</span></button>';
   $('#view').innerHTML =
   '<div class="grid g3" style="margin-bottom:16px">'+
     '<div class="stat accent"><div class="stat-label">Total payable to drivers</div><div class="stat-value">'+money(totalDriverPayable())+'</div></div>'+
     '<div class="stat"><div class="stat-label">Drivers</div><div class="stat-value">'+DB.drivers.length+'</div></div>'+
     '<div class="stat"><div class="stat-label">Paid this month</div><div class="stat-value">'+
-      money(DB.driverTxns.filter(t=>monthKey(t.date)===thisMonth()&&t.type!=='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
+      money(monthPay.paid)+'</div>'+
+      '<div class="stat-note">'+money(monthPay.salary)+' salary \u00b7 '+money(monthPay.advance)+' advance'+
+      (monthPay.other?' \u00b7 '+money(monthPay.other)+' other':'')+'</div></div>'+
   '</div>'+
   (DB.drivers.length===0
     ? empty('No drivers yet','Keep each driver\u2019s salary, advances and payments in one place, so you always know what is owed.',
         '<button class="btn btn-amber" onclick="driverForm()">+ Add your first driver</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
-      '<thead><tr><th>Driver</th><th>Documents</th><th>Phone</th><th>Licence</th><th class="t-r">Trips</th><th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
+      '<thead><tr><th>Driver</th><th>Documents</th><th>Phone</th><th class="t-r">Trips</th>'+
+      '<th class="t-r">Salary paid</th><th class="t-r">Advance paid</th><th class="t-r">Total paid</th>'+
+      '<th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
       DB.drivers.map(d=>{
         const bal = driverBalance(d.id);
+        const pay = driverPayBreak(d.id);
         const trips = DB.trips.filter(t=>t.driverId===d.id).length;
         const dc = docCount(d.docs);
         return '<tr><td onclick="openDriver(\''+d.id+'\')" style="cursor:pointer"><div class="t-strong">'+esc(d.name)+'</div>'+
           (d.salary?'<div class="t-sub">Salary '+money(d.salary)+'/month</div>':'')+'</td>'+
           '<td>'+(dc? '<button class="chip chip-green" style="border:0;cursor:pointer" onclick="showDriverDocs(\''+d.id+'\')">'+dc+' of 3 on file</button>'
                     : '<span class="chip chip-grey">No papers</span>')+'</td>'+
-        '<td data-label="Phone">'+esc(d.phone||'—')+'</td><td data-label="Licence" class="num">'+esc(d.licence||'—')+'</td>'+
+        '<td data-label="Phone">'+esc(d.phone||'—')+
+          (d.licence?'<div class="t-sub num">'+esc(d.licence)+'</div>':'')+'</td>'+
         '<td data-label="Trips" class="t-r num">'+trips+'</td>'+
+        '<td data-label="Salary paid" class="t-r num">'+(pay.salary?money(pay.salary):'—')+'</td>'+
+        '<td data-label="Advance paid" class="t-r num">'+(pay.advance?money(pay.advance):'—')+'</td>'+
+        '<td data-label="Total paid" class="t-r num t-strong">'+money(pay.paid)+'</td>'+
         '<td class="t-r num '+(bal>0?'money-neg':bal<0?'money-pos':'')+'">'+money(Math.abs(bal))+
           '<div class="t-sub">'+(bal>0?'we owe':bal<0?'advance given':'settled')+'</div></td>'+
         '<td><div class="row-actions">'+
@@ -6463,6 +6505,7 @@ function openDriver(id){ route='drivers'; sub={open:id}; window.scrollTo(0,0); b
 
 function renderDriver(did){
   const d = driverById(did); if(!d){ sub={}; return viewDrivers(); }
+  const pay = driverPayBreak(did);
   const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   let run = 0; const all = txns.map(t=>{
     run += t.type==='due'? num(t.amount) : -num(t.amount);
@@ -6477,13 +6520,23 @@ function renderDriver(did){
     '<button class="btn" onclick="sub={};render()">← <span>All drivers</span></button>'+
     '<button class="btn btn-amber" onclick="driverTxnForm(\''+did+'\')">+ <span>Add entry</span></button>';
   $('#view').innerHTML =
-  '<div class="grid g3" style="margin-bottom:16px">'+
+  '<div class="grid g'+(pay.other?5:4)+'" style="margin-bottom:16px">'+
     '<div class="stat"><div class="stat-label">Salary due added</div><div class="stat-value">'+
-      money(txns.filter(t=>t.type==='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
-    '<div class="stat"><div class="stat-label">Total paid out</div><div class="stat-value">'+
-      money(txns.filter(t=>t.type!=='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
-    '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance payable':'Advance recoverable')+'</div>'+
-      '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
+      money(pay.due)+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Total salary paid</div><div class="stat-value">'+
+      money(pay.salary)+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Total advance paid</div><div class="stat-value">'+
+      money(pay.advance)+'</div></div>'+
+    (pay.other?'<div class="stat"><div class="stat-label">Other payments</div><div class="stat-value">'+
+      money(pay.other)+'</div></div>':'')+
+    '<div class="stat"><div class="stat-label">Total paid</div><div class="stat-value">'+
+      money(pay.paid)+'</div><div class="stat-note">salary + advance'+(pay.other?' + other':'')+'</div></div>'+
+  '</div>'+
+  '<div class="grid g'+(pay.other?5:4)+'" style="margin-bottom:16px">'+
+    '<div class="stat accent '+(bal>0?'neg':'pos')+'" style="grid-column:1/-1"><div class="stat-label">'+
+      (bal>=0?'Balance payable':'Advance recoverable')+'</div>'+
+      '<div class="stat-value">'+money(Math.abs(bal))+'</div>'+
+      '<div class="stat-note">salary due '+money(pay.due)+' less '+money(pay.paid)+' paid</div></div>'+
   '</div>'+
   '<div class="toolbar">'+ledgerViewPicker(again, DRIVER_VIEWS)+
     '<button class="btn btn-sm" onclick="printDriverStatement(\''+did+'\')">Print account</button>'+
@@ -6496,7 +6549,9 @@ function renderDriver(did){
       ? empty('Nothing on that side','This account has no '+ledgerViewInfo(null, DRIVER_VIEWS).short.replace(' only','')+' yet.',
           '<button class="btn" onclick="sub.led=\'\';'+again+'">Show everything</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
-      '<thead><tr><th>Date</th><th>Entry</th><th class="t-r">Salary due</th><th class="t-r">Paid</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      '<thead><tr><th>Date</th><th>Entry</th><th class="t-r">Salary due</th><th class="t-r">Salary paid</th>'+
+      '<th class="t-r">Advance paid</th>'+(pay.other?'<th class="t-r">Other paid</th>':'')+
+      '<th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
       rows.map(t=>'<tr><td style="white-space:nowrap">'+fdate(t.date)+'</td>'+
         '<td><div class="t-strong">'+esc(({due:'Salary due',salary:'Salary paid',advance:'Advance paid',other:'Payment'})[t.type]||'Payment')+'</div>'+
         (t.note?'<div class="t-sub">'+esc(t.note)+'</div>':'')+
@@ -6505,13 +6560,25 @@ function renderDriver(did){
             ? '<div class="t-sub">Charged to '+esc(paySplitNote(t))+'</div>'
             : '<div class="t-sub">Not charged to a truck \u2014 no driver seat covers this period</div>')+
         '</td>'+
-        '<td class="t-r num">'+(t.type==='due'?money(t.amount):'')+'</td>'+
-        '<td class="t-r num" style="color:var(--green)">'+(t.type!=='due'?money(t.amount):'')+'</td>'+
-        '<td class="t-r num t-strong">'+money(t.running)+'</td>'+
+        '<td data-label="Salary due" class="t-r num">'+(t.type==='due'?money(t.amount):'')+'</td>'+
+        '<td data-label="Salary paid" class="t-r num" style="color:var(--green)">'+
+          (t.type==='salary'?money(t.amount):'')+'</td>'+
+        '<td data-label="Advance paid" class="t-r num" style="color:var(--green)">'+
+          (t.type==='advance'?money(t.amount):'')+'</td>'+
+        (pay.other?'<td data-label="Other paid" class="t-r num" style="color:var(--green)">'+
+          (t.type!=='due'&&t.type!=='salary'&&t.type!=='advance'?money(t.amount):'')+'</td>':'')+
+        '<td data-label="Balance" class="t-r num t-strong">'+money(t.running)+'</td>'+
         '<td><div class="row-actions"><button class="btn btn-sm" onclick="driverTxnForm(\''+did+'\',\''+t.id+'\')">Edit</button>'+
         '<button class="btn btn-sm btn-danger" onclick="delDriverTxn(\''+t.id+'\')">Delete</button></div></td></tr>').join('')+
-      '</tbody></table></div></div>'+
-      '<div class="note" style="margin-top:14px">Only money actually paid out counts as an expense in your profit report. "Salary due" simply records what you still owe.</div>');
+      '</tbody><tfoot><tr><th colspan="2">Totals</th>'+
+        '<th class="t-r num">'+money(pay.due)+'</th>'+
+        '<th class="t-r num">'+money(pay.salary)+'</th>'+
+        '<th class="t-r num">'+money(pay.advance)+'</th>'+
+        (pay.other?'<th class="t-r num">'+money(pay.other)+'</th>':'')+
+        '<th class="t-r num">'+money(pay.paid)+' paid</th><th></th></tr></tfoot>'+
+      '</table></div></div>'+
+      '<div class="note" style="margin-top:14px">Salary and advance are counted separately \u2014 total paid is simply the two '+
+      'added up. Only money actually paid out counts as an expense in your profit report. "Salary due" simply records what you still owe.</div>');
 }
 function showDriverDocs(id){
   const d = driverById(id); if(!d || !d.docs) return;
@@ -7157,7 +7224,9 @@ function viewReports(){
       (p.hire? pl('Hire paid to market trucks', p.hire):'')+
 
       exps.map(([c,v])=>pl(c, v)).join('')+
-      (p.driverPaid? pl('Driver salary &amp; advances paid', p.driverPaid):'')+
+      (p.driverSalary? pl('Driver salary paid', p.driverSalary):'')+
+      (p.driverAdvance? pl('Driver advances paid', p.driverAdvance):'')+
+      (p.driverOther? pl('Other driver payments', p.driverOther):'')+
       (p.costs===0? '<div class="pl-line"><span>No costs recorded in this period</span><span class="num">'+money(0)+'</span></div>':'')+
       pl('Total costs', p.costs)+
 
@@ -7497,7 +7566,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.14</b>, built 28 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.15</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -7795,6 +7864,7 @@ function printPayableStatement(kind, sid){
 function printDriverStatement(did){
   const d = driverById(did); if(!d) return;
   const view = ledgerViewInfo(null, DRIVER_VIEWS);
+  const brk = driverPayBreak(did);
   const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   let run = 0;
   const lines = txns.map(t=>{
@@ -7804,7 +7874,10 @@ function printDriverStatement(did){
   const shown = ledgerFilter(lines);
   const rows = shown.map(x=>[ fdate(x.t.date),
       ({due:'Salary due', salary:'Salary paid', advance:'Advance paid'})[x.t.type] || 'Payment',
-      esc(x.t.note||''), x.debit?money(x.debit):'', x.credit?money(x.credit):'', money(x.running) ]);
+      esc(x.t.note||''), x.debit?money(x.debit):'',
+      x.t.type==='salary'?money(x.t.amount):'',
+      (x.t.type!=='due' && x.t.type!=='salary')?money(x.t.amount):'',
+      money(x.running) ]);
   const due = txns.filter(t=>t.type==='due').reduce((s,t)=>s+num(t.amount),0);
   const out = txns.filter(t=>t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
   const shownD = shown.reduce((a,x)=>a+x.debit,0);
@@ -7818,15 +7891,23 @@ function printDriverStatement(did){
       view.k ? ['Showing', esc(view.label)] : null,
       view.k ? ['Entries', shown.length+' of '+lines.length] : null
     ])+
-    printTable([{label:'Date', w:'14%'},{label:'Entry', w:'18%'},{label:'Note'},
-      {label:'Salary due', right:true, w:'14%'},{label:'Paid', right:true, w:'14%'},{label:'Balance', right:true, w:'14%'}],
-      rows, [view.k?'Totals shown':'Totals','','', money(shownD), money(shownC), money(due-out)])+
+    printTable([{label:'Date', w:'13%'},{label:'Entry', w:'16%'},{label:'Note'},
+      {label:'Salary due', right:true, w:'13%'},{label:'Salary paid', right:true, w:'13%'},
+      {label:'Advance paid', right:true, w:'13%'},{label:'Balance', right:true, w:'13%'}],
+      rows, [view.k?'Totals shown':'Totals','','', money(shownD),
+        money(shown.filter(x=>x.t.type==='salary').reduce((n,x)=>n+num(x.t.amount),0)),
+        money(shown.filter(x=>x.t.type!=='due'&&x.t.type!=='salary').reduce((n,x)=>n+num(x.t.amount),0)),
+        money(due-out)])+
     printSummary([
       ['Salary due to date', money(due)],
-      ['Total paid', money(out)],
+      ['Total salary paid', money(brk.salary)],
+      ['Total advance paid', money(brk.advance)],
+      brk.other ? ['Other payments', money(brk.other)] : null,
+      ['Total paid', money(brk.paid)],
       [(due-out)>=0?'Balance payable':'Advance recoverable', money(Math.abs(due-out)), true]
     ])+
-    printSign('Only money actually paid is counted as an expense in the accounts.'+
+    printSign('Salary and advance are counted separately and only added together to state the total paid. '+
+      'Only money actually paid is counted as an expense in the accounts.'+
       (view.k ? ' This account lists '+view.short+'; the summary and the closing balance cover everything.' : '')),
     fileStem('driver', d.name)
   );
@@ -7919,7 +8000,9 @@ function printReport(){
   const period = rangeCaption();
   const costRows = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>[esc(c), money(v)]);
   if(p.hire) costRows.unshift(['Hire paid to market trucks', money(p.hire)]);
-  if(p.driverPaid) costRows.push(['Driver salary and advances paid', money(p.driverPaid)]);
+  if(p.driverSalary)  costRows.push(['Driver salary paid', money(p.driverSalary)]);
+  if(p.driverAdvance) costRows.push(['Driver advances paid', money(p.driverAdvance)]);
+  if(p.driverOther)   costRows.push(['Other driver payments', money(p.driverOther)]);
   printDoc(
     printHead('Profit and loss statement', period, [
       ['Period', period], ['Trips', String(p.tripCount)]
