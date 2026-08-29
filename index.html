@@ -357,7 +357,7 @@ textarea:focus-visible,
 
 .grid {
   display: grid;
-  gap: 14px;
+  gap: 11px;
 }
 
 .g5 {
@@ -384,7 +384,7 @@ textarea:focus-visible,
 }
 
 .card-pad {
-  padding: 16px 18px;
+  padding: 13px 16px;
 }
 
 .card-head {
@@ -410,7 +410,7 @@ textarea:focus-visible,
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: 16px 18px;
+  padding: 12px 15px;
   box-shadow: var(--sh-2);
 }
 
@@ -469,7 +469,7 @@ th {
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 11px 15px;
+  padding: 8px 13px;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
   background: var(--paper-2);
@@ -479,7 +479,7 @@ th {
 }
 
 td {
-  padding: 13px 15px;
+  padding: 9px 13px;
   border-bottom: 1px solid var(--line-soft);
   font-size: 14px;
   vertical-align: middle;
@@ -645,13 +645,13 @@ tbody tr:hover {
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 13px;
+  gap: 10px 12px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
 }
 
 .field.full {
@@ -669,13 +669,13 @@ input,
 select,
 textarea {
   width: 100%;
-  padding: 0 12px;
+  padding: 9px 11px;
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   background: var(--card);
   font-size: 14px;
   transition: border-color .14s, box-shadow .14s;
-  height: 40px;
+  height: 36px;
 }
 
 input:focus,
@@ -693,7 +693,7 @@ input[type=number] {
 
 textarea {
   resize: vertical;
-  min-height: 76px;
+  min-height: 60px;
   height: auto;
   padding: 11px 12px;
   line-height: 1.5;
@@ -799,8 +799,8 @@ textarea {
 }
 
 .modal-body {
-  padding: 20px 22px;
-  max-height: 65vh;
+  padding: 15px 18px;
+  max-height: 70vh;
   overflow-y: auto;
 }
 
@@ -835,7 +835,7 @@ textarea {
   gap: 9px;
   flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .filters {
@@ -843,8 +843,8 @@ textarea {
   border: 1px solid var(--line);
   border-radius: var(--r);
   box-shadow: var(--sh-1);
-  padding: 13px 15px;
-  margin-bottom: 14px;
+  padding: 9px 12px;
+  margin-bottom: 11px;
 }
 
 .filter-row {
@@ -877,7 +877,7 @@ textarea {
 .adv-block {
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 11px 14px;
   background: #FCFBF8;
 }
 
@@ -893,8 +893,8 @@ textarea {
 .adv-total {
   display: flex;
   align-items: center;
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 9px;
   border-top: 1.5px solid var(--side);
   font-weight: 700;
   font-size: 14.5px;
@@ -1137,7 +1137,7 @@ textarea {
 }
 
 .empty {
-  padding: 52px 24px;
+  padding: 32px 20px;
   text-align: center;
 }
 
@@ -1170,7 +1170,7 @@ textarea {
   display: flex;
   gap: 2px;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   overflow-x: auto;
 }
 
@@ -1198,7 +1198,7 @@ textarea {
   letter-spacing: .11em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 26px 0 11px;
+  margin: 17px 0 8px;
 }
 
 .divide {
@@ -1211,7 +1211,7 @@ textarea {
   background: var(--amber-soft);
   border: 1px solid var(--amber-line);
   border-radius: var(--r-sm);
-  padding: 13px 15px;
+  padding: 10px 13px;
   font-size: 13px;
   line-height: 1.55;
   border-color: var(--amber-line);
@@ -1763,11 +1763,11 @@ tbody tr {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
-  padding: 17px 18px;
+  padding: 13px 15px;
   box-shadow: var(--sh-2);
   display: flex;
   flex-direction: column;
-  min-height: 118px;
+  min-height: 92px;
   position: relative;
   overflow: hidden;
 }
@@ -2431,9 +2431,11 @@ tbody tr {
 }
 
 .modal-full {
-  max-width: 1400px;
+  max-width: 1240px;
   width: 96vw;
-  height: 93vh;
+  /* max, not fixed: a short tab used to be stretched to fill 93vh, and
+     everything below it was simply empty */
+  max-height: 93vh;
   display: flex;
   flex-direction: column;
 }
@@ -2442,16 +2444,16 @@ tbody tr {
   flex: 1;
   overflow-y: auto;
   max-height: none;
-  padding: 22px 26px 26px;
+  padding: 16px 20px 20px;
 }
 
 /* the trip screen carries a lot now — let it breathe */
 .modal-full .form-grid {
-  gap: 16px 18px;
+  gap: 12px 16px;
 }
 
 .modal-full .adv-block {
-  padding: 18px 20px;
+  padding: 13px 16px;
 }
 
 .trip-top {
@@ -2459,15 +2461,15 @@ tbody tr {
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 9px;
 }
 
 .trip-tabs {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .trip-pane {
-  min-height: 220px;
+  min-height: 140px;
 }
 
 .trip-tabs .tab {
@@ -2505,6 +2507,12 @@ tbody tr {
 }
 
 @media (max-width:1100px) { .grid.g5{grid-template-columns:repeat(3,1fr)} }
+/* the pass above tightened the controls for a mouse; a phone keeps a
+   full-size target and a little more room between rows */
+@media (max-width:760px){
+  input,select,textarea{height:40px}
+  td{padding:11px 13px}
+}
 @media (max-width:760px)  { .grid.g5{grid-template-columns:repeat(2,1fr)} }
 
 @media (max-width:640px) {
@@ -2739,10 +2747,10 @@ tbody tr:last-child td {
 .hero {
   display: grid;
   grid-template-columns: 1.15fr 1fr;
-  gap: 18px;
+  gap: 14px;
   background: linear-gradient(140deg, #131924 0%, #1B2432 55%, #232E3E 100%);
   border-radius: var(--r-lg);
-  padding: 26px 28px;
+  padding: 19px 22px;
   color: #fff;
   box-shadow: 0 2px 4px rgba(17,22,33,.10), 0 18px 44px rgba(17,22,33,.18);
   position: relative;
@@ -3085,7 +3093,7 @@ h1,h2,h3{letter-spacing:-.021em}
 .card-head{padding:14px 18px;border-bottom:1px solid var(--line-soft);background:transparent}
 
 /* ---------- KPI: one primary number, the rest subordinate ---------- */
-.kpi{padding:16px 18px;transition:box-shadow .16s,border-color .16s}
+.kpi{padding:13px 15px;transition:box-shadow .16s,border-color .16s}
 .kpi:hover{box-shadow:0 4px 14px -6px rgba(17,24,39,.18);border-color:var(--line-strong)}
 .kpi-label{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .kpi-value{font-size:26px;letter-spacing:-.035em;margin-top:8px;color:var(--ink)}
@@ -3133,7 +3141,7 @@ th{
      header down over the first row. */
   position:sticky;top:0;z-index:10;
 }
-td{border-bottom:1px solid var(--line-soft);padding:13px 15px;font-size:13.5px;color:var(--ink-2)}
+td{border-bottom:1px solid var(--line-soft);padding:9px 13px;font-size:13.5px;color:var(--ink-2)}
 td.t-strong,.t-strong{color:var(--ink)}
 tbody tr{transition:background .12s}
 tbody tr:hover{background:var(--bg-2)}
@@ -3162,7 +3170,7 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
 
 /* ---------- empty states ---------- */
-.empty{padding:46px 24px}
+.empty{padding:30px 20px}
 .empty-title{font-size:15.5px;font-weight:700;margin-bottom:6px;color:var(--ink)}
 .empty-text{color:var(--muted);font-size:13.5px;line-height:1.6}
 
@@ -3352,8 +3360,8 @@ input.dp-input::-webkit-clear-button{display:none}
 .field.field-bad{animation:fieldNudge .2s ease-in-out 2}
 
 /* ---------- money at the head of a trip ---------- */
-.trip-totals{display:flex;flex-wrap:wrap;gap:7px 20px;align-items:center;margin:0 0 13px;
-  padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2);
+.trip-totals{display:flex;flex-wrap:wrap;gap:7px 20px;align-items:center;margin:0 0 10px;
+  padding:7px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg-2);
   font-size:12.5px;color:var(--muted)}
 .trip-totals b{color:var(--ink);font-size:14.5px;margin-left:6px;font-family:var(--mono);
   font-variant-numeric:tabular-nums}
@@ -3450,7 +3458,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.18 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.19 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -7654,7 +7662,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.18</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.19</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
