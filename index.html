@@ -3405,6 +3405,13 @@ input.dp-input::-webkit-clear-button{display:none}
 .assign-who{font-weight:600;color:var(--ink)}
 .assign-when{color:var(--muted);font-family:var(--mono);font-size:12px;margin-left:auto}
 
+/* ---------- records left pointing at nothing ---------- */
+.health-list{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.health-row{display:flex;align-items:center;gap:12px;padding:9px 13px;font-size:13px;
+  border-bottom:1px solid var(--line-soft)}
+.health-row:last-child{border-bottom:0}
+.health-row b{margin-left:auto;font-family:var(--mono);color:var(--red);font-size:14px}
+
 /* ---------- opening one truck out of the report ---------- */
 .bar-link{cursor:pointer;border-radius:9px;padding:7px 9px;margin:0 -9px 6px;
   transition:background .12s}
@@ -3443,7 +3450,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.16 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.18 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5369,14 +5376,35 @@ function podTracker(t){
 
 function fv(label,value){ return '<div><div class="field-label">'+esc(label)+'</div><div class="field-value">'+value+'</div></div>'; }
 
+/* Everything that hangs off a trip, removed with it. Written once because
+   a trip can go three ways — deleted on its own, taken with its party, or
+   swept up by a repair — and each of those leaving a different tail behind
+   is exactly how records end up pointing at things that do not exist. */
+function removeTripData(ids){
+  const gone = new Set([].concat(ids));
+  if(!gone.size) return;
+  DB.trips = DB.trips.filter(t=>!gone.has(t.id));
+  DB.expenses = (DB.expenses||[]).filter(e=>!(e.tripId && gone.has(e.tripId)));
+  gone.forEach(id=>{
+    /* the photos, and the untouched originals they point at */
+    podImages(id).forEach(p=>dropOriginal(p.origKey));
+    if(DB.pods) delete DB.pods[id];
+  });
+  /* a payment allocated to a trip that no longer exists */
+  (DB.ledger||[]).forEach(l=>{
+    if(!(l.alloc||[]).length) return;
+    l.alloc = l.alloc.filter(a=>!gone.has(a.tripId));
+  });
+  if(tripDraft && gone.has(tripDraft.id)){ tripDraft = null; tripExpDraft = []; }
+}
 function delTrip(id){
   if(lockedStop(DB.trips.find(x=>x.id===id))) return;
   const exp = tripExpensesOf(id);
+  const pods = podCount(id);
   confirmAsk('Delete this trip? The freight will also be removed from the party ledger.'+
-    (exp ? ' The '+money(exp)+' of expenses booked to it go too.' : ''), ()=>{
-    DB.trips = DB.trips.filter(x=>x.id!==id);
-    DB.expenses = (DB.expenses||[]).filter(e=>e.tripId!==id);
-    if(tripDraft && tripDraft.id===id){ tripDraft = null; tripExpDraft = []; }
+    (exp ? ' The '+money(exp)+' of expenses booked to it go too.' : '')+
+    (pods ? ' So do its '+plural(pods,'POD page')+'.' : ''), ()=>{
+    removeTripData(id);
     save(); render(); toast('Trip deleted');
   }, true);
 }
@@ -5744,10 +5772,16 @@ function delLedger(eid){
   }, true);
 }
 function delParty(pid){
-  const n = DB.trips.filter(t=>t.partyId===pid).length;
-  confirmAsk('Delete this party'+(n?' along with its '+n+' trip'+(n===1?'':'s'):'')+' and all ledger entries? This cannot be undone.', ()=>{
+  const mine = DB.trips.filter(t=>t.partyId===pid);
+  const n = mine.length;
+  const exp = mine.reduce((s,t)=>s+tripExpensesOf(t.id), 0);
+  confirmAsk('Delete this party'+(n?' along with its '+n+' trip'+(n===1?'':'s'):'')+' and all ledger entries?'+
+    (exp ? ' The '+money(exp)+' of expenses booked to those trips goes too.' : '')+
+    ' This cannot be undone.', ()=>{
     DB.parties = DB.parties.filter(x=>x.id!==pid);
-    DB.trips   = DB.trips.filter(x=>x.partyId!==pid);
+    /* the trips go through the same door as a single delete, so their
+       expenses and POD photos are not left behind pointing at nothing */
+    removeTripData(mine.map(t=>t.id));
     DB.ledger  = DB.ledger.filter(x=>x.partyId!==pid);
     save(); sub={}; render(); toast('Party deleted');
   }, true);
@@ -6151,7 +6185,23 @@ function truckForm(id, onSaved, preset){
 function delTruck(id){
   const n = DB.trips.filter(t=>t.truckId===id).length;
   if(n){ openModal({title:'Truck is in use', body:'<p style="margin:0">This truck is linked to '+n+' trip'+(n===1?'':'s')+'. Delete or move those trips first, so your records stay correct.</p>'}); return; }
-  confirmAsk('Delete this truck?', ()=>{ DB.trucks = DB.trucks.filter(x=>x.id!==id); save(); render(); toast('Truck deleted'); }, true);
+  const t = truckById(id);
+  const docs = (t && t.docs) || [];
+  const docCost = docs.reduce((s,d)=>s+docExpenseHistory(d.id).reduce((n2,e)=>n2+num(e.amount),0), 0);
+  const booked = (DB.expenses||[]).filter(e=>e.truckId===id && !e.docId).length;
+  confirmAsk('Delete this truck?'+
+    (docs.length ? ' Its '+plural(docs.length,'document')+
+      (docCost?' and the '+money(docCost)+' recorded on them':'')+' go too.' : '')+
+    (booked ? ' '+plural(booked,'expense')+' booked to it will stay in Expenses, no longer tied to a vehicle.' : ''), ()=>{
+    docs.forEach(d=>dropDocExpense(d.id));
+    DB.trucks = DB.trucks.filter(x=>x.id!==id);
+    /* the seats it held, and every remaining pointer at a vehicle that has gone */
+    DB.assign = (DB.assign||[]).filter(a=>a.truckId!==id);
+    (DB.expenses||[]).forEach(e=>{ if(e.truckId===id) e.truckId=''; });
+    (DB.shopLedger||[]).forEach(l=>{ if(l.truckId===id) l.truckId=''; });
+    (DB.supplierLedger||[]).forEach(l=>{ if(l.truckId===id) l.truckId=''; });
+    save(); render(); toast('Truck deleted');
+  }, true);
 }
 
 /* ============================================================
@@ -6375,7 +6425,11 @@ function renderExpenseList(){
         '<td data-label="Category"><span class="chip chip-grey">'+esc(e.category)+'</span>'+
           (e.mode==='Credit'?'<div class="t-sub"><span class="chip chip-amber">On credit</span></div>':'')+'</td>'+
         '<td data-label="Details">'+esc(e.note||'\u2014')+
-          (e.tripId?'<div class="t-sub"><span class="chip chip-blue">Trip</span> '+esc(tripLabel(e.tripId))+'</div>':'')+
+          (e.tripId
+            ? DB.trips.some(t=>t.id===e.tripId)
+              ? '<div class="t-sub"><span class="chip chip-blue">Trip</span> '+esc(tripLabel(e.tripId))+'</div>'
+              : '<div class="t-sub"><span class="chip chip-red">Trip deleted</span></div>'
+            : '')+
           (e.docId?'<div class="t-sub"><span class="chip chip-grey">Document</span></div>':'')+
           (e.mode==='Credit'&&e.shopId?'<div class="t-sub">'+esc(shopName(e.shopId))+'</div>'
             :e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
@@ -6413,7 +6467,9 @@ function expenseForm(id, preselectShop){
           '<span id="shopTruckHint"></span>.</span>'+
       '</div>'+
       fArea('e_note','Details', e?e.note:'')+
-    '</div>',
+    '</div>'+
+    (e ? '<div class="trip-actions"><button class="btn btn-danger" '+
+      'onclick="closeModal();delExpense(\''+e.id+'\')">Delete this expense</button></div>' : ''),
     onOk(){
       const amt = num(val('e_amount'));
       if(amt<=0){ toast('Enter an amount greater than zero'); return; }
@@ -6702,9 +6758,18 @@ function delDriverTxn(tid){
   confirmAsk('Delete this entry?', ()=>{ DB.driverTxns = DB.driverTxns.filter(x=>x.id!==tid); save(); renderDriver(t.driverId); toast('Entry deleted'); }, true);
 }
 function delDriver(did){
-  confirmAsk('Delete this driver and all their account entries?', ()=>{
+  const trips = DB.trips.filter(t=>t.driverId===did).length;
+  const d = driverById(did);
+  confirmAsk('Delete this driver and all their account entries?'+
+    (trips ? ' '+plural(trips,'trip')+' will no longer name a driver.' : ''), ()=>{
     DB.drivers = DB.drivers.filter(x=>x.id!==did);
     DB.driverTxns = DB.driverTxns.filter(x=>x.driverId!==did);
+    /* their documents, wherever the originals were filed */
+    Object.values((d && d.origs) || {}).forEach(dropOriginal);
+    /* seats and pointers, so no wage is charged to a driver who is gone */
+    DB.assign = (DB.assign||[]).filter(a=>a.driverId!==did);
+    DB.trips.forEach(t=>{ if(t.driverId===did) t.driverId=''; });
+    DB.trucks.forEach(t=>{ if(t.driverId===did) t.driverId=''; });
     save(); sub={}; render(); toast('Driver deleted');
   }, true);
 }
@@ -6980,7 +7045,7 @@ function delSupplierEntry(eid){
   }, true);
 }
 function delSupplier(sid){
-  const n = supplierTrips(sid).length;
+  const n = DB.trips.filter(t=>t.supplierId===sid).length;
   if(n){
     openModal({title:'Supplier is in use', body:'<p style="margin:0">'+plural(n,'trip')+
       ' still points at this supplier. Change those trips first, so your records stay correct.</p>'});
@@ -7580,6 +7645,7 @@ function viewSettings(){
       '<div><div class="stat-label">'+l+'</div><div class="num t-strong" style="font-size:18px">'+n+'</div></div>').join('')+'</div>'+
   '</div>'+
 
+  dataHealthPanel()+
   '<div class="card card-pad">'+
     '<h3 class="card-title" style="margin-bottom:6px">Start fresh</h3>'+
     '<p class="hint" style="margin:0 0 14px;max-width:560px">Load a few sample trips to see how the app works, or wipe everything and begin with your real business data.</p>'+
@@ -7588,9 +7654,104 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.16</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.18</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
+/* ============================================================
+   DATA HEALTH
+   Deleting used to leave tails behind — a party took its trips
+   but not their expenses, a truck took its papers but not what
+   they cost. Those paths are fixed, but records already broken
+   stay broken, and a row pointing at something that no longer
+   exists is invisible in the screen that would normally show it.
+   This finds them and puts them right.
+   ============================================================ */
+function dataIssues(){
+  const has = (list, id) => !id || (list||[]).some(x=>x.id===id);
+  const docIds = new Set();
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>docIds.add(d.id)));
+  const tripIds = new Set(DB.trips.map(t=>t.id));
+  const out = [];
+  const add = (key, label, items, fix) => { if(items.length) out.push({key, label, items, fix}); };
+
+  add('expTrip', 'expenses booked to a trip that has been deleted',
+    (DB.expenses||[]).filter(e=>e.tripId && !tripIds.has(e.tripId)),
+    items=>items.forEach(e=>{ e.tripId=''; }));
+  add('expTruck', 'expenses pointing at a vehicle that has been deleted',
+    (DB.expenses||[]).filter(e=>e.truckId && !has(DB.trucks, e.truckId)),
+    items=>items.forEach(e=>{ e.truckId=''; }));
+  add('expShop', 'credit expenses whose shop has been deleted',
+    (DB.expenses||[]).filter(e=>e.mode==='Credit' && e.shopId && !has(DB.shops, e.shopId)),
+    items=>items.forEach(e=>{ e.shopId=''; e.mode='Cash'; }));
+  add('expDoc', 'document costs whose document has been deleted',
+    (DB.expenses||[]).filter(e=>e.docId && !docIds.has(e.docId)),
+    items=>items.forEach(e=>{ e.docId=''; }));
+  add('tripParty', 'trips whose party has been deleted',
+    DB.trips.filter(t=>t.partyId && !has(DB.parties, t.partyId)),
+    items=>items.forEach(t=>{ t.partyId=''; }));
+  add('tripTruck', 'trips whose truck has been deleted',
+    DB.trips.filter(t=>t.truckId && !has(DB.trucks, t.truckId)),
+    items=>items.forEach(t=>{ t.truckId=''; }));
+  add('tripDriver', 'trips whose driver has been deleted',
+    DB.trips.filter(t=>t.driverId && !has(DB.drivers, t.driverId)),
+    items=>items.forEach(t=>{ t.driverId=''; }));
+  add('tripSupplier', 'trips whose supplier has been deleted',
+    DB.trips.filter(t=>t.supplierId && !has(DB.suppliers, t.supplierId)),
+    items=>items.forEach(t=>{ t.supplierId=''; }));
+  add('truckDriver', 'trucks naming a driver who has been deleted',
+    DB.trucks.filter(t=>t.driverId && !has(DB.drivers, t.driverId)),
+    items=>items.forEach(t=>{ t.driverId=''; }));
+  add('ledgerParty', 'ledger entries whose party has been deleted',
+    (DB.ledger||[]).filter(l=>l.partyId && !has(DB.parties, l.partyId)),
+    items=>{ const ids=new Set(items.map(x=>x.id)); DB.ledger = DB.ledger.filter(l=>!ids.has(l.id)); });
+  add('alloc', 'payments allocated to a trip that has been deleted',
+    (DB.ledger||[]).filter(l=>(l.alloc||[]).some(a=>!tripIds.has(a.tripId))),
+    items=>items.forEach(l=>{ l.alloc = (l.alloc||[]).filter(a=>tripIds.has(a.tripId)); }));
+  add('txnDriver', 'driver account entries whose driver has been deleted',
+    (DB.driverTxns||[]).filter(t=>!has(DB.drivers, t.driverId)),
+    items=>{ const ids=new Set(items.map(x=>x.id)); DB.driverTxns = DB.driverTxns.filter(t=>!ids.has(t.id)); });
+  add('assign', 'driver seats on a truck or driver that has been deleted',
+    (DB.assign||[]).filter(a=>!has(DB.trucks, a.truckId) || !has(DB.drivers, a.driverId)),
+    items=>{ const ids=new Set(items.map(x=>x.id)); DB.assign = DB.assign.filter(a=>!ids.has(a.id)); });
+  add('shopLedger', 'shop ledger entries whose shop has been deleted',
+    (DB.shopLedger||[]).filter(l=>!has(DB.shops, l.shopId)),
+    items=>{ const ids=new Set(items.map(x=>x.id)); DB.shopLedger = DB.shopLedger.filter(l=>!ids.has(l.id)); });
+  add('supLedger', 'supplier ledger entries whose supplier has been deleted',
+    (DB.supplierLedger||[]).filter(l=>!has(DB.suppliers, l.supplierId)),
+    items=>{ const ids=new Set(items.map(x=>x.id)); DB.supplierLedger = DB.supplierLedger.filter(l=>!ids.has(l.id)); });
+  add('pods', 'POD photos held for a trip that has been deleted',
+    Object.keys(DB.pods||{}).filter(k=>!tripIds.has(k)).map(k=>({id:k})),
+    items=>items.forEach(x=>{ podImages(x.id).forEach(p=>dropOriginal(p.origKey)); delete DB.pods[x.id]; }));
+  return out;
+}
+function repairData(){
+  const found = dataIssues();
+  if(!found.length){ toast('Nothing to repair'); return; }
+  const n = found.reduce((s,g)=>s+g.items.length, 0);
+  confirmAsk('Put '+plural(n,'record')+' right? Nothing with money on it is thrown away \u2014 an expense whose '+
+    'trip has gone keeps its amount and simply stops claiming to belong to that trip. Entries that only existed '+
+    'to describe something deleted are removed.', ()=>{
+    found.forEach(g=>g.fix(g.items));
+    save(); render(); toast(plural(n,'record')+' put right');
+  });
+}
+function dataHealthPanel(){
+  const found = dataIssues();
+  const n = found.reduce((s,g)=>s+g.items.length, 0);
+  return '<div class="card card-pad" style="margin-bottom:16px">'+
+    '<h3 class="card-title" style="margin-bottom:6px">Data health</h3>'+
+    '<p class="hint" style="margin:0 0 14px;max-width:620px">Checks for records left pointing at something that has '+
+      'since been deleted \u2014 an expense on a trip that is gone, a seat on a truck that is gone. These are '+
+      'invisible in the screen that would normally list them, so they are easy to miss.</p>'+
+    (n===0
+      ? '<div class="hint" style="color:var(--green);font-weight:600">\u2713 Everything points at something that exists.</div>'
+      : '<div class="health-list">'+found.map(g=>
+          '<div class="health-row"><span>'+esc(g.label)+'</span><b>'+g.items.length+'</b></div>').join('')+'</div>'+
+        '<div style="margin-top:14px"><button class="btn btn-amber" onclick="repairData()">Repair '+
+          plural(n,'record')+'</button></div>')+
+  '</div>';
+}
+
 function saveSettings(){
   /* merged, not replaced — the lock switch lives here too */
   DB.settings = Object.assign({}, DB.settings, {
