@@ -231,7 +231,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 28px;
+  padding: 12px 26px;
   background: rgba(245,244,241,.86);
   border-bottom: 1px solid var(--line);
   position: sticky;
@@ -268,7 +268,7 @@ textarea {
 }
 
 .content {
-  padding: 24px 28px 72px;
+  padding: 20px 26px 24px;
   max-width: 1320px;
   width: 100%;
 }
@@ -1220,7 +1220,7 @@ textarea {
 .pl-line {
   display: flex;
   align-items: baseline;
-  padding: 10px 0;
+  padding: 7px 0;
   border-bottom: 1px dotted var(--line);
 }
 
@@ -1819,7 +1819,7 @@ tbody tr {
 }
 
 .chart-card {
-  padding: 18px 20px;
+  padding: 13px 16px;
 }
 
 .fleet-line {
@@ -1841,7 +1841,7 @@ tbody tr {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 12px 14px;
+  padding: 9px 12px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--r);
@@ -1919,7 +1919,7 @@ tbody tr {
 .chart-sub {
   font-size: 12px;
   color: var(--muted);
-  margin-bottom: 14px;
+  margin-bottom: 9px;
 }
 
 @media (max-width:760px) {
@@ -2511,7 +2511,12 @@ tbody tr {
    full-size target and a little more room between rows */
 @media (max-width:760px){
   input,select,textarea{height:40px}
-  td{padding:11px 13px}
+  td{padding:10px 12px}
+  /* the bottom bar sits over the page here, so leave room for it */
+  .content{padding:16px 14px 88px}
+  .kpi{min-height:84px}
+  .hero{padding:16px 18px}
+  .chart-card{padding:12px 13px}
 }
 @media (max-width:760px)  { .grid.g5{grid-template-columns:repeat(2,1fr)} }
 
@@ -3458,7 +3463,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.19 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.20 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4535,7 +4540,7 @@ function viewInsights(){
       {key:'freight', label:'Freight', color:'#E09A2E', fill:true},
       {key:'cost',    label:'Costs',   color:'#4A5568', dash:true},
       {key:'profit',  label:'Profit',  color:'#1B7355'}
-    ], {height:250})+
+    ], {height:210})+
   '</div>'+
 
   '<div class="g-wide" style="margin-top:14px">'+
@@ -7662,7 +7667,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.19</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.20</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
@@ -9590,7 +9595,7 @@ function niceStep(rough){
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
 }
 function lineChart(rows, series, opts={}){
-  const W=760, H=opts.height||250, L=62, R=26, T=22, B=44;
+  const W=760, H=opts.height||210, L=58, R=22, T=16, B=38;
   /* The scale is read off every series, and always includes zero, so a
      month that lost money is drawn below the line instead of vanishing. */
   const vals = [];
