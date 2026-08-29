@@ -360,6 +360,10 @@ textarea:focus-visible,
   gap: 14px;
 }
 
+.g5 {
+  grid-template-columns: repeat(5,1fr);
+}
+
 .g4 {
   grid-template-columns: repeat(4,1fr);
 }
@@ -2500,6 +2504,9 @@ tbody tr {
   }
 }
 
+@media (max-width:1100px) { .grid.g5{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:760px)  { .grid.g5{grid-template-columns:repeat(2,1fr)} }
+
 @media (max-width:640px) {
   .form-grid.three {
     grid-template-columns: 1fr;
@@ -3389,6 +3396,28 @@ input.dp-input::-webkit-clear-button{display:none}
   padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:13px;color:var(--muted)}
 .renew-past-row:last-child{border-bottom:0}
 .renew-past-row b{color:var(--ink)}
+
+/* ---------- who drove which truck, and when ---------- */
+.assign-log{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.assign-row{display:flex;align-items:center;gap:10px;padding:8px 12px;font-size:13px;
+  border-bottom:1px solid var(--line-soft)}
+.assign-row:last-child{border-bottom:0}
+.assign-who{font-weight:600;color:var(--ink)}
+.assign-when{color:var(--muted);font-family:var(--mono);font-size:12px;margin-left:auto}
+
+/* ---------- opening one truck out of the report ---------- */
+.bar-link{cursor:pointer;border-radius:9px;padding:7px 9px;margin:0 -9px 6px;
+  transition:background .12s}
+.bar-link:hover{background:var(--bg-2)}
+.bar-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+tr.row-link{cursor:pointer}
+tr.row-link:hover td{background:var(--bg-2)}
+.tr-sum{display:grid;grid-template-columns:repeat(5,1fr);gap:12px 18px;
+  padding:14px 16px;border:1px solid var(--line);border-radius:11px;background:var(--bg-2)}
+.tr-sum span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.tr-sum b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
+@media (max-width:900px){ .tr-sum{grid-template-columns:repeat(2,1fr)} }
 @media (max-width:640px){ .renew-now{grid-template-columns:1fr} }
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 @media (max-width:760px){
@@ -3414,7 +3443,7 @@ input.dp-input::-webkit-clear-button{display:none}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.12 &middot; 28 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.15 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3447,7 +3476,7 @@ const KEY = 'mvl_db_v1';
 const BLANK = {
   settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:'', editLocked:false},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
-  shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{}, categories:[],
+  shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{}, categories:[], assign:[],
   seeded:false
 };
 let DB = load();
@@ -3833,6 +3862,186 @@ function totalReceivable(){
 }
 
 // Driver payable = salary due entries − everything actually paid out
+/* ============================================================
+   DRIVER PAY AS A TRUCK COST
+   A driver's wages belong to whichever truck they were driving
+   at the time. Nothing new is recorded to make that work: the
+   pay is the same driver account entry it always was, and the
+   share each truck carries is worked out from how many days of
+   the pay period the driver spent on it. So a truck's cost and
+   the money that actually left the business can never disagree,
+   and no figure is ever counted twice.
+   ============================================================ */
+const DAY_MS = 86400000;
+function dayNum(iso){
+  return Date.UTC(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10)) / DAY_MS;
+}
+function addDays(iso, n){
+  return new Date((dayNum(iso)+n) * DAY_MS).toISOString().slice(0,10);
+}
+function prevDay(iso){ return addDays(iso, -1); }
+function monthFirst(iso){ return (iso||today()).slice(0,7)+'-01'; }
+function monthLast(iso){
+  const d = iso || today();
+  return new Date(Date.UTC(+d.slice(0,4), +d.slice(5,7), 0)).toISOString().slice(0,10);
+}
+/* days two closed ranges share, counting both ends */
+function overlapDays(aFrom, aTo, bFrom, bTo){
+  const lo = Math.max(dayNum(aFrom), dayNum(bFrom));
+  const hi = Math.min(dayNum(aTo),   dayNum(bTo));
+  return hi < lo ? 0 : hi - lo + 1;
+}
+function spanDays(from, to){ return overlapDays(from, to, from, to); }
+
+/* ---------- who was driving what, and when ---------- */
+function assignments(driverId){
+  return (DB.assign||[]).filter(a=>!driverId || a.driverId===driverId);
+}
+function truckAssignments(truckId){
+  return (DB.assign||[]).filter(a=>a.truckId===truckId)
+    .sort((x,y)=>(y.from||'').localeCompare(x.from||''));
+}
+function openAssignment(truckId){
+  return (DB.assign||[]).find(a=>a.truckId===truckId && !a.to) || null;
+}
+/* The truck record still carries its current driver exactly as before;
+   this keeps a dated log beside it so history survives a reassignment. */
+function setTruckDriver(truckId, driverId, from){
+  DB.assign = DB.assign || [];
+  const day = from || today();
+  const open = openAssignment(truckId);
+  if(open && open.driverId === driverId){
+    if(from && open.from !== from) open.from = from;     /* correcting the start */
+    return;
+  }
+  if(open) open.to = prevDay(day);
+  if(!driverId) return;
+  /* a driver cannot be on two trucks at once, so moving them closes the old seat */
+  (DB.assign||[]).forEach(a=>{
+    if(a.driverId===driverId && !a.to && a.truckId!==truckId) a.to = prevDay(day);
+  });
+  DB.assign.push({id:uid(), truckId, driverId, from:day, to:''});
+}
+/* Trucks that already had a driver when this arrived get an open-ended
+   seat, so their existing pay is attributed rather than lost. The start
+   date can be corrected on the truck. */
+function migrateAssignments(){
+  DB.assign = DB.assign || [];
+  let changed = false;
+  DB.trucks.forEach(t=>{
+    if(!t.driverId) return;
+    if((DB.assign||[]).some(a=>a.truckId===t.id && a.driverId===t.driverId && !a.to)) return;
+    DB.assign.push({id:uid(), truckId:t.id, driverId:t.driverId, from:'', to:''});
+    changed = true;
+  });
+  if(changed) save();
+}
+
+/* ---------- the period a payment covers ---------- */
+function payPeriod(txn){
+  const d = txn.date || today();
+  return {from: txn.from || monthFirst(d), to: txn.to || monthLast(d)};
+}
+/* One payment split across the trucks the driver drove during it. Days the
+   driver was on no truck stay unallocated — they are a business cost, not
+   any vehicle's. */
+function paySlices(txn){
+  if(!txn || txn.type==='due') return [];
+  const total = num(txn.amount);
+  if(total <= 0) return [];
+  const per = payPeriod(txn);
+  if(per.to < per.from) return [];
+  const span = spanDays(per.from, per.to);
+  if(!span) return [];
+  const parts = [];
+  assignments(txn.driverId).forEach(a=>{
+    const aF = a.from || DATE_MIN, aT = a.to || DATE_MAX;
+    const days = overlapDays(per.from, per.to, aF, aT);
+    if(!days) return;
+    parts.push({truckId:a.truckId, days,
+      wFrom: per.from > aF ? per.from : aF,
+      wTo:   per.to   < aT ? per.to   : aT});
+  });
+  if(!parts.length) return [];
+  let acc = 0;
+  const out = parts.map(x=>{
+    const amount = Math.round(total * x.days / span);
+    acc += amount;
+    return {txnId:txn.id, driverId:txn.driverId, truckId:x.truckId, days:x.days,
+            wFrom:x.wFrom, wTo:x.wTo, period:per, amount};
+  });
+  /* rounding must not leak a rupee, but only when the whole period was
+     covered — a partly-assigned period is meant to come up short */
+  const covered = parts.reduce((n,x)=>n+x.days, 0);
+  if(covered === span && acc !== total){
+    out.reduce((a,b)=>b.amount>a.amount?b:a).amount += total - acc;
+  }
+  return out;
+}
+let paySliceMemo = null;
+function allPaySlices(){
+  if(paySliceMemo && paySliceMemo.stamp === DB.updatedAt) return paySliceMemo.list;
+  const list = [];
+  (DB.driverTxns||[]).forEach(t=>paySlices(t).forEach(x=>list.push(x)));
+  paySliceMemo = {stamp: DB.updatedAt, list};
+  return list;
+}
+/* What a truck carried in driver wages, optionally within a date window.
+   A window clips a slice by days, the same way the split itself works. */
+function truckDriverPay(truckId, from, to){
+  return allPaySlices().filter(s=>s.truckId===truckId).reduce((sum, s)=>{
+    if(!from && !to) return sum + s.amount;
+    const span = spanDays(s.wFrom, s.wTo);
+    if(!span) return sum;
+    const days = overlapDays(s.wFrom, s.wTo, from || DATE_MIN, to || DATE_MAX);
+    return sum + (days ? Math.round(s.amount * days / span) : 0);
+  }, 0);
+}
+/* the same slices a truck's wage total is built from, clipped to a window,
+   so a breakdown can show its working rather than just the sum */
+function truckPaySlices(truckId, from, to){
+  return allPaySlices().filter(s=>s.truckId===truckId).map(s=>{
+    const span = spanDays(s.wFrom, s.wTo);
+    if(!from && !to) return Object.assign({}, s, {shown:s.amount, days:s.days, cFrom:s.wFrom, cTo:s.wTo});
+    const days = span ? overlapDays(s.wFrom, s.wTo, from || DATE_MIN, to || DATE_MAX) : 0;
+    /* days and share are clipped to the window asked for, so the dates shown
+       beside them have to be the clipped ones or they will not agree */
+    return Object.assign({}, s, {
+      shown: span && days ? Math.round(s.amount*days/span) : 0, days,
+      cFrom: (from && from > s.wFrom) ? from : s.wFrom,
+      cTo:   (to   && to   < s.wTo)   ? to   : s.wTo});
+  }).filter(s=>s.shown>0).sort((a,b)=>(a.wFrom||'').localeCompare(b.wFrom||''));
+}
+/* how one payment was divided, for showing on the driver's account */
+function paySplitNote(txn){
+  const parts = paySlices(txn);
+  if(!parts.length) return '';
+  return parts.map(x=>truckName(x.truckId)+' '+money(x.amount)+
+    (parts.length>1||x.days<spanDays(payPeriod(txn).from,payPeriod(txn).to)
+      ? ' ('+plural(x.days,'day')+')' : '')).join(' · ');
+}
+
+/* Salary and advance are two different things and are counted as two.
+   They are only ever added together to state the total, never folded
+   into one another. Anything older than the current entry types is kept
+   visible as its own line rather than being quietly parcelled into one
+   of them, so the three always reconcile. */
+function driverPayBreak(did, from, to){
+  const inR = d => (!from || d>=from) && (!to || d<=to);
+  const out = {due:0, salary:0, advance:0, other:0, paid:0};
+  (DB.driverTxns||[]).forEach(t=>{
+    if(did && t.driverId!==did) return;
+    if(!inR(t.date)) return;
+    const amt = num(t.amount);
+    if(t.type==='due'){ out.due += amt; return; }
+    if(t.type==='salary') out.salary += amt;
+    else if(t.type==='advance') out.advance += amt;
+    else out.other += amt;
+    out.paid += amt;
+  });
+  return out;
+}
+
 function driverBalance(did){
   let bal = 0;
   DB.driverTxns.filter(t=>t.driverId===did).forEach(t=>{
@@ -3851,7 +4060,8 @@ function pnl(from, to){
   const byCat = {};
   DB.expenses.filter(e=>inR(e.date)).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
   const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
-  const driverPaid = DB.driverTxns.filter(t=>inR(t.date) && t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
+  const dp = driverPayBreak('', from, to);
+  const driverPaid = dp.paid;      /* unchanged: the same total as before */
   /* Charges add to what you bill, deductions take away. Income is what the
      party is actually billed, so neither belongs in the cost column. */
   const charges    = trips.reduce((s,t)=>s+tripCharges(t),0);
@@ -3870,7 +4080,8 @@ function pnl(from, to){
 
   const freight = freightBase + charges - deductions;
   return {trips, tripCount:trips.length, freight, freightBase, charges, deductions,
-    hire, byCat, expense, driverPaid, costs,
+    hire, byCat, expense, driverPaid,
+    driverSalary:dp.salary, driverAdvance:dp.advance, driverOther:dp.other, costs,
     profit:freight-costs, advances, receipts, adjusted, collected, actual:collected-costs};
 }
 
@@ -4133,7 +4344,9 @@ function viewDashboard(){
   const costItems = (p.hire? [{label:'Market truck hire', value:p.hire}]:[])
 
     .concat(byCat.slice(0,5).map(([c,v])=>({label:c, value:v})))
-    .concat(p.driverPaid? [{label:'Driver payouts', value:p.driverPaid}]:[]);
+    .concat(p.driverSalary?  [{label:'Driver salary', value:p.driverSalary}]:[])
+    .concat(p.driverAdvance? [{label:'Driver advances', value:p.driverAdvance}]:[])
+    .concat(p.driverOther?   [{label:'Other driver pay', value:p.driverOther}]:[]);
 
   /* what needs a decision today, in one line each */
   const attention = [];
@@ -4272,7 +4485,8 @@ function viewInsights(){
     const hire = ts.reduce((s,t)=>s+num(t.hire),0);
     const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from && e.date<=to)
       .reduce((s,e)=>s+num(e.amount),0);
-    return {label:tr.number, trips:ts.length, value:freight-hire-exp, freight};
+    const sal = truckDriverPay(tr.id, from, to);
+    return {label:tr.number, trips:ts.length, value:freight-hire-exp-sal, freight};
   }).filter(x=>x.trips||x.value).sort((a,b)=>b.value-a.value);
 
   const routes = {};
@@ -5753,7 +5967,8 @@ function renderTruckList(){
     const freight = trips.reduce((s,x)=>s+num(x.freight),0);
     const hire = trips.reduce((s,x)=>s+num(x.hire),0);
     const exp = DB.expenses.filter(e=>e.truckId===t.id).reduce((s,e)=>s+num(e.amount),0);
-    return {...t, tripCount:trips.length, freight, hire, exp, net:freight-hire-exp};
+    const sal = truckDriverPay(t.id);
+    return {...t, tripCount:trips.length, freight, hire, exp, sal, net:freight-hire-exp-sal};
   });
   if(sub.type) stats = stats.filter(t=>t.type===sub.type);
   if(q) stats = stats.filter(t=>
@@ -5767,7 +5982,8 @@ function renderTruckList(){
     : stats.length===0 ? empty('No truck matches','Try a different word, or switch back to owned and market.','')
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Truck</th><th>Type</th><th>Driver</th><th class="t-r">Trips</th>'+
-      '<th class="t-r">Freight earned</th><th class="t-r">Hire + expenses</th><th class="t-r">Net</th><th></th></tr></thead><tbody>'+
+      '<th class="t-r">Freight earned</th><th class="t-r">Hire + expenses</th>'+
+      '<th class="t-r">Driver salary</th><th class="t-r">Net</th><th></th></tr></thead><tbody>'+
       stats.map(t=>
         '<tr><td data-label="Truck"><div class="t-strong num">'+esc(t.number)+'</div>'+
           (t.model?'<div class="t-sub">'+esc(t.model)+'</div>':'')+'</td>'+
@@ -5778,12 +5994,15 @@ function renderTruckList(){
         '<td data-label="Trips" class="t-r num">'+t.tripCount+'</td>'+
         '<td data-label="Freight" class="t-r num">'+money(t.freight)+'</td>'+
         '<td data-label="Hire + expenses" class="t-r num">'+money(t.hire+t.exp)+'</td>'+
+        '<td data-label="Driver salary" class="t-r num">'+(t.sal?money(t.sal):'\u2014')+'</td>'+
         '<td data-label="Net" class="t-r num '+(t.net>=0?'money-pos':'money-neg')+'">'+money(t.net)+'</td>'+
         '<td><div class="row-actions">'+
           '<button class="btn btn-sm" onclick="truckForm(\''+t.id+'\')">Edit</button>'+
           '<button class="btn btn-sm btn-danger" onclick="delTruck(\''+t.id+'\')">Delete</button>'+
         '</div></td></tr>').join('')+'</tbody></table></div></div>'+
-      '<div class="note" style="margin-top:14px">Net is freight earned minus hire paid and expenses booked to that truck. Driver salary is not included here — see Reports for the full profit picture.</div>');
+      '<div class="note" style="margin-top:14px">Net is freight earned minus hire paid, expenses booked to that truck, '+
+      'and the driver wages that fall in the days a driver was assigned to it. Wages are split by days when a driver '+
+      'moves between trucks, so the same money is never charged twice.</div>');
 }
 
 let pendingTruckDocs = [];
@@ -5825,6 +6044,33 @@ function paintTruckDocs(){
   clampDates();
 }
 
+/* the dated seats a truck has had, newest first */
+function assignHistoryField(t){
+  const rows = t ? truckAssignments(t.id) : [];
+  if(!rows.length) return '<div class="field"></div>';
+  return '<div class="field full"><label>Driver history</label>'+
+    '<div class="assign-log">'+rows.map(a=>
+      '<div class="assign-row"><span class="assign-who">'+esc(driverName(a.driverId))+'</span>'+
+      '<span class="assign-when">'+(a.from?fdate(a.from):'from the start')+
+        ' \u2192 '+(a.to?fdate(a.to):'now')+'</span>'+
+      (a.to?'':'<span class="chip chip-green">Current</span>')+'</div>').join('')+
+    '</div>'+
+    '<span class="hint">Wages are charged to whichever truck the driver was on at the time, so this '+
+      'record decides where past salary sits. Changing the driver above closes the seat and opens a new one.</span>'+
+  '</div>';
+}
+/* the period follows the payment date until it is set by hand */
+function dtPeriodFollow(){
+  const d = val('dt_date'); if(!d) return;
+  const f = document.getElementById('dt_from'), t = document.getElementById('dt_to');
+  if(!f || !t) return;
+  const wasAuto = !f.dataset.touched && !t.dataset.touched;
+  if(!wasAuto) return;
+  f.value = monthFirst(d); t.value = monthLast(d);
+  if(f.dataset) f.dataset.good = f.value;
+  if(t.dataset) t.dataset.good = t.value;
+}
+
 function truckForm(id, onSaved, preset){
   const t = id ? truckById(id) : null;
   const nest = typeof onSaved === 'function';
@@ -5837,6 +6083,9 @@ function truckForm(id, onSaved, preset){
       fText('t_model','Make & model', t?t.model:'','text','placeholder="Tata 3118, 14 wheeler"')+
       fText('t_capacity','Capacity (tonnes)', t?t.capacity:'','number','step="0.1" min="0"')+
       qSelect('t_driver','Regular driver', 'driver', t?t.driverId:'')+
+      fText('t_driverFrom','Driver assigned from',
+        (t && openAssignment(t.id) && openAssignment(t.id).from) || today(), 'date')+
+      assignHistoryField(t)+
       qSelect('t_supplier','Supplier (for market trucks)', 'supplier', t?t.supplierId:'')+
       fText('t_owner','Owner name (if not a saved supplier)', t?t.owner:'','text','placeholder="For market trucks"')+
       fText('t_ownerPhone','Owner phone', t?t.ownerPhone:'','tel')+
@@ -5866,6 +6115,9 @@ function truckForm(id, onSaved, preset){
         ownerPhone:val('t_ownerPhone'), supplierId:val('t_supplier'), notes:val('t_notes'), docs:docs};
       rec.number = formatPlate(rec.number);
       if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
+      /* the dated log beside the truck's own driverId, so wages can be
+         attributed to whoever was actually driving at the time */
+      setTruckDriver(rec.id, rec.driverId, val('t_driverFrom'));
       dropped.forEach(d=>dropDocExpense(d.id));
       docs.forEach(d=>syncDocExpense(d, rec.id));
       save(); buildDocTypeList(); buildExpCatList();
@@ -6209,29 +6461,39 @@ function tripLabel(tripId){
    ============================================================ */
 function viewDrivers(){
   if(sub.open) return renderDriver(sub.open);
+  const monthPay = driverPayBreak('', thisMonth()+'-01', thisMonth()+'-31');
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="driverForm()">+ <span>New driver</span></button>';
   $('#view').innerHTML =
   '<div class="grid g3" style="margin-bottom:16px">'+
     '<div class="stat accent"><div class="stat-label">Total payable to drivers</div><div class="stat-value">'+money(totalDriverPayable())+'</div></div>'+
     '<div class="stat"><div class="stat-label">Drivers</div><div class="stat-value">'+DB.drivers.length+'</div></div>'+
     '<div class="stat"><div class="stat-label">Paid this month</div><div class="stat-value">'+
-      money(DB.driverTxns.filter(t=>monthKey(t.date)===thisMonth()&&t.type!=='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
+      money(monthPay.paid)+'</div>'+
+      '<div class="stat-note">'+money(monthPay.salary)+' salary \u00b7 '+money(monthPay.advance)+' advance'+
+      (monthPay.other?' \u00b7 '+money(monthPay.other)+' other':'')+'</div></div>'+
   '</div>'+
   (DB.drivers.length===0
     ? empty('No drivers yet','Keep each driver\u2019s salary, advances and payments in one place, so you always know what is owed.',
         '<button class="btn btn-amber" onclick="driverForm()">+ Add your first driver</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
-      '<thead><tr><th>Driver</th><th>Documents</th><th>Phone</th><th>Licence</th><th class="t-r">Trips</th><th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
+      '<thead><tr><th>Driver</th><th>Documents</th><th>Phone</th><th class="t-r">Trips</th>'+
+      '<th class="t-r">Salary paid</th><th class="t-r">Advance paid</th><th class="t-r">Total paid</th>'+
+      '<th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
       DB.drivers.map(d=>{
         const bal = driverBalance(d.id);
+        const pay = driverPayBreak(d.id);
         const trips = DB.trips.filter(t=>t.driverId===d.id).length;
         const dc = docCount(d.docs);
         return '<tr><td onclick="openDriver(\''+d.id+'\')" style="cursor:pointer"><div class="t-strong">'+esc(d.name)+'</div>'+
           (d.salary?'<div class="t-sub">Salary '+money(d.salary)+'/month</div>':'')+'</td>'+
           '<td>'+(dc? '<button class="chip chip-green" style="border:0;cursor:pointer" onclick="showDriverDocs(\''+d.id+'\')">'+dc+' of 3 on file</button>'
                     : '<span class="chip chip-grey">No papers</span>')+'</td>'+
-        '<td data-label="Phone">'+esc(d.phone||'—')+'</td><td data-label="Licence" class="num">'+esc(d.licence||'—')+'</td>'+
+        '<td data-label="Phone">'+esc(d.phone||'—')+
+          (d.licence?'<div class="t-sub num">'+esc(d.licence)+'</div>':'')+'</td>'+
         '<td data-label="Trips" class="t-r num">'+trips+'</td>'+
+        '<td data-label="Salary paid" class="t-r num">'+(pay.salary?money(pay.salary):'—')+'</td>'+
+        '<td data-label="Advance paid" class="t-r num">'+(pay.advance?money(pay.advance):'—')+'</td>'+
+        '<td data-label="Total paid" class="t-r num t-strong">'+money(pay.paid)+'</td>'+
         '<td class="t-r num '+(bal>0?'money-neg':bal<0?'money-pos':'')+'">'+money(Math.abs(bal))+
           '<div class="t-sub">'+(bal>0?'we owe':bal<0?'advance given':'settled')+'</div></td>'+
         '<td><div class="row-actions">'+
@@ -6243,6 +6505,7 @@ function openDriver(id){ route='drivers'; sub={open:id}; window.scrollTo(0,0); b
 
 function renderDriver(did){
   const d = driverById(did); if(!d){ sub={}; return viewDrivers(); }
+  const pay = driverPayBreak(did);
   const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   let run = 0; const all = txns.map(t=>{
     run += t.type==='due'? num(t.amount) : -num(t.amount);
@@ -6257,13 +6520,23 @@ function renderDriver(did){
     '<button class="btn" onclick="sub={};render()">← <span>All drivers</span></button>'+
     '<button class="btn btn-amber" onclick="driverTxnForm(\''+did+'\')">+ <span>Add entry</span></button>';
   $('#view').innerHTML =
-  '<div class="grid g3" style="margin-bottom:16px">'+
+  '<div class="grid g'+(pay.other?5:4)+'" style="margin-bottom:16px">'+
     '<div class="stat"><div class="stat-label">Salary due added</div><div class="stat-value">'+
-      money(txns.filter(t=>t.type==='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
-    '<div class="stat"><div class="stat-label">Total paid out</div><div class="stat-value">'+
-      money(txns.filter(t=>t.type!=='due').reduce((s,t)=>s+num(t.amount),0))+'</div></div>'+
-    '<div class="stat accent '+(bal>0?'neg':'pos')+'"><div class="stat-label">'+(bal>=0?'Balance payable':'Advance recoverable')+'</div>'+
-      '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
+      money(pay.due)+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Total salary paid</div><div class="stat-value">'+
+      money(pay.salary)+'</div></div>'+
+    '<div class="stat"><div class="stat-label">Total advance paid</div><div class="stat-value">'+
+      money(pay.advance)+'</div></div>'+
+    (pay.other?'<div class="stat"><div class="stat-label">Other payments</div><div class="stat-value">'+
+      money(pay.other)+'</div></div>':'')+
+    '<div class="stat"><div class="stat-label">Total paid</div><div class="stat-value">'+
+      money(pay.paid)+'</div><div class="stat-note">salary + advance'+(pay.other?' + other':'')+'</div></div>'+
+  '</div>'+
+  '<div class="grid g'+(pay.other?5:4)+'" style="margin-bottom:16px">'+
+    '<div class="stat accent '+(bal>0?'neg':'pos')+'" style="grid-column:1/-1"><div class="stat-label">'+
+      (bal>=0?'Balance payable':'Advance recoverable')+'</div>'+
+      '<div class="stat-value">'+money(Math.abs(bal))+'</div>'+
+      '<div class="stat-note">salary due '+money(pay.due)+' less '+money(pay.paid)+' paid</div></div>'+
   '</div>'+
   '<div class="toolbar">'+ledgerViewPicker(again, DRIVER_VIEWS)+
     '<button class="btn btn-sm" onclick="printDriverStatement(\''+did+'\')">Print account</button>'+
@@ -6276,17 +6549,36 @@ function renderDriver(did){
       ? empty('Nothing on that side','This account has no '+ledgerViewInfo(null, DRIVER_VIEWS).short.replace(' only','')+' yet.',
           '<button class="btn" onclick="sub.led=\'\';'+again+'">Show everything</button>')
     : '<div class="card"><div class="tbl-wrap"><table>'+
-      '<thead><tr><th>Date</th><th>Entry</th><th class="t-r">Salary due</th><th class="t-r">Paid</th><th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
+      '<thead><tr><th>Date</th><th>Entry</th><th class="t-r">Salary due</th><th class="t-r">Salary paid</th>'+
+      '<th class="t-r">Advance paid</th>'+(pay.other?'<th class="t-r">Other paid</th>':'')+
+      '<th class="t-r">Balance</th><th></th></tr></thead><tbody>'+
       rows.map(t=>'<tr><td style="white-space:nowrap">'+fdate(t.date)+'</td>'+
         '<td><div class="t-strong">'+esc(({due:'Salary due',salary:'Salary paid',advance:'Advance paid',other:'Payment'})[t.type]||'Payment')+'</div>'+
-        (t.note?'<div class="t-sub">'+esc(t.note)+'</div>':'')+'</td>'+
-        '<td class="t-r num">'+(t.type==='due'?money(t.amount):'')+'</td>'+
-        '<td class="t-r num" style="color:var(--green)">'+(t.type!=='due'?money(t.amount):'')+'</td>'+
-        '<td class="t-r num t-strong">'+money(t.running)+'</td>'+
+        (t.note?'<div class="t-sub">'+esc(t.note)+'</div>':'')+
+        (t.type==='due' ? ''
+          : paySplitNote(t)
+            ? '<div class="t-sub">Charged to '+esc(paySplitNote(t))+'</div>'
+            : '<div class="t-sub">Not charged to a truck \u2014 no driver seat covers this period</div>')+
+        '</td>'+
+        '<td data-label="Salary due" class="t-r num">'+(t.type==='due'?money(t.amount):'')+'</td>'+
+        '<td data-label="Salary paid" class="t-r num" style="color:var(--green)">'+
+          (t.type==='salary'?money(t.amount):'')+'</td>'+
+        '<td data-label="Advance paid" class="t-r num" style="color:var(--green)">'+
+          (t.type==='advance'?money(t.amount):'')+'</td>'+
+        (pay.other?'<td data-label="Other paid" class="t-r num" style="color:var(--green)">'+
+          (t.type!=='due'&&t.type!=='salary'&&t.type!=='advance'?money(t.amount):'')+'</td>':'')+
+        '<td data-label="Balance" class="t-r num t-strong">'+money(t.running)+'</td>'+
         '<td><div class="row-actions"><button class="btn btn-sm" onclick="driverTxnForm(\''+did+'\',\''+t.id+'\')">Edit</button>'+
         '<button class="btn btn-sm btn-danger" onclick="delDriverTxn(\''+t.id+'\')">Delete</button></div></td></tr>').join('')+
-      '</tbody></table></div></div>'+
-      '<div class="note" style="margin-top:14px">Only money actually paid out counts as an expense in your profit report. "Salary due" simply records what you still owe.</div>');
+      '</tbody><tfoot><tr><th colspan="2">Totals</th>'+
+        '<th class="t-r num">'+money(pay.due)+'</th>'+
+        '<th class="t-r num">'+money(pay.salary)+'</th>'+
+        '<th class="t-r num">'+money(pay.advance)+'</th>'+
+        (pay.other?'<th class="t-r num">'+money(pay.other)+'</th>':'')+
+        '<th class="t-r num">'+money(pay.paid)+' paid</th><th></th></tr></tfoot>'+
+      '</table></div></div>'+
+      '<div class="note" style="margin-top:14px">Salary and advance are counted separately \u2014 total paid is simply the two '+
+      'added up. Only money actually paid out counts as an expense in your profit report. "Salary due" simply records what you still owe.</div>');
 }
 function showDriverDocs(id){
   const d = driverById(id); if(!d || !d.docs) return;
@@ -6361,15 +6653,23 @@ function driverTxnForm(did, tid){
     title: t?'Edit entry':'Driver account entry', okText: t?'Save changes':'Save entry',
     body:'<div class="form-grid">'+
       fSeg('dt_type','Entry type',[{v:'due',t:'Salary due'},{v:'salary',t:'Salary paid'},{v:'advance',t:'Advance paid'}], t?t.type:'salary')+
-      fText('dt_date','Date', t?t.date:today(),'date')+
+      fText('dt_date','Date paid', t?t.date:today(),'date','onchange="dtPeriodFollow()"')+
       fText('dt_amount','Amount (₹)', t?t.amount:(d&&d.salary?d.salary:''),'number','min="0" step="1"')+
+      fText('dt_from','Period from', t?(t.from||monthFirst(t.date)):monthFirst(today()),'date')+
+      fText('dt_to','Period to', t?(t.to||monthLast(t.date)):monthLast(today()),'date')+
       fText('dt_note','Note', t?t.note:'','text','placeholder="e.g. Salary for July"')+
+      '<div class="field full"><span class="hint">The period decides which truck carries this money. '+
+        'A payment is split across the trucks this driver drove during it, by days \u2014 nothing is '+
+        'recorded twice, and days spent on no truck stay a general cost.</span></div>'+
     '</div>',
     onOk(){
       const amt = num(val('dt_amount'));
       if(amt<=0){ toast('Enter an amount greater than zero'); return; }
+      const from = val('dt_from') || monthFirst(val('dt_date')||today());
+      const to   = val('dt_to')   || monthLast(val('dt_date')||today());
+      if(to < from){ toast('The period ends before it starts'); return; }
       const rec = {id:t?t.id:uid(), driverId:did, date:val('dt_date')||today(),
-        type:checked('dt_type')||'salary', amount:amt, note:val('dt_note')};
+        type:checked('dt_type')||'salary', amount:amt, from, to, note:val('dt_note')};
       if(t) DB.driverTxns[DB.driverTxns.findIndex(x=>x.id===t.id)] = rec; else DB.driverTxns.push(rec);
       save(); closeModal(); renderDriver(did); afterDirectRender(); toast(t?'Entry updated':'Entry saved');
     }
@@ -6924,7 +7224,9 @@ function viewReports(){
       (p.hire? pl('Hire paid to market trucks', p.hire):'')+
 
       exps.map(([c,v])=>pl(c, v)).join('')+
-      (p.driverPaid? pl('Driver salary &amp; advances paid', p.driverPaid):'')+
+      (p.driverSalary? pl('Driver salary paid', p.driverSalary):'')+
+      (p.driverAdvance? pl('Driver advances paid', p.driverAdvance):'')+
+      (p.driverOther? pl('Other driver payments', p.driverOther):'')+
       (p.costs===0? '<div class="pl-line"><span>No costs recorded in this period</span><span class="num">'+money(0)+'</span></div>':'')+
       pl('Total costs', p.costs)+
 
@@ -6979,21 +7281,25 @@ function viewReports(){
       const freight = trips.reduce((s,x)=>s+num(x.freight),0);
       const hire = trips.reduce((s,x)=>s+num(x.hire),0);
       const exp = DB.expenses.filter(e=>e.truckId===t.id && inR(e.date)).reduce((s,e)=>s+num(e.amount),0);
-      return {t, n:trips.length, freight, hire, exp, net:freight-hire-exp};
-    }).filter(r=>r.n||r.exp).sort((a,b)=>b.net-a.net);
+      const sal = truckDriverPay(t.id, sub.from, sub.to);
+      return {t, n:trips.length, freight, hire, exp, sal, net:freight-hire-exp-sal};
+    }).filter(r=>r.n||r.exp||r.sal).sort((a,b)=>b.net-a.net);
     body = rows.length? '<div class="card chart-card" style="margin-bottom:16px">'+
       '<h3 class="chart-title">Net earnings by truck</h3>'+
-      '<div class="chart-sub">After hire and expenses booked to each vehicle</div>'+
+      '<div class="chart-sub">After hire, expenses and driver wages. Open one to see every line behind it.</div>'+
       barList(rows.map(r=>({label:r.t.number, value:r.net, color:r.net>=0?'#2C5D7C':'#B3372C',
-        note:plural(r.n,'trip')+' · '+money(r.freight)+' freight'})))+
+        note:plural(r.n,'trip')+' · '+money(r.freight)+' freight'+(r.sal?' · '+money(r.sal)+' wages':''),
+        go:"truckReport('"+r.t.id+"')"})))+
       '</div>'+
       '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Truck</th><th class="t-r">Trips</th><th class="t-r">Freight</th><th class="t-r">Hire</th>'+
-      '<th class="t-r">Expenses</th><th class="t-r">Net</th></tr></thead><tbody>'+
-      rows.map(r=>'<tr><td><span class="t-strong num">'+esc(r.t.number)+'</span> '+
+      '<th class="t-r">Expenses</th><th class="t-r">Driver salary</th><th class="t-r">Net</th></tr></thead><tbody>'+
+      rows.map(r=>'<tr class="row-link" onclick="truckReport(\''+r.t.id+'\')">'+
+        '<td><span class="t-strong num">'+esc(r.t.number)+'</span> '+
         (r.t.type==='market'?'<span class="chip chip-grey">Market</span>':'')+'</td>'+
         '<td class="t-r num">'+r.n+'</td><td class="t-r num">'+money(r.freight)+'</td>'+
         '<td class="t-r num">'+(r.hire?money(r.hire):'—')+'</td><td class="t-r num">'+money(r.exp)+'</td>'+
+        '<td class="t-r num">'+(r.sal?money(r.sal):'—')+'</td>'+
         '<td class="t-r num '+(r.net>=0?'money-pos':'money-neg')+'">'+money(r.net)+'</td></tr>').join('')+
       '</tbody></table></div></div>'
       : empty('No truck activity','No trips or expenses recorded for your trucks in this period.','');
@@ -7020,6 +7326,168 @@ function viewReports(){
   }
   $('#view').innerHTML = filters + tabs + body;
 }
+/* ------------------------------------------------------------
+   ONE TRUCK, IN FULL
+   The truck-wise report gives a net figure per vehicle. Opening
+   one shows every line that figure was built from — the trips
+   that earned it, the expenses booked to it, and the driver
+   wages it carries — all read from the same data the summary
+   used, over the same date range, so the parts always add up to
+   the total on the report behind it.
+   ------------------------------------------------------------ */
+function truckBreakdown(truckId, from, to){
+  const inR = d => (!from || d>=from) && (!to || d<=to);
+  const trips = DB.trips.filter(x=>x.truckId===truckId && inR(x.date))
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const spends = (DB.expenses||[]).filter(e=>e.truckId===truckId && inR(e.date))
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const wages = truckPaySlices(truckId, from, to);
+  const freight = trips.reduce((n,t)=>n+num(t.freight),0);
+  const hire    = trips.reduce((n,t)=>n+num(t.hire),0);
+  const spend   = spends.reduce((n,e)=>n+num(e.amount),0);
+  const wage    = wages.reduce((n,w)=>n+w.shown,0);
+  return {trips, spends, wages, freight, hire, spend, wage, net: freight-hire-spend-wage};
+}
+function truckReport(truckId){
+  const t = truckById(truckId);
+  if(!t) return;
+  const from = sub.from, to = sub.to;
+  const b = truckBreakdown(truckId, from, to);
+  const cell = (label, value, tone) => '<div><span>'+esc(label)+'</span>'+
+    '<b class="num'+(tone?' '+tone:'')+'">'+money(value)+'</b></div>';
+  const none = what => '<div class="hint" style="padding:10px 2px">Nothing '+what+' in this period.</div>';
+
+  openModal({
+    title: t.number + ' \u2014 earnings and expenses', wide:'full',
+    body:
+    '<div class="trip-totals" style="margin-bottom:16px">'+
+      '<span>'+esc(t.type==='market'?'Market truck':'Owned truck')+
+        (t.driverId?' \u00b7 '+esc(driverName(t.driverId)):'')+'</span>'+
+      '<span style="margin-left:auto">'+fdate(from)+' to '+fdate(to)+'</span>'+
+    '</div>'+
+    '<div class="tr-sum">'+
+      cell('Freight earned', b.freight)+
+      cell('Hire paid', -b.hire)+
+      cell('Expenses booked', -b.spend)+
+      cell('Driver wages', -b.wage)+
+      cell(b.net>=0?'Net earned':'Net loss', Math.abs(b.net), b.net>=0?'money-pos':'money-neg')+
+    '</div>'+
+
+    '<div class="sec-title" style="margin-top:20px">Trips \u2014 what it earned</div>'+
+    (b.trips.length
+      ? '<div class="card"><div class="tbl-wrap"><table>'+
+        '<thead><tr><th>Date</th><th>LR</th><th>Route</th><th>Party</th>'+
+        '<th class="t-r">Freight</th><th class="t-r">Hire</th><th></th></tr></thead><tbody>'+
+        b.trips.map(x=>'<tr>'+
+          '<td data-label="Date" style="white-space:nowrap">'+fdate(x.date)+'</td>'+
+          '<td data-label="LR" class="num">'+esc(x.lr||'\u2014')+'</td>'+
+          '<td data-label="Route" class="t-strong">'+esc((x.from||'?')+' \u2192 '+(x.to||'?'))+'</td>'+
+          '<td data-label="Party">'+esc(partyName(x.partyId))+'</td>'+
+          '<td data-label="Freight" class="t-r num">'+money(x.freight)+'</td>'+
+          '<td data-label="Hire" class="t-r num">'+(num(x.hire)?money(x.hire):'\u2014')+'</td>'+
+          '<td><button class="btn btn-sm" onclick="closeModal();tripDetail(\''+x.id+'\')">Open</button></td>'+
+        '</tr>').join('')+
+        '</tbody><tfoot><tr><th colspan="4">'+plural(b.trips.length,'trip')+'</th>'+
+        '<th class="t-r num">'+money(b.freight)+'</th>'+
+        '<th class="t-r num">'+(b.hire?money(b.hire):'\u2014')+'</th><th></th></tr></tfoot>'+
+        '</table></div></div>'
+      : none('was moved'))+
+
+    '<div class="sec-title" style="margin-top:20px">Expenses booked to this truck</div>'+
+    (b.spends.length
+      ? '<div class="card"><div class="tbl-wrap"><table>'+
+        '<thead><tr><th>Date</th><th>Category</th><th>Details</th><th>Mode</th>'+
+        '<th class="t-r">Amount</th><th></th></tr></thead><tbody>'+
+        b.spends.map(e=>'<tr>'+
+          '<td data-label="Date" style="white-space:nowrap">'+fdate(e.date)+'</td>'+
+          '<td data-label="Category"><span class="chip chip-grey">'+esc(e.category)+'</span></td>'+
+          '<td data-label="Details">'+esc(e.note||'\u2014')+
+            (e.tripId?'<div class="t-sub">'+esc(tripLabel(e.tripId))+'</div>':'')+
+            (e.docId?'<div class="t-sub">On a truck document</div>':'')+
+            (e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
+          '<td data-label="Mode">'+esc(e.mode||'Cash')+
+            (e.mode==='Credit'&&e.shopId?'<div class="t-sub">'+esc(shopName(e.shopId))+'</div>':'')+'</td>'+
+          '<td data-label="Amount" class="t-r num t-strong">'+money(e.amount)+'</td>'+
+          '<td><button class="btn btn-sm" onclick="closeModal();go(\'expenses\');expenseForm(\''+e.id+'\')">Open</button></td>'+
+        '</tr>').join('')+
+        '</tbody><tfoot><tr><th colspan="4">'+plural(b.spends.length,'expense')+'</th>'+
+        '<th class="t-r num">'+money(b.spend)+'</th><th></th></tr></tfoot>'+
+        '</table></div></div>'
+      : none('was booked to it'))+
+
+    '<div class="sec-title" style="margin-top:20px">Driver wages carried</div>'+
+    (b.wages.length
+      ? '<div class="card"><div class="tbl-wrap"><table>'+
+        '<thead><tr><th>Driver</th><th>Period on this truck</th><th class="t-r">Days</th>'+
+        '<th>Paid on</th><th class="t-r">Share</th><th></th></tr></thead><tbody>'+
+        b.wages.map(w=>{
+          const txn = (DB.driverTxns||[]).find(x=>x.id===w.txnId) || {};
+          return '<tr>'+
+          '<td data-label="Driver" class="t-strong">'+esc(driverName(w.driverId))+'</td>'+
+          '<td data-label="Period">'+fdate(w.cFrom)+' to '+fdate(w.cTo)+
+            '<div class="t-sub">'+
+              ((w.cFrom!==w.wFrom || w.cTo!==w.wTo) && (w.wFrom!==w.period.from || w.wTo!==w.period.to)
+                ? 'on this truck '+fdate(w.wFrom)+' \u2013 '+fdate(w.wTo)+', '
+                : '')+
+              'of '+fdate(w.period.from)+' \u2013 '+fdate(w.period.to)+
+              ', '+money(txn.amount)+' paid</div></td>'+
+          '<td data-label="Days" class="t-r num">'+w.days+'</td>'+
+          '<td data-label="Paid on" style="white-space:nowrap">'+fdate(txn.date)+'</td>'+
+          '<td data-label="Share" class="t-r num t-strong">'+money(w.shown)+'</td>'+
+          '<td><button class="btn btn-sm" onclick="closeModal();openDriver(\''+w.driverId+'\')">Open</button></td>'+
+        '</tr>';}).join('')+
+        '</tbody><tfoot><tr><th colspan="4">'+plural(b.wages.length,'share')+'</th>'+
+        '<th class="t-r num">'+money(b.wage)+'</th><th></th></tr></tfoot>'+
+        '</table></div></div>'+
+        '<div class="note" style="margin-top:12px">A wage is split across the trucks a driver drove during the '+
+        'period it covers, by days. Only the share of each payment that falls on this truck is counted here.</div>'
+      : none('was charged in wages'))+
+
+    '<div class="toolbar" style="margin-top:18px;margin-bottom:0">'+
+      '<button class="btn" onclick="printTruckReport(\''+truckId+'\')">Print this breakdown</button>'+
+    '</div>'
+  });
+}
+function printTruckReport(truckId){
+  const t = truckById(truckId); if(!t) return;
+  const from = sub.from, to = sub.to;
+  const b = truckBreakdown(truckId, from, to);
+  printDoc(
+    printHead('Truck statement', t.number, [
+      ['Truck', esc(t.number)],
+      ['Type', t.type==='market'?'Market':'Owned'],
+      t.driverId ? ['Driver', esc(driverName(t.driverId))] : null,
+      ['Period', fdate(from)+' to '+fdate(to)]
+    ])+
+    '<h2 class="pr-h2">Trips</h2>'+
+    printTable([{label:'Date', w:'13%'},{label:'LR', w:'12%'},{label:'Route'},{label:'Party', w:'20%'},
+      {label:'Freight', right:true, w:'15%'},{label:'Hire', right:true, w:'13%'}],
+      b.trips.map(x=>[fdate(x.date), esc(x.lr||'—'), esc((x.from||'?')+' to '+(x.to||'?')),
+        esc(partyName(x.partyId)), money(x.freight), num(x.hire)?money(x.hire):'']),
+      ['Totals','','','', money(b.freight), money(b.hire)])+
+    '<h2 class="pr-h2">Expenses booked to this truck</h2>'+
+    printTable([{label:'Date', w:'14%'},{label:'Category', w:'22%'},{label:'Details'},
+      {label:'Amount', right:true, w:'18%'}],
+      b.spends.map(e=>[fdate(e.date), esc(e.category), esc(e.note||''), money(e.amount)]),
+      ['Total','','', money(b.spend)])+
+    '<h2 class="pr-h2">Driver wages carried</h2>'+
+    printTable([{label:'Driver', w:'26%'},{label:'Period on this truck'},{label:'Days', right:true, w:'12%'},
+      {label:'Share', right:true, w:'20%'}],
+      b.wages.map(w=>[esc(driverName(w.driverId)), fdate(w.cFrom)+' to '+fdate(w.cTo),
+        String(w.days), money(w.shown)]),
+      ['Total','','', money(b.wage)])+
+    printSummary([
+      ['Freight earned', money(b.freight)],
+      ['Hire paid', money(b.hire)],
+      ['Expenses booked', money(b.spend)],
+      ['Driver wages', money(b.wage)],
+      [(b.net>=0?'Net earned':'Net loss'), money(Math.abs(b.net)), true]
+    ])+
+    printSign('Driver wages are the share of each payment that falls on the days this driver was assigned to this truck.'),
+    fileStem('truck', t.number)
+  );
+}
+
 function pl(label, v){ return '<div class="pl-line"><span>'+label+'</span><span class="num">'+money(v)+'</span></div>'; }
 /* ============================================================
    SETTINGS, BACKUP, SAMPLE DATA
@@ -7098,7 +7566,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.12</b>, built 28 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.15</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 function saveSettings(){
@@ -7396,6 +7864,7 @@ function printPayableStatement(kind, sid){
 function printDriverStatement(did){
   const d = driverById(did); if(!d) return;
   const view = ledgerViewInfo(null, DRIVER_VIEWS);
+  const brk = driverPayBreak(did);
   const txns = DB.driverTxns.filter(t=>t.driverId===did).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   let run = 0;
   const lines = txns.map(t=>{
@@ -7405,7 +7874,10 @@ function printDriverStatement(did){
   const shown = ledgerFilter(lines);
   const rows = shown.map(x=>[ fdate(x.t.date),
       ({due:'Salary due', salary:'Salary paid', advance:'Advance paid'})[x.t.type] || 'Payment',
-      esc(x.t.note||''), x.debit?money(x.debit):'', x.credit?money(x.credit):'', money(x.running) ]);
+      esc(x.t.note||''), x.debit?money(x.debit):'',
+      x.t.type==='salary'?money(x.t.amount):'',
+      (x.t.type!=='due' && x.t.type!=='salary')?money(x.t.amount):'',
+      money(x.running) ]);
   const due = txns.filter(t=>t.type==='due').reduce((s,t)=>s+num(t.amount),0);
   const out = txns.filter(t=>t.type!=='due').reduce((s,t)=>s+num(t.amount),0);
   const shownD = shown.reduce((a,x)=>a+x.debit,0);
@@ -7419,15 +7891,23 @@ function printDriverStatement(did){
       view.k ? ['Showing', esc(view.label)] : null,
       view.k ? ['Entries', shown.length+' of '+lines.length] : null
     ])+
-    printTable([{label:'Date', w:'14%'},{label:'Entry', w:'18%'},{label:'Note'},
-      {label:'Salary due', right:true, w:'14%'},{label:'Paid', right:true, w:'14%'},{label:'Balance', right:true, w:'14%'}],
-      rows, [view.k?'Totals shown':'Totals','','', money(shownD), money(shownC), money(due-out)])+
+    printTable([{label:'Date', w:'13%'},{label:'Entry', w:'16%'},{label:'Note'},
+      {label:'Salary due', right:true, w:'13%'},{label:'Salary paid', right:true, w:'13%'},
+      {label:'Advance paid', right:true, w:'13%'},{label:'Balance', right:true, w:'13%'}],
+      rows, [view.k?'Totals shown':'Totals','','', money(shownD),
+        money(shown.filter(x=>x.t.type==='salary').reduce((n,x)=>n+num(x.t.amount),0)),
+        money(shown.filter(x=>x.t.type!=='due'&&x.t.type!=='salary').reduce((n,x)=>n+num(x.t.amount),0)),
+        money(due-out)])+
     printSummary([
       ['Salary due to date', money(due)],
-      ['Total paid', money(out)],
+      ['Total salary paid', money(brk.salary)],
+      ['Total advance paid', money(brk.advance)],
+      brk.other ? ['Other payments', money(brk.other)] : null,
+      ['Total paid', money(brk.paid)],
       [(due-out)>=0?'Balance payable':'Advance recoverable', money(Math.abs(due-out)), true]
     ])+
-    printSign('Only money actually paid is counted as an expense in the accounts.'+
+    printSign('Salary and advance are counted separately and only added together to state the total paid. '+
+      'Only money actually paid is counted as an expense in the accounts.'+
       (view.k ? ' This account lists '+view.short+'; the summary and the closing balance cover everything.' : '')),
     fileStem('driver', d.name)
   );
@@ -7520,7 +8000,9 @@ function printReport(){
   const period = rangeCaption();
   const costRows = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>[esc(c), money(v)]);
   if(p.hire) costRows.unshift(['Hire paid to market trucks', money(p.hire)]);
-  if(p.driverPaid) costRows.push(['Driver salary and advances paid', money(p.driverPaid)]);
+  if(p.driverSalary)  costRows.push(['Driver salary paid', money(p.driverSalary)]);
+  if(p.driverAdvance) costRows.push(['Driver advances paid', money(p.driverAdvance)]);
+  if(p.driverOther)   costRows.push(['Other driver payments', money(p.driverOther)]);
   printDoc(
     printHead('Profit and loss statement', period, [
       ['Period', period], ['Trips', String(p.tripCount)]
@@ -9066,7 +9548,9 @@ function barList(items, opts={}){
   return items.map((it,i)=>{
     const pct = Math.abs(num(it.value))/max*100;
     const col = it.color || (opts.color || SERIES[0]);
-    return '<div class="bar-row">'+
+    const go = it.go ? ' onclick="'+esc(it.go).replace(/&quot;/g,'&#34;')+'" role="button" tabindex="0"'+
+      ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}"' : '';
+    return '<div class="bar-row'+(it.go?' bar-link':'')+'"'+go+'>'+
       '<div class="bar-head"><span class="bar-name">'+esc(it.label)+'</span>'+
         '<span class="bar-val">'+(it.display || money(it.value))+'</span></div>'+
       '<div class="bar-track"><div class="bar-fill" style="width:'+pct.toFixed(1)+'%;background:'+col+';animation-delay:'+(i*0.06)+'s"></div></div>'+
@@ -9620,6 +10104,7 @@ buildPlaceList();
 buildDocTypeList();
 migrateAdvances();
 migrateTrucks();
+migrateAssignments();
 /* Sample data is only ever created on a device with no cloud project, and
    only on the very first run. Otherwise a blank device could seed itself and
    then overwrite real records in the cloud. Load it by hand from Settings. */
