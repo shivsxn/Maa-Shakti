@@ -819,6 +819,7 @@ textarea {
 
 .x {
   margin-left: auto;
+  flex: 0 0 auto;
   background: none;
   border: 0;
   font-size: 24px;
@@ -2481,6 +2482,23 @@ tbody tr {
   margin-bottom: 9px;
 }
 
+/* the route alone does not say which vehicle you are editing */
+.title-truck {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--ink);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 .trip-pane {
   min-height: 140px;
 }
@@ -2544,6 +2562,7 @@ tbody tr {
   .kpi{min-height:84px}
   .hero{padding:16px 18px}
   .chart-card{padding:12px 13px}
+  .title-truck{margin-left:7px;padding:1px 7px;font-size:11.5px}
 }
 @media (max-width:760px)  { .grid.g5{grid-template-columns:repeat(2,1fr)} }
 
@@ -3495,7 +3514,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.21 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.22 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3774,8 +3793,11 @@ function dpPick(iso){
   closeDatePicker();
   el.value = iso;
   el.dataset.good = iso;
+  delete el.dataset.pending;
   el.dispatchEvent(new Event('input', {bubbles:true}));
+  dpCommitting = true;
   el.dispatchEvent(new Event('change', {bubbles:true}));
+  dpCommitting = false;
 }
 function dpClear(){
   const el = dpEl;
@@ -3783,8 +3805,11 @@ function dpClear(){
   closeDatePicker();
   el.value = '';
   el.dataset.good = '';
+  delete el.dataset.pending;
   el.dispatchEvent(new Event('input', {bubbles:true}));
+  dpCommitting = true;
   el.dispatchEvent(new Event('change', {bubbles:true}));
+  dpCommitting = false;
 }
 function placeDatePicker(){
   if(!dpEl || !dpOpen()) return;
@@ -3817,24 +3842,68 @@ function manageDate(el){
   el.addEventListener('keydown', e=>{
     if(e.altKey && e.key==='ArrowDown'){ e.preventDefault(); openDatePicker(el); }
     else if(e.key==='Escape') closeDatePicker();
-  });
-  /* A typed date is held to the same bounds the calendar offers */
-  el.addEventListener('change', ()=>{
-    const v = el.value;
-    if(!v){ el.dataset.good = ''; return; }
-    const min = el.getAttribute('min') || DATE_MIN, max = el.getAttribute('max') || DATE_MAX;
-    if(v < min || v > max){
-      toast('That date is outside '+fdate(min)+' to '+fdate(max));
-      el.value = el.dataset.good || '';
-      return;
-    }
-    el.dataset.good = v;
+    /* Enter is how you say you have finished typing a date */
+    else if(e.key==='Enter'){ closeDatePicker(); commitDate(el); }
   });
   /* tabbing away shuts it; a click into the year box does not, so the
      check waits a tick for the focus to land where it is going */
   el.addEventListener('blur', ()=>{
+    commitDate(el);
     setTimeout(()=>{ if(dpEl === el && !dpHasFocus()) closeDatePicker(); }, 0);
   });
+}
+
+/* ------------------------------------------------------------
+   A date box fires `change` the moment all three of its segments
+   hold something, so a year typed digit by digit arrives as 0002,
+   then 0020, then 0202 long before it is ever 2026. Every one of
+   those is a change event, and a field whose handler saves and
+   redraws — the delivery dates, the list filters, the report range
+   — would rebuild the screen underneath the box being typed into,
+   taking the half-typed year and the keyboard focus with it.
+
+   So a typed date is held: the event is caught before it reaches
+   the field and parked. It is released once, on the way out of the
+   field, and only if what is there is a real date inside the
+   field's own bounds. Picking from the calendar is a finished
+   choice already and goes straight through.
+   ------------------------------------------------------------ */
+let dpCommitting = false;
+function dateUsable(el){
+  const v = el.value;
+  if(!v) return true;                       /* cleared is a real edit too */
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const min = el.getAttribute('min') || DATE_MIN, max = el.getAttribute('max') || DATE_MAX;
+  return v >= min && v <= max;
+}
+function isDateField(el){
+  return !!el && el.tagName === 'INPUT' && el.type === 'date';
+}
+document.addEventListener('change', e=>{
+  if(!isDateField(e.target) || dpCommitting) return;
+  e.stopPropagation();                      /* held until the field is left */
+  e.target.dataset.pending = '1';
+}, true);
+function commitDate(el){
+  if(!el || !el.dataset.pending) return;
+  delete el.dataset.pending;
+  /* typed back to what it already was: no edit, so nothing to redraw */
+  if(el.value === (el.dataset.good || '')) return;
+  if(!dateUsable(el)){
+    const min = el.getAttribute('min') || DATE_MIN, max = el.getAttribute('max') || DATE_MAX;
+    toast('That date is outside '+fdate(min)+' to '+fdate(max));
+    el.value = el.dataset.good || '';
+    return;
+  }
+  el.dataset.good = el.value;
+  dpCommitting = true;
+  el.dispatchEvent(new Event('change', {bubbles:true}));
+  dpCommitting = false;
+}
+/* Replacing markup that has not changed destroys live elements for no
+   reason — the button a click is halfway through, most of all. */
+function setHtml(el, html){
+  if(el && el.innerHTML !== html) el.innerHTML = html;
 }
 document.addEventListener('mousedown', e=>{
   if(!dpOpen()) return;
@@ -5050,6 +5119,18 @@ function buildLineLabels(){
   dl.innerHTML = used.concat(common).map(v=>'<option value="'+esc(v)+'"></option>').join('');
 }
 
+/* A truck leaves from wherever it last arrived, so a new trip opens with
+   From already filled from the most recent trip's To. It is only a
+   starting point — the field is ordinary and can be typed over. */
+function lastTripTo(){
+  let best = null;
+  (DB.trips||[]).forEach((t,i)=>{
+    if(!t || !t.to) return;
+    const k = (t.date||'')+'|'+String(i).padStart(7,'0');
+    if(!best || k > best.k) best = {k, to:t.to};
+  });
+  return best ? best.to : '';
+}
 function blankTrip(){
   return {id:'', date:today(), lr:'', from:'', to:'', partyId:'', truckId:'', driverId:'',
     material:'', weight:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
@@ -5089,7 +5170,7 @@ function repaintTripPane(){
     podSubmittedAt: existing.podSubmittedAt
   });
   pane.innerHTML = tripPaneHtml(tripDraft, existing, tripTab);
-  strip.innerHTML = tabStripHtml(tripDraft, existing);
+  setHtml(strip, tabStripHtml(tripDraft, existing));
   pane.classList.remove('pane-in'); void pane.offsetWidth; pane.classList.add('pane-in');
   fuelDirty = !!(num(tripDraft.fuelAmt) && !(num(tripDraft.fuelQty)>0 && num(tripDraft.fuelRate)>0
     && Math.abs(num(tripDraft.fuelQty)*num(tripDraft.fuelRate) - num(tripDraft.fuelAmt)) < 0.5));
@@ -5208,13 +5289,32 @@ function tripTotalsHtml(t){
     (billed ? '<span>'+(bal>0?'Balance pending':'Settled')+
       ' <b class="'+(bal>0?'money-neg':'money-pos')+'">'+money(Math.abs(bal))+'</b></span>' : '');
 }
+/* The plate rides in the modal's own heading, beside the route, and
+   follows the truck field: pick a different vehicle and the header says
+   so, instead of still naming the one the screen opened on. */
+function refreshTripTitle(){
+  const head = document.querySelector('.overlay .modal-full .modal-title');
+  if(!head || !document.querySelector('.overlay .trip-top')) return;
+  const hid = document.getElementById('f_truck');
+  const id  = (hid && hid.value) || (tripDraft && tripDraft.truckId) || '';
+  const t   = id ? truckById(id) : null;
+  let chip  = head.querySelector('.title-truck');
+  if(!t){ if(chip) chip.remove(); return; }
+  if(!chip){
+    chip = document.createElement('span');
+    chip.className = 'title-truck';
+    head.appendChild(chip);
+  }
+  chip.textContent = t.number;
+}
 function paintTripTotals(){
+  refreshTripTitle();
   if(!tripDraft) return;
   const box = document.getElementById('tripTotals');
-  if(box) box.innerHTML = tripTotalsHtml(tripDraft);
+  if(box) setHtml(box, tripTotalsHtml(tripDraft));
   const strip = document.querySelector('.overlay .trip-tabs');
-  if(strip) strip.innerHTML = tabStripHtml(tripDraft,
-    tripDraft.id ? DB.trips.find(x=>x.id===tripDraft.id) : null);
+  if(strip) setHtml(strip, tabStripHtml(tripDraft,
+    tripDraft.id ? DB.trips.find(x=>x.id===tripDraft.id) : null));
 }
 
 function tripTabList(t, existing){
@@ -5270,6 +5370,7 @@ function tripScreen(id, tab){
   }
   if(!existing && (!tripDraft || tripDraft.id)){
     tripDraft = blankTrip();
+    tripDraft.from = lastTripTo();
     loadTripExpenses('');
   }
   const t = tripDraft;
@@ -7701,7 +7802,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.21</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.22</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
@@ -8612,6 +8713,7 @@ function afterQuickChange(id){
   if(/^tx_s\d+$/.test(id) && typeof readTripExpenses==='function') readTripExpenses();
   if(id==='e_mode' || id==='e_shop' || id==='e_truck') toggleShopField();
   if(id==='f_truck' || id==='f_supplier' || id==='f_party') { if(typeof recalcAdvance==='function') recalcAdvance(); }
+  if(id==='f_truck' && typeof refreshTripTitle==='function') refreshTripTitle();
 }
 /* open a creation form on top of whatever is already open */
 function stackForm(opts, after){
