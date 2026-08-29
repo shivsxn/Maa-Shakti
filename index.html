@@ -3514,7 +3514,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.22 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.23 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5119,18 +5119,6 @@ function buildLineLabels(){
   dl.innerHTML = used.concat(common).map(v=>'<option value="'+esc(v)+'"></option>').join('');
 }
 
-/* A truck leaves from wherever it last arrived, so a new trip opens with
-   From already filled from the most recent trip's To. It is only a
-   starting point — the field is ordinary and can be typed over. */
-function lastTripTo(){
-  let best = null;
-  (DB.trips||[]).forEach((t,i)=>{
-    if(!t || !t.to) return;
-    const k = (t.date||'')+'|'+String(i).padStart(7,'0');
-    if(!best || k > best.k) best = {k, to:t.to};
-  });
-  return best ? best.to : '';
-}
 function blankTrip(){
   return {id:'', date:today(), lr:'', from:'', to:'', partyId:'', truckId:'', driverId:'',
     material:'', weight:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
@@ -5370,7 +5358,6 @@ function tripScreen(id, tab){
   }
   if(!existing && (!tripDraft || tripDraft.id)){
     tripDraft = blankTrip();
-    tripDraft.from = lastTripTo();
     loadTripExpenses('');
   }
   const t = tripDraft;
@@ -7802,7 +7789,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.22</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.23</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
