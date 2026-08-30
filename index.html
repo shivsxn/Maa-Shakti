@@ -3218,7 +3218,13 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .trip-tbl .c-money{width:134px}
 .trip-tbl .c-pay{width:110px}
 .trip-tbl .c-del{width:130px}
-.trip-tbl .c-act{width:84px}
+.trip-tbl .c-act{width:56px}
+
+/* Opening a trip is a click on the row, so the row is what the keyboard
+   lands on — without this, tabbing through the page would skip the list
+   entirely now that the Edit button is gone. */
+.trip-tbl tbody tr:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.trip-tbl tbody tr:focus:not(:focus-visible){outline:none}
 
 /* Below a wide monitor, eight columns of real data stop fitting side by
    side. Rather than push the last one off the edge and make people scroll
@@ -3580,7 +3586,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.24 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.25 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4875,7 +4881,10 @@ function renderTripList(){
       '<th class="c-del">Delivery</th><th class="c-act"></th></tr></thead><tbody>'+
       list.map(t=>{
         const adv = tripAdvance(t), pods = podCount(t.id);
-        return '<tr onclick="tripDetail(\''+t.id+'\')" style="cursor:pointer">'+
+        /* The row is the button now, so it has to answer the keyboard too */
+        const open = 'tripDetail(\''+t.id+'\')';
+        return '<tr tabindex="0" style="cursor:pointer" onclick="'+open+'" '+
+          'onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();'+open+'}">'+
           '<td data-label="Date" class="c-date cell-date">'+fdate(t.date)+
             (t.lr?'<div class="cell-lr">LR '+esc(t.lr)+'</div>':'')+'</td>'+
           '<td data-label="Route" class="c-route">'+routeCell(t)+'</td>'+
@@ -4893,8 +4902,6 @@ function renderTripList(){
           '<td data-label="Delivery" class="c-del">'+stageLine(t)+
             (pods?'<div class="t-sub">'+plural(pods,'page')+' on file</div>':'')+'</td>'+
           '<td class="c-act t-r"><div class="row-actions">'+
-            '<button class="btn btn-sm" onclick="event.stopPropagation();tripForm(\''+t.id+'\')">'+
-              (tripLocked(t)?'View':'Edit')+'</button>'+
             (tripLocked(t) ? ''
               : '<button class="icon-btn" title="Delete this trip" aria-label="Delete this trip" '+
                 'onclick="event.stopPropagation();delTrip(\''+t.id+'\')">'+ICON_TRASH+'</button>')+
@@ -7885,7 +7892,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.24</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.25</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
