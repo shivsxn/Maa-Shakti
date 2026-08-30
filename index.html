@@ -3218,7 +3218,13 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .trip-tbl .c-money{width:134px}
 .trip-tbl .c-pay{width:110px}
 .trip-tbl .c-del{width:130px}
-.trip-tbl .c-act{width:84px}
+.trip-tbl .c-act{width:56px}
+
+/* Opening a trip is a click on the row, so the row is what the keyboard
+   lands on — without this, tabbing through the page would skip the list
+   entirely now that the Edit button is gone. */
+.trip-tbl tbody tr:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.trip-tbl tbody tr:focus:not(:focus-visible){outline:none}
 
 /* Below a wide monitor, eight columns of real data stop fitting side by
    side. Rather than push the last one off the edge and make people scroll
@@ -3580,7 +3586,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.24 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.26 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4768,6 +4774,16 @@ function stageLine(t){
   return '<span class="stage"><span class="stage-dot '+s.chip.replace('chip-','dot-')+'"></span>'+
     esc(s.label)+'</span>';
 }
+/* Under the freight, the line that matters is what is still to come in.
+   It stays muted grey: the payment chip beside it already carries the
+   colour, and a red figure on every unpaid row would put the list back
+   where it started. */
+function balanceNote(t){
+  const b = tripBalance(t);
+  if(b > 0) return money(b)+' due';
+  if(b < 0) return money(Math.abs(b))+' over';
+  return num(t.freight) ? 'settled' : '';
+}
 const ICON_TRASH = '<svg viewBox="0 0 24 24" aria-hidden="true">'+
   '<path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l.9 13h9.2l.9-13M10.5 10v6M13.5 10v6"/></svg>';
 
@@ -4858,6 +4874,7 @@ function renderTripList(){
   if(de) list = list.filter(t=>(t.to||'').toLowerCase().includes(de));
   const tot = list.reduce((s,t)=>s+num(t.freight),0);
   const totHire = list.reduce((s,t)=>s+num(t.hire),0);
+  const totDue = list.reduce((s,t)=>s+Math.max(0, tripBalance(t)),0);
   const full = list.length;
   list = list.slice(0, pageLimit());
   tripNav = list.map(t=>t.id);
@@ -4874,8 +4891,11 @@ function renderTripList(){
       '<th class="c-money t-r">Freight</th><th class="c-pay">Payment</th>'+
       '<th class="c-del">Delivery</th><th class="c-act"></th></tr></thead><tbody>'+
       list.map(t=>{
-        const adv = tripAdvance(t), pods = podCount(t.id);
-        return '<tr onclick="tripDetail(\''+t.id+'\')" style="cursor:pointer">'+
+        const bal = balanceNote(t), pods = podCount(t.id);
+        /* The row is the button now, so it has to answer the keyboard too */
+        const open = 'tripDetail(\''+t.id+'\')';
+        return '<tr tabindex="0" style="cursor:pointer" onclick="'+open+'" '+
+          'onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();'+open+'}">'+
           '<td data-label="Date" class="c-date cell-date">'+fdate(t.date)+
             (t.lr?'<div class="cell-lr">LR '+esc(t.lr)+'</div>':'')+'</td>'+
           '<td data-label="Route" class="c-route">'+routeCell(t)+'</td>'+
@@ -4884,7 +4904,7 @@ function renderTripList(){
             (t.hire?'<div class="t-sub">Hire '+money(t.hire)+'</div>':'')+'</td>'+
           '<td data-label="Freight" class="c-money t-r">'+
             '<div class="money-main num">'+money(t.freight)+'</div>'+
-            (adv?'<div class="money-sub num">'+money(adv)+' advance</div>':'')+'</td>'+
+            (bal?'<div class="money-sub num">'+bal+'</div>':'')+'</td>'+
           '<td data-label="Payment" class="c-pay">'+(tripCompleted(t)
             ? '<span class="chip chip-green">Completed</span>'+
               (tripLocked(t)?'<div class="t-sub lock-note">\u2713 Locked</div>':'')
@@ -4893,8 +4913,6 @@ function renderTripList(){
           '<td data-label="Delivery" class="c-del">'+stageLine(t)+
             (pods?'<div class="t-sub">'+plural(pods,'page')+' on file</div>':'')+'</td>'+
           '<td class="c-act t-r"><div class="row-actions">'+
-            '<button class="btn btn-sm" onclick="event.stopPropagation();tripForm(\''+t.id+'\')">'+
-              (tripLocked(t)?'View':'Edit')+'</button>'+
             (tripLocked(t) ? ''
               : '<button class="icon-btn" title="Delete this trip" aria-label="Delete this trip" '+
                 'onclick="event.stopPropagation();delTrip(\''+t.id+'\')">'+ICON_TRASH+'</button>')+
@@ -4903,7 +4921,9 @@ function renderTripList(){
       '</tbody><tfoot><tr><th colspan="4">'+plural(full,'trip')+
         (activeTripFilters()?' matching':'')+' \u00b7 total freight</th>'+
       '<th class="t-r num" style="font-size:14px;color:var(--ink)">'+money(tot)+'</th>'+
-      '<th colspan="3">'+(totHire?'<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">Hire paid '+money(totHire)+'</span>':'')+'</th></tr></tfoot>'+
+      '<th colspan="3"><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px">'+
+        [totDue?money(totDue)+' still to collect':'', totHire?'Hire paid '+money(totHire):'']
+          .filter(Boolean).join(' \u00b7 ')+'</span></th></tr></tfoot>'+
       '</table></div>'+moreBar(list.length, full, 'renderTripList')+'</div>');
 }
 
@@ -7885,7 +7905,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.24</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.26</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
