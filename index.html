@@ -3586,7 +3586,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.26 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.27 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4682,13 +4682,23 @@ function viewInsights(){
     return {label:tr.number, trips:ts.length, value:freight-hire-exp-sal, freight};
   }).filter(x=>x.trips||x.value).sort((a,b)=>b.value-a.value);
 
+  /* A route is only as good as what it leaves behind. Ranking on freight
+     alone put the long hauls first however much they cost to run, so the
+     hire and the expenses booked to each trip come off first. Indexed
+     once rather than filtered per trip, because this runs over the whole
+     book every time the range changes. */
+  const expOnTrip = {};
+  (DB.expenses||[]).forEach(e=>{
+    if(e.tripId) expOnTrip[e.tripId] = (expOnTrip[e.tripId]||0) + num(e.amount);
+  });
   const routes = {};
   win.forEach(t=>{
     const k = (t.from||'?')+' → '+(t.to||'?');
-    routes[k] = routes[k] || {label:k, n:0, freight:0, margin:0};
-    routes[k].n++; routes[k].freight += num(t.freight); routes[k].margin += num(t.freight)-num(t.hire);
+    const cost = num(t.hire) + (expOnTrip[t.id]||0);
+    const r = routes[k] = routes[k] || {label:k, n:0, freight:0, cost:0, net:0};
+    r.n++; r.freight += num(t.freight); r.cost += cost; r.net += num(t.freight) - cost;
   });
-  const routeRows = Object.values(routes).sort((a,b)=>b.margin-a.margin).slice(0,6);
+  const routeRows = Object.values(routes).sort((a,b)=>b.net-a.net).slice(0,6);
 
   const partyMix = DB.parties.map(p=>({label:p.name,
     value: win.filter(t=>t.partyId===p.id).reduce((s,t)=>s+num(t.freight),0)}))
@@ -4733,16 +4743,24 @@ function viewInsights(){
   '</div>'+
 
   '<div class="card" style="margin-top:14px">'+
-    '<div class="card-head"><h3 class="card-title">Best routes</h3></div>'+
+    '<div class="card-head"><div><h3 class="card-title">Best routes</h3>'+
+      '<div class="chart-sub" style="margin:2px 0 0">Freight less the hire paid and every expense '+
+      'booked to those trips. Ranked by what is left.</div></div></div>'+
     (routeRows.length? '<div class="tbl-wrap"><table>'+
       '<thead><tr><th>Route</th><th class="t-r">Trips</th><th class="t-r">Freight</th>'+
-      '<th class="t-r">After hire</th><th class="t-r">Per trip</th></tr></thead><tbody>'+
+      '<th class="t-r">Hire &amp; expenses</th><th class="t-r">Profit</th>'+
+      '<th class="t-r">Per trip</th></tr></thead><tbody>'+
       routeRows.map(r=>'<tr><td data-label="Route" class="t-strong">'+esc(r.label)+'</td>'+
         '<td data-label="Trips" class="t-r num">'+r.n+'</td>'+
         '<td data-label="Freight" class="t-r num">'+money(r.freight)+'</td>'+
-        '<td data-label="After hire" class="t-r num '+(r.margin>=0?'money-pos':'money-neg')+'">'+money(r.margin)+'</td>'+
-        '<td data-label="Per trip" class="t-r num">'+money(r.margin/r.n)+'</td></tr>').join('')+
-      '</tbody></table></div>'
+        '<td data-label="Hire &amp; expenses" class="t-r num">'+(r.cost?'\u2212 '+money(r.cost):'\u2014')+'</td>'+
+        '<td data-label="Profit" class="t-r num"><b class="'+(r.net>=0?'money-pos':'money-neg')+'">'+
+          money(r.net)+'</b></td>'+
+        '<td data-label="Per trip" class="t-r num">'+money(r.net/r.n)+'</td></tr>').join('')+
+      '</tbody></table>'+
+      '<div class="hint" style="padding:9px 15px 12px">An expense recorded against a truck but not '+
+      'against a trip cannot be traced to a route, so it is not counted here. Driver wages are not '+
+      'either \u2014 they belong to a truck over a period, not to one load.</div></div>'
       : '<div class="empty"><div class="empty-text">Record a few trips and your strongest routes will show up here.</div></div>')+
   '</div>'+
 
@@ -7905,7 +7923,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.26</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.27</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
