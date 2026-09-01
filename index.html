@@ -2546,7 +2546,8 @@ tbody tr {
 }
 
 .form-grid.four {
-  grid-template-columns: repeat(4,1fr);
+  grid-template-columns: repeat(4, minmax(150px, 210px));
+  justify-content: start;
 }
 
 /* a note that belongs to the grid above it, not a cell of its own */
@@ -3481,6 +3482,9 @@ input.dp-input{padding-right:36px;
   background-repeat:no-repeat;background-position:right 10px center;background-size:16px 16px}
 input.dp-input:hover{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E")}
 input.dp-input::-webkit-calendar-picker-indicator{display:none}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
 input.dp-input::-webkit-inner-spin-button,
 input.dp-input::-webkit-clear-button{display:none}
 .dp{position:fixed;z-index:400;width:288px;background:var(--card);color:var(--ink);
@@ -3608,21 +3612,31 @@ input.dp-input::-webkit-clear-button{display:none}
 .exp-entry.on-credit{border-color:var(--amber-line);background:var(--amber-soft)}
 .exp-empty{display:block;padding:2px 0 6px}
 
-/* what it was for, how much, how it was paid — in that order */
-.exp-row{display:grid;grid-template-columns:1fr 150px 140px 30px;gap:9px;align-items:center}
+/* What it was for, how much, how it was paid — in that order, and each
+   box only as wide as the thing it holds. A box sized to the column
+   rather than to its content is what made a nineteen-character category
+   sit in seven hundred pixels, and left the rupee mark stranded at one
+   end of the amount with the digits at the other. 200px takes the
+   longest built-in category, 118 takes ₹1,20,000 in tabular figures,
+   132 takes "Bank transfer". The row is packed from the left and stops
+   where the content stops. */
+.exp-row{display:grid;grid-template-columns:200px 118px 132px 30px;gap:9px;
+  align-items:center;justify-content:start}
 .exp-row input,.exp-row select{padding:8px 10px;font-size:13.5px}
 
 /* the amount is the number being entered, so it is the one that looks
    like money */
 .exp-amt{position:relative}
 .exp-amt input{width:100%;font-family:var(--mono);font-weight:600;text-align:right;
-  padding-right:11px;padding-left:24px}
-.exp-cur{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  padding-right:10px;padding-left:21px}
+.exp-cur{position:absolute;left:9px;top:50%;transform:translateY(-50%);
   color:var(--muted-2);font-size:13px;pointer-events:none}
 
 /* the date and the note are almost always the trip's own date and
-   nothing at all, so they sit quieter and lower */
-.exp-more{display:grid;grid-template-columns:150px 1fr;gap:9px;margin-top:8px}
+   nothing at all, so they sit quieter and lower. The note is the one
+   field here that can genuinely run long, so it may grow — to a point. */
+.exp-more{display:grid;grid-template-columns:132px minmax(220px,360px);gap:9px;
+  margin-top:8px;justify-content:start}
 .exp-more input{padding:6px 10px;font-size:12.5px;height:32px;
   background:var(--bg-2);border-color:transparent;color:var(--muted)}
 .exp-more input:focus{background:var(--card);border-color:var(--accent);color:var(--ink)}
@@ -3708,7 +3722,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.31 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.32 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -8269,7 +8283,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.31</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.32</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
