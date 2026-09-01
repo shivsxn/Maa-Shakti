@@ -3277,6 +3277,14 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .icon-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;
   stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
+/* ---------- the data check ---------- */
+.gap-dot{display:block;width:9px;height:9px;border-radius:50%;margin:0 2px}
+.gap-high{background:var(--red)}
+.gap-med{background:var(--amber)}
+.gap-low{background:#B4AEA0}
+.check-done{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft);
+  display:flex;flex-wrap:wrap;gap:6px 22px;color:var(--muted-2);font-size:12px}
+
 /* ---------- chips: colour means state, nothing else ---------- */
 .chip{border-radius:999px;font-size:11px;font-weight:600;padding:3.5px 10px;letter-spacing:.01em}
 .chip-grey{background:var(--bg-2);color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
@@ -3586,7 +3594,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.28 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.29 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -7540,6 +7548,176 @@ function exportShopLedger(sid){
 /* ============================================================
    REPORTS & P&L
    ============================================================ */
+/* ============================================================
+   DATA CHECK
+   Data health, over in Settings, asks whether anything points at
+   something that no longer exists. This asks a different question:
+   is what IS here complete enough for the numbers to be true?
+
+   A trip with no expenses booked against it does not look broken. It
+   looks profitable. That is the whole problem — the gaps in a freshly
+   entered month all flatter you, so they have to be counted out loud
+   rather than waited for. Every check below names the number it
+   quietly breaks.
+   ============================================================ */
+const GAP_SEV = {high:'Wrong numbers', med:'Missing detail', low:'Nice to have'};
+
+function completeness(from, to){
+  const inRange = t => (t.date||'') >= from && (t.date||'') <= to;
+  const trips = DB.trips.filter(inRange);
+  const exps  = (DB.expenses||[]).filter(inRange);
+
+  const expTrips = new Set();
+  (DB.expenses||[]).forEach(e=>{ if(e.tripId) expTrips.add(e.tripId); });
+
+  const docRows = [];
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>docRows.push({truck:t, doc:d})));
+
+  const bal = allBalances();
+
+  const checks = [
+    {k:'noExpense', sev:'high', kind:'trip',
+     label:'Trips with nothing spent recorded',
+     why:'Profit for the truck and for the route counts only what you booked, so a trip with no diesel, no toll and no labour on it reads as pure profit.',
+     items: trips.filter(t=>!expTrips.has(t.id))},
+
+    {k:'noFreight', sev:'high', kind:'trip',
+     label:'Trips with no freight amount',
+     why:'Earnings are understated and the party is never billed for the load.',
+     items: trips.filter(t=>!num(t.freight))},
+
+    {k:'podPending', sev:'high', kind:'trip',
+     label:'Delivered, paperwork not submitted',
+     why:'Payment usually waits on the POD, so this is money sitting still for a reason you control.',
+     items: trips.filter(t=>t.deliveredAt && !t.podSubmittedAt)},
+
+    {k:'expNoTruck', sev:'high', kind:'expense',
+     label:'Expenses not attached to a truck',
+     why:'They never appear in that truck\u2019s profit, so the fleet looks cheaper to run than it is.',
+     items: exps.filter(e=>!e.truckId)},
+
+    {k:'noDriver', sev:'med', kind:'trip',
+     label:'Trips with no driver',
+     why:'Wages cannot be traced to the loads they were earned on.',
+     items: trips.filter(t=>!t.driverId)},
+
+    {k:'expNoTrip', sev:'med', kind:'expense',
+     label:'Expenses on a truck but not on a trip',
+     why:'They cannot be traced to a route, so Best routes reads better than the truth. Some of these are genuinely fleet costs \u2014 insurance, a service \u2014 and belong here.',
+     items: exps.filter(e=>e.truckId && !e.tripId)},
+
+    {k:'driverNoSalary', sev:'med', kind:'driver',
+     label:'Drivers with no monthly salary set',
+     why:'Salary due cannot be worked out, so their balance and the truck\u2019s wage share are both blank.',
+     items: DB.drivers.filter(d=>!num(d.salary))},
+
+    {k:'truckNoDocs', sev:'med', kind:'truck',
+     label:'Trucks with no papers on record',
+     why:'No expiry warning will ever fire for these vehicles.',
+     items: DB.trucks.filter(t=>!(t.docs||[]).length)},
+
+    {k:'docNoExpiry', sev:'med', kind:'doc',
+     label:'Papers with no expiry date',
+     why:'They sit in the list but can never warn you.',
+     items: docRows.filter(r=>!r.doc.expiry)},
+
+    {k:'noLr', sev:'low', kind:'trip',
+     label:'Trips with no LR number',
+     why:'Nothing to quote back when a party queries the bill.',
+     items: trips.filter(t=>!String(t.lr||'').trim())},
+
+    {k:'partyNoPhone', sev:'low', kind:'party',
+     label:'Parties who owe money with no phone number',
+     why:'No number to call when you are chasing it.',
+     items: DB.parties.filter(p=>num(bal[p.id]) > 0 && !String(p.phone||'').trim())}
+  ];
+
+  /* A trip counts as fully recorded when nothing in the first tier is
+     wrong with it — the tier that changes the money. */
+  const bad = new Set();
+  checks.filter(c=>c.sev==='high' && c.kind==='trip')
+        .forEach(c=>c.items.forEach(t=>bad.add(t.id)));
+  return {trips: trips.length, clean: trips.filter(t=>!bad.has(t.id)).length, checks};
+}
+
+/* one place that knows how to name and how to open each kind of record */
+function gapRow(kind, x){
+  if(kind==='trip')    return {text: fdate(x.date)+' \u00b7 '+esc(x.from||'?')+' \u2192 '+esc(x.to||'?')+
+                                     ' \u00b7 '+esc(truckName(x.truckId)),
+                               note: money(x.freight), go:'tripDetail(\''+x.id+'\')'};
+  if(kind==='expense') return {text: fdate(x.date)+' \u00b7 '+esc(x.category||'Expense')+
+                                     (x.note?' \u00b7 '+esc(x.note):''),
+                               note: money(x.amount), go:'expenseForm(\''+x.id+'\')'};
+  if(kind==='driver')  return {text: esc(x.name), note:'', go:'driverForm(\''+x.id+'\')'};
+  if(kind==='truck')   return {text: esc(x.number), note: esc(x.model||''), go:'truckForm(\''+x.id+'\')'};
+  if(kind==='doc')     return {text: esc(x.truck.number)+' \u00b7 '+esc(x.doc.header||'Paper'),
+                               note:'', go:'truckForm(\''+x.truck.id+'\')'};
+  if(kind==='party')   return {text: esc(x.name), note: money(partyBalance(x.id)),
+                               go:'partyLedger(\''+x.id+'\')'};
+  return {text:'\u2014', note:'', go:''};
+}
+
+function showGap(key){
+  const c = completeness(sub.from, sub.to).checks.find(x=>x.k===key);
+  if(!c || !c.items.length) return;
+  openModal({
+    title: c.label,
+    wide: true,
+    body: '<p class="hint" style="margin:0 0 12px;max-width:640px">'+c.why+'</p>'+
+      '<div class="tbl-wrap"><table><tbody>'+
+      c.items.slice(0,200).map(x=>{
+        const r = gapRow(c.kind, x);
+        return '<tr onclick="closeModal();'+r.go+'" style="cursor:pointer">'+
+          '<td>'+r.text+'</td><td class="t-r num">'+r.note+'</td></tr>';
+      }).join('')+
+      '</tbody></table></div>'+
+      (c.items.length > 200
+        ? '<div class="hint" style="margin-top:10px">Showing the first 200 of '+c.items.length+'.</div>'
+        : '')
+  });
+}
+
+function checkPanel(){
+  const c = completeness(sub.from, sub.to);
+  const open = c.checks.filter(x=>x.items.length);
+  const done = c.checks.filter(x=>!x.items.length);
+  const pct  = c.trips ? Math.round(c.clean / c.trips * 100) : 100;
+  const tone = !c.trips ? '' : pct >= 95 ? 'pos' : pct >= 75 ? '' : 'neg';
+
+  return '<div class="grid g3 rise" style="margin-bottom:16px">'+
+      kpi('Trips fully recorded', c.clean, {fmt:'plain', tone:tone,
+        note: c.trips ? 'of '+plural(c.trips,'trip')+' in this range \u00b7 '+pct+'%'
+                      : 'No trips in this range'})+
+      kpi('Gaps that change the money', open.filter(x=>x.sev==='high')
+            .reduce((s,x)=>s+x.items.length,0), {fmt:'plain', tone:'neg',
+        note:'Freight, spending and paperwork'})+
+      kpi('Everything else', open.filter(x=>x.sev!=='high')
+            .reduce((s,x)=>s+x.items.length,0), {fmt:'plain',
+        note:'Detail worth filling in when you can'})+
+    '</div>'+
+
+    '<div class="card card-pad">'+
+      '<h3 class="card-title" style="margin-bottom:6px">What is missing</h3>'+
+      '<p class="hint" style="margin:0 0 14px;max-width:660px">A trip with no expenses booked against it does not look '+
+        'broken \u2014 it looks profitable. Gaps in a freshly entered month nearly all flatter you, so each one below '+
+        'names the number it quietly breaks. Click a row to see the records and fix them.</p>'+
+      (open.length
+        ? '<div class="tbl-wrap"><table><tbody>'+open.map(x=>
+            '<tr onclick="showGap(\''+x.k+'\')" style="cursor:pointer">'+
+              '<td style="width:1px"><span class="gap-dot gap-'+x.sev+'" title="'+GAP_SEV[x.sev]+'"></span></td>'+
+              '<td><div class="t-strong">'+esc(x.label)+'</div>'+
+                '<div class="t-sub" style="max-width:620px">'+x.why+'</div></td>'+
+              '<td class="t-r num t-strong" style="width:70px">'+x.items.length+'</td>'+
+            '</tr>').join('')+'</tbody></table></div>'
+        : '<div class="hint" style="color:var(--green);font-weight:600">\u2713 Nothing missing in this range. '+
+          'Every number on the other tabs is standing on complete data.</div>')+
+      (done.length
+        ? '<div class="check-done">'+done.map(x=>
+            '<div>\u2713 '+esc(x.label.charAt(0).toLowerCase()+x.label.slice(1))+' \u2014 none</div>').join('')+'</div>'
+        : '')+
+    '</div>';
+}
+
 function viewReports(){
   defaultRange('month');
   if(!sub.tab) sub.tab = 'pnl';
@@ -7549,11 +7727,13 @@ function viewReports(){
   const filters = rangeBar('reports');
 
   const tabs = '<div class="tabs">'+
-    [['pnl','Profit & Loss'],['party','Party dues'],['truck','Truck-wise'],['expense','Expense split']]
+    [['pnl','Profit & Loss'],['party','Party dues'],['truck','Truck-wise'],['expense','Expense split'],
+     ['check','Data check']]
     .map(([id,l])=>'<button class="tab'+(sub.tab===id?' on':'')+'" onclick="sub.tab=\''+id+'\';viewReports();animateCounts()">'+l+'</button>').join('')+'</div>';
 
   let body = '';
-  if(sub.tab==='pnl'){
+  if(sub.tab==='check'){ body = checkPanel(); }
+  else if(sub.tab==='pnl'){
     const exps = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
     const trend = seriesForRange(sub.from, sub.to);
     body =
@@ -7931,7 +8111,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.28</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.29</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
