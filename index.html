@@ -3620,9 +3620,12 @@ input.dp-input::-webkit-clear-button{display:none}
    longest built-in category, 118 takes ₹1,20,000 in tabular figures,
    132 takes "Bank transfer". The row is packed from the left and stops
    where the content stops. */
-.exp-row{display:grid;grid-template-columns:200px 118px 132px 30px;gap:9px;
-  align-items:center;justify-content:start}
+.exp-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
 .exp-row input,.exp-row select{padding:8px 10px;font-size:13.5px}
+.exp-row .exp-what{flex:0 0 200px}
+.exp-row .exp-amt{flex:0 0 118px}
+.exp-row .exp-mode{flex:0 0 132px}
+.exp-row .icon-btn{flex:0 0 30px}
 
 /* the amount is the number being entered, so it is the one that looks
    like money */
@@ -3640,8 +3643,11 @@ input.dp-input::-webkit-clear-button{display:none}
 .exp-more input{padding:6px 10px;font-size:12.5px;height:32px;
   background:var(--bg-2);border-color:transparent;color:var(--muted)}
 .exp-more input:focus{background:var(--card);border-color:var(--accent);color:var(--ink)}
-.field.exp-credit{max-width:440px;margin:0 0 10px}
-.field.exp-credit[hidden]{display:none}
+.exp-row .exp-shop{flex:0 0 196px;margin:0;gap:4px}
+.exp-row .exp-shop[hidden]{display:none}
+/* if it is left empty on save, the reason appears under it and the row
+   grows by one line — which is the one time it should */
+.exp-row .exp-shop .field-bad-note{white-space:normal}
 
 /* ---------- a trip that has finished and locked itself ---------- */
 .trip-lock{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;margin:0 0 14px;
@@ -3700,11 +3706,12 @@ tr.row-link:hover td{background:var(--bg-2)}
 @media (max-width:640px){ .renew-now{grid-template-columns:1fr} }
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 @media (max-width:760px){
-  .exp-row{grid-template-columns:1fr 1fr;gap:8px}
-  .exp-row .exp-what{grid-column:1/-1}
-  .exp-row .icon-btn{justify-self:end}
+  .exp-row{gap:8px}
+  .exp-row .exp-what{flex:1 1 100%}
+  .exp-row .exp-amt{flex:1 1 110px}
+  .exp-row .exp-mode{flex:1 1 130px}
+  .exp-row .exp-shop{flex:1 1 100%}
   .exp-more{grid-template-columns:1fr}
-  .field.exp-credit{max-width:none}
 }
 
 </style>
@@ -3722,7 +3729,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.32 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.33 &middot; 01 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5274,10 +5281,21 @@ function tripExpenseRow(x, i){
       '<div class="exp-amt"><span class="exp-cur">\u20b9</span>'+
         '<input id="tx_a'+i+'" type="number" min="0" step="1" value="'+(num(x.amount)||'')+'" '+
           'placeholder="0" oninput="readTripExpenses()"></div>'+
-      '<select id="tx_m'+i+'" onchange="tripExpMode('+i+')">'+
+      '<select id="tx_m'+i+'" class="exp-mode" onchange="tripExpMode('+i+')">'+
         EXP_MODES.map(m=>'<option value="'+m.v+'"'+(m.v===(x.mode||'Cash')?' selected':'')+'>'+
           esc(m.t)+'</option>').join('')+
       '</select>'+
+      /* Credit needs a shop, so the picker rides in the same row rather
+         than opening a block of its own underneath. A flex child that is
+         hidden takes no room at all, which a grid track would. */
+      '<div class="field exp-shop" id="txshop'+i+'"'+(credit?'':' hidden')+'>'+
+        '<select id="tx_s'+i+'" aria-label="Shop this credit is with" '+
+          'title="Taken on credit, so this goes into the shop\u2019s ledger as money you owe" '+
+          'onchange="quickPick(\'tx_s'+i+'\',\'shop\')">'+
+          quickOptions('shop').map(o=>'<option value="'+esc(o.v)+'"'+
+            (String(o.v)===String(x.shopId||'')?' selected':'')+'>'+esc(o.t)+'</option>').join('')+
+        '</select>'+
+      '</div>'+
       '<button type="button" class="icon-btn" title="Remove this expense" '+
         'aria-label="Remove this expense" onclick="removeTripExpense('+i+')">'+ICON_TRASH+'</button>'+
     '</div>'+
@@ -5285,14 +5303,6 @@ function tripExpenseRow(x, i){
       '<input id="tx_d'+i+'" type="date" value="'+esc(x.date||'')+'" onchange="readTripExpenses()">'+
       '<input id="tx_n'+i+'" value="'+esc(x.note||'')+'" placeholder="Any detail worth keeping" '+
         'oninput="readTripExpenses()">'+
-    '</div>'+
-    '<div class="field exp-credit" id="txshop'+i+'"'+(credit?'':' hidden')+'>'+
-      '<label for="tx_s'+i+'">Shop <span style="color:var(--red)">*</span></label>'+
-      '<select id="tx_s'+i+'" onchange="quickPick(\'tx_s'+i+'\',\'shop\')">'+
-        quickOptions('shop').map(o=>'<option value="'+esc(o.v)+'"'+
-          (String(o.v)===String(x.shopId||'')?' selected':'')+'>'+esc(o.t)+'</option>').join('')+
-      '</select>'+
-      '<span class="hint">Taken on credit, so this goes into the shop\u2019s ledger as money you owe.</span>'+
     '</div>'+
   '</div>';
 }
@@ -8283,7 +8293,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.32</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.33</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
