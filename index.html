@@ -3586,7 +3586,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.27 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.28 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4879,7 +4879,15 @@ function renderTripList(){
   const lr = (sub.lr||'').toLowerCase().trim();
   const og = (sub.origin||'').toLowerCase().trim();
   const de = (sub.dest||'').toLowerCase().trim();
-  let list = DB.trips.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  /* Newest first, and within one date the one entered last comes first —
+     after a day of loading you look at what you just typed, not at what
+     you typed this morning. An id is Date.now() in base 36 followed by
+     noise, and that timestamp is eight characters wide from 1972 to 2059,
+     so comparing ids as text compares the moment they were created. That
+     survives a restore, a repair and a sync merge, none of which keep the
+     order of the array. Only this screen sorts this way. */
+  let list = DB.trips.slice().sort((a,b)=>
+    (b.date||'').localeCompare(a.date||'') || String(b.id).localeCompare(String(a.id)));
   if(sub.party)  list = list.filter(t=>t.partyId===sub.party);
   if(sub.truck)  list = list.filter(t=>t.truckId===sub.truck);
   if(sub.status) list = list.filter(t=>tripStatus(t)===sub.status);
@@ -7923,7 +7931,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.27</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.28</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
