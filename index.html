@@ -774,6 +774,8 @@ textarea {
   border-radius: var(--r-lg);
   width: 100%;
   max-width: 640px;
+  /* every dialog is the same distance off the top, whatever it holds */
+  margin-block: 0;
   margin: auto;
   box-shadow: 0 30px 70px rgba(17,22,33,.24);
   animation: pop .18s cubic-bezier(.2,.9,.3,1.1);
@@ -3382,6 +3384,8 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 /* ---------- modals ---------- */
 .overlay{background:rgba(17,24,39,.45);backdrop-filter:blur(2px)}
 .modal{border-radius:14px;box-shadow:0 24px 60px -16px rgba(17,24,39,.35);border:1px solid var(--line)}
+.modal-md{max-width:640px}
+.modal-lg{max-width:920px}
 .modal-head{border-bottom:1px solid var(--line-soft);background:var(--card);position:sticky;top:0;z-index:12}
 .modal-foot{background:var(--bg);border-top:1px solid var(--line-soft)}
 
@@ -3589,15 +3593,39 @@ input.dp-input::-webkit-clear-button{display:none}
   font-variant-numeric:tabular-nums}
 
 /* ---------- expenses booked straight onto a trip ---------- */
-.exp-entry{margin-bottom:9px}
-.exp-entry.on-credit{border:1px solid var(--amber-line);background:var(--amber-soft);
-  border-radius:10px;padding:10px 12px 2px;margin-bottom:12px}
-.exp-row{display:grid;grid-template-columns:.8fr 1fr 1.05fr .8fr .65fr auto;gap:9px;
-  align-items:center;margin-bottom:9px}
+/* One tap to say what the money went on */
+.exp-quick{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}
+.exp-quick-label{font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--muted-2);margin-right:2px}
+.exp-chip{border:1px solid var(--line);background:var(--card);color:var(--ink-2);
+  border-radius:999px;padding:5px 12px;font-size:12.5px;font-family:inherit;cursor:pointer;
+  transition:border-color .13s,color .13s,background .13s}
+.exp-chip:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.exp-chip:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-soft),0 0 0 1px var(--accent)}
+
+.exp-entry{border:1px solid var(--line);border-radius:10px;background:var(--card);
+  padding:11px 12px 10px;margin-bottom:9px}
+.exp-entry.on-credit{border-color:var(--amber-line);background:var(--amber-soft)}
+.exp-empty{display:block;padding:2px 0 6px}
+
+/* what it was for, how much, how it was paid — in that order */
+.exp-row{display:grid;grid-template-columns:1fr 150px 140px 30px;gap:9px;align-items:center}
 .exp-row input,.exp-row select{padding:8px 10px;font-size:13.5px}
-.exp-row input[type=number]{font-family:var(--mono)}
-.exp-head{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:2px}
+
+/* the amount is the number being entered, so it is the one that looks
+   like money */
+.exp-amt{position:relative}
+.exp-amt input{width:100%;font-family:var(--mono);font-weight:600;text-align:right;
+  padding-right:11px;padding-left:24px}
+.exp-cur{position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  color:var(--muted-2);font-size:13px;pointer-events:none}
+
+/* the date and the note are almost always the trip's own date and
+   nothing at all, so they sit quieter and lower */
+.exp-more{display:grid;grid-template-columns:150px 1fr;gap:9px;margin-top:8px}
+.exp-more input{padding:6px 10px;font-size:12.5px;height:32px;
+  background:var(--bg-2);border-color:transparent;color:var(--muted)}
+.exp-more input:focus{background:var(--card);border-color:var(--accent);color:var(--ink)}
 .field.exp-credit{max-width:440px;margin:0 0 10px}
 .field.exp-credit[hidden]{display:none}
 
@@ -3658,10 +3686,10 @@ tr.row-link:hover td{background:var(--bg-2)}
 @media (max-width:640px){ .renew-now{grid-template-columns:1fr} }
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 @media (max-width:760px){
-  .exp-head{display:none}
   .exp-row{grid-template-columns:1fr 1fr;gap:8px}
-  .exp-row input:nth-of-type(3){grid-column:1/-1}
-  .exp-row .rmdoc{grid-column:2;justify-self:end}
+  .exp-row .exp-what{grid-column:1/-1}
+  .exp-row .icon-btn{justify-self:end}
+  .exp-more{grid-template-columns:1fr}
   .field.exp-credit{max-width:none}
 }
 
@@ -3680,7 +3708,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.30 &middot; 29 Aug 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.31 &middot; 29 Aug 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4483,12 +4511,20 @@ function restoreModal(vals){
   });
 }
 
+/* There were four widths — 640, 820, 1000 and 1240 — handed out by
+   whoever wrote each form, so two dialogs holding the same kind of thing
+   opened at different sizes. Three now, picked by what is inside: a form
+   you read down, a form with a grid or a table in it, and the trip. */
+function modalSize(wide){
+  if(wide === 'full') return 'full';
+  if(wide === 'xl' || wide === true || wide === 'lg') return 'lg';
+  return 'md';
+}
 function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk, wide}){
   modalOnOk = onOk;
   $('#modalRoot').innerHTML =
     '<div class="overlay" onclick="if(event.target===this)closeModal()">'+
-      '<div class="modal'+(wide==='full'?' modal-full':'')+'" role="dialog" aria-modal="true"'+
-        (wide==='xl'?' style="max-width:1000px"':wide==='full'?'':wide?' style="max-width:820px"':'')+'>'+
+      '<div class="modal modal-'+modalSize(wide)+'" role="dialog" aria-modal="true">'+
         '<div class="modal-head"><h2 class="modal-title">'+esc(title)+'</h2><button class="x" onclick="closeModal()" aria-label="Close">&times;</button></div>'+
         '<div class="modal-body">'+body+'</div>'+
         (onOk ? '<div class="modal-foot"><button class="btn" onclick="closeModal()">Cancel</button>'+
@@ -5199,34 +5235,42 @@ function paintTripExpenses(){
   const box = document.getElementById('tripExpRows');
   if(!box) return;
   buildExpCatList();
-  box.innerHTML = tripExpDraft.length ? '<div class="exp-row exp-head">'+
-      '<span>Date</span><span>What for</span><span>Details</span><span>Mode</span>'+
-      '<span>Amount (₹)</span><span></span>'+
-    '</div>' + tripExpDraft.map(tripExpenseRow).join('')
-    : '<div class="hint">Nothing booked yet \u2014 diesel bought on the road, tolls, loading labour, '+
-      'a roadside repair. Each line is saved into the main <b>Expenses</b> tab against this trip and '+
-      'this truck, so it is counted once and your profit stays right.</div>';
+  box.innerHTML = tripExpDraft.length
+    ? tripExpDraft.map(tripExpenseRow).join('')
+    : '<div class="hint exp-empty">Nothing booked yet \u2014 diesel bought on the road, tolls, loading '+
+      'labour, a roadside repair. Each line is saved into the main <b>Expenses</b> tab against this trip '+
+      'and this truck, so it is counted once and your profit stays right.</div>';
   clampDates();
   recalcTripExpenses();
 }
 /* One line of the trip's expenses. Taken on credit, it grows a shop
    picker underneath, exactly as the Expenses form does — and lands in
    that shop's ledger for the same reason: it is an ordinary expense. */
+/* The row reads the way the line is spoken: what it was for, how much,
+   how it was paid. Date and any detail sit on a quieter second line,
+   because on nearly every line they are the trip's own date and nothing
+   at all. The column header strip is gone with them \u2014 six shouted
+   captions over one row of boxes was most of what made this cluttered. */
 function tripExpenseRow(x, i){
   const credit = (x.mode||'Cash') === 'Credit';
   return '<div class="exp-entry'+(credit?' on-credit':'')+'" id="txrow'+i+'">'+
     '<div class="exp-row">'+
-      '<input id="tx_d'+i+'" type="date" value="'+esc(x.date||'')+'" onchange="readTripExpenses()">'+
-      '<input id="tx_c'+i+'" list="expCatList" value="'+esc(x.category||'')+'" '+
-        'placeholder="Diesel, toll, labour…" oninput="readTripExpenses()">'+
-      '<input id="tx_n'+i+'" value="'+esc(x.note||'')+'" placeholder="Details (optional)" oninput="readTripExpenses()">'+
+      '<input id="tx_c'+i+'" class="exp-what" list="expCatList" value="'+esc(x.category||'')+'" '+
+        'placeholder="What for" oninput="readTripExpenses()">'+
+      '<div class="exp-amt"><span class="exp-cur">\u20b9</span>'+
+        '<input id="tx_a'+i+'" type="number" min="0" step="1" value="'+(num(x.amount)||'')+'" '+
+          'placeholder="0" oninput="readTripExpenses()"></div>'+
       '<select id="tx_m'+i+'" onchange="tripExpMode('+i+')">'+
         EXP_MODES.map(m=>'<option value="'+m.v+'"'+(m.v===(x.mode||'Cash')?' selected':'')+'>'+
           esc(m.t)+'</option>').join('')+
       '</select>'+
-      '<input id="tx_a'+i+'" type="number" min="0" step="1" value="'+(num(x.amount)||'')+'" '+
-        'placeholder="0" oninput="readTripExpenses();recalcTripExpenses()">'+
-      '<button type="button" class="rmdoc" onclick="removeTripExpense('+i+')">Remove</button>'+
+      '<button type="button" class="icon-btn" title="Remove this expense" '+
+        'aria-label="Remove this expense" onclick="removeTripExpense('+i+')">'+ICON_TRASH+'</button>'+
+    '</div>'+
+    '<div class="exp-more">'+
+      '<input id="tx_d'+i+'" type="date" value="'+esc(x.date||'')+'" onchange="readTripExpenses()">'+
+      '<input id="tx_n'+i+'" value="'+esc(x.note||'')+'" placeholder="Any detail worth keeping" '+
+        'oninput="readTripExpenses()">'+
     '</div>'+
     '<div class="field exp-credit" id="txshop'+i+'"'+(credit?'':' hidden')+'>'+
       '<label for="tx_s'+i+'">Shop <span style="color:var(--red)">*</span></label>'+
@@ -5251,6 +5295,7 @@ function tripExpMode(i){
 }
 
 function readTripExpenses(){
+  const before = tripExpenseTotal();
   tripExpDraft = tripExpDraft.map((x,i)=>{
     const d=document.getElementById('tx_d'+i), c=document.getElementById('tx_c'+i),
           n=document.getElementById('tx_n'+i), a=document.getElementById('tx_a'+i),
@@ -5261,15 +5306,19 @@ function readTripExpenses(){
       note:n?n.value.trim():x.note, amount:a?num(a.value):num(x.amount),
       mode: mode, shopId: mode==='Credit' ? shopId : ''};
   });
+  if(tripExpenseTotal() !== before) recalcTripExpenses();
   return tripExpDraft;
 }
-function addTripExpense(){
+function addTripExpense(category){
   readTripExpenses();
-  tripExpDraft.push({id:uid(), date:(tripDraft&&tripDraft.date)||today(), category:'', note:'',
-    amount:0, mode:'Cash', shopId:''});
+  tripExpDraft.push({id:uid(), date:(tripDraft&&tripDraft.date)||today(), category:category||'',
+    note:'', amount:0, mode:'Cash', shopId:''});
   paintTripExpenses();
-  const last = document.getElementById('tx_c'+(tripExpDraft.length-1));
-  if(last) last.focus();
+  /* With the what-for already answered the only thing left is the
+     figure, so that is where the cursor goes. */
+  const i = tripExpDraft.length - 1;
+  const el = document.getElementById(category ? 'tx_a'+i : 'tx_c'+i);
+  if(el) el.focus();
 }
 function removeTripExpense(i){
   readTripExpenses();
@@ -5470,6 +5519,21 @@ function tripMoneyPane(t, existing){
       'onclick="closeModal();partyLedger(\'' + t.partyId + '\')">Open '+esc(partyName(t.partyId))+'\u2019s ledger</button></div>' : '');
 }
 
+/* What a lorry actually spends money on, most used first. The list is
+   learned from the book rather than fixed, so after a month it is your
+   five, not a guess at everybody's. */
+function quickExpCats(){
+  const count = {};
+  (DB.expenses||[]).forEach(e=>{
+    const c = String(e.category||'').trim();
+    if(c) count[c] = (count[c]||0) + 1;
+  });
+  const used = Object.keys(count).sort((a,b)=>count[b]-count[a]).slice(0,5);
+  const fill = ['Fuel / Diesel','Toll & Parking','Loading / unloading','Repairs','Miscellaneous'];
+  fill.forEach(c=>{ if(used.length < 5 && !used.includes(c)) used.push(c); });
+  return used.slice(0,5);
+}
+
 function tripExpensePane(t, existing){
   return '<div class="adv-block">'+
       '<div class="line-head">'+
@@ -5477,6 +5541,14 @@ function tripExpensePane(t, existing){
         '<div class="line-add">'+
           '<button type="button" class="btn btn-sm" onclick="addTripExpense()">+ Add expense</button>'+
         '</div>'+
+      '</div>'+
+      /* One tap fills the what-for and puts the cursor in the amount,
+         because on a trip sheet the category is nearly always one of
+         five and the amount is the only thing you actually know. */
+      '<div class="exp-quick">'+
+        '<span class="exp-quick-label">Quick add</span>'+
+        quickExpCats().map(c=>'<button type="button" class="exp-chip" '+
+          'onclick="addTripExpense('+JSON.stringify(c).replace(/"/g,'&quot;')+')">'+esc(c)+'</button>').join('')+
       '</div>'+
       '<div id="tripExpRows"></div>'+
       '<div class="adv-total"><span>Total advance money</span>'+
@@ -8197,7 +8269,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.30</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.31</b>, built 29 Aug 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
