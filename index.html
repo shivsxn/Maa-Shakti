@@ -3325,6 +3325,34 @@ input.dp-input::-webkit-clear-button{display:none}
 .donut-row .chart{flex:0 0 176px;max-width:176px;margin:0}
 .donut-row .donut-legend{flex:1 1 auto;margin-top:0;min-width:0}
 
+/* The plus is the whole affordance — there is no drop zone sitting
+   there taking up room on the many rows that never get a bill. */
+.clip-add{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 9px;
+  border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;
+  font-family:inherit;font-size:12.5px;cursor:pointer;flex:none;
+  transition:color var(--t-fast),border-color var(--t-fast),background var(--t-fast)}
+.clip-add:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.clip-add:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-soft),0 0 0 1px var(--accent)}
+.clip-add svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.clip-n{min-width:15px;height:15px;padding:0 3px;border-radius:999px;background:var(--accent);
+  color:var(--on-accent);font-size:10px;font-weight:700;display:inline-grid;place-items:center}
+
+/* and what is attached shows only once something is */
+.clip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.clip{display:inline-flex;align-items:center;border:1px solid var(--line);
+  background:var(--bg-2);border-radius:999px;overflow:hidden;max-width:260px}
+.clip-open{display:inline-flex;align-items:center;gap:6px;border:0;background:none;
+  padding:4px 4px 4px 10px;font-family:inherit;font-size:12px;color:var(--ink-2);
+  cursor:pointer;min-width:0}
+.clip-open:hover{color:var(--accent)}
+.clip-open svg{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round}
+.clip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clip-x{border:0;background:none;color:var(--muted-2);cursor:pointer;font-size:15px;
+  line-height:1;padding:4px 9px 5px 5px}
+.clip-x:hover{color:var(--red)}
+
 /* One tap to say what the money went on */
 .exp-quick{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}
 .exp-quick-label{font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;
@@ -3447,7 +3475,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.37 &middot; 01 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.38 &middot; 01 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5067,9 +5095,17 @@ function tripExpenseRow(x, i){
             (String(o.v)===String(x.shopId||'')?' selected':'')+'>'+esc(o.t)+'</option>').join('')+
         '</select>'+
       '</div>'+
+      '<button type="button" class="clip-add" id="clipbtn'+i+'" '+
+        'title="Attach a bill or slip to this line" aria-label="Attach a bill to this line" '+
+        'onclick="document.getElementById(\'txf'+i+'\').click()">'+ICON_PLUS+
+        (attachCount(expKey(x.id)) ? '<b class="clip-n">'+attachCount(expKey(x.id))+'</b>' : '')+
+      '</button>'+
+      '<input type="file" id="txf'+i+'" multiple accept="image/*,.pdf,application/pdf" '+
+        'style="display:none" onchange="attachAdd(\''+expKey(x.id)+'\',this,refreshAttachHost)">'+
       '<button type="button" class="icon-btn" title="Remove this expense" '+
         'aria-label="Remove this expense" onclick="removeTripExpense('+i+')">'+ICON_TRASH+'</button>'+
     '</div>'+
+    attachChips(expKey(x.id), false)+
     '<div class="exp-more">'+
       '<input id="tx_d'+i+'" type="date" value="'+esc(x.date||'')+'" onchange="readTripExpenses()">'+
       '<input id="tx_n'+i+'" value="'+esc(x.note||'')+'" placeholder="Any detail worth keeping" '+
@@ -5117,8 +5153,16 @@ function addTripExpense(category){
 }
 function removeTripExpense(i){
   readTripExpenses();
-  tripExpDraft.splice(i,1);
+  const [gone] = tripExpDraft.splice(i,1);
+  if(gone) dropAttach(expKey(gone.id));
   paintTripExpenses();
+}
+/* one key and everything filed under it */
+function dropAttach(key){
+  if(!key || !DB.attach || !DB.attach[key]) return;
+  DB.attach[key].forEach(a=>dropOriginal(a.origKey));
+  delete DB.attach[key];
+  save();
 }
 function recalcTripExpenses(){
   const out = document.getElementById('f_expTotal');
@@ -5132,6 +5176,7 @@ function syncTripExpenses(tripId, truckId){
   DB.expenses = DB.expenses || [];
   const keep = tripExpDraft.filter(x=>num(x.amount) > 0);
   const ids  = new Set(keep.map(x=>x.id));
+  tripExpDraft.forEach(x=>{ if(!ids.has(x.id)) dropAttach(expKey(x.id)); });
   DB.expenses = DB.expenses.filter(e=>e.tripId!==tripId || ids.has(e.id));
   keep.forEach(x=>{
     const cur = DB.expenses.find(e=>e.id===x.id);
@@ -5273,8 +5318,15 @@ function tripDetailsPane(t){
 }
 
 function tripMoneyPane(t, existing){
+  const aKey = advKey(existing ? existing.id : '');
+  const locked = !!existing && tripLocked(existing);
   return  '<div class="adv-block">'+
-      '<div class="adv-head">Advance</div>'+
+      '<div class="line-head">'+
+        '<div class="adv-head">Advance</div>'+
+        (locked ? '' : '<div class="line-add">'+
+          attachButton(aKey, 'advClip', 'Attach')+'</div>')+
+      '</div>'+
+      attachChips(aKey, locked)+
       '<div class="form-grid four">'+
         fText('f_advCash','Advance amount (₹)', t.advCash||'','number','min="0" step="1" oninput="recalcAdvance()"')+
         fText('f_fuelQty','Fuel quantity (litres)', t.fuelQty,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
@@ -5461,6 +5513,7 @@ function tripScreen(id, tab){
   }
   if(!existing && (!tripDraft || tripDraft.id)){
     tripDraft = blankTrip();
+    pendingAdvAttach = [];
     loadTripExpenses('');
   }
   const t = tripDraft;
@@ -5569,6 +5622,12 @@ function saveTripScreen(existing, quiet){
     const tr = truckById(rec.truckId);
     if(tr && tr.type==='market' && tr.supplierId) rec.supplierId = tr.supplierId;
   }
+  /* slips added before the trip had an id are filed against it now */
+  if(pendingAdvAttach.length){
+    DB.attach = DB.attach || {};
+    DB.attach[advKey(rec.id)] = attachList(advKey(rec.id)).concat(pendingAdvAttach);
+    pendingAdvAttach = [];
+  }
   rememberPlace(rec.from); rememberPlace(rec.to);
   stampCompletion(rec);
   if(existing) DB.trips[DB.trips.findIndex(x=>x.id===existing.id)] = rec;
@@ -5621,12 +5680,25 @@ function fv(label,value){ return '<div><div class="field-label">'+esc(label)+'</
 function removeTripData(ids){
   const gone = new Set([].concat(ids));
   if(!gone.size) return;
+  /* Read what hangs off these trips BEFORE removing them. The expense
+     rows carry the ids their bills are filed under, so dropping the
+     expenses first leaves those bills with nothing to look them up by. */
+  const attachKeys = [];
+  gone.forEach(id=>attachKeys.push(advKey(id)));
+  (DB.expenses||[]).forEach(e=>{
+    if(e.tripId && gone.has(e.tripId)) attachKeys.push(expKey(e.id));
+  });
+
   DB.trips = DB.trips.filter(t=>!gone.has(t.id));
   DB.expenses = (DB.expenses||[]).filter(e=>!(e.tripId && gone.has(e.tripId)));
   gone.forEach(id=>{
     /* the photos, and the untouched originals they point at */
     podImages(id).forEach(p=>dropOriginal(p.origKey));
     if(DB.pods) delete DB.pods[id];
+  });
+  attachKeys.forEach(k=>{
+    attachList(k).forEach(a=>dropOriginal(a.origKey));
+    if(DB.attach) delete DB.attach[k];
   });
   /* a payment allocated to a trip that no longer exists */
   (DB.ledger||[]).forEach(l=>{
@@ -8135,7 +8207,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.37</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.38</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
@@ -8152,8 +8224,20 @@ function dataIssues(){
   const docIds = new Set();
   DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>docIds.add(d.id)));
   const tripIds = new Set(DB.trips.map(t=>t.id));
+  const expIds  = new Set((DB.expenses||[]).map(e=>e.id));
   const out = [];
   const add = (key, label, items, fix) => { if(items.length) out.push({key, label, items, fix}); };
+
+  /* a bill still filed against an advance or an expense line that is gone */
+  const strayAttach = Object.keys(DB.attach||{}).filter(k=>{
+    const [kind, id] = [k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':')+1)];
+    return kind==='adv' ? !tripIds.has(id) : kind==='exp' ? !expIds.has(id) : true;
+  }).map(k=>({id:k}));
+  add('attachGone', 'attachments kept for a trip or expense that has been deleted',
+      strayAttach, items=>items.forEach(x=>{
+        (DB.attach[x.id]||[]).forEach(a=>dropOriginal(a.origKey));
+        delete DB.attach[x.id];
+      }));
 
   add('expTrip', 'expenses booked to a trip that has been deleted',
     (DB.expenses||[]).filter(e=>e.tripId && !tripIds.has(e.tripId)),
@@ -9072,6 +9156,111 @@ function alreadyExists(list, field, value, exceptId){
    ============================================================ */
 const POD_MAX = 4;
 
+/* ============================================================
+   ATTACHMENTS
+   A bill for the diesel, the cash slip for an advance, a repair
+   invoice as a PDF. They hang off whatever they are evidence for —
+   an advance on a trip, or one expense line — under a key, so
+   nothing needs a new column and deleting the parent takes them
+   with it.
+
+   A photo is shrunk for the record and the untouched file is filed
+   in IndexedDB, exactly as a POD page is. Anything that is not a
+   photo cannot be shrunk and must not be dropped whole into a 4.6MB
+   drawer, so only its name, type and size are kept alongside the
+   real file in IndexedDB.
+   ============================================================ */
+const ATTACH_MAX = 6;
+
+function attachList(key){ return (DB.attach && DB.attach[key]) || []; }
+function attachCount(key){ return attachList(key).length; }
+
+/* A trip being created has no id yet, so its advance slips wait here
+   and are filed the moment it is saved. */
+let pendingAdvAttach = [];
+function advKey(tripId){ return tripId ? 'adv:'+tripId : ''; }
+function expKey(expenseId){ return 'exp:'+expenseId; }
+
+function attachPut(key, rec){
+  DB.attach = DB.attach || {};
+  DB.attach[key] = attachList(key).concat([rec]);
+}
+
+async function attachAdd(key, input, after){
+  const files = input && input.files ? [...input.files] : [];
+  if(input) input.value = '';
+  if(!files.length) return;
+  const holding = !key;                       // a trip that is not saved yet
+  for(const file of files){
+    const have = holding ? pendingAdvAttach.length : attachCount(key);
+    if(have >= ATTACH_MAX){ toast('Up to '+ATTACH_MAX+' attachments here'); break; }
+    try{
+      const isImg = /^image\//.test(file.type);
+      /* the shrunk copy is only worth keeping for something you can look
+         at; a PDF gets a name and nothing else in the record */
+      const data = isImg ? await shrinkImage(file) : '';
+      if(data && storeUsed() + data.length > STORE_LIMIT){
+        toast('Storage is nearly full. Remove an old photo first.'); break;
+      }
+      const origKey = await keepOriginal(file);
+      if(!origKey && !data){ toast('Could not keep that file on this device.'); break; }
+      const rec = {id:uid(), data, origKey, name:file.name||'Attachment',
+                   type:file.type||'', size:file.size||0, addedAt:today()};
+      if(holding) pendingAdvAttach.push(rec); else attachPut(key, rec);
+    }catch(e){ toast(e.message); }
+  }
+  if(!holding) save();
+  if(after) after();
+}
+
+function attachRemove(key, id, after){
+  const list = key ? attachList(key) : pendingAdvAttach;
+  const rec = list.find(a=>a.id===id);
+  confirmAsk('Remove '+((rec&&rec.name)||'this attachment')+'?', ()=>{
+    dropOriginal(rec && rec.origKey);
+    if(key){
+      DB.attach[key] = attachList(key).filter(a=>a.id!==id);
+      if(!DB.attach[key].length) delete DB.attach[key];
+      save();
+    } else {
+      pendingAdvAttach = pendingAdvAttach.filter(a=>a.id!==id);
+    }
+    if(after) after();
+    toast('Attachment removed');
+  }, true);
+}
+
+function attachOpen(key, id){
+  const rec = (key ? attachList(key) : pendingAdvAttach).find(a=>a.id===id);
+  if(rec) saveBest(rec.origKey, rec.data, rec.name, false);
+}
+
+/* Nothing at all when there is nothing attached — the whole point of
+   the plus rather than a permanent drop zone. */
+function attachChips(key, locked){
+  const list = key ? attachList(key) : pendingAdvAttach;
+  if(!list.length) return '';
+  return '<div class="clip-row">'+list.map(a=>
+    '<span class="clip" title="'+esc(a.name)+(a.size?' \u00b7 '+kb(a.size):'')+'">'+
+      '<button type="button" class="clip-open" onclick="attachOpen(\''+(key||'')+'\',\''+a.id+'\')">'+
+        ICON_CLIP+'<span class="clip-name">'+esc(a.name)+'</span></button>'+
+      (locked ? '' : '<button type="button" class="clip-x" aria-label="Remove '+esc(a.name)+'" '+
+        'onclick="attachRemove(\''+(key||'')+'\',\''+a.id+'\',refreshAttachHost)">&times;</button>')+
+    '</span>').join('')+'</div>';
+}
+
+/* one button, and the file dialog it opens */
+function attachButton(key, id, label){
+  return '<button type="button" class="clip-add" onclick="document.getElementById(\''+id+'\').click()" '+
+      'title="Attach a bill, slip or photo">'+ICON_PLUS+(label?'<span>'+esc(label)+'</span>':'')+'</button>'+
+    '<input type="file" id="'+id+'" multiple accept="image/*,.pdf,application/pdf" style="display:none" '+
+      'onchange="attachAdd(\''+(key||'')+'\',this,refreshAttachHost)">';
+}
+function refreshAttachHost(){ if(typeof repaintTripPane==='function') repaintTripPane(); }
+
+const ICON_CLIP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 01-7-7l8.6-8.6a3.3 3.3 0 014.7 4.7l-8.6 8.6a1.7 1.7 0 01-2.4-2.4l8-8"/></svg>';
+const ICON_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+
 function podImages(tripId){ return (DB.pods && DB.pods[tripId]) || []; }
 function podCount(tripId){ return podImages(tripId).length; }
 function podBytes(){
@@ -9708,10 +9897,17 @@ function dropOriginal(key){
   origTx('readwrite', st=>st.delete(key)).catch(()=>{});
 }
 /* every key any record still points at */
+/* Everything that still points at an untouched file. Anything missed
+   here is deleted by the sweeper on the next start-up, so a new kind of
+   attachment has to be added to this list at the same time it is added
+   to the app. */
 function originalKeysInUse(){
   const keys = new Set();
   (DB.drivers||[]).forEach(d=>Object.values(d.origs||{}).forEach(k=>{ if(k) keys.add(k); }));
   Object.values(DB.pods||{}).forEach(list=>(list||[]).forEach(p=>{ if(p.origKey) keys.add(p.origKey); }));
+  Object.values(DB.attach||{}).forEach(list=>(list||[]).forEach(a=>{ if(a.origKey) keys.add(a.origKey); }));
+  /* a bill added to a trip that has not been saved yet is still in hand */
+  pendingAdvAttach.forEach(a=>{ if(a.origKey) keys.add(a.origKey); });
   return keys;
 }
 /* Photos abandoned in a form that was never saved would sit there for
