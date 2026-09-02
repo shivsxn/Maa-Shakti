@@ -68,7 +68,13 @@
   --sans: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'Courier New', monospace;
   --topbar-h: 60px;
+  --side-w: 246px;
 }
+
+/* This is a desktop application now. Below the floor the window scrolls
+   rather than the layout rearranging itself — one set of proportions to
+   reason about instead of three. */
+body{min-width:1180px}
 
 * {
   box-sizing: border-box;
@@ -744,16 +750,15 @@ textarea {
 
 /* ---------- Modal ---------- */
 
+/* A dialog fills the room to the right of the rail rather than floating
+   in the middle of it — there is no second screen size to design for now,
+   so the work gets all the space there is. */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17,22,33,.46);
+  background: rgba(17,22,33,.40);
   z-index: 100;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 28px 18px;
-  overflow-y: auto;
+  overflow: hidden;
   animation: fade .15s ease-out;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
@@ -770,16 +775,37 @@ textarea {
 }
 
 .modal {
+  position: absolute;
+  left: var(--side-w);
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: auto;
+  max-width: none;
+  margin: 0;
   background: var(--card);
-  border-radius: var(--r-lg);
+  border-radius: 0;
+  border-left: 1px solid var(--line);
+  box-shadow: -24px 0 60px -30px rgba(17,22,33,.34);
+  display: flex;
+  flex-direction: column;
+  animation: panelIn .26s var(--ease-out);
+}
+
+@keyframes panelIn{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}
+
+/* A yes-or-no question is not a workspace, so it keeps a dialog's shape */
+.modal-ask {
+  position: static;
+  margin: 10vh auto 0;
   width: 100%;
-  max-width: 640px;
-  /* every dialog is the same distance off the top, whatever it holds */
-  margin-block: 0;
-  margin: auto;
-  box-shadow: 0 30px 70px rgba(17,22,33,.24);
+  max-width: 470px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 70px -20px rgba(17,22,33,.40);
   animation: pop .18s cubic-bezier(.2,.9,.3,1.1);
 }
+.overlay:has(> .modal-ask){overflow-y:auto}
 
 @keyframes pop {
   from {
@@ -813,8 +839,9 @@ textarea {
 }
 
 .modal-body {
-  padding: 15px 18px;
-  max-height: 70vh;
+  padding: 18px 22px 22px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -1093,11 +1120,6 @@ textarea {
   background: var(--red);
 }
 
-@media (max-width:760px) {
-  .doc-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
 
 .fpair {
   display: flex;
@@ -1118,26 +1140,6 @@ textarea {
   min-width: 0;
 }
 
-@media (max-width:760px) {
-  .filter-row select,
-  .filter-row input {
-    min-width: 0;
-    flex: 1 1 46%;
-  }
-
-  .filter-row .search {
-    flex: 1 1 100%;
-    max-width: none;
-  }
-
-  .fpair {
-    flex: 1 1 100%;
-  }
-
-  .fpair input {
-    flex: 1;
-  }
-}
 
 .toolbar input,
 .toolbar select {
@@ -1314,41 +1316,8 @@ textarea {
 
 /* ---------- KPI tiles ---------- */
 
-@media (max-width:900px) {
-  .g-wide {
-    grid-template-columns: 1fr;
-  }
 
-  .range-presets {
-    margin-left: 0;
-    width: 100%;
-  }
-}
 
-@media (max-width:760px) {
-  .range {
-    padding: 11px 12px;
-  }
-
-  .range-dates {
-    width: 100%;
-  }
-
-  .range-dates input {
-    flex: 1;
-    min-width: 0;
-  }
-}
-
-@media (max-width:760px) {
-  .kpi-value {
-    font-size: 22px;
-  }
-
-  .kpi {
-    min-height: 104px;
-  }
-}
 
 .gate {
   position: fixed;
@@ -1459,15 +1428,6 @@ textarea {
   white-space: pre;
 }
 
-@media (max-width:760px) {
-  .cloud-pill span {
-    display: none;
-  }
-
-  .cloud-pill {
-    padding: 7px 9px;
-  }
-}
 
 .cloud-pill {
   display: inline-flex;
@@ -1547,15 +1507,6 @@ textarea {
   }
 }
 
-@media (max-width:760px) {
-  .cloud-pill span {
-    display: none;
-  }
-
-  .cloud-pill {
-    padding: 7px 9px;
-  }
-}
 
 /* ---------- Motion ---------- */
 
@@ -1898,31 +1849,7 @@ tbody tr {
   margin: 0 2px;
 }
 
-@media (max-width:900px) {
-  .g-wide {
-    grid-template-columns: 1fr;
-  }
 
-  .range-presets {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-@media (max-width:760px) {
-  .range {
-    padding: 11px 12px;
-  }
-
-  .range-dates {
-    width: 100%;
-  }
-
-  .range-dates input {
-    flex: 1;
-    min-width: 0;
-  }
-}
 
 .chart-title {
   font-size: 14.5px;
@@ -1937,15 +1864,6 @@ tbody tr {
   margin-bottom: 9px;
 }
 
-@media (max-width:760px) {
-  .kpi-value {
-    font-size: 22px;
-  }
-
-  .kpi {
-    min-height: 104px;
-  }
-}
 
 .bell {
   position: relative;
@@ -2068,17 +1986,6 @@ tbody tr {
   font-size: 12.5px;
 }
 
-@media (max-width:760px) {
-  .docrow {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .docrow .rmdoc {
-    grid-column: 2;
-    justify-self: end;
-  }
-}
 
 .mobile-nav {
   display: none;
@@ -2086,181 +1993,7 @@ tbody tr {
 
 /* ---------- Responsive ---------- */
 
-@media (max-width: 900px) {
-  .g4 {
-    grid-template-columns: 1fr 1fr;
-  }
 
-  .g3,
-  .g2 {
-    grid-template-columns: 1fr;
-  }
-
-  .slip-body {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 760px) {
-  .sidebar {
-    display: none;
-  }
-
-  .content {
-    padding: 16px 14px 92px;
-  }
-
-  .topbar {
-    padding: 14px 16px;
-  }
-
-  .page-title {
-    font-size: 18px;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .g4 {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .stat-value {
-    font-size: 21px;
-  }
-
-  .slip-body {
-    grid-template-columns: 1fr;
-  }
-
-  .modal {
-    max-width: none;
-    border-radius: 14px 14px 0 0;
-    margin: auto auto 0;
-  }
-
-  .modal-body {
-    max-height: none;
-  }
-
-  .overlay {
-    padding: 0;
-  }
-
-  .gate-card {
-    padding: 24px 20px 22px;
-  }
-
-  .doc-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .docrow {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .docrow .rmdoc {
-    grid-column: 2;
-    justify-self: end;
-  }
-
-  .filter-row select,
-  .filter-row input {
-    min-width: 0;
-    flex: 1 1 46%;
-  }
-
-  .filter-row .search {
-    flex: 1 1 100%;
-    max-width: none;
-  }
-
-  .fpair {
-    flex: 1 1 100%;
-  }
-
-  .fpair input {
-    flex: 1;
-  }
-
-  .range {
-    padding: 11px 12px;
-  }
-
-  .range-dates {
-    width: 100%;
-  }
-
-  .range-dates input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .range-presets {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .kpi-value {
-    font-size: 22px;
-  }
-
-  .kpi {
-    min-height: 104px;
-  }
-
-  .cloud-pill span {
-    display: none;
-  }
-
-  .cloud-pill {
-    padding: 7px 9px;
-  }
-
-  .topbar-actions .btn span {
-    display: none;
-  }
-
-  th,
-  td {
-    padding: 10px 11px;
-    font-size: 13.5px;
-  }
-
-  .mobile-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--side);
-    z-index: 50;
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-    border-top: 1px solid rgba(255,255,255,.1);
-  }
-
-  .mnav {
-    flex: 1;
-    background: none;
-    border: 0;
-    color: rgba(255,255,255,.6);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 5px 2px;
-    font-size: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    border-radius: 8px;
-  }
-
-  .mnav.on {
-    color: var(--amber);
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -2425,34 +2158,9 @@ tbody tr {
   color: var(--red);
 }
 
-@media (max-width:760px) {
-  .pod-step {
-    flex-wrap: wrap;
-  }
 
-  .pod-label {
-    min-width: 0;
-    flex: 1;
-  }
-
-  .pod-go {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .pod-row .btn {
-    width: 100%;
-  }
-}
-
-.modal-full {
-  max-width: 1240px;
-  width: 96vw;
-  /* max, not fixed: a short tab used to be stretched to fill 93vh, and
-     everything below it was simply empty */
-  max-height: 93vh;
-  display: flex;
-  flex-direction: column;
+.modal-full .modal-body {
+  max-width: none;
 }
 
 .modal-full .modal-body {
@@ -2462,9 +2170,20 @@ tbody tr {
   padding: 16px 20px 20px;
 }
 
-/* the trip screen carries a lot now — let it breathe */
+/* With a whole pane to work in, a form gains columns rather than
+   stretching its boxes — the fields stay the width of what they hold. */
 .modal-full .form-grid {
   gap: 12px 16px;
+}
+
+.modal .form-grid {
+  grid-template-columns: repeat(auto-fill, minmax(210px, 240px));
+  justify-content: start;
+}
+
+.modal .form-grid .full {
+  grid-column: 1 / -1;
+  max-width: 760px;
 }
 
 .modal-full .adv-block {
@@ -2556,42 +2275,11 @@ tbody tr {
   margin: 5px 0 0;
 }
 
-@media (max-width:900px) {
-  .form-grid.three {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .form-grid.four {
-    grid-template-columns: 1fr 1fr;
-  }
-}
 
 @media (max-width:1100px) { .grid.g5{grid-template-columns:repeat(3,1fr)} }
 /* the pass above tightened the controls for a mouse; a phone keeps a
    full-size target and a little more room between rows */
-@media (max-width:760px){
-  input,select,textarea{height:40px}
-  td{padding:10px 12px}
-  /* the bottom bar sits over the page here, so leave room for it */
-  .content{padding:16px 14px 88px}
-  .kpi{min-height:84px}
-  .hero{padding:16px 18px}
-  .chart-card{padding:12px 13px}
-  .title-truck{margin-left:7px;padding:1px 7px;font-size:11.5px}
-}
-@media (max-width:760px)  { .grid.g5{grid-template-columns:repeat(2,1fr)} }
 
-@media (max-width:640px) {
-  .form-grid.three,
-  .form-grid.four {
-    grid-template-columns: 1fr;
-  }
-
-  /* once the buttons drop below the heading they read better from the left */
-  .line-head .line-add {
-    margin-left: 0;
-  }
-}
 
 .trip-cols {
   display: grid;
@@ -2627,20 +2315,6 @@ tbody tr {
   justify-content: center;
 }
 
-@media (max-width:900px) {
-  .trip-cols {
-    grid-template-columns: 1fr;
-  }
-
-  .trip-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .trip-actions .btn {
-    flex: 1;
-  }
-}
 
 .pod-files {
   border: 1px solid var(--line);
@@ -2695,11 +2369,6 @@ tbody tr {
   align-items: center;
 }
 
-@media (max-width:760px) {
-  .pod-buttons .btn {
-    flex: 1;
-  }
-}
 
 h1,
 h2,
@@ -2968,28 +2637,7 @@ tbody tr:last-child td {
   color: #F0A79C;
 }
 
-@media (max-width: 900px) {
-  .hero {
-    grid-template-columns: 1fr;
-    padding: 22px;
-    gap: 20px;
-  }
 
-  .hero-value {
-    font-size: 38px;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-side {
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
-  }
-
-  .hero-value {
-    font-size: 32px;
-  }
-}
 .check-line{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;cursor:pointer}
 .check-line input{width:auto;margin:0}
 .alloc-list{max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:var(--card-2)}
@@ -3000,11 +2648,6 @@ tbody tr:last-child td {
 .alloc-foot{display:flex;align-items:center;margin-top:10px;padding-top:10px;
   border-top:1.5px solid var(--side);font-weight:700;font-size:14.5px}
 .alloc-foot .num{margin-left:auto;font-size:16px}
-@media (max-width:760px){
-  .alloc-row{flex-wrap:wrap}
-  .alloc-what{flex:1 1 100%}
-  .alloc-amt{flex:1}
-}
 .line-block{border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:var(--card-2);margin-top:10px}
 .line-row{display:grid;grid-template-columns:150px 1fr 130px auto;gap:9px;align-items:center;margin-bottom:9px}
 .line-row select,.line-row input{padding:8px 10px;font-size:13.5px}
@@ -3012,11 +2655,6 @@ tbody tr:last-child td {
 .line-add{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 0 auto}
 .line-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .line-head .adv-head{margin-bottom:0}
-@media (max-width:760px){
-  .line-row{grid-template-columns:1fr 1fr;gap:8px}
-  .line-row input:nth-of-type(1){grid-column:1/-1}
-  .line-add .btn{flex:1}
-}
 /* ---------- printed documents ---------- */
 #printRoot{display:none}
 @media print{
@@ -3075,7 +2713,6 @@ tbody tr:last-child td {
 .chart .hz-val{font-family:var(--mono);font-size:10.5px;font-weight:600}
 .legend-val{margin-left:6px;font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
 .legend-note{font-size:11.5px;color:var(--muted-2,#8C877D);margin-left:auto}
-@media (max-width:760px){ .legend-note{display:none} }
 
 
 /* ============================================================
@@ -3431,8 +3068,12 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 /* ---------- modals ---------- */
 .overlay{background:rgba(17,24,39,.45);backdrop-filter:blur(2px)}
 .modal{border-radius:14px;box-shadow:0 24px 60px -16px rgba(17,24,39,.35);border:1px solid var(--line)}
-.modal-md{max-width:640px}
-.modal-lg{max-width:920px}
+/* The panel is the right-hand pane whatever it holds, so what these
+   classes carry now is how wide the CONTENT column inside it runs —
+   a six-field form should not become six very wide fields just because
+   there is room. */
+.modal-md .modal-body{max-width:820px}
+.modal-lg .modal-body{max-width:1120px}
 .modal-head{border-bottom:1px solid var(--line-soft);background:var(--card);position:sticky;top:0;z-index:12}
 .modal-foot{background:var(--bg);border-top:1px solid var(--line-soft)}
 
@@ -3488,7 +3129,6 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .theme-pick[data-theme="carbon"] .s3{background:#222B38}
 .theme-name{font-weight:700;font-size:14px;color:var(--ink)}
 .theme-note{font-size:11.5px;color:var(--muted-2)}
-@media (max-width:760px){ .theme-picks{grid-template-columns:1fr} }
 .kpi{position:relative;overflow:hidden;transition:border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast)}
 /* a hairline of the accent that arrives on hover, from the left */
 .kpi::after{content:'';position:absolute;inset:auto 0 0 0;height:2px;background:var(--accent);
@@ -3510,8 +3150,6 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 /* However many cards a screen has, they share the row evenly rather
    than wrapping one lonely card onto a second line. */
 .summary{margin-bottom:16px;grid-template-columns:repeat(auto-fit,minmax(212px,1fr))}
-@media (max-width:900px){ .summary{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))} }
-@media (max-width:560px){ .summary{grid-template-columns:1fr 1fr} }
 .sec{display:flex;align-items:baseline;gap:10px;margin:22px 0 11px}
 .sec:first-child{margin-top:0}
 .sec-h{font-size:var(--fs-h2);font-weight:700;letter-spacing:-.01em;color:var(--ink)}
@@ -3536,7 +3174,7 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .overlay{z-index:100}
 .gate{z-index:150}
 .topbar{z-index:20}
-.mobile-nav{z-index:50}
+
 th{z-index:10}
 
 /* rounded cards must clip what sits inside them, or the table
@@ -3774,17 +3412,7 @@ tr.row-link:hover td{background:var(--bg-2)}
 .tr-sum span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.05em;
   text-transform:uppercase;color:var(--muted);margin-bottom:4px}
 .tr-sum b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
-@media (max-width:900px){ .tr-sum{grid-template-columns:repeat(2,1fr)} }
-@media (max-width:640px){ .renew-now{grid-template-columns:1fr} }
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
-@media (max-width:760px){
-  .exp-row{gap:8px}
-  .exp-row .exp-what{flex:1 1 100%}
-  .exp-row .exp-amt{flex:1 1 110px}
-  .exp-row .exp-mode{flex:1 1 130px}
-  .exp-row .exp-shop{flex:1 1 100%}
-  .exp-more{grid-template-columns:1fr}
-}
 
 </style>
 </head>
@@ -3801,7 +3429,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.34 &middot; 01 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.35 &middot; 01 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3818,7 +3446,7 @@ tr.row-link:hover td{background:var(--bg-2)}
     <main class="content" id="view"></main>
   </div>
 </div>
-<nav class="mobile-nav" id="mnav"></nav>
+
 <div class="gate" id="authGate" hidden></div>
 <div id="modalRoot"></div>
 <div id="toast"></div>
@@ -4216,6 +3844,7 @@ function toast(msg){
 }
 function confirmAsk(msg, onYes, danger){
   openModal({
+    wide:'ask',
     title:'Please confirm',
     body:'<p style="margin:0;font-size:14.5px">'+esc(msg)+'</p>',
     okText: danger?'Delete':'Yes, continue',
@@ -4533,7 +4162,6 @@ const PAGES = [
   {id:'insights',  label:'Insights',  sub:'How the business is performing'},
   {id:'settings',  label:'Settings',  sub:'Business details and backup'}
 ];
-const MOBILE = ['dashboard','trips','parties','expenses'];
 let route = 'dashboard';
 let sub = {};   // per-page temporary state (filters, open party, etc.)
 
@@ -4546,13 +4174,6 @@ function buildNav(){
       icon(p.id)+'<span>'+p.label+'</span></button>'+
       (group? '<div class="nav-group">'+group.label+'</div>' : '');
   }).join('');
-  const short = {dashboard:'Home',trips:'Trips',parties:'Parties',expenses:'Expenses',reports:'Reports'};
-  $('#mnav').innerHTML = MOBILE.map(id=>
-    '<button class="mnav'+(id===route?' on':'')+'" onclick="go(\''+id+'\')">'+icon(id)+'<span>'+short[id]+'</span></button>'
-  ).join('') +
-  '<button class="mnav'+(MOBILE.includes(route)?'':' on')+'" onclick="moreMenu()">'+
-    '<svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'+
-    '<span>More</span></button>';
 }
 function go(r){ route = r; sub = {}; window.scrollTo(0,0); closeModal(); render(); }
 
@@ -4614,6 +4235,7 @@ function restoreModal(vals){
    opened at different sizes. Three now, picked by what is inside: a form
    you read down, a form with a grid or a table in it, and the trip. */
 function modalSize(wide){
+  if(wide === 'ask') return 'ask';
   if(wide === 'full') return 'full';
   if(wide === 'xl' || wide === true || wide === 'lg') return 'lg';
   return 'md';
@@ -8482,7 +8104,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.34</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.35</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
