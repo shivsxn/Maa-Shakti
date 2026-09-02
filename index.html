@@ -2816,7 +2816,7 @@ tbody tr:last-child td {
 
 .hero {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
   background: var(--hero-bg);
   border: 1px solid var(--hero-line);
@@ -3366,6 +3366,52 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .icon-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;
   stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
+/* ============================================================
+   MOTION
+   Movement here has one job: to say where a thing came from. Cards
+   arrive in the order you would read them, a panel slides from the
+   edge it belongs to, a number counts to its value so you notice it
+   changed. Nothing loops, nothing bounces, nothing waits to be
+   watched — the longest thing on this page is 420ms.
+   ============================================================ */
+:root{
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --ease-out: cubic-bezier(.16,1,.3,1);
+  --t-fast: .14s;
+  --t: .22s;
+  --t-slow: .38s;
+}
+
+@keyframes riseIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shimmer{from{background-position:-360px 0}to{background-position:360px 0}}
+@keyframes drawIn{from{stroke-dashoffset:var(--len,600)}to{stroke-dashoffset:0}}
+
+/* A screen arrives as a whole, then its cards land one after another.
+   The stagger is capped so a long list never feels like a queue. */
+.view-in{animation:fadeIn var(--t) var(--ease) both}
+.rise > *{animation:riseIn var(--t-slow) var(--ease-out) both}
+.rise > *:nth-child(1){animation-delay:.02s}
+.rise > *:nth-child(2){animation-delay:.06s}
+.rise > *:nth-child(3){animation-delay:.10s}
+.rise > *:nth-child(4){animation-delay:.14s}
+.rise > *:nth-child(5){animation-delay:.17s}
+.rise > *:nth-child(6){animation-delay:.20s}
+.rise > *:nth-child(n+7){animation-delay:.22s}
+
+/* the line a chart draws in, once */
+.chart .ln{stroke-dasharray:var(--len,600);animation:drawIn .9s var(--ease-out) both}
+
+.skeleton{background:linear-gradient(90deg,var(--bg-2) 0%,var(--line-soft) 40%,var(--bg-2) 80%);
+  background-size:360px 100%;animation:shimmer 1.2s linear infinite;border-radius:8px;color:transparent}
+
+/* Anyone who has asked their machine to stop moving things gets a
+   screen that does not move. Not reduced — stopped. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
 /* ---------- the data check ---------- */
 .gap-dot{display:block;width:9px;height:9px;border-radius:50%;margin:0 2px}
 .gap-high{background:var(--red)}
@@ -3443,8 +3489,34 @@ tfoot th{position:static;background:var(--bg-2);border-top:1px solid var(--line)
 .theme-name{font-weight:700;font-size:14px;color:var(--ink)}
 .theme-note{font-size:11.5px;color:var(--muted-2)}
 @media (max-width:760px){ .theme-picks{grid-template-columns:1fr} }
+.kpi{position:relative;overflow:hidden;transition:border-color var(--t-fast),box-shadow var(--t-fast),transform var(--t-fast)}
+/* a hairline of the accent that arrives on hover, from the left */
+.kpi::after{content:'';position:absolute;inset:auto 0 0 0;height:2px;background:var(--accent);
+  transform:scaleX(0);transform-origin:left;transition:transform var(--t) var(--ease)}
+.kpi-link:hover::after{transform:scaleX(1)}
 .kpi-link{cursor:pointer}
-.kpi-link:hover{border-color:var(--accent);box-shadow:0 4px 14px -6px rgba(17,24,39,.2)}
+.kpi-link:hover{border-color:var(--line-strong);box-shadow:var(--sh-2);transform:translateY(-2px)}
+.kpi-link:active{transform:translateY(0)}
+
+/* the icon sits behind the label, quiet, so the card reads as a thing
+   about trucks or about money without a caption saying so */
+.kpi-ic{width:15px;height:15px;flex:none;color:var(--muted-2);opacity:.85}
+.kpi-ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.kpi-tone-pos .kpi-ic{color:var(--green)}
+.kpi-tone-neg .kpi-ic{color:var(--red)}
+
+/* a summary strip is the same object everywhere it appears */
+/* However many cards a screen has, they share the row evenly rather
+   than wrapping one lonely card onto a second line. */
+.summary{margin-bottom:16px;grid-template-columns:repeat(auto-fit,minmax(212px,1fr))}
+@media (max-width:900px){ .summary{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))} }
+@media (max-width:560px){ .summary{grid-template-columns:1fr 1fr} }
+.sec{display:flex;align-items:baseline;gap:10px;margin:22px 0 11px}
+.sec:first-child{margin-top:0}
+.sec-h{font-size:var(--fs-h2);font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+.sec-n{font-size:var(--fs-sm);color:var(--muted-2)}
+.sec-a{margin-left:auto}
 .kpi-link:focus-visible{outline:none;box-shadow:0 0 0 3px var(--accent-soft),0 0 0 1px var(--accent)}
 .kpi-label{display:flex;align-items:center;gap:8px}
 .kpi-go{
@@ -3729,7 +3801,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.33 &middot; 01 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.34 &middot; 01 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3786,7 +3858,12 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7
 /* ---------- 2. Helpers ---------- */
 const $  = s => document.querySelector(s);
 const num = v => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
-const plural = (n, word) => n+' '+word+(n===1?'':'s');
+/* A consonant before the y takes -ies: one party, three parties. The
+   plain +'s' had been printing "3 partys" on the dashboard and
+   "7 entrys" wherever a list was counted. A vowel before it does not
+   — days stays days. */
+const plural = (n, word) => n+' '+(n===1 ? word
+  : /[^aeiou]y$/i.test(word) ? word.slice(0,-1)+'ies' : word+'s');
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function money(n, sign){
@@ -4705,6 +4782,18 @@ function viewDashboard(){
   if(owed) attention.push({tone:'grey', label:money(owed)+' owed out to suppliers, shops and drivers',
     action:"go('suppliers')", cta:'Suppliers'});
 
+  /* The operational half of the business, which the dashboard had never
+     shown at all — it opened on money and left you to guess how many
+     lorries were actually out. */
+  const monthTrips = DB.trips.filter(t=>monthKey(t.date)===m);
+  const running    = DB.trips.filter(t=>!t.podSubmittedAt);
+  const onRoad     = running.filter(t=>tripStage(t)==='transit');
+  const awaitingPod= running.filter(t=>t.deliveredAt && !t.podSubmittedAt);
+  const doneMonth  = monthTrips.filter(t=>tripCompleted(t));
+  const advMonth   = monthTrips.reduce((s,t)=>s+tripAdvance(t),0);
+  const brokerage  = monthTrips.reduce((s,t)=>s+num(t.brokerage),0);
+  const unpaidCnt  = DB.trips.filter(t=>tripBalance(t)>0).length;
+
   $('#pageSub').textContent = monthName(m)+' · '+plural(p.tripCount,'trip')+
     (isNow ? ' so far' : ' · your most recent activity');
   $('#pageActions').innerHTML =
@@ -4724,25 +4813,45 @@ function viewDashboard(){
           '<span class="dot"></span>'+esc(x.label)+
           '<span class="go">'+esc(x.cta)+' →</span></button>').join('')+'</div>':'')+
     '</div>'+
-    '<div class="hero-side">'+
-      heroStat('Freight', cur.freight, pctChange(cur.freight, prev.freight))+
-      heroStat('Costs', cur.cost, pctChange(cur.cost, prev.cost), true)+
-      heroStat(cur.profit<0?'Loss':'Profit', Math.abs(cur.profit), null, false,
-        cur.freight? Math.round(cur.profit/cur.freight*100)+'% margin':'', '',
-        cur.profit>0?'pos':cur.profit<0?'neg':'')+
-      heroStat('Trips', cur.trips, null, false, label, 'plain')+
-    '</div>'+
   '</div>'+
 
-  '<div class="fleet-line">'+
-    DB.trucks.length+' trucks · '+DB.parties.length+' parties · '+DB.drivers.length+' drivers · '+
-    DB.trips.length+' trips recorded'+
-    (totalDriverPayable()? ' · '+money(totalDriverPayable())+' owed to drivers':'')+
-    (totalSupplierPayable()? ' · '+money(totalSupplierPayable())+' owed to suppliers':'')+
-    (totalShopPayable()? ' · '+money(totalShopPayable())+' owed to shops':'')+
-  '</div>'+
+  sec('On the road', 'Right now, across the whole book')+
+  summary([
+    {label:'Trips running', value:running.length, fmt:'plain', icon:'trips',
+     go:"go('trips')", note: onRoad.length+' in transit \u00b7 '+awaitingPod.length+' awaiting POD'},
+    {label:'Completed '+label, value:doneMonth.length, fmt:'plain', icon:'pod',
+     go:"go('pod')", tone: doneMonth.length?'pos':'',
+     note: plural(monthTrips.length,'trip')+' started '+label},
+    {label:'Fleet', value:DB.trucks.length, fmt:'plain', icon:'trucks',
+     go:"go('trucks')",
+     note: DB.drivers.length+' drivers \u00b7 '+DB.parties.length+' parties'},
+    {label:'Waiting on paperwork', value:podHeld, icon:'reports',
+     go:"go('pod')", tone: podHeld?'neg':'pos',
+     note: podHeld ? 'Cannot be chased until the POD is in' : 'No paperwork holding money'}
+  ])+
 
-  '<div class="g-wide" style="margin-top:14px">'+
+  sec('The money', monthName(m))+
+  summary([
+    {label:'Freight billed', value:p.freight, icon:'reports', go:"go('reports')",
+     note: trendNote(pctChange(cur.freight, prev.freight))+
+           plural(p.tripCount,'trip')+(p.tripCount?' \u00b7 '+money(p.freight/p.tripCount)+' each':'')},
+    {label:'Advance given', value:advMonth, icon:'expenses', go:"go('trips')",
+     note: p.freight ? Math.round(advMonth/p.freight*100)+'% of freight billed' : 'None given'},
+    {label:'Outstanding', value:recv, icon:'parties', go:"go('parties')",
+     tone: recv>0?'neg':'pos',
+     note: recv>0 ? 'From '+plural(dues.length,'party')+' \u00b7 '+unpaidCnt+' trips unpaid' : 'Every party settled'},
+    {label:'Owed out', value:owed, icon:'shops', go:"go('suppliers')",
+     note:'Suppliers, shops and drivers'},
+    (brokerage ? {label:'Brokerage', value:brokerage, icon:'suppliers',
+     note:'Paid on '+label+'\u2019s loads'} : null),
+    {label: p.profit<0?'Loss '+label:'Profit '+label, value:Math.abs(p.profit),
+     icon:'insights', go:"go('insights')", tone: p.profit>=0?'pos':'neg',
+     note: trendNote(pctChange(cur.profit, prev.profit))+
+           (p.freight ? Math.round(p.profit/p.freight*100)+'% of freight' : 'Nothing billed yet')}
+  ], brokerage ? 'g3' : 'g4')+
+
+  sec('How it is trending', 'Last six months', '<button class="btn btn-sm" onclick="go(\'insights\')">Open insights</button>')+
+  '<div class="g-wide">'+
     '<div class="card chart-card">'+
       '<h3 class="chart-title">Freight against costs</h3>'+
       '<div class="chart-sub">Last six months</div>'+
@@ -4784,6 +4893,11 @@ function viewDashboard(){
   '</div>';
 }
 
+/* the arrow the hero used to carry, as a few characters a card can hold */
+function trendNote(pct){
+  if(pct==null || !isFinite(pct) || Math.round(pct)===0) return '';
+  return (pct>0?'\u25b2 ':'\u25bc ')+Math.abs(Math.round(pct))+'% on last month \u00b7 ';
+}
 function heroStat(label, value, trend, invert, note, fmt, tone){
   const dir = trend==null || !isFinite(trend) ? '' :
     '<span class="trend '+((trend>=0)!==!!invert?'trend-up':'trend-down')+'">'+
@@ -5053,6 +5167,21 @@ function renderTripList(){
   const totHire = list.reduce((s,t)=>s+num(t.hire),0);
   const totDue = list.reduce((s,t)=>s+Math.max(0, tripBalance(t)),0);
   const full = list.length;
+  /* the strip above the table describes THIS list, filters and all */
+  const running   = list.filter(t=>!t.podSubmittedAt).length;
+  const settled   = list.filter(t=>tripCompleted(t)).length;
+  const advOut    = list.reduce((s,t)=>s+tripAdvance(t),0);
+  const strip = summary([
+    {label:'Trips', value:full, fmt:'plain', icon:'trips',
+     note: running+' still running \u00b7 '+settled+' settled'},
+    {label:'Freight billed', value:tot, icon:'reports',
+     note: full ? money(tot/full)+' a trip' : 'Nothing billed'},
+    {label:'Advance given', value:advOut, icon:'expenses',
+     note: tot ? Math.round(advOut/tot*100)+'% of freight' : 'None given'},
+    {label:'Still to collect', value:totDue, icon:'parties',
+     tone: totDue>0?'neg':'pos',
+     note: totDue>0 ? 'Across '+plural(list.filter(t=>tripBalance(t)>0).length,'trip') : 'All settled'}
+  ]);
   list = list.slice(0, pageLimit());
   tripNav = list.map(t=>t.id);
 
@@ -5060,9 +5189,11 @@ function renderTripList(){
   (DB.trips.length===0
     ? empty('No trips yet','A trip records one load: which truck, which party, the route and the freight. Everything else in the app flows from here.',
         '<button class="btn btn-amber" onclick="tripForm()">+ Add your first trip</button>')
-    : full===0 ? empty('Nothing matches these filters','Widen the dates, or clear the filters to see every trip again.',
+    : full===0 ? strip+empty('Nothing matches these filters','Widen the dates, or clear the filters to see every trip again.',
         '<button class="btn" onclick="clearTripFilters()">Clear all filters</button>')
-    : '<div class="card"><div class="tbl-wrap"><table class="trip-tbl">'+
+    : strip+
+      sec('Every load', plural(full,'trip')+(activeTripFilters()?' matching':''))+
+      '<div class="card"><div class="tbl-wrap"><table class="trip-tbl">'+
       '<thead><tr><th class="c-date">Date</th><th class="c-route">Route</th>'+
       '<th class="c-party">Party</th><th class="c-truck">Truck</th>'+
       '<th class="c-money t-r">Freight</th><th class="c-pay">Payment</th>'+
@@ -6493,17 +6624,51 @@ function renderTruckList(){
     const sal = truckDriverPay(t.id);
     return {...t, tripCount:trips.length, freight, hire, exp, sal, net:freight-hire-exp-sal};
   });
+  const fleetAll = stats.slice();
   if(sub.type) stats = stats.filter(t=>t.type===sub.type);
   if(q) stats = stats.filter(t=>
     ((t.number||'')+' '+(t.model||'')+' '+(t.owner||'')+' '+(t.ownerPhone||'')+' '+
      (t.driverId?driverName(t.driverId):'')).toLowerCase().includes(q));
 
+  const papers = [];
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>{
+    if(d.expiry && docStatus(d.expiry).k !== 'ok') papers.push({t, d});
+  }));
+  const best = stats.slice().sort((a,b)=>b.net-a.net)[0];
+  const earners = stats.filter(t=>t.tripCount || t.net)
+                       .map(t=>({label:t.number, value:t.net,
+                                 color: t.net>=0?'var(--c1)':'var(--red)',
+                                 note: plural(t.tripCount,'trip')+' \u00b7 '+money(t.freight)+' freight'}))
+                       .sort((a,b)=>b.value-a.value);
+  const strip = summary([
+    {label:'Fleet', value:stats.length, fmt:'plain', icon:'trucks',
+     note: fleetAll.filter(t=>t.type==='owned').length+' owned \u00b7 '+
+           fleetAll.filter(t=>t.type!=='owned').length+' market'},
+    {label:'Freight earned', value:stats.reduce((s,t)=>s+t.freight,0), icon:'reports',
+     note: plural(stats.reduce((s,t)=>s+t.tripCount,0),'trip')+' run'},
+    {label: best && best.net<0 ? 'Best truck loses' : 'Best truck keeps',
+     value: best?Math.abs(best.net):0, icon:'insights',
+     tone: best && best.net>=0 ? 'pos':'neg',
+     note: best ? best.number+' \u00b7 after hire, expenses and wages' : '\u2014'},
+    {label:'Papers to chase', value:papers.length, fmt:'plain', icon:'pod',
+     tone: papers.length?'neg':'pos', go:"sub.tab='docs';viewTrucks()",
+     note: papers.length ? 'Expired or expiring soon' : 'Everything is current'}
+  ]);
+
   box.innerHTML =
   (DB.trucks.length===0
     ? empty('No trucks yet','Add the vehicles you run. Mark a truck as "market" when it belongs to someone else and you pay hire for it.',
         '<button class="btn btn-amber" onclick="truckForm()">+ Add your first truck</button>')
-    : stats.length===0 ? empty('No truck matches','Try a different word, or switch back to owned and market.','')
-    : '<div class="card"><div class="tbl-wrap"><table>'+
+    : stats.length===0 ? strip+empty('No truck matches','Try a different word, or switch back to owned and market.','')
+    : strip+
+      /* which lorry actually pays for itself, at a glance */
+      (earners.length>1 ? '<div class="card chart-card" style="margin-bottom:16px">'+
+          '<h3 class="chart-title">What each truck keeps</h3>'+
+          '<div class="chart-sub">Freight less hire, expenses and driver wages</div>'+
+          barList(earners)+
+        '</div>' : '')+
+      sec('The fleet', plural(stats.length,'truck'))+
+      '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Truck</th><th>Type</th><th>Driver</th><th class="t-r">Trips</th>'+
       '<th class="t-r">Freight earned</th><th class="t-r">Hire + expenses</th>'+
       '<th class="t-r">Driver salary</th><th class="t-r">Net</th><th></th></tr></thead><tbody>'+
@@ -6874,13 +7039,32 @@ function renderExpenseList(){
   const full = list.length;
   list = list.slice(0, pageLimit());
 
+  const onCredit = list.filter(e=>(e.mode||'')==='Credit').reduce((s,e)=>s+num(e.amount),0);
+  const onTruck  = new Set(list.filter(e=>e.truckId).map(e=>e.truckId)).size;
+  const split    = Object.entries(byCat).sort((a,b)=>b[1]-a[1])
+                    .map(([c,v])=>({label:c, value:v}));
+  const strip = total ? summary([
+      {label:'Total shown', value:total, icon:'expenses',
+       note: plural(full,'entry')+(full>list.length?' \u00b7 '+list.length+' on screen':'')},
+      {label:'Biggest line', value:top.length?top[0][1]:0, icon:'reports',
+       note: top.length ? top[0][0]+' \u00b7 '+Math.round(top[0][1]/total*100)+'% of it' : '\u2014'},
+      {label:'Taken on credit', value:onCredit, icon:'shops',
+       tone: onCredit>0?'neg':'', go:"go('shops')",
+       note: onCredit>0 ? 'Owed to shops' : 'Nothing on credit'},
+      {label:'Trucks covered', value:onTruck, fmt:'plain', icon:'trucks',
+       note: list.filter(e=>!e.truckId).length+' booked to no truck'}
+    ]) : '';
+
   box.innerHTML =
-  (list.length && total ? '<div class="grid g4" style="margin-bottom:16px">'+
-    '<div class="stat accent"><div class="stat-label">Total shown</div><div class="stat-value">'+money(total)+'</div>'+
-      '<div class="stat-note">'+list.length+' entries</div></div>'+
-    top.map(([c,v])=>'<div class="stat"><div class="stat-label">'+esc(c)+'</div>'+
-      '<div class="stat-value">'+money(v)+'</div><div class="stat-note">'+Math.round(v/total*100)+'% of total</div></div>').join('')+
-  '</div>':'')+
+  strip+
+  /* Where the money went, as a shape rather than a column of figures —
+     the whole reason this screen existed was to answer that. */
+  (split.length>1 ? '<div class="card chart-card" style="margin-bottom:16px">'+
+      '<h3 class="chart-title">Where it went</h3>'+
+      '<div class="chart-sub">'+plural(split.length,'category')+' in this view</div>'+
+      donutChart(split.slice(0,8),'spent')+
+    '</div>' : '')+
+  (total ? sec('Every entry', plural(full,'expense')) : '')+
   (DB.expenses.length===0
     ? empty('No expenses yet','Record diesel, tolls, repairs, EMI and office costs here. Link an expense to a truck to see that truck\u2019s real profit.',
         '<button class="btn btn-amber" onclick="expenseForm()">+ Add your first expense</button>')
@@ -7009,14 +7193,19 @@ function viewDrivers(){
   const monthPay = driverPayBreak('', thisMonth()+'-01', thisMonth()+'-31');
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="driverForm()">+ <span>New driver</span></button>';
   $('#view').innerHTML =
-  '<div class="grid g3" style="margin-bottom:16px">'+
-    '<div class="stat accent"><div class="stat-label">Total payable to drivers</div><div class="stat-value">'+money(totalDriverPayable())+'</div></div>'+
-    '<div class="stat"><div class="stat-label">Drivers</div><div class="stat-value">'+DB.drivers.length+'</div></div>'+
-    '<div class="stat"><div class="stat-label">Paid this month</div><div class="stat-value">'+
-      money(monthPay.paid)+'</div>'+
-      '<div class="stat-note">'+money(monthPay.salary)+' salary \u00b7 '+money(monthPay.advance)+' advance'+
-      (monthPay.other?' \u00b7 '+money(monthPay.other)+' other':'')+'</div></div>'+
-  '</div>'+
+  summary([
+    {label:'Payable to drivers', value:totalDriverPayable(), icon:'drivers',
+     tone: totalDriverPayable()>0?'neg':'pos',
+     note: totalDriverPayable()>0 ? 'Owed right now' : 'Everyone is square'},
+    {label:'Drivers', value:DB.drivers.length, fmt:'plain', icon:'parties',
+     note: DB.drivers.filter(d=>num(d.salary)).length+' with a salary set'},
+    {label:'Paid this month', value:monthPay.paid, icon:'expenses',
+     note: money(monthPay.salary)+' salary \u00b7 '+money(monthPay.advance)+' advance'+
+           (monthPay.other?' \u00b7 '+money(monthPay.other)+' other':'')},
+    {label:'Salary running', value:monthPay.due||0, icon:'reports',
+     note:'Earned this month, before what has been paid'}
+  ], 'g4')+
+  sec('Everyone on the book', plural(DB.drivers.length,'driver'))+
   (DB.drivers.length===0
     ? empty('No drivers yet','Keep each driver\u2019s salary, advances and payments in one place, so you always know what is owed.',
         '<button class="btn btn-amber" onclick="driverForm()">+ Add your first driver</button>')
@@ -8293,7 +8482,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.33</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.34</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
@@ -10402,6 +10591,29 @@ function spark(values, color){
 }
 
 /* KPI tile. Numbers count up once the view settles. */
+/* ============================================================
+   THE SUMMARY STRIP
+   Every list screen used to open on a table. You arrived at a
+   thousand cells and had to add them up yourself to learn anything.
+   A strip of numbers goes above each one now, built from the same
+   card the analysis screens already use, so there is one card in the
+   app rather than three that nearly match.
+
+   The numbers are computed from the FILTERED list, not the whole
+   book — narrow to one truck and the strip narrows with you, which
+   is what makes the filters worth touching.
+   ============================================================ */
+function summary(cards, cls){
+  return '<div class="grid '+(cls||'g4')+' summary rise">'+
+    cards.filter(Boolean).map(c=>kpi(c.label, c.value, c)).join('')+'</div>';
+}
+/* a heading with a count beside it and room for one action */
+function sec(title, note, action){
+  return '<div class="sec"><span class="sec-h">'+esc(title)+'</span>'+
+    (note?'<span class="sec-n">'+note+'</span>':'')+
+    (action?'<span class="sec-a">'+action+'</span>':'')+'</div>';
+}
+
 function kpi(label, value, opts={}){
   const fmt = opts.fmt||'money';
   /* Render the real figure straight away. The count-up only runs when a
@@ -10413,8 +10625,11 @@ function kpi(label, value, opts={}){
      no second query to drift out of step. */
   const go = opts.go ? ' onclick="'+esc(opts.go).replace(/&quot;/g,'&#34;')+'" role="button" tabindex="0"'+
       ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}"' : '';
-  return '<div class="kpi'+(opts.go?' kpi-link':'')+'"'+go+'>'+
-    '<div class="kpi-label">'+esc(label)+(opts.go?'<span class="kpi-go">View</span>':'')+'</div>'+
+  const ic = opts.icon && ICONS[opts.icon]
+    ? '<span class="kpi-ic"><svg viewBox="0 0 24 24">'+ICONS[opts.icon]+'</svg></span>' : '';
+  return '<div class="kpi'+(opts.go?' kpi-link':'')+
+      (opts.tone?' kpi-tone-'+opts.tone:'')+'"'+go+'>'+
+    '<div class="kpi-label">'+ic+esc(label)+(opts.go?'<span class="kpi-go">View</span>':'')+'</div>'+
     '<div class="kpi-value'+(opts.tone==='pos'?' money-pos':opts.tone==='neg'?' money-neg':'')+
       '" data-count="'+num(value)+'" data-fmt="'+fmt+'">'+shown+'</div>'+
     '<div class="kpi-foot">'+
