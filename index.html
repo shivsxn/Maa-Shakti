@@ -3307,6 +3307,19 @@ input.dp-input::-webkit-clear-button{display:none}
   font-variant-numeric:tabular-nums}
 
 /* ---------- expenses booked straight onto a trip ---------- */
+/* Numbers two-by-two on the left, the shape of the spending on the
+   right, so the entries start near the top of the page instead of a
+   screen and a half down. */
+.ex-head{display:grid;grid-template-columns:minmax(400px,1fr) minmax(340px,.8fr);
+  gap:14px;align-items:stretch;margin-bottom:16px}
+.ex-head .summary{grid-template-columns:1fr 1fr;margin:0}
+.ex-head .kpi{min-height:0}
+.ex-chart{margin:0}
+.donut-legend{margin-top:14px}
+.donut-row{display:flex;align-items:center;gap:20px;margin-top:6px}
+.donut-row .chart{flex:0 0 176px;max-width:176px;margin:0}
+.donut-row .donut-legend{flex:1 1 auto;margin-top:0;min-width:0}
+
 /* One tap to say what the money went on */
 .exp-quick{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 12px}
 .exp-quick-label{font-size:var(--fs-xs);font-weight:600;letter-spacing:.07em;
@@ -3429,7 +3442,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.35 &middot; 01 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.36 &middot; 01 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -6677,15 +6690,28 @@ function renderExpenseList(){
        note: list.filter(e=>!e.truckId).length+' booked to no truck'}
     ]) : '';
 
+  /* The numbers and the shape of the spending answer the same question,
+     so they sit beside each other rather than one under the other. Two
+     full-width blocks stacked pushed the entries themselves off the
+     bottom of the screen, which is the one thing this page is for. */
+  /* Past six the key is longer than the ring is tall and stops being
+     readable, so the tail becomes one slice. */
+  const CUT = 6;
+  const shown = split.slice(0, CUT);
+  const rest  = split.slice(CUT).reduce((a,x)=>a+x.value, 0);
+  if(rest) shown.push({label:'Everything else', value:rest, color:'var(--muted-2)'});
+  const chart = split.length>1
+    ? '<div class="card chart-card ex-chart">'+
+        '<h3 class="chart-title">Where it went</h3>'+
+        '<div class="chart-sub">'+plural(split.length,'category')+' in this view'+
+          (rest?' \u00b7 top '+CUT+' shown':'')+'</div>'+
+        donutChart(shown,'spent',true)+
+      '</div>' : '';
+
   box.innerHTML =
-  strip+
-  /* Where the money went, as a shape rather than a column of figures —
-     the whole reason this screen existed was to answer that. */
-  (split.length>1 ? '<div class="card chart-card" style="margin-bottom:16px">'+
-      '<h3 class="chart-title">Where it went</h3>'+
-      '<div class="chart-sub">'+plural(split.length,'category')+' in this view</div>'+
-      donutChart(split.slice(0,8),'spent')+
-    '</div>' : '')+
+  (strip
+    ? (chart ? '<div class="ex-head">'+strip+chart+'</div>' : strip)
+    : '')+
   (total ? sec('Every entry', plural(full,'expense')) : '')+
   (DB.expenses.length===0
     ? empty('No expenses yet','Record diesel, tolls, repairs, EMI and office costs here. Link an expense to a truck to see that truck\u2019s real profit.',
@@ -8104,7 +8130,7 @@ function viewSettings(){
       '<button class="btn btn-danger" onclick="wipe()">Delete all data</button>'+
     '</div>'+
     '<div class="divide"></div>'+
-    '<div class="hint">App version <b>8.35</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
+    '<div class="hint">App version <b>8.36</b>, built 01 Sep 2026. If something behaves oddly, check this matches the newest file you were sent.</div>'+
   '</div>';
 }
 /* ============================================================
@@ -10152,7 +10178,9 @@ function lineChart(rows, series, opts={}){
 }
 
 /* Donut with a total in the middle */
-function donutChart(items, centreLabel){
+/* compact: the ring and its key sit side by side rather than stacked,
+   which halves the height of the card without losing a row of it */
+function donutChart(items, centreLabel, compact){
   const total = items.reduce((s,i)=>s+num(i.value),0);
   if(!total) return '';
   const S=190, r=68, cx=S/2, cy=S/2, circ=2*Math.PI*r;
@@ -10174,7 +10202,7 @@ function donutChart(items, centreLabel){
   svg += '<text class="donut-hole" x="'+cx+'" y="'+(cy-2)+'" text-anchor="middle" font-size="19" font-weight="600" fill="var(--ink)">'+shortMoney(total)+'</text>'+
          '<text x="'+cx+'" y="'+(cy+16)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--muted)" letter-spacing="1.2">'+esc((centreLabel||'TOTAL').toUpperCase())+'</text>'+
          '</svg>';
-  const legend = '<div style="margin-top:14px">'+items.map((it,i)=>{
+  const legend = '<div class="donut-legend">'+items.map((it,i)=>{
     const pct = Math.round(num(it.value)/total*100);
     return '<div style="display:flex;align-items:center;gap:9px;font-size:13px;padding:4px 0">'+
       '<span class="legend-key" style="background:'+(it.color||SERIES[i%SERIES.length])+';height:9px;width:9px;border-radius:50%"></span>'+
@@ -10182,7 +10210,9 @@ function donutChart(items, centreLabel){
       '<span class="num" style="margin-left:auto;color:var(--muted)">'+money(it.value)+'</span>'+
       '<span class="num" style="width:38px;text-align:right;font-weight:600">'+pct+'%</span></div>';
   }).join('')+'</div>';
-  return svg + legend;
+  return compact
+    ? '<div class="donut-row">'+svg+legend+'</div>'
+    : svg + legend;
 }
 
 /* Horizontal bars */
