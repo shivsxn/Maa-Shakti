@@ -1266,6 +1266,139 @@ textarea {
   letter-spacing: 0;
 }
 
+/* Each part of the statement folds away behind its own subtotal */
+.pl-cap {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 1px solid transparent;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.link-btn:hover {
+  color: var(--ink);
+  border-bottom-color: var(--line);
+}
+
+.pl-group + .pl-group {
+  margin-top: 2px;
+}
+
+.pl-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 2px;
+  border: 0;
+  border-bottom: 1px dotted var(--line);
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 7px 7px 0 0;
+  transition: background var(--t-fast) var(--ease);
+}
+
+.pl-head:hover {
+  background: var(--bg-2);
+}
+
+.pl-caret {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+  transition: transform var(--t) var(--ease-out), color var(--t-fast) var(--ease);
+}
+
+.pl-caret svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pl-group.on .pl-caret {
+  transform: rotate(90deg);
+  color: var(--ink);
+}
+
+.pl-head:hover .pl-caret {
+  color: var(--ink);
+}
+
+.pl-head-txt {
+  flex: 1;
+  min-width: 0;
+}
+
+.pl-head-name {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pl-head-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pl-head-val {
+  flex: none;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pl-body {
+  padding-left: 28px;
+  animation: plDrop var(--t) var(--ease-out) both;
+}
+
+.pl-body .pl-line:last-child {
+  border-bottom: 0;
+}
+
+@keyframes plDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ---------- Motion ---------- */
 
 @keyframes riseIn {
@@ -3475,7 +3608,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.38 &middot; 01 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.39 &middot; 03 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -7852,32 +7985,50 @@ function viewReports(){
         {key:'profit',  label:'Profit',  color:'var(--c6)'}
       ])+
     '</div>'+
-    '<div class="card card-pad">'+
-      '<h3 class="card-title" style="margin-bottom:6px">Profit &amp; Loss statement</h3>'+
-      '<div class="hint" style="margin-bottom:10px">'+fdate(sub.from)+' to '+fdate(sub.to)+'</div>'+
-      '<div class="sec-title">Income</div>'+
-      pl('Freight on trips', p.freightBase)+
-      (p.charges?    pl('Charges added to parties', p.charges):'')+
-      (p.deductions? pl('Deductions given to parties', -p.deductions):'')+
-      pl('Billed to parties', p.freight)+
-      '<div class="sec-title">Costs</div>'+
-      (p.hire? pl('Hire paid to market trucks', p.hire):'')+
-
-      exps.map(([c,v])=>pl(c, v)).join('')+
-      (p.driverSalary? pl('Driver salary paid', p.driverSalary):'')+
-      (p.driverAdvance? pl('Driver advances paid', p.driverAdvance):'')+
-      (p.driverOther? pl('Other driver payments', p.driverOther):'')+
-      (p.costs===0? '<div class="pl-line"><span>No costs recorded in this period</span><span class="num">'+money(0)+'</span></div>':'')+
-      pl('Total costs', p.costs)+
-
-      '<div class="sec-title">Position</div>'+
-      pl('Total freight billed', p.freight)+
-      pl('Actually collected from parties', p.collected)+
-      '<div class="hint" style="margin:2px 0 4px">'+
-        money(p.advances)+' taken as advances on trips'+
-        (p.receipts? ' · '+money(p.receipts)+' received in the party ledgers':'')+
-        (p.adjusted? ' · '+money(p.adjusted)+' in discounts and adjustments is not counted as money received':'')+
+    (function(){
+      const costLines = [
+        p.hire? pl('Hire paid to market trucks', p.hire):'',
+        exps.map(([c,v])=>pl(c, v)).join(''),
+        p.driverSalary?  pl('Driver salary paid', p.driverSalary):'',
+        p.driverAdvance? pl('Driver advances paid', p.driverAdvance):'',
+        p.driverOther?   pl('Other driver payments', p.driverOther):''
+      ].filter(Boolean);
+      const costCount = (p.hire?1:0) + exps.length +
+        (p.driverSalary?1:0) + (p.driverAdvance?1:0) + (p.driverOther?1:0);
+      const incomeCount = 1 + (p.charges?1:0) + (p.deductions?1:0);
+      const allOpen = PL_SECTIONS.every(id=>plOpen[id]);
+      return '<div class="card card-pad">'+
+      '<div class="pl-cap">'+
+        '<div><h3 class="card-title" style="margin-bottom:4px">Profit &amp; Loss statement</h3>'+
+          '<div class="hint">'+fdate(sub.from)+' to '+fdate(sub.to)+'</div></div>'+
+        '<button type="button" class="link-btn" id="plAllBtn" onclick="plToggleAll()">'+
+          (allOpen?'Collapse all':'Expand all')+'</button>'+
       '</div>'+
+      plGroup('income', 'Income', plural(incomeCount,'line')+' · billed to parties',
+        '<span class="num">'+money(p.freight)+'</span>', [
+        pl('Freight on trips', p.freightBase),
+        p.charges?    pl('Charges added to parties', p.charges):'',
+        p.deductions? pl('Deductions given to parties', -p.deductions):''
+      ])+
+      plGroup('costs', 'Costs',
+        costCount? plural(costCount,'line')+' · hire, expenses, driver pay'
+                 : 'Nothing recorded in this period',
+        '<span class="num">'+money(p.costs)+'</span>',
+        costLines.length? costLines
+          : ['<div class="pl-line"><span>No costs recorded in this period</span>'+
+             '<span class="num">'+money(0)+'</span></div>'])+
+      plGroup('position', 'Position',
+        p.freight? Math.round(p.collected/p.freight*100)+'% of the billing has reached you'
+                 : 'Nothing billed in this period',
+        '<span class="num">'+money(p.collected)+'</span>', [
+        pl('Total freight billed', p.freight),
+        pl('Actually collected from parties', p.collected),
+        '<div class="hint" style="margin:6px 0 2px">'+
+          money(p.advances)+' taken as advances on trips'+
+          (p.receipts? ' · '+money(p.receipts)+' received in the party ledgers':'')+
+          (p.adjusted? ' · '+money(p.adjusted)+' in discounts and adjustments is not counted as money received':'')+
+        '</div>'
+      ])+
 
       '<div class="pl-line pl-total"><span>'+(p.profit>=0?'Net profit':'Net loss')+
         '<div class="pl-sub">On the full freight, paid or not</div></span>'+
@@ -7886,7 +8037,8 @@ function viewReports(){
         '<span>'+(p.actual>=0?'Actual profit':'Actual loss')+
         '<div class="pl-sub">On money actually received</div></span>'+
         '<span class="num '+(p.actual>=0?'money-pos':'money-neg')+'">'+money(Math.abs(p.actual))+'</span></div>'+
-    '</div>'+
+    '</div>';
+    })()+
     '<div class="note" style="margin-top:14px">'+
       (p.freight>p.collected
         ? '<b>'+money(p.freight-p.collected)+'</b> of freight billed in this period has not reached you yet. '+
@@ -8129,6 +8281,56 @@ function printTruckReport(truckId){
 }
 
 function pl(label, v){ return '<div class="pl-line"><span>'+label+'</span><span class="num">'+money(v)+'</span></div>'; }
+
+/* The statement opens short: three section headings, each carrying its own
+   subtotal, then the two bottom lines. The arrow opens a section's detail.
+   What is open is remembered on this machine, like the theme is. */
+const PL_SECTIONS = ['income','costs','position'];
+const ICON_CARET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+let plOpen = (function(){
+  try{ const s = JSON.parse(localStorage.getItem('mvl_pl_open') || '{}');
+       return (s && typeof s === 'object') ? s : {}; }catch(e){ return {}; }
+})();
+function plRemember(){ try{ localStorage.setItem('mvl_pl_open', JSON.stringify(plOpen)); }catch(e){} }
+function plPaint(id){
+  const g = document.getElementById('plgrp-'+id);
+  if(!g) return false;
+  const open = !!plOpen[id], head = g.querySelector('.pl-head'), body = g.querySelector('.pl-body');
+  g.classList.toggle('on', open);
+  if(head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if(body) body.hidden = !open;
+  return true;
+}
+function plToggle(id){
+  plOpen[id] = !plOpen[id];
+  plRemember();
+  if(!plPaint(id)) viewReports();
+  plPaintAllBtn();
+}
+function plToggleAll(){
+  const on = !PL_SECTIONS.every(id=>plOpen[id]);
+  PL_SECTIONS.forEach(id=>{ plOpen[id] = on; });
+  plRemember();
+  if(!PL_SECTIONS.map(plPaint).every(Boolean)) viewReports();
+  plPaintAllBtn();
+}
+function plPaintAllBtn(){
+  const b = document.getElementById('plAllBtn');
+  if(b) b.textContent = PL_SECTIONS.every(id=>plOpen[id]) ? 'Collapse all' : 'Expand all';
+}
+function plGroup(id, title, note, valueHtml, lines){
+  const open = !!plOpen[id];
+  return '<div class="pl-group'+(open?' on':'')+'" id="plgrp-'+id+'">'+
+    '<button type="button" class="pl-head" aria-expanded="'+(open?'true':'false')+'" '+
+      'onclick="plToggle(\''+id+'\')">'+
+      '<span class="pl-caret">'+ICON_CARET+'</span>'+
+      '<span class="pl-head-txt"><span class="pl-head-name">'+title+'</span>'+
+        '<span class="pl-head-note">'+note+'</span></span>'+
+      '<span class="pl-head-val">'+valueHtml+'</span>'+
+    '</button>'+
+    '<div class="pl-body"'+(open?'':' hidden')+'>'+lines.filter(Boolean).join('')+'</div>'+
+  '</div>';
+}
 /* ============================================================
    SETTINGS, BACKUP, SAMPLE DATA
    ============================================================ */
