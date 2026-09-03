@@ -1267,6 +1267,21 @@ textarea {
 }
 
 /* Each part of the statement folds away behind its own subtotal */
+/* someone who has left stays on the book, just quieter */
+.row-left td {
+  opacity: .62;
+}
+
+.row-left:hover td {
+  opacity: 1;
+}
+
+/* money still owed to someone who has gone is the one thing not to fade */
+.row-left td.money-neg,
+.row-left td.money-pos {
+  opacity: 1;
+}
+
 .pl-cap {
   display: flex;
   align-items: flex-start;
@@ -3608,7 +3623,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.39 &middot; 03 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.40 &middot; 03 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4271,6 +4286,36 @@ function driverBalance(did){
   return bal;
 }
 function totalDriverPayable(){ return DB.drivers.reduce((s,d)=>s+Math.max(0,driverBalance(d.id)),0); }
+
+/* ------------------------------------------------------------
+   A DRIVER WHO HAS LEFT
+   `left` holds their last working day. On that day they were
+   still on the payroll; from the next day they are gone. Nothing
+   already recorded moves: past trips keep their name, past pay
+   keeps sitting on the truck it was earned on. What stops is the
+   future — no salary accrues past that day, their seat on the
+   truck closes on it, and they drop out of the pickers. Clearing
+   the date puts them straight back.
+   ------------------------------------------------------------ */
+function leftOn(d){ return (d && d.left) || ''; }
+function hasLeft(d, on){
+  const l = leftOn(d);
+  return !!l && (on || today()) > l;
+}
+function driverGone(did, on){ return hasLeft(driverById(did), on); }
+function activeDrivers(){ return DB.drivers.filter(d=>!hasLeft(d)); }
+function leftDrivers(){ return DB.drivers.filter(d=>hasLeft(d)); }
+/* Closing up after someone goes: the seat ends on their last day, so no
+   wage after it is charged to a truck, and no truck still names them. */
+function closeDriverSeats(did, last){
+  DB.assign = (DB.assign||[]).filter(a=>{
+    if(a.driverId !== did) return true;
+    if(a.from && a.from > last) return false;      /* a seat that never happened */
+    if(!a.to || a.to > last) a.to = last;
+    return true;
+  });
+  DB.trucks.forEach(t=>{ if(t.driverId === did) t.driverId = ''; });
+}
 
 // Profit & loss for a date range
 function pnl(from, to){
@@ -5722,6 +5767,12 @@ function saveTripScreen(existing, quiet){
   const missing = [];
   if(!t.partyId) missing.push(['f_party','Choose the party who pays the freight']);
   if(!t.truckId) missing.push(['f_truck','Choose the truck that ran this trip']);
+  /* a driver who has left cannot run a trip dated after their last day */
+  const drv = t.driverId ? driverById(t.driverId) : null;
+  if(drv && hasLeft(drv, t.date || today())){
+    missing.push(['f_driver', drv.name+' left on '+fdate(drv.left)+
+      ' \u2014 pick another driver, or clear the leaving date on their profile']);
+  }
   /* on credit means someone is owed — the shop cannot be left out */
   const noShop = tripExpDraft.findIndex(x=>num(x.amount)>0 && x.mode==='Credit' && !x.shopId);
   if(noShop >= 0 && !missing.length){
@@ -5736,7 +5787,8 @@ function saveTripScreen(existing, quiet){
     missing.forEach(([id, msg])=>markMissing(id, msg));
     focusField(missing[0][0]);
     toast(missing.length > 1
-      ? 'This trip needs a party and a truck'
+      ? 'This trip needs '+missing.map(([id])=>
+          ({f_party:'a party', f_truck:'a truck', f_driver:'a driver who is still on'})[id]).join(' and ')
       : missing[0][1]);
     return false;
   }
@@ -6641,6 +6693,16 @@ function truckForm(id, onSaved, preset){
       if(bad){ toast('Every document needs both a name and an expiry date'); return; }
       const odd = pendingTruckDocs.find(d=>d.expiry && !sensibleDate(d.expiry));
       if(odd){ toast('Check the expiry date on '+(odd.header||'that document')+' — the year looks wrong.'); return; }
+      /* the regular driver is whoever is on the truck now, so it cannot be
+         someone who has left by the day the seat starts */
+      const seatFrom = val('t_driverFrom') || today();
+      const dv = val('t_driver') ? driverById(val('t_driver')) : null;
+      if(dv && hasLeft(dv, seatFrom)){
+        markMissing('t_driver', dv.name+' left on '+fdate(dv.left)+
+          ' — pick a driver who is still on, or start the seat on or before that day');
+        focusField('t_driver');
+        toast(dv.name+' left on '+fdate(dv.left)); return;
+      }
       const docs = pendingTruckDocs.filter(d=>d.header && d.expiry);
       const dropped = ((t && t.docs) || []).filter(old=>!docs.some(d=>d.id===old.id));
       const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number'),
@@ -7055,15 +7117,17 @@ function viewDrivers(){
     {label:'Payable to drivers', value:totalDriverPayable(), icon:'drivers',
      tone: totalDriverPayable()>0?'neg':'pos',
      note: totalDriverPayable()>0 ? 'Owed right now' : 'Everyone is square'},
-    {label:'Drivers', value:DB.drivers.length, fmt:'plain', icon:'parties',
-     note: DB.drivers.filter(d=>num(d.salary)).length+' with a salary set'},
+    {label:'Drivers', value:activeDrivers().length, fmt:'plain', icon:'parties',
+     note: activeDrivers().filter(d=>num(d.salary)).length+' with a salary set'+
+       (leftDrivers().length? ' \u00b7 '+leftDrivers().length+' left':'')},
     {label:'Paid this month', value:monthPay.paid, icon:'expenses',
      note: money(monthPay.salary)+' salary \u00b7 '+money(monthPay.advance)+' advance'+
            (monthPay.other?' \u00b7 '+money(monthPay.other)+' other':'')},
     {label:'Salary running', value:monthPay.due||0, icon:'reports',
      note:'Earned this month, before what has been paid'}
   ], 'g4')+
-  sec('Everyone on the book', plural(DB.drivers.length,'driver'))+
+  sec('Everyone on the book', plural(activeDrivers().length,'driver')+
+    (leftDrivers().length? ' on, '+leftDrivers().length+' left':''))+
   (DB.drivers.length===0
     ? empty('No drivers yet','Keep each driver\u2019s salary, advances and payments in one place, so you always know what is owed.',
         '<button class="btn btn-amber" onclick="driverForm()">+ Add your first driver</button>')
@@ -7071,13 +7135,18 @@ function viewDrivers(){
       '<thead><tr><th>Driver</th><th>Documents</th><th>Phone</th><th class="t-r">Trips</th>'+
       '<th class="t-r">Salary paid</th><th class="t-r">Advance paid</th><th class="t-r">Total paid</th>'+
       '<th class="t-r">Balance payable</th><th></th></tr></thead><tbody>'+
-      DB.drivers.map(d=>{
+      DB.drivers.slice().sort((a,b)=>(hasLeft(a)?1:0)-(hasLeft(b)?1:0)).map(d=>{
         const bal = driverBalance(d.id);
         const pay = driverPayBreak(d.id);
         const trips = DB.trips.filter(t=>t.driverId===d.id).length;
         const dc = docCount(d.docs);
-        return '<tr><td onclick="openDriver(\''+d.id+'\')" style="cursor:pointer"><div class="t-strong">'+esc(d.name)+'</div>'+
-          (d.salary?'<div class="t-sub">Salary '+money(d.salary)+'/month</div>':'')+'</td>'+
+        const gone = hasLeft(d);
+        return '<tr'+(gone?' class="row-left"':'')+'><td onclick="openDriver(\''+d.id+'\')" style="cursor:pointer">'+
+          '<div class="t-strong">'+esc(d.name)+
+            (gone?' <span class="chip chip-grey">Left</span>':'')+'</div>'+
+          (gone? '<div class="t-sub">Last worked '+fdate(d.left)+
+                   (bal>0?' \u00b7 '+money(bal)+' still to settle':'')+'</div>'
+               : d.salary?'<div class="t-sub">Salary '+money(d.salary)+'/month</div>':'')+'</td>'+
           '<td>'+(dc? '<button class="chip chip-green" style="border:0;cursor:pointer" onclick="showDriverDocs(\''+d.id+'\')">'+dc+' of 3 on file</button>'
                     : '<span class="chip chip-grey">No papers</span>')+'</td>'+
         '<td data-label="Phone">'+esc(d.phone||'—')+
@@ -7106,12 +7175,21 @@ function renderDriver(did){
   const rows = ledgerFilter(all).slice().reverse();
   const bal = driverBalance(did);
   const again = "renderDriver('"+did+"');afterDirectRender()";
+  const gone = hasLeft(d);
   $('#pageTitle').textContent = d.name;
-  $('#pageSub').textContent = [d.phone, d.licence].filter(Boolean).join(' · ') || 'Driver account';
+  $('#pageSub').textContent = (gone ? 'Left on '+fdate(d.left)+' · ' : '')+
+    ([d.phone, d.licence].filter(Boolean).join(' · ') || 'Driver account');
   $('#pageActions').innerHTML =
     '<button class="btn" onclick="sub={};render()">← <span>All drivers</span></button>'+
+    (gone ? '<button class="btn" onclick="rejoinDriver(\''+did+'\')">Mark as rejoined</button>' : '')+
     '<button class="btn btn-amber" onclick="driverTxnForm(\''+did+'\')">+ <span>Add entry</span></button>';
   $('#view').innerHTML =
+  (gone ? '<div class="note" style="margin-bottom:16px">'+esc(d.name)+' left on <b>'+fdate(d.left)+
+    '</b>. No salary adds up after that day and they cannot be put on a new trip or truck. '+
+    (bal>0 ? '<b>'+money(bal)+'</b> is still to be paid \u2014 record it below and the account closes at zero. '
+     : bal<0 ? '<b>'+money(-bal)+'</b> was advanced beyond what was earned and is still to come back. '
+     : 'The account is settled. ')+
+    'Everything already recorded stays where it is. Use <b>Mark as rejoined</b> if they come back.</div>' : '')+
   '<div class="grid g'+(pay.other?5:4)+'" style="margin-bottom:16px">'+
     '<div class="stat"><div class="stat-label">Salary due added</div><div class="stat-value">'+
       money(pay.due)+'</div></div>'+
@@ -7209,6 +7287,11 @@ function driverForm(id, onSaved){
       fText('d_licence','Licence number', d?d.licence:'')+
       fText('d_salary','Monthly salary (₹)', d?d.salary:'','number','min="0" step="1"')+
       fText('d_join','Joining date', d?d.join:'','date')+
+      fText('d_left','Last working day', d?d.left:'','date')+
+      '<div class="field full" style="margin-top:-6px"><span class="hint">Fill in the last working day '+
+        'only when the driver leaves. Salary stops adding up after that day and the driver drops out of '+
+        'the trip and truck lists, but everything already recorded stays as it is. Clear the date if '+
+        'they rejoin.</span></div>'+
       fText('d_aadhaar','ID / Aadhaar number', d?d.aadhaar:'')+
       fArea('d_address','Address', d?d.address:'')+
       '<div class="field full"><label>Documents</label>'+
@@ -7228,28 +7311,45 @@ function driverForm(id, onSaved){
         docs[s.k] = pendingDocs[s.k];
         if(pendingDocOrigs[s.k]) origs[s.k] = pendingDocOrigs[s.k];
       });
+      const left = val('d_left');
+      if(left && val('d_join') && left < val('d_join')){
+        markMissing('d_left', 'The last working day is before the joining date');
+        focusField('d_left'); return;
+      }
       const rec = {id:d?d.id:uid(), name:val('d_name'), phone:val('d_phone'), licence:val('d_licence'),
-        salary:num(val('d_salary')), join:val('d_join'), aadhaar:val('d_aadhaar'), address:val('d_address'),
+        salary:num(val('d_salary')), join:val('d_join'), left:left,
+        aadhaar:val('d_aadhaar'), address:val('d_address'),
         docs:docs, origs:origs};
       if(d) DB.drivers[DB.drivers.findIndex(x=>x.id===d.id)] = rec; else DB.drivers.push(rec);
+      /* the seat has to close with them, or a later month's pay keeps
+         landing on a truck they no longer drive */
+      if(left) closeDriverSeats(rec.id, left);
       save(); pendingDocs = {}; pendingDocOrigs = {};
+      const back = d && leftOn(d) && !left;
       if(nest){ closeModal(); onSaved(rec.id); toast('Driver added'); return; }
-      closeModal(); render(); toast(d?'Driver updated':'Driver saved');
+      closeModal(); render();
+      toast(back ? rec.name+' is back on the book'
+          : left && leftOn(d)!==left ? rec.name+' marked as left on '+fdate(left)
+          : d ? 'Driver updated' : 'Driver saved');
     }
   });
 }
 function driverTxnForm(did, tid){
   const t = tid ? DB.driverTxns.find(x=>x.id===tid) : null;
   const d = driverById(did);
+  const gone = leftOn(d);
   openModal({
     title: t?'Edit entry':'Driver account entry', okText: t?'Save changes':'Save entry',
     body:'<div class="form-grid">'+
       fSeg('dt_type','Entry type',[{v:'due',t:'Salary due'},{v:'salary',t:'Salary paid'},{v:'advance',t:'Advance paid'}], t?t.type:'salary')+
       fText('dt_date','Date paid', t?t.date:today(),'date','onchange="dtPeriodFollow()"')+
       fText('dt_amount','Amount (₹)', t?t.amount:(d&&d.salary?d.salary:''),'number','min="0" step="1"')+
-      fText('dt_from','Period from', t?(t.from||monthFirst(t.date)):monthFirst(today()),'date')+
-      fText('dt_to','Period to', t?(t.to||monthLast(t.date)):monthLast(today()),'date')+
+      fText('dt_from','Period from', t?(t.from||monthFirst(t.date)):(gone? monthFirst(gone):monthFirst(today())),'date')+
+      fText('dt_to','Period to', t?(t.to||monthLast(t.date)):(gone? gone:monthLast(today())),'date')+
       fText('dt_note','Note', t?t.note:'','text','placeholder="e.g. Salary for July"')+
+      (gone? '<div class="field full"><div class="note">'+esc(d.name)+' left on <b>'+fdate(gone)+'</b>. '+
+        'Salary stops adding up after that day, so a salary-due entry cannot run past it. '+
+        'Payments are still allowed \u2014 that is how you settle what is owed.</div></div>':'')+
       '<div class="field full"><span class="hint">The period decides which truck carries this money. '+
         'A payment is split across the trucks this driver drove during it, by days \u2014 nothing is '+
         'recorded twice, and days spent on no truck stay a general cost.</span></div>'+
@@ -7260,6 +7360,13 @@ function driverTxnForm(did, tid){
       const from = val('dt_from') || monthFirst(val('dt_date')||today());
       const to   = val('dt_to')   || monthLast(val('dt_date')||today());
       if(to < from){ toast('The period ends before it starts'); return; }
+      /* nobody earns a salary after the day they stopped working */
+      if(gone && (checked('dt_type')||'salary')==='due' && to > gone){
+        markMissing('dt_to', 'Salary stops on '+fdate(gone)+', the last working day');
+        focusField('dt_to');
+        toast(esc(d.name)+' left on '+fdate(gone)+' \u2014 no salary is due after that');
+        return;
+      }
       const rec = {id:t?t.id:uid(), driverId:did, date:val('dt_date')||today(),
         type:checked('dt_type')||'salary', amount:amt, from, to, note:val('dt_note')};
       if(t) DB.driverTxns[DB.driverTxns.findIndex(x=>x.id===t.id)] = rec; else DB.driverTxns.push(rec);
@@ -7270,6 +7377,14 @@ function driverTxnForm(did, tid){
 function delDriverTxn(tid){
   const t = DB.driverTxns.find(x=>x.id===tid); if(!t) return;
   confirmAsk('Delete this entry?', ()=>{ DB.driverTxns = DB.driverTxns.filter(x=>x.id!==tid); save(); renderDriver(t.driverId); toast('Entry deleted'); }, true);
+}
+function rejoinDriver(did){
+  const d = driverById(did); if(!d) return;
+  confirmAsk('Put '+d.name+' back on the book? Salary starts adding up again from today, '+
+    'and they can be put on trips and trucks. Nothing already recorded changes.', ()=>{
+    d.left = '';
+    save(); renderDriver(did); afterDirectRender(); toast(d.name+' is back on the book');
+  });
 }
 function delDriver(did){
   const trips = DB.trips.filter(t=>t.driverId===did).length;
@@ -7835,10 +7950,15 @@ function completeness(from, to){
      why:'They cannot be traced to a route, so Best routes reads better than the truth. Some of these are genuinely fleet costs \u2014 insurance, a service \u2014 and belong here.',
      items: exps.filter(e=>e.truckId && !e.tripId)},
 
+    {k:'tripAfterLeft', sev:'high', kind:'trip',
+     label:'Trips run by a driver after they had left',
+     why:'Either the leaving date is wrong or the trip names the wrong driver. Until it is settled the wages on that truck are being carried by someone who was not there.',
+     items: trips.filter(t=>t.driverId && driverGone(t.driverId, t.date))},
+
     {k:'driverNoSalary', sev:'med', kind:'driver',
      label:'Drivers with no monthly salary set',
      why:'Salary due cannot be worked out, so their balance and the truck\u2019s wage share are both blank.',
-     items: DB.drivers.filter(d=>!num(d.salary))},
+     items: activeDrivers().filter(d=>!num(d.salary))},
 
     {k:'truckNoDocs', sev:'med', kind:'truck',
      label:'Trucks with no papers on record',
@@ -8480,6 +8600,15 @@ function dataIssues(){
   add('assign', 'driver seats on a truck or driver that has been deleted',
     (DB.assign||[]).filter(a=>!has(DB.trucks, a.truckId) || !has(DB.drivers, a.driverId)),
     items=>{ const ids=new Set(items.map(x=>x.id)); DB.assign = DB.assign.filter(a=>!ids.has(a.id)); });
+  add('seatAfterLeft', 'truck seats still open for a driver who has left',
+    (DB.assign||[]).filter(a=>{
+      const d = driverById(a.driverId);
+      return d && leftOn(d) && (!a.to || a.to > d.left);
+    }),
+    items=>items.forEach(a=>{
+      const d = driverById(a.driverId);
+      if(d) closeDriverSeats(a.driverId, d.left);
+    }));
   add('shopLedger', 'shop ledger entries whose shop has been deleted',
     (DB.shopLedger||[]).filter(l=>!has(DB.shops, l.shopId)),
     items=>{ const ids=new Set(items.map(x=>x.id)); DB.shopLedger = DB.shopLedger.filter(l=>!ids.has(l.id)); });
@@ -8844,6 +8973,8 @@ function printDriverStatement(did){
       d.licence ? ['Licence', esc(d.licence)] : null,
       d.phone ? ['Phone', esc(d.phone)] : null,
       d.salary ? ['Monthly salary', money(d.salary)] : null,
+      d.join ? ['Joined', fdate(d.join)] : null,
+      d.left ? ['Last working day', fdate(d.left)] : null,
       view.k ? ['Showing', esc(view.label)] : null,
       view.k ? ['Entries', shown.length+' of '+lines.length] : null
     ])+
@@ -9069,7 +9200,10 @@ const QUICK = {
   },
   driver: {
     add:'+ Add New Driver', blank:'— none —',
-    opts:()=>DB.drivers.map(d=>({v:d.id, t:d.name})),
+    /* someone who has left is offered only where they are already named,
+       so opening an old record never quietly drops the driver off it */
+    opts:keep=>DB.drivers.filter(d=>!hasLeft(d) || d.id===keep)
+      .map(d=>({v:d.id, t:d.name + (hasLeft(d)?' · left '+fdate(d.left):'')})),
     open:cb=>driverForm(null, cb)
   },
   shop: {
@@ -9306,12 +9440,12 @@ window.addEventListener('scroll', e=>{
   comboPlace(comboOwner);
 }, true);
 
-function quickOptions(kind){
+function quickOptions(kind, keep){
   const q = QUICK[kind];
-  return [{v:'', t:q.blank}, {v:'__new', t:q.add}].concat(q.opts());
+  return [{v:'', t:q.blank}, {v:'__new', t:q.add}].concat(q.opts(keep));
 }
 function qSelect(id, label, kind, v, extra){
-  return fSelect(id, label, quickOptions(kind), v,
+  return fSelect(id, label, quickOptions(kind, v), v,
     (extra||'')+' onchange="quickPick(\''+id+'\',\''+kind+'\')"');
 }
 function quickPick(id, kind){
@@ -9325,7 +9459,7 @@ function quickPick(id, kind){
 function refreshQuick(id, kind, newId){
   const el = document.getElementById(id);
   if(!el) return;
-  el.innerHTML = quickOptions(kind).map(o=>
+  el.innerHTML = quickOptions(kind, newId).map(o=>
     '<option value="'+esc(o.v)+'">'+esc(o.t)+'</option>').join('');
   el.value = newId || '';
   el.dataset.prev = el.value;
