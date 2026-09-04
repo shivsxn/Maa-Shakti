@@ -3623,7 +3623,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.42 &middot; 03 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.43 &middot; 04 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -6271,10 +6271,18 @@ function allocOpen(pid, eid){
   if(!rows.length) return '<div class="hint">No trip of this party has anything outstanding, so this stays a general payment.</div>';
   return '<div class="alloc-list">'+rows.map(t=>{
     const owed = tripFreightNet(t) - tripDeducted(t) - allocatedTo(t.id, eid);
+    /* two trips can run the same route on the same day, so the plate is
+       what tells them apart when the money is being split */
+    const plate = truckById(t.truckId) ? truckName(t.truckId) : '';
     return '<div class="alloc-row">'+
       '<div class="alloc-what">'+
         '<div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
-        '<div class="t-sub">'+(t.lr?'LR '+esc(t.lr)+' · ':'')+fdate(t.date)+' · '+money(owed)+' outstanding</div>'+
+        '<div class="t-sub">'+[
+          t.lr ? 'LR '+esc(t.lr) : '',
+          plate ? '<span class="num">'+esc(plate)+'</span>' : '',
+          fdate(t.date),
+          money(owed)+' outstanding'
+        ].filter(Boolean).join(' · ')+'</div>'+
       '</div>'+
       '<input type="number" min="0" step="1" class="alloc-amt" id="al_'+t.id+'" '+
         'data-owed="'+owed+'" value="'+(allocDraft[t.id]||'')+'" placeholder="0" oninput="recalcAlloc()">'+
