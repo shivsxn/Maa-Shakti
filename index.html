@@ -2788,6 +2788,10 @@ tbody tr:last-child td {
 
 .check-line{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;cursor:pointer}
 .check-line input{width:auto;margin:0}
+/* the gap-run switch sits in the middle of the form, so it needs an edge */
+.self-line{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--card-2)}
+.self-line .hint{display:block;margin-top:5px}
+.self-line .self-drop{display:block;margin-top:7px;font-size:12.5px;font-weight:600;color:var(--red)}
 .alloc-list{max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:var(--card-2)}
 .alloc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-soft)}
 .alloc-row:last-child{border-bottom:0}
@@ -3623,7 +3627,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.42 &middot; 03 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.44 &middot; 04 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4037,8 +4041,13 @@ function toast(msg){
   $('#toast').appendChild(t);
   setTimeout(()=>{ t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 2400);
 }
-function confirmAsk(msg, onYes, danger){
-  openModal({
+/* Most confirmations end the form they were asked from \u2014 delete the
+   trip and there is no trip screen to go back to. A few do not: removing
+   one bill from a trip should leave the trip open. Those pass `back`, and
+   the question stacks on top instead of replacing what is underneath. */
+function confirmAsk(msg, onYes, danger, back){
+  const stack = back && document.querySelector('#modalRoot .overlay');
+  (stack ? (o=>stackForm(o, typeof back==='function' ? back : null)) : openModal)({
     wide:'ask',
     title:'Please confirm',
     body:'<p style="margin:0;font-size:14.5px">'+esc(msg)+'</p>',
@@ -4891,7 +4900,8 @@ function viewInsights(){
   const collected   = billed - outstanding;
   const collRate    = billed ? collected/billed*100 : 0;
 
-  const unpaid = trips.filter(t=>tripStatus(t)!=='paid').sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const unpaid = trips.filter(t=>!selfFunded(t) && tripStatus(t)!=='paid')
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   const oldestDays = unpaid.length ? Math.round((Date.now()-new Date(unpaid[0].date).getTime())/86400000) : 0;
 
   const from = sub.from, to = sub.to;
@@ -5031,11 +5041,13 @@ const ICON_TRASH = '<svg viewBox="0 0 24 24" aria-hidden="true">'+
   '<path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l.9 13h9.2l.9-13M10.5 10v6M13.5 10v6"/></svg>';
 
 function statusChip(s){
+  if(s==='self')    return '<span class="chip chip-grey">Self funded</span>';
   if(s==='paid')    return '<span class="chip chip-green">Paid</span>';
   if(s==='partial') return '<span class="chip chip-amber">Part paid</span>';
   return '<span class="chip chip-red">Pending</span>';
 }
 function statusStamp(s){
+  if(s==='self')    return '<span class="stamp">Self funded</span>';
   if(s==='paid')    return '<span class="stamp stamp-paid">Paid</span>';
   if(s==='partial') return '<span class="stamp stamp-part">Part paid</span>';
   return '<span class="stamp stamp-pending">Pending</span>';
@@ -5110,9 +5122,9 @@ function renderTripList(){
      noise, and that timestamp is eight characters wide from 1972 to 2059,
      so comparing ids as text compares the moment they were created. That
      survives a restore, a repair and a sync merge, none of which keep the
-     order of the array. Only this screen sorts this way. */
-  let list = DB.trips.slice().sort((a,b)=>
-    (b.date||'').localeCompare(a.date||'') || String(b.id).localeCompare(String(a.id)));
+     order of the array. Deliveries reads the same way; the ledgers and the
+     exports stay oldest-first, because a statement has to run forwards. */
+  let list = DB.trips.slice().sort(newestFirst);
   if(sub.party)  list = list.filter(t=>t.partyId===sub.party);
   if(sub.truck)  list = list.filter(t=>t.truckId===sub.truck);
   if(sub.status) list = list.filter(t=>tripStatus(t)===sub.status);
@@ -5167,19 +5179,23 @@ function renderTripList(){
           '<td data-label="Date" class="c-date cell-date">'+fdate(t.date)+
             (t.lr?'<div class="cell-lr">LR '+esc(t.lr)+'</div>':'')+'</td>'+
           '<td data-label="Route" class="c-route">'+routeCell(t)+'</td>'+
-          '<td data-label="Party" class="c-party">'+esc(partyName(t.partyId))+'</td>'+
+          '<td data-label="Party" class="c-party">'+(selfFunded(t)
+            ? '<span class="t-sub">Self funded</span>' : esc(partyName(t.partyId)))+'</td>'+
           '<td data-label="Truck" class="c-truck"><span class="num t-strong">'+esc(truckName(t.truckId))+'</span>'+
             (t.hire?'<div class="t-sub">Hire '+money(t.hire)+'</div>':'')+'</td>'+
-          '<td data-label="Freight" class="c-money t-r">'+
-            '<div class="money-main num">'+money(t.freight)+'</div>'+
-            (bal?'<div class="money-sub num">'+bal+'</div>':'')+'</td>'+
+          '<td data-label="Freight" class="c-money t-r">'+(selfFunded(t)
+            ? '<div class="money-main num t-sub">'+money(tripExpensesOf(t.id))+'</div>'+
+              '<div class="money-sub">spent</div>'
+            : '<div class="money-main num">'+money(t.freight)+'</div>'+
+              (bal?'<div class="money-sub num">'+bal+'</div>':''))+'</td>'+
           '<td data-label="Payment" class="c-pay">'+(tripCompleted(t)
             ? '<span class="chip chip-green">Completed</span>'+
               (tripLocked(t)?'<div class="t-sub lock-note">\u2713 Locked</div>':'')
             : statusChip(tripStatus(t)))+
-            '<div class="stage-inline">'+stageLine(t)+'</div></td>'+
-          '<td data-label="Delivery" class="c-del">'+stageLine(t)+
-            (pods?'<div class="t-sub">'+plural(pods,'page')+' on file</div>':'')+'</td>'+
+            (selfFunded(t)?'':'<div class="stage-inline">'+stageLine(t)+'</div>')+'</td>'+
+          '<td data-label="Delivery" class="c-del">'+(selfFunded(t)
+            ? '<span class="t-sub">\u2014</span>'
+            : stageLine(t)+(pods?'<div class="t-sub">'+plural(pods,'page')+' on file</div>':''))+'</td>'+
           '<td class="c-act t-r"><div class="row-actions">'+
             (tripLocked(t) ? ''
               : '<button class="icon-btn" title="Delete this trip" aria-label="Delete this trip" '+
@@ -5541,7 +5557,8 @@ function blankTrip(){
   return {id:'', date:today(), lr:'', from:'', to:'', partyId:'', truckId:'', driverId:'',
     material:'', weight:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
     advCash:0, fuelQty:'', fuelRate:'', fuelAmt:0,
-    brokerage:0, lines:[], notes:'', advDate:'', deliveredAt:'', podReceivedAt:'', podSubmittedAt:''};
+    brokerage:0, lines:[], notes:'', advDate:'', selfFunded:false,
+    deliveredAt:'', podReceivedAt:'', podSubmittedAt:''};
 }
 /* pull whatever fields are on screen into the draft */
 function readTripForm(){
@@ -5558,9 +5575,36 @@ function readTripForm(){
   });
   if(g('f_hire2')) tripDraft.hire = num(g('f_hire2').value);
   if(g('f_supplier')) tripDraft.supplierId = g('f_supplier').value;
+  if(g('f_selfFunded')) tripDraft.selfFunded = g('f_selfFunded').checked;
+}
+/* Ticking it takes away the party, the freight and the two tabs that no
+   longer mean anything, so the screen has to be rebuilt around it. What
+   was typed before the tick stays on the draft and comes back if it is
+   unticked \u2014 nothing is thrown away until the trip is saved. */
+function toggleSelfFunded(on){
+  readTripForm();
+  if(!tripDraft) return;
+  tripDraft.selfFunded = !!on;
+  if(on && (tripTab==='money' || tripTab==='delivery')) tripTab = 'expenses';
+  repaintTripPane();
+}
+/* What ticking the box will throw away when the trip is saved. Said on the
+   pane rather than in a dialog: a dialog would replace the trip screen, and
+   this way the warning stays in front of them while they decide. Nothing is
+   actually lost until Save \u2014 untick and it is all still there. */
+function selfFundedDrops(t){
+  if(!selfFunded(t)) return [];
+  return [
+    t.partyId ? 'the party' : '',
+    num(t.freight) ? 'the freight of '+money(t.freight) : '',
+    tripAdvance(t) ? 'the advance of '+money(tripAdvance(t)) : '',
+    num(t.hire) ? 'the hire of '+money(t.hire) : '',
+    (t.deliveredAt || t.podReceivedAt || t.podSubmittedAt) ? 'the delivery and POD dates' : ''
+  ].filter(Boolean);
 }
 function switchTripTab(tab){
   readTripForm();
+  if(tripDraft && selfFunded(tripDraft) && (tab==='money' || tab==='delivery')) tab = 'expenses';
   tripTab = tab;
   if(!repaintTripPane()) tripScreen(tripDraft && tripDraft.id ? tripDraft.id : null);
 }
@@ -5593,19 +5637,37 @@ function repaintTripPane(){
 /* the tab strip and the panel are built separately so a tab change
    can swap only the panel, instead of rebuilding the whole popup */
 function tripDetailsPane(t){
+  const self = selfFunded(t), drops = selfFundedDrops(t);
   return '<div class="form-grid three">'+
       fText('f_date','Trip date', t.date,'date')+
       fText('f_lr','LR / bilty number', t.lr)+
-      qSelect('f_party','Party (who pays freight)', 'party', t.partyId)+
+      (self ? '' : qSelect('f_party','Party (who pays freight)', 'party', t.partyId))+
       fPlace('f_from','From', t.from, 'Type a district or town')+
       fPlace('f_to','To', t.to, 'Type a district or town')+
       qTruck('f_truck','Truck', t.truckId)+
       qSelect('f_driver','Driver', 'driver', t.driverId)+
-      fText('f_material','Material', t.material,'text','placeholder="Cement, steel, grain…"')+
-      fText('f_weight','Weight (tonnes)', t.weight,'number','step="0.01" min="0"')+
-      fText('f_freight','Freight amount (₹)', t.freight||'','number','min="0" step="1" oninput="recalcAdvance()"')+
-      fText('f_hire','Hire paid to market truck (₹)', t.hire||'','number',
-        'min="0" step="1" placeholder="Blank for your own trucks"')+
+      (self ? '' :
+        fText('f_material','Material', t.material,'text','placeholder="Cement, steel, grain…"')+
+        fText('f_weight','Weight (tonnes)', t.weight,'number','step="0.01" min="0"'))+
+      '<div class="field full self-line">'+
+        '<label class="check-line"><input type="checkbox" id="f_selfFunded"'+(self?' checked':'')+
+          ' onchange="toggleSelfFunded(this.checked)"> Self funded trip</label>'+
+        '<span class="hint">'+(self
+          ? 'The truck running to a loading point on your own money. There is no party, no freight '+
+            'and no paperwork to chase \u2014 record what the run cost on the <b>Expense Money</b> tab '+
+            'and it lands against this truck in the profit report like any other cost.'
+          : 'Tick this for a gap run \u2014 moving the truck to a loading point on your own money, '+
+            'with no party and no freight. Only the expenses are recorded.')+'</span>'+
+        (drops.length
+          ? '<span class="self-drop">Saving will drop '+
+            drops.join(', ').replace(/, ([^,]*)$/, ' and $1')+
+            ' from this trip. The expenses on it stay. Untick the box to keep them.</span>'
+          : '')+
+      '</div>'+
+      (self ? '' :
+        fText('f_freight','Freight amount (₹)', t.freight||'','number','min="0" step="1" oninput="recalcAdvance()"')+
+        fText('f_hire','Hire paid to market truck (₹)', t.hire||'','number',
+          'min="0" step="1" placeholder="Blank for your own trucks"'))+
       fArea('f_notes','Notes', t.notes)+
     '</div>';
 }
@@ -5714,6 +5776,9 @@ function tripDeliveryPane(existing){
 
 /* always built from the live draft, so a repaint shows what you just typed */
 function tripPaneHtml(t, existing, k){
+  /* the guard is here, not only on the tab strip, so no route into the
+     screen can put advance money or a POD on a self-funded run */
+  if(selfFunded(t) && (k==='money' || k==='delivery')) k = 'expenses';
   return k==='delivery' ? tripDeliveryPane(existing)
        : k==='expenses' ? tripExpensePane(t, existing)
        : k==='money'    ? tripMoneyPane(t, existing)
@@ -5724,6 +5789,8 @@ function tripPaneHtml(t, existing, k){
 function tripTotalsHtml(t){
   const adv = tripAdvance(t), exp = tripExpenseTotal(), billed = tripFreightNet(t);
   const bal = billed - tripSettledTotal(t);
+  if(selfFunded(t)) return '<span>Cost of this run <b class="num">'+money(exp)+'</b></span>'+
+    '<span class="t-sub">Self funded \u2014 no party, no freight</span>';
   return '<span>Advance money <b class="num">'+money(adv)+'</b></span>'+
     '<span>Expense money <b class="num">'+money(exp)+'</b></span>'+
     (billed ? '<span>'+(bal>0?'Balance pending':'Settled')+
@@ -5760,12 +5827,16 @@ function paintTripTotals(){
 function tripTabList(t, existing){
   const stage = stageInfo(tripStage(existing || t));
   const adv = tripAdvance(t), exp = tripExpenseTotal();
+  const expTab = {k:'expenses', label:'Expense Money', chip: exp
+        ? '<span class="chip chip-amber" style="margin-left:7px">'+money(exp)+'</span>' : ''};
+  /* nobody advances money on a gap run and nobody signs for it, so the
+     two tabs that would say so are not offered at all */
+  if(selfFunded(t)) return [{k:'details', label:'Trip details'}, expTab];
   return [
     {k:'details',  label:'Trip details'},
     {k:'money',    label:'Advance Money', chip: adv
         ? '<span class="chip chip-blue" style="margin-left:7px">'+money(adv)+'</span>' : ''},
-    {k:'expenses', label:'Expense Money', chip: exp
-        ? '<span class="chip chip-amber" style="margin-left:7px">'+money(exp)+'</span>' : ''},
+    expTab,
     {k:'delivery', label:'Delivery & POD',
       chip: existing? '<span class="chip '+stage.chip+'" style="margin-left:7px">'+stage.label+'</span>' : ''}
   ];
@@ -5884,7 +5955,7 @@ function saveTripScreen(existing, quiet){
   /* Both are checked together, so one trip back to the details tab shows
      everything that is missing rather than one thing at a time. */
   const missing = [];
-  if(!t.partyId) missing.push(['f_party','Choose the party who pays the freight']);
+  if(!t.partyId && !selfFunded(t)) missing.push(['f_party','Choose the party who pays the freight']);
   if(!t.truckId) missing.push(['f_truck','Choose the truck that ran this trip']);
   /* a driver who has left cannot run a trip dated after their last day */
   const drv = t.driverId ? driverById(t.driverId) : null;
@@ -5920,6 +5991,16 @@ function saveTripScreen(existing, quiet){
   const rec = Object.assign(blankTrip(), existing || {}, t);
   rec.id = existing ? existing.id : uid();
   rec.date = rec.date || today();
+  /* A self-funded run has to be self-funded in the record too, not only on
+     the screen. Left behind, a party id would keep it in that party's
+     ledger and a freight figure would keep billing for a load nobody
+     carried. Converting one is confirmed first, in toggleSelfFunded. */
+  if(selfFunded(rec)){
+    Object.assign(rec, {partyId:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
+      advCash:0, fuelQty:'', fuelRate:'', fuelAmt:0, advDate:'', lines:[],
+      material:'', weight:'',
+      deliveredAt:'', podReceivedAt:'', podSubmittedAt:'', completedAt:''});
+  }
   rec.advance = tripAdvance(rec);
   rec.status  = tripStatus(rec);
   if(!rec.supplierId){
@@ -6271,10 +6352,18 @@ function allocOpen(pid, eid){
   if(!rows.length) return '<div class="hint">No trip of this party has anything outstanding, so this stays a general payment.</div>';
   return '<div class="alloc-list">'+rows.map(t=>{
     const owed = tripFreightNet(t) - tripDeducted(t) - allocatedTo(t.id, eid);
+    /* two trips can run the same route on the same day, so the plate is
+       what tells them apart when the money is being split */
+    const plate = truckById(t.truckId) ? truckName(t.truckId) : '';
     return '<div class="alloc-row">'+
       '<div class="alloc-what">'+
         '<div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
-        '<div class="t-sub">'+(t.lr?'LR '+esc(t.lr)+' · ':'')+fdate(t.date)+' · '+money(owed)+' outstanding</div>'+
+        '<div class="t-sub">'+[
+          t.lr ? 'LR '+esc(t.lr) : '',
+          plate ? '<span class="num">'+esc(plate)+'</span>' : '',
+          fdate(t.date),
+          money(owed)+' outstanding'
+        ].filter(Boolean).join(' · ')+'</div>'+
       '</div>'+
       '<input type="number" min="0" step="1" class="alloc-amt" id="al_'+t.id+'" '+
         'data-owed="'+owed+'" value="'+(allocDraft[t.id]||'')+'" placeholder="0" oninput="recalcAlloc()">'+
@@ -7534,7 +7623,9 @@ function delDriver(did){
    DELIVERIES AND POD PAGE
    ============================================================ */
 function viewPod(){
-  const all = DB.trips.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  /* newest first, the same order Trips reads in; a self-funded run has no
+     party, no POD and nothing to deliver, so it never joins this queue */
+  const all = DB.trips.filter(t=>!t.selfFunded).slice().sort(newestFirst);
   /* so Previous/Next inside the trip card walks the queue you are clearing */
   tripNav = all.filter(t=>['delivered','received'].includes(tripStage(t))).map(t=>t.id);
   const by = k => all.filter(t=>tripStage(t)===k);
@@ -7552,8 +7643,12 @@ function viewPod(){
     return '<div class="pod-row">'+
       '<div class="who">'+
         '<div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
-        '<div class="t-sub">'+(t.lr?'LR '+esc(t.lr)+' · ':'')+esc(partyName(t.partyId))+
-          ' · '+fdate(t.date)+'</div>'+
+        '<div class="t-sub">'+[
+          t.lr ? 'LR '+esc(t.lr) : '',
+          truckById(t.truckId) ? '<span class="num">'+esc(truckName(t.truckId))+'</span>' : '',
+          esc(partyName(t.partyId)),
+          fdate(t.date)
+        ].filter(Boolean).join(' · ')+'</div>'+
       '</div>'+
       (since!==null? '<span class="pod-age'+(since>=POD_CHASE_DAYS?' old':'')+'">'+
         plural(since,'day')+'</span>':'')+
@@ -8054,12 +8149,12 @@ function completeness(from, to){
     {k:'noFreight', sev:'high', kind:'trip',
      label:'Trips with no freight amount',
      why:'Earnings are understated and the party is never billed for the load.',
-     items: trips.filter(t=>!num(t.freight))},
+     items: trips.filter(t=>!selfFunded(t) && !num(t.freight))},
 
     {k:'podPending', sev:'high', kind:'trip',
      label:'Delivered, paperwork not submitted',
      why:'Payment usually waits on the POD, so this is money sitting still for a reason you control.',
-     items: trips.filter(t=>t.deliveredAt && !t.podSubmittedAt)},
+     items: trips.filter(t=>!selfFunded(t) && t.deliveredAt && !t.podSubmittedAt)},
 
     {k:'expNoTruck', sev:'high', kind:'expense',
      label:'Expenses not attached to a truck',
@@ -8099,7 +8194,7 @@ function completeness(from, to){
     {k:'noLr', sev:'low', kind:'trip',
      label:'Trips with no LR number',
      why:'Nothing to quote back when a party queries the bill.',
-     items: trips.filter(t=>!String(t.lr||'').trim())},
+     items: trips.filter(t=>!selfFunded(t) && !String(t.lr||'').trim())},
 
     {k:'partyNoPhone', sev:'low', kind:'party',
      label:'Parties who owe money with no phone number',
@@ -9301,14 +9396,15 @@ function exportCSV(what){
   if(what==='trips'){
     download(fileStem('trips')+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
       'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance',
-      'Advance date','Charges','Deductions','Billed to party','Balance pending','Hire','Status',
+      'Advance date','Charges','Deductions','Billed to party','Balance pending','Hire','Self funded','Status',
       'Delivery stage','Delivered on','POD received','POD submitted',
       'Supplier','Hire advance','Hire balance','Notes']]
       .concat(DB.trips.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
         [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',
          t.material,t.weight,num(t.freight),num(t.advCash),t.fuelQty||'',t.fuelRate||'',num(t.fuelAmt),
          num(t.advance),advDateOf(t),tripCharges(t),tripDeductions(t),tripFreightNet(t),tripBalance(t),
-         num(t.hire),tripStatus(t),stageInfo(tripStage(t)).label,
+         num(t.hire),selfFunded(t)?'Yes':'',tripStatus(t),
+         selfFunded(t)?'':stageInfo(tripStage(t)).label,
          t.deliveredAt||'',t.podReceivedAt||'',t.podSubmittedAt||'',
          tripSupplier(t)?supplierName(tripSupplier(t)):'',num(t.hireAdvance),tripSupplierBalance(t),t.notes])));
   }
@@ -9723,7 +9819,7 @@ function attachRemove(key, id, after){
     }
     if(after) after();
     toast('Attachment removed');
-  }, true);
+  }, true, true);            /* the trip screen underneath stays put */
 }
 
 function attachOpen(key, id){
@@ -9804,7 +9900,7 @@ function removePodPhoto(tripId, id){
     DB.pods[tripId] = podImages(tripId).filter(p=>p.id!==id);
     if(!DB.pods[tripId].length) delete DB.pods[tripId];
     save(); refreshPodScreen(tripId); toast('Page removed');
-  }, true);
+  }, true, true);            /* the trip screen underneath stays put */
 }
 function refreshPodScreen(tripId){
   if(tripDraft && tripDraft.id === tripId && repaintTripPane()){ /* refreshed in place */ }
@@ -9974,6 +10070,23 @@ const STAGES = [
 ];
 const POD_CHASE_DAYS = 7;
 
+/* ------------------------------------------------------------
+   A SELF-FUNDED TRIP
+   The truck running empty to a loading point. Nobody bills it and
+   nobody pays for it, so there is no party, no freight, no advance,
+   no delivery and no POD \u2014 only what it cost to move. Every
+   figure it feeds is therefore zero by arithmetic rather than by a
+   special case: freight nil, balance nil, out of every party ledger
+   because it names no party. Its expenses count exactly as any
+   other trip's do, against the truck and in the profit report,
+   which is the whole point of recording it.
+   ------------------------------------------------------------ */
+function selfFunded(t){ return !!(t && t.selfFunded); }
+
+/* newest day first, and inside a day the one entered last */
+function newestFirst(a, b){
+  return (b.date||'').localeCompare(a.date||'') || String(b.id).localeCompare(String(a.id));
+}
 function tripStage(t){
   if(t.podSubmittedAt) return 'submitted';
   if(t.podReceivedAt)  return 'received';
@@ -10267,6 +10380,7 @@ function tripBalance(t){ return tripFreightNet(t) - tripSettledTotal(t); }
    or a POD un-submitted opens it again on its own.
    ------------------------------------------------------------ */
 function tripCompleted(t){
+  if(selfFunded(t)) return false;         /* nothing to complete, nothing to lock */
   return !!(t && t.podSubmittedAt) && tripBalance(t) <= 0;
 }
 function allowLockedEdits(){ return !!(DB.settings && DB.settings.editLocked); }
@@ -10286,8 +10400,10 @@ function lockedStop(t){
   return true;
 }
 
-/* No advance = pending. Some advance = part paid. Nothing left = paid. */
+/* No advance = pending. Some advance = part paid. Nothing left = paid.
+   A self-funded run is none of these \u2014 there is nothing to collect. */
 function tripStatus(t){
+  if(selfFunded(t)) return 'self';
   const adv = tripSettledTotal(t), fr = tripFreightNet(t);
   if(adv <= 0) return 'pending';
   if(adv >= fr) return 'paid';
