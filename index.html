@@ -3623,7 +3623,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.41 &middot; 03 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.42 &middot; 03 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -3655,7 +3655,7 @@ tr.row-link:hover td{background:var(--bg-2)}
 const KEY = 'mvl_db_v1';
 const BLANK = {
   settings:{business:'Maa Vandana Logistics', owner:'', phone:'', address:'', gst:'', editLocked:false,
-    salaryAuto:true, salaryFrom:''},
+    salaryAuto:true},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
   shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{}, categories:[], assign:[],
   seeded:false
@@ -4315,19 +4315,18 @@ function leftDrivers(){ return DB.drivers.filter(d=>hasLeft(d)); }
    is counted, split across trucks or reconciled changes.
 
    Three rules keep it out of trouble:
-     · it never writes into the past. The month it first ran in is
-       written down once and every driver starts from there, so
-       switching this on cannot conjure a year of back pay out of an
-       old joining date \u2014 and a book left unopened for three
-       months still catches up on all three when it is opened.
+     · it starts at the joining date. Set a driver's joining day to
+       1 January and every pay day since is raised at once, so the
+       account is right from the day they started rather than from
+       the day this was switched on.
      · it never doubles up. A month already carrying a salary-due
        entry for that driver, typed by hand or raised here, is left
-       exactly as it is.
+       exactly as it is, and that month goes down as settled.
      · it stops the day the driver leaves. The period that straddles
        the last working day is raised for the days actually worked
        and says so; nothing is raised after it.
-   Deleting one is final — the driver's high-water mark has already
-   moved past that month, so it does not come back.
+   Deleting one is final — the month is already down as settled,
+   so it does not come back on the next load.
    ------------------------------------------------------------ */
 function salaryAutoOn(){ return !(DB.settings && DB.settings.salaryAuto === false); }
 function ordinal(n){
@@ -4350,57 +4349,69 @@ function prevMonth(ym){
 function hasDueIn(did, ym){
   return (DB.driverTxns||[]).some(t=>t.driverId===did && t.type==='due' && (t.date||'').slice(0,7)===ym);
 }
-/* Everything owed to one driver that has not been raised yet. Returns the
-   entries without filing them, so the same reckoning can be shown or saved. */
-function salaryStart(){
-  return (DB.settings && DB.settings.salaryFrom) || thisMonth();
-}
+function salaryMonthsDone(d){ return (d && d.salaryDone) || []; }
+/* Every pay day from the one after they joined up to today. The reckoning is
+   worked out without filing anything, so the same walk can be shown or saved. */
 function salaryDueFor(d, upto){
   const out = [];
   if(!d || !num(d.salary) || !d.join) return out;
   const now = upto || today();
   const day = +d.join.slice(8,10);
-  /* the month after whatever is already settled for them, or, for a driver
-     never accrued before, the month this was first switched on */
-  const first = d.accruedTo ? nextMonth(d.accruedTo) : salaryStart();
-  for(let ym = first; ym <= now.slice(0,7); ym = nextMonth(ym)){
+  const done = salaryMonthsDone(d);
+  /* the first pay day falls a month after the joining day */
+  for(let ym = nextMonth(d.join.slice(0,7)); ym <= now.slice(0,7); ym = nextMonth(ym)){
     const on = payDayIn(ym, day);
     if(on > now) break;                       /* the day has not come round yet */
     if(on <= d.join) continue;                /* nothing is earned before joining */
     const from = payDayIn(prevMonth(ym), day);
     const to   = prevDay(on);
-    if(to < from) continue;
-    if(to < d.join) continue;
+    if(to < from || to < d.join) continue;
     const start = from > d.join ? from : d.join;
     const stop  = leftOn(d) && leftOn(d) < to ? leftOn(d) : to;
     if(stop < start) break;                   /* wholly after they left */
     const span = spanDays(from, to), worked = spanDays(start, stop);
     const part = span && worked < span;
-    out.push({ym, rec:{id:uid(), driverId:d.id, type:'due',
-      amount: part ? Math.round(num(d.salary) * worked / span) : num(d.salary),
-      date: stop < on ? stop : on, from:start, to:stop, auto:true,
-      note: 'Salary for '+fdate(start)+' to '+fdate(stop)+
-        (part ? ' \u00b7 '+worked+' of '+span+' days worked' : '')}});
+    const clipped = !!leftOn(d) && stop < to;
+    if(done.indexOf(ym) < 0){
+      out.push({ym, rec:{id:uid(), driverId:d.id, type:'due',
+        amount: part ? Math.round(num(d.salary) * worked / span) : num(d.salary),
+        date: clipped ? stop : on, from:start, to:stop, auto:true,
+        note: 'Salary for '+fdate(start)+' to '+fdate(stop)+
+          (part ? ' · '+worked+' of '+span+' days worked' : '')}});
+    }
     if(leftOn(d) && stop >= leftOn(d)) break; /* that was the last of it */
   }
   return out;
 }
-/* Raise whatever is owed, for everyone, and remember how far we got. */
+/* The first cut of this dated a raised entry on the last day of the period it
+   covered rather than on the pay day it fell due. That put it in the wrong
+   calendar month, which is the month the duplicate check reads, so move it
+   forward one day onto the pay day. A part-period, closed off early because
+   the driver left, is already dated correctly and is left alone. */
+function migrateSalaryDates(){
+  let changed = false;
+  (DB.driverTxns||[]).forEach(t=>{
+    if(!t.auto || t.type!=='due' || !t.to || t.date!==t.to) return;
+    if(/days worked/.test(t.note||'')) return;
+    t.date = addDays(t.to, 1);
+    changed = true;
+  });
+  if(changed) save();
+  return changed;
+}
+/* Raise whatever is owed, for everyone, and write down the months settled. */
 function accrueSalaryDue(){
   if(!salaryAutoOn()) return 0;
   let made = 0, touched = false;
   DB.driverTxns = DB.driverTxns || [];
-  /* the anchor is written once and never moves, so the starting point does
-     not drift to whatever month the book happens to be opened in */
-  if(!(DB.settings && DB.settings.salaryFrom)){
-    DB.settings = Object.assign({}, DB.settings, {salaryFrom: thisMonth()});
-    touched = true;
-  }
   DB.drivers.forEach(d=>{
     if(!num(d.salary) || !d.join) return;
+    if(d.accruedTo !== undefined){ delete d.accruedTo; touched = true; }
     salaryDueFor(d).forEach(x=>{
       if(!hasDueIn(d.id, x.ym)){ DB.driverTxns.push(x.rec); made++; }
-      d.accruedTo = x.ym;                     /* raised or already there, it is done */
+      /* raised here, or already sitting there by hand — either way that
+         month is settled, and deleting the entry later does not undo it */
+      d.salaryDone = salaryMonthsDone(d).concat([x.ym]);
       touched = true;
     });
   });
@@ -8605,14 +8616,13 @@ function viewSettings(){
     '<h3 class="card-title" style="margin-bottom:6px">Monthly salary</h3>'+
     '<p class="hint" style="margin:0 0 14px;max-width:620px">A driver earns their pay whether or not '+
       'anyone remembers to type it in. With this on, the salary due is raised in each driver\u2019s account '+
-      'once a month, on the day of the month they joined, for whatever their monthly salary is set to. '+
-      'A month you have already entered by hand is left alone, nothing is ever raised for a month before '+
-      'this was switched on, and it stops the day a driver leaves.</p>'+
+      'once a month, on the day of the month they joined, for whatever their monthly salary is set to \u2014 '+
+      'every pay day since they joined, so an account is right from the day they started. A month you have '+
+      'already entered by hand is left alone, and it stops the day a driver leaves.</p>'+
     '<label class="check-line"><input type="checkbox" id="s_salaryAuto"'+(salaryAutoOn()?' checked':'')+
       ' onchange="setSalaryAuto(this.checked)"> Raise the salary due every month</label>'+
     '<div class="hint" style="margin-top:10px">'+
       (function(){
-        const from = DB.settings && DB.settings.salaryFrom;
         const set = DB.drivers.filter(d=>num(d.salary) && d.join && !hasLeft(d));
         const noJoin = activeDrivers().filter(d=>num(d.salary) && !d.join);
         return (set.length
@@ -8621,8 +8631,8 @@ function viewSettings(){
           : 'No driver has both a monthly salary and a joining date yet, so nothing is being raised.')+
           (noJoin.length? ' '+plural(noJoin.length,'driver')+' with a salary but no joining date '+
             (noJoin.length===1?'is':'are')+' skipped \u2014 add the date on their profile.' : '')+
-          (from? ' Nothing is raised for any month before '+
-            fdate(from+'-01').replace(/^\d+ /,'')+'.' : '');
+          ' Every pay day since a driver joined is raised, so filling in a '+
+          'joining date brings the whole account up to date at once.';
       })()+
     '</div>'+
   '</div>'+
@@ -11494,6 +11504,7 @@ buildDocTypeList();
 migrateAdvances();
 migrateTrucks();
 migrateAssignments();
+migrateSalaryDates();
 accrueSalaryDue();
 /* Sample data is only ever created on a device with no cloud project, and
    only on the very first run. Otherwise a blank device could seed itself and
