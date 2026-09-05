@@ -742,10 +742,13 @@ textarea {
   background: #fff;
 }
 
+/* --side is the rail, and the rail is white in Daylight, so filling the
+   chosen segment with it left white text on white. The primary button
+   already carries the one token that is a dark fill in every theme. */
 .seg input:checked+label {
-  background: var(--side);
-  border-color: var(--side);
-  color: #fff;
+  background: var(--btn-bg);
+  border-color: var(--btn-bg);
+  color: var(--btn-ink);
 }
 
 /* ---------- Modal ---------- */
@@ -3627,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.44 &middot; 04 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.45 &middot; 04 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -6856,17 +6859,6 @@ function assignHistoryField(t){
   '</div>';
 }
 /* the period follows the payment date until it is set by hand */
-function dtPeriodFollow(){
-  const d = val('dt_date'); if(!d) return;
-  const f = document.getElementById('dt_from'), t = document.getElementById('dt_to');
-  if(!f || !t) return;
-  const wasAuto = !f.dataset.touched && !t.dataset.touched;
-  if(!wasAuto) return;
-  f.value = monthFirst(d); t.value = monthLast(d);
-  if(f.dataset) f.dataset.good = f.value;
-  if(t.dataset) t.dataset.good = t.value;
-}
-
 function truckForm(id, onSaved, preset){
   const t = id ? truckById(id) : null;
   const nest = typeof onSaved === 'function';
@@ -7557,32 +7549,35 @@ function driverTxnForm(did, tid){
     title: t?'Edit entry':'Driver account entry', okText: t?'Save changes':'Save entry',
     body:'<div class="form-grid">'+
       fSeg('dt_type','Entry type',[{v:'due',t:'Salary due'},{v:'salary',t:'Salary paid'},{v:'advance',t:'Advance paid'}], t?t.type:'salary')+
-      fText('dt_date','Date paid', t?t.date:today(),'date','onchange="dtPeriodFollow()"')+
+      fText('dt_date','Date paid', t?t.date:today(),'date')+
       fText('dt_amount','Amount (₹)', t?t.amount:(d&&d.salary?d.salary:''),'number','min="0" step="1"')+
-      fText('dt_from','Period from', t?(t.from||monthFirst(t.date)):(gone? monthFirst(gone):monthFirst(today())),'date')+
-      fText('dt_to','Period to', t?(t.to||monthLast(t.date)):(gone? gone:monthLast(today())),'date')+
       fText('dt_note','Note', t?t.note:'','text','placeholder="e.g. Salary for July"')+
       (gone? '<div class="field full"><div class="note">'+esc(d.name)+' left on <b>'+fdate(gone)+'</b>. '+
         'Salary stops adding up after that day, so a salary-due entry cannot run past it. '+
         'Payments are still allowed \u2014 that is how you settle what is owed.</div></div>':'')+
-      '<div class="field full"><span class="hint">The period decides which truck carries this money. '+
-        'A payment is split across the trucks this driver drove during it, by days \u2014 nothing is '+
-        'recorded twice, and days spent on no truck stay a general cost.</span></div>'+
+      '<div class="field full"><span class="hint">The month of the date above decides which truck carries '+
+        'this money. A payment is split across the trucks this driver drove during that month, by days '+
+        '\u2014 nothing is recorded twice, and days spent on no truck stay a general cost.</span></div>'+
     '</div>',
     onOk(){
       const amt = num(val('dt_amount'));
       if(amt<=0){ toast('Enter an amount greater than zero'); return; }
-      const from = val('dt_from') || monthFirst(val('dt_date')||today());
-      const to   = val('dt_to')   || monthLast(val('dt_date')||today());
-      if(to < from){ toast('The period ends before it starts'); return; }
+      /* The period is no longer typed in. An entry covers the calendar month
+         of the day it is dated, which is what the blank fields always fell
+         back to anyway, so the truck-wise split is unchanged. An entry
+         raised by the monthly accrual, or one saved before this, keeps the
+         period it was given. */
+      const when = val('dt_date') || today();
+      const from = t ? (t.from || monthFirst(when)) : monthFirst(when);
+      const to   = t ? (t.to   || monthLast(when))  : monthLast(when);
       /* nobody earns a salary after the day they stopped working */
-      if(gone && (checked('dt_type')||'salary')==='due' && to > gone){
-        markMissing('dt_to', 'Salary stops on '+fdate(gone)+', the last working day');
-        focusField('dt_to');
-        toast(esc(d.name)+' left on '+fdate(gone)+' \u2014 no salary is due after that');
+      if(gone && (checked('dt_type')||'salary')==='due' && from > gone){
+        markMissing('dt_date', 'Salary stops on '+fdate(gone)+', the last working day');
+        focusField('dt_date');
+        toast(d.name+' left on '+fdate(gone)+' \u2014 no salary is due after that');
         return;
       }
-      const rec = {id:t?t.id:uid(), driverId:did, date:val('dt_date')||today(),
+      const rec = {id:t?t.id:uid(), driverId:did, date:when,
         type:checked('dt_type')||'salary', amount:amt, from, to, note:val('dt_note')};
       if(t) DB.driverTxns[DB.driverTxns.findIndex(x=>x.id===t.id)] = rec; else DB.driverTxns.push(rec);
       save(); closeModal(); renderDriver(did); afterDirectRender(); toast(t?'Entry updated':'Entry saved');
