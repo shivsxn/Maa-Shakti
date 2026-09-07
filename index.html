@@ -3630,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.45 &middot; 04 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.46 &middot; 04 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5066,7 +5066,10 @@ function viewTrips(){
   '<div class="filters">'+
     '<div class="filter-row">'+
       '<select onchange="sub.party=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">All parties</option>'+
-        DB.parties.map(p=>'<option value="'+p.id+'"'+(p.id===(sub.party||'')?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>'+
+        DB.parties.map(p=>'<option value="'+p.id+'"'+(p.id===(sub.party||'')?' selected':'')+'>'+esc(p.name)+'</option>').join('')+
+        (DB.trips.some(selfFunded)
+          ? '<option value="__self"'+(sub.party==='__self'?' selected':'')+'>Self funded runs</option>' : '')+
+        '</select>'+
       '<select onchange="sub.truck=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">All trucks</option>'+
         DB.trucks.map(t=>'<option value="'+t.id+'"'+(t.id===(sub.truck||'')?' selected':'')+'>'+esc(t.number)+'</option>').join('')+'</select>'+
       '<select onchange="sub.status=this.value;sub.limit=0;renderTripList();filterBadge()"><option value="">Any payment</option>'+
@@ -5128,11 +5131,14 @@ function renderTripList(){
      order of the array. Deliveries reads the same way; the ledgers and the
      exports stay oldest-first, because a statement has to run forwards. */
   let list = DB.trips.slice().sort(newestFirst);
-  if(sub.party)  list = list.filter(t=>t.partyId===sub.party);
+  /* a self-funded run has no party, so it answers only to its own filter */
+  if(sub.party==='__self') list = list.filter(selfFunded);
+  else if(sub.party) list = list.filter(t=>t.partyId===sub.party);
   if(sub.truck)  list = list.filter(t=>t.truckId===sub.truck);
   if(sub.status) list = list.filter(t=>tripStatus(t)===sub.status);
-  if(sub.stage==='podpending') list = list.filter(t=>['delivered','received'].includes(tripStage(t)));
-  else if(sub.stage) list = list.filter(t=>tripStage(t)===sub.stage);
+  /* and nothing is delivered on one, so no delivery stage should find it */
+  if(sub.stage==='podpending') list = list.filter(t=>!selfFunded(t) && ['delivered','received'].includes(tripStage(t)));
+  else if(sub.stage) list = list.filter(t=>!selfFunded(t) && tripStage(t)===sub.stage);
   if(sub.dFrom)  list = list.filter(t=>t.date>=sub.dFrom);
   if(sub.dTo)    list = list.filter(t=>t.date<=sub.dTo);
   if(lr) list = list.filter(t=>(t.lr||'').toLowerCase().includes(lr));
@@ -5143,14 +5149,17 @@ function renderTripList(){
   const totDue = list.reduce((s,t)=>s+Math.max(0, tripBalance(t)),0);
   const full = list.length;
   /* the strip above the table describes THIS list, filters and all */
-  const running   = list.filter(t=>!t.podSubmittedAt).length;
+  const selfRuns  = list.filter(selfFunded).length;
+  const billable  = full - selfRuns;
+  const running   = list.filter(t=>!selfFunded(t) && !t.podSubmittedAt).length;
   const settled   = list.filter(t=>tripCompleted(t)).length;
   const advOut    = list.reduce((s,t)=>s+tripAdvance(t),0);
   const strip = summary([
     {label:'Trips', value:full, fmt:'plain', icon:'trips',
-     note: running+' still running \u00b7 '+settled+' settled'},
+     note: running+' still running \u00b7 '+settled+' settled'+
+       (selfRuns? ' \u00b7 '+selfRuns+' self funded':'')},
     {label:'Freight billed', value:tot, icon:'reports',
-     note: full ? money(tot/full)+' a trip' : 'Nothing billed'},
+     note: billable ? money(tot/billable)+' a trip' : 'Nothing billed'},
     {label:'Advance given', value:advOut, icon:'expenses',
      note: tot ? Math.round(advOut/tot*100)+'% of freight' : 'None given'},
     {label:'Still to collect', value:totDue, icon:'parties',
