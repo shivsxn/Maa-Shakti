@@ -3630,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.46 &middot; 04 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.47 &middot; 08 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4525,7 +4525,22 @@ function buildNav(){
       (group? '<div class="nav-group">'+group.label+'</div>' : '');
   }).join('');
 }
-function go(r){ route = r; sub = {}; window.scrollTo(0,0); closeModal(); render(); }
+/* Each screen remembers how it was left, so coming back to Trips finds the
+   filters still on rather than a clean slate. The drill-in is deliberately
+   not kept: clicking Parties in the rail should land on the list of parties,
+   not back inside whichever ledger was open last. */
+const SUBS = {};
+function keepSub(r, state){
+  const held = Object.assign({}, state || {});
+  delete held.open;
+  SUBS[r] = held;
+}
+function go(r){
+  keepSub(route, sub);
+  route = r;
+  sub = Object.assign({}, SUBS[r] || {});
+  window.scrollTo(0,0); closeModal(); render();
+}
 
 function moreMenu(){
   const rest = PAGES.filter(p=>!MOBILE.includes(p.id));
@@ -4560,6 +4575,49 @@ function render(){
 let modalOnOk = null;
 let modalStack = [];
 
+/* ------------------------------------------------------------
+   UNSAVED WORK
+   A screen writes down how it looked the moment it opened. Closing
+   it by Escape, the cross, Cancel or the backdrop compares the two
+   and asks first when they differ. It is a comparison and not a
+   dirty flag, so typing something and typing it back again leaves
+   nothing to warn about. Saving closes the screen directly and is
+   never asked about, because there is nothing left to lose.
+
+   The trip screen is read from its draft rather than from the page:
+   it has four tabs and only one of them is on screen at a time, so
+   the DOM alone would miss a change made on another tab.
+   ------------------------------------------------------------ */
+let formBase = null;
+function formState(){
+  if(!document.querySelector('#modalRoot .overlay')) return null;
+  if(tripDraft && document.querySelector('.overlay .trip-pane')){
+    readTripForm();
+    return JSON.stringify([tripDraft, tripExpDraft, lineDraft,
+      pendingAdvAttach.map(a=>a.id)]);
+  }
+  return JSON.stringify(snapshotModal());
+}
+function formMark(){ formBase = formState(); }
+function formDirty(){
+  if(formBase === null) return false;
+  const now = formState();
+  return now !== null && now !== formBase;
+}
+/* the way out for anyone abandoning the screen rather than saving it */
+function closeModalAsk(){
+  if(!formDirty()){ closeModal(); return; }
+  stackForm({
+    wide:'ask',
+    title:'Unsaved changes',
+    body:'<p style="margin:0;font-size:14.5px">You have changed things on this screen '+
+      'and not saved them. Leaving now throws those changes away.</p>',
+    okText:'Discard changes',
+    okClass:'btn btn-danger',
+    onOk(){ closeModal(); formBase = null; closeModal(); }
+  });
+}
+
 /* everything typed in the open modal, so it can be put back afterwards */
 function snapshotModal(){
   const vals = {};
@@ -4593,11 +4651,11 @@ function modalSize(wide){
 function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk, wide}){
   modalOnOk = onOk;
   $('#modalRoot').innerHTML =
-    '<div class="overlay" onclick="if(event.target===this)closeModal()">'+
+    '<div class="overlay" onclick="if(event.target===this)closeModalAsk()">'+
       '<div class="modal modal-'+modalSize(wide)+'" role="dialog" aria-modal="true">'+
-        '<div class="modal-head"><h2 class="modal-title">'+esc(title)+'</h2><button class="x" onclick="closeModal()" aria-label="Close">&times;</button></div>'+
+        '<div class="modal-head"><h2 class="modal-title">'+esc(title)+'</h2><button class="x" onclick="closeModalAsk()" aria-label="Close">&times;</button></div>'+
         '<div class="modal-body">'+body+'</div>'+
-        (onOk ? '<div class="modal-foot"><button class="btn" onclick="closeModal()">Cancel</button>'+
+        (onOk ? '<div class="modal-foot"><button class="btn" onclick="closeModalAsk()">Cancel</button>'+
         '<button class="'+okClass+'" onclick="modalOk()">'+esc(okText)+'</button></div>' : '')+
       '</div></div>';
   document.body.style.overflow='hidden';
@@ -4607,6 +4665,7 @@ function openModal({title, body, okText='Save', okClass='btn btn-primary', onOk,
   if($('#f_advTotal')) recalcAdvance();
   const f = $('.modal-body input, .modal-body select, .modal-body textarea');
   if(f && window.innerWidth>760) f.focus();
+  formMark();                     /* how this screen looked before anyone touched it */
 }
 function closeModal(){
   closeDatePicker(); comboClose();
@@ -4615,16 +4674,17 @@ function closeModal(){
     $('#modalRoot').innerHTML = s.html;
     restoreModal(s.vals);
     modalOnOk = s.onOk;
+    formBase = s.base;            // and to how that form looked when it opened
     clampDates();                 // the restored fields are new elements
     if(s.after) s.after();
     return;
   }
-  $('#modalRoot').innerHTML=''; modalOnOk=null; document.body.style.overflow='';
+  $('#modalRoot').innerHTML=''; modalOnOk=null; formBase=null; document.body.style.overflow='';
 }
 function modalOk(){ if(modalOnOk) modalOnOk(); }
 function val(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
 function checked(name){ const el=document.querySelector('input[name="'+name+'"]:checked'); return el?el.value:''; }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModalAsk(); });
 
 /* ------------------------------------------------------------
    REQUIRED FIELDS
@@ -5948,6 +6008,7 @@ function tripScreen(id, tab){
   if($('#tripExpRows')) paintTripExpenses();
   if($('#f_advTotal')) recalcAdvance();
   paintTripTotals();
+  formMark();                     /* again: the drafts are only ready now */
   applyTripLock();
 }
 
@@ -9736,7 +9797,8 @@ function afterQuickChange(id){
 }
 /* open a creation form on top of whatever is already open */
 function stackForm(opts, after){
-  modalStack.push({html:$('#modalRoot').innerHTML, vals:snapshotModal(), onOk:modalOnOk, after:after});
+  modalStack.push({html:$('#modalRoot').innerHTML, vals:snapshotModal(),
+    onOk:modalOnOk, after:after, base:formBase});
   openModal(opts);
 }
 function alreadyExists(list, field, value, exceptId){
