@@ -3630,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.47 &middot; 08 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.48 &middot; 08 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4003,6 +4003,15 @@ function isDateField(el){
 }
 document.addEventListener('change', e=>{
   if(!isDateField(e.target) || dpCommitting) return;
+  /* The hold below is released by the field's own blur handler, which only
+     a managed field has. A field drawn in place after the last sweep has
+     none, so its change would be held for ever and the filter would look
+     dead. Adopt it here instead. Its earlier value is already gone, so the
+     baseline is left blank and this first edit always counts as one. */
+  if(!dpManaged.has(e.target)){
+    manageDate(e.target);
+    e.target.dataset.good = '';
+  }
   e.stopPropagation();                      /* held until the field is left */
   e.target.dataset.pending = '1';
 }, true);
@@ -8523,6 +8532,7 @@ function viewReports(){
       : empty('No expenses in this period','Change the date range, or record expenses to see the split.','');
   }
   $('#view').innerHTML = filters + tabs + body;
+  clampDates();     /* the range bar is rebuilt here, so its two inputs are new */
 }
 /* ------------------------------------------------------------
    ONE TRUCK, IN FULL
@@ -10861,6 +10871,7 @@ function setRange(k, target){
 }
 function rerun(target){
   (target==='insights' ? viewInsights : viewReports)();
+  clampDates();
   animateCounts();
 }
 function rangeBar(target){
