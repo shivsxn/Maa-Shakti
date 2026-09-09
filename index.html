@@ -2795,10 +2795,6 @@ tbody tr:last-child td {
 .self-line{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--card-2)}
 .self-line .hint{display:block;margin-top:5px}
 .self-line .self-drop{display:block;margin-top:7px;font-size:12.5px;font-weight:600;color:var(--red)}
-/* spending past the hire on a bought-in trip: something is wrong, say so */
-.exp-over{margin-top:10px;padding:10px 13px;border-radius:var(--r-sm);font-size:13px;line-height:1.55;
-  background:var(--red-soft);border:1px solid var(--red-line);color:var(--red)}
-.exp-over[hidden]{display:none}
 .alloc-list{max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:var(--card-2)}
 .alloc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-soft)}
 .alloc-row:last-child{border-bottom:0}
@@ -3634,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.52 &middot; 09 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.53 &middot; 09 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4088,10 +4084,6 @@ function reindex(){
   IDX.supplier = {}; (DB.suppliers||[]).forEach(s=>IDX.supplier[s.id]=s);
   IDX.alloc = allocIndex();
   IDX.supPaid = supplierPaidIndex();
-  IDX.hired = null;                     /* cleared first so hiredIn is read fresh */
-  const hired = new Set();
-  DB.trips.forEach(t=>{ if(num(t.hire) > 0) hired.add(t.id); });
-  IDX.hired = hired;
 }
 // index first, with a safety net in case anything was added without a save
 const truckById  = id => IDX.truck[id]  || DB.trucks.find(t=>t.id===id);
@@ -4461,37 +4453,6 @@ function closeDriverSeats(did, last){
   DB.trucks.forEach(t=>{ if(t.driverId === did) t.driverId = ''; });
 }
 
-/* ------------------------------------------------------------
-   A TRIP BOUGHT IN FROM A MARKET TRUCK OWNER
-   Such a trip is priced as one number: the hire. Whatever went on
-   diesel, toll and labour on the road came out of the advance
-   paid to the owner, so an expense booked against it records how
-   that advance was spent \u2014 it is not a cost on top of the hire.
-   Adding both counted the same diesel twice and made every
-   bought-in trip look worse than it was.
-
-   So on these trips the hire is the whole cost, and the profit is
-   simply the freight less the hire. The expenses stay on the trip
-   and stay visible; they just do not reach the profit a second
-   time. Spending more than the hire means something is wrong \u2014
-   the hire is understated, or an expense belongs elsewhere \u2014 and
-   that is flagged rather than silently swallowed.
-   ------------------------------------------------------------ */
-function hiredIn(t){ return !!t && num(t.hire) > 0; }
-function hiredTripIds(){
-  if(IDX && IDX.hired) return IDX.hired;
-  const set = new Set();
-  DB.trips.forEach(t=>{ if(hiredIn(t)) set.add(t.id); });
-  return set;
-}
-/* an expense the hire has already paid for */
-function insideHire(e){
-  return !!(e && e.tripId) && hiredTripIds().has(e.tripId);
-}
-/* what has been booked against a bought-in trip, and whether it overruns */
-function hireSpend(t){ return hiredIn(t) ? tripExpensesOf(t.id) : 0; }
-function hireOverrun(t){ return hiredIn(t) ? Math.max(0, hireSpend(t) - num(t.hire)) : 0; }
-
 // Profit & loss for a date range
 function pnl(from, to){
   const inR = d => (!from || d>=from) && (!to || d<=to);
@@ -4499,12 +4460,8 @@ function pnl(from, to){
   const freightBase = trips.reduce((s,t)=>s+num(t.freight),0);
   const hire    = trips.reduce((s,t)=>s+num(t.hire),0);
   const byCat = {};
-  const inRange = DB.expenses.filter(e=>inR(e.date));
-  inRange.forEach(e=>{ if(!insideHire(e)) byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
+  DB.expenses.filter(e=>inR(e.date)).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
   const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
-  /* kept out of the cost column and reported on its own, so the statement
-     still accounts for every rupee recorded */
-  const hiredSpend = inRange.filter(insideHire).reduce((a,e)=>a+num(e.amount),0);
   const dp = driverPayBreak('', from, to);
   const driverPaid = dp.paid;      /* unchanged: the same total as before */
   /* Charges add to what you bill, deductions take away. Income is what the
@@ -4525,7 +4482,7 @@ function pnl(from, to){
 
   const freight = freightBase + charges - deductions;
   return {trips, tripCount:trips.length, freight, freightBase, charges, deductions,
-    hire, byCat, expense, hiredSpend, driverPaid,
+    hire, byCat, expense, driverPaid,
     driverSalary:dp.salary, driverAdvance:dp.advance, driverOther:dp.other, costs,
     profit:freight-costs, advances, receipts, adjusted, collected, actual:collected-costs};
 }
@@ -5027,7 +4984,7 @@ function viewInsights(){
     const ts = win.filter(t=>t.truckId===tr.id);
     const freight = ts.reduce((s,t)=>s+num(t.freight),0);
     const hire = ts.reduce((s,t)=>s+num(t.hire),0);
-    const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from && e.date<=to && !insideHire(e))
+    const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from && e.date<=to)
       .reduce((s,e)=>s+num(e.amount),0);
     const sal = truckDriverPay(tr.id, from, to);
     return {label:tr.number, trips:ts.length, value:freight-hire-exp-sal, freight};
@@ -5045,8 +5002,7 @@ function viewInsights(){
   const routes = {};
   win.forEach(t=>{
     const k = (t.from||'?')+' → '+(t.to||'?');
-    /* on a bought-in trip the hire already paid for what was spent */
-    const cost = num(t.hire) + (hiredIn(t) ? 0 : (expOnTrip[t.id]||0));
+    const cost = num(t.hire) + (expOnTrip[t.id]||0);
     const r = routes[k] = routes[k] || {label:k, n:0, freight:0, cost:0, net:0};
     r.n++; r.freight += num(t.freight); r.cost += cost; r.net += num(t.freight) - cost;
   });
@@ -5617,21 +5573,9 @@ function dropAttach(key){
 }
 function recalcTripExpenses(){
   const out = document.getElementById('f_expTotal');
-  const spent = tripExpenseTotal();
-  if(out) out.textContent = money(spent);
+  if(out) out.textContent = money(tripExpenseTotal());
   const adv = document.getElementById('f_expAdvEcho');
   if(adv && tripDraft) adv.textContent = money(tripAdvance(tripDraft));
-  const cap = document.getElementById('f_hireCap');
-  const warn = document.getElementById('f_expOver');
-  if(cap && warn){
-    const hire = num(cap.dataset.hire);
-    const over = spent - hire;
-    warn.hidden = over <= 0;
-    if(over > 0) warn.innerHTML = '<b>'+money(over)+' more than the hire.</b> On a bought-in trip the '+
-      'hire covers what was spent on the road, so this cannot be right \u2014 either the hire of '+
-      money(hire)+' is understated, or one of these lines belongs on another trip.';
-    if(out) out.className = 'num adv-total-value'+(over > 0 ? ' money-neg' : '');
-  }
   paintTripTotals();
 }
 /* the draft becomes real Expenses records the moment the trip is saved */
@@ -5915,16 +5859,6 @@ function tripExpensePane(t, existing){
         '<span class="num adv-total-value" id="f_expAdvEcho">'+money(tripAdvance(t))+'</span></div>'+
       '<div class="adv-total adv-balance"><span>Total expense money</span>'+
         '<span class="num adv-total-value" id="f_expTotal">₹0</span></div>'+
-      /* On a bought-in trip the hire is the ceiling: what was spent came out
-         of the advance to the owner. Going past it means the hire is
-         understated or an expense belongs on another trip, so say so here
-         rather than let it quietly distort the profit. */
-      (hiredIn(t)
-        ? '<div class="adv-total" id="f_hireCapRow"><span>Hire for this trip</span>'+
-            '<span class="num adv-total-value" id="f_hireCap" data-hire="'+num(t.hire)+'">'+
-            money(t.hire)+'</span></div>'+
-          '<div class="exp-over" id="f_expOver" hidden></div>'
-        : '')+
     '</div>'+
     (existing ? '<div style="margin-top:14px"><button class="btn" data-keep onclick="closeModal();go(\'expenses\')">'+
       'Open the Expenses tab</button></div>' : '');
@@ -8330,11 +8264,6 @@ function completeness(from, to){
      why:'They cannot be traced to a route, so Best routes reads better than the truth. Some of these are genuinely fleet costs \u2014 insurance, a service \u2014 and belong here.',
      items: exps.filter(e=>e.truckId && !e.tripId)},
 
-    {k:'hireOverrun', sev:'high', kind:'trip',
-     label:'Bought-in trips where the spending is more than the hire',
-     why:'The hire pays for what a market truck spends on the road, so it is the ceiling. Past it, either the hire is understated or an expense belongs on another trip \u2014 and until it is settled the trip reads worse than it was.',
-     items: trips.filter(t=>hireOverrun(t) > 0)},
-
     {k:'tripAfterLeft', sev:'high', kind:'trip',
      label:'Trips run by a driver after they had left',
      why:'Either the leaving date is wrong or the trip names the wrong driver. Until it is settled the wages on that truck are being carried by someone who was not there.',
@@ -8519,14 +8448,9 @@ function viewReports(){
         costCount? plural(costCount,'line')+' · hire, expenses, driver pay'
                  : 'Nothing recorded in this period',
         '<span class="num">'+money(p.costs)+'</span>',
-        (costLines.length? costLines
+        costLines.length? costLines
           : ['<div class="pl-line"><span>No costs recorded in this period</span>'+
-             '<span class="num">'+money(0)+'</span></div>']).concat(
-          p.hiredSpend
-            ? ['<div class="hint" style="margin:6px 0 2px">'+money(p.hiredSpend)+
-               ' was booked to trips bought in from market truck owners. The hire above already '+
-               'paid for it, so it is not counted a second time.</div>']
-            : []))+
+             '<span class="num">'+money(0)+'</span></div>'])+
       plGroup('position', 'Position',
         p.freight? Math.round(p.collected/p.freight*100)+'% of the billing has reached you'
                  : 'Nothing billed in this period',
@@ -8582,8 +8506,7 @@ function viewReports(){
       const trips = DB.trips.filter(x=>x.truckId===t.id && inR(x.date));
       const freight = trips.reduce((s,x)=>s+num(x.freight),0);
       const hire = trips.reduce((s,x)=>s+num(x.hire),0);
-      const exp = DB.expenses.filter(e=>e.truckId===t.id && inR(e.date) && !insideHire(e))
-        .reduce((s,e)=>s+num(e.amount),0);
+      const exp = DB.expenses.filter(e=>e.truckId===t.id && inR(e.date)).reduce((s,e)=>s+num(e.amount),0);
       const sal = truckDriverPay(t.id, sub.from, sub.to);
       return {t, n:trips.length, freight, hire, exp, sal, net:freight-hire-exp-sal};
     }).filter(r=>r.n||r.exp||r.sal).sort((a,b)=>b.net-a.net);
@@ -8648,13 +8571,9 @@ function truckBreakdown(truckId, from, to){
   const wages = truckPaySlices(truckId, from, to);
   const freight = trips.reduce((n,t)=>n+num(t.freight),0);
   const hire    = trips.reduce((n,t)=>n+num(t.hire),0);
-  /* every line is still listed; only what the hire has not already paid
-     for is taken off the net, or the same diesel would come off twice */
-  const spend   = spends.filter(e=>!insideHire(e)).reduce((n,e)=>n+num(e.amount),0);
-  const inHire  = spends.filter(insideHire).reduce((n,e)=>n+num(e.amount),0);
+  const spend   = spends.reduce((n,e)=>n+num(e.amount),0);
   const wage    = wages.reduce((n,w)=>n+w.shown,0);
-  return {trips, spends, wages, freight, hire, spend, inHire, wage,
-    net: freight-hire-spend-wage};
+  return {trips, spends, wages, freight, hire, spend, wage, net: freight-hire-spend-wage};
 }
 function truckReport(truckId){
   const t = truckById(truckId);
