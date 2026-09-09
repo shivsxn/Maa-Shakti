@@ -3630,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.50 &middot; 09 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.51 &middot; 09 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5343,7 +5343,11 @@ function recalcAdvance(){
   const hireEl = document.getElementById('f_hire2');
   const hireDue = document.getElementById('f_hireDue');
   if(hireDue){
-    const due = num(hireEl?hireEl.value:(tripDraft&&tripDraft.hire)) - num(val('f_hireAdvance'));
+    /* whatever their ledger has already put against this load stays in the
+       sum while the hire and the advance are being typed */
+    const paidOn = num(hireDue.dataset.paid);
+    const due = num(hireEl?hireEl.value:(tripDraft&&tripDraft.hire))
+      - num(val('f_hireAdvance')) - paidOn;
     hireDue.textContent = money(due);
     hireDue.className = 'num adv-total-value'+(due>0?' money-neg':'');
   }
@@ -5397,7 +5401,12 @@ function supplierBlock(t){
   const isMarket = truck && truck.type==='market';
   if(!isMarket && !num(t.hire) && !t.supplierId) return '';
   const sid = tripSupplier(t);
-  const due = num(t.hire) - num(t.hireAdvance);
+  /* what has since been paid to them from their ledger, spread back onto
+     this load. It has its own line: the balance moving on its own would
+     leave nobody able to see why. */
+  const fromLedger = t.id ? supplierPaidTo(t.id) : 0;
+  const on = t.id ? supplierPaidBy2(t.id) : [];
+  const due = num(t.hire) - num(t.hireAdvance) - fromLedger;
   return '<div class="adv-block" style="margin-top:16px">'+
     '<div class="adv-head">Market truck supplier</div>'+
     '<div class="form-grid three">'+
@@ -5405,8 +5414,15 @@ function supplierBlock(t){
       fText('f_hire2','Hire to supplier (₹)', t.hire||'','number','min="0" step="1" oninput="syncHire()"')+
       fText('f_hireAdvance','Advance paid at loading (₹)', t.hireAdvance||'','number','min="0" step="1" oninput="recalcAdvance()"')+
     '</div>'+
+    '<div class="adv-total" id="f_hirePaidRow"'+(fromLedger?'':' hidden')+'>'+
+      '<span>Paid later from their ledger'+
+        (on.length? '<div class="pl-sub">'+on.map(x=>fdate(x.date)+
+          (x.mode?' · '+esc(x.mode):'')+' · '+money(x.amount)).join('<br>')+'</div>' : '')+
+      '</span>'+
+      '<span class="num adv-total-value money-pos" id="f_hirePaid">'+money(fromLedger)+'</span></div>'+
     '<div class="adv-total adv-balance"><span>Balance due to supplier</span>'+
-      '<span class="num adv-total-value'+(due>0?' money-neg':'')+'" id="f_hireDue">'+money(due)+'</span></div>'+
+      '<span class="num adv-total-value'+(due>0?' money-neg':'')+'" id="f_hireDue" '+
+        'data-paid="'+fromLedger+'">'+money(due)+'</span></div>'+
     (!sid && (isMarket||num(t.hire))
       ? '<div class="hint" style="margin-top:8px">Link a supplier and this hire lands in their ledger. '+
         'Add one under <b>Suppliers</b>.</div>' : '')+
@@ -10122,6 +10138,20 @@ function supplierPaidIndex(){
 function supplierPaidTo(tripId){
   const idx = (IDX && IDX.supPaid) || supplierPaidIndex();
   return (idx.trip || {})[tripId] || 0;
+}
+/* the payments that landed on one trip, with the day and the mode, so the
+   line above can say where the money came from */
+function supplierPaidBy2(tripId){
+  const idx = (IDX && IDX.supPaid) || supplierPaidIndex();
+  const out = [];
+  Object.keys(idx.entry || {}).forEach(eid=>{
+    (idx.entry[eid] || []).forEach(x=>{
+      if(x.tripId !== tripId) return;
+      const l = (DB.supplierLedger||[]).find(y=>y.id===eid) || {};
+      out.push({date:l.date || '', mode:l.mode || '', amount:x.amount});
+    });
+  });
+  return out.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
 }
 function supplierPaidBy(entryId){
   const idx = (IDX && IDX.supPaid) || supplierPaidIndex();
