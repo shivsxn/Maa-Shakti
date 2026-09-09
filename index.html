@@ -3630,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.49 &middot; 09 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.50 &middot; 09 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4083,6 +4083,7 @@ function reindex(){
   IDX.shop = {}; (DB.shops||[]).forEach(s=>IDX.shop[s.id]=s);
   IDX.supplier = {}; (DB.suppliers||[]).forEach(s=>IDX.supplier[s.id]=s);
   IDX.alloc = allocIndex();
+  IDX.supPaid = supplierPaidIndex();
 }
 // index first, with a safety net in case anything was added without a save
 const truckById  = id => IDX.truck[id]  || DB.trucks.find(t=>t.id===id);
@@ -10067,7 +10068,68 @@ function tripSupplier(t){
 function supplierTrips(sid){
   return DB.trips.filter(t=>num(t.hire)>0 && tripSupplier(t)===sid);
 }
-function tripSupplierBalance(t){ return num(t.hire) - num(t.hireAdvance); }
+/* ------------------------------------------------------------
+   PAYING A MARKET TRUCK OWNER
+   The hire on a trip is owed from the moment the trip is saved,
+   but it is paid from the supplier's ledger rather than from the
+   trip. A payment therefore has to find its way back to the loads
+   it settles, or the trip goes on saying money is due after the
+   money has gone \u2014 and the hire sits for ever in "held pending
+   POD" as well.
+
+   Each payment clears that supplier's oldest unpaid hire first,
+   which is how the trade settles anyway. Tag the payment with a
+   truck and it only clears trips that truck ran; leave the truck
+   blank and it clears any of theirs. Nothing is written down: the
+   spread is worked out from the entries themselves each time, so
+   deleting or editing a payment puts the balances straight back.
+
+   The supplier's own balance does not go through this. It counts
+   the hire and the payments directly and always has, so it cannot
+   double-count what is spread here.
+   ------------------------------------------------------------ */
+function supplierPaidIndex(){
+  const trip = {}, entry = {};
+  const mine = {};
+  DB.trips.forEach(t=>{
+    const sid = tripSupplier(t);
+    if(!sid || num(t.hire) <= 0) return;
+    (mine[sid] = mine[sid] || []).push(t);
+  });
+  Object.keys(mine).forEach(sid=>{
+    const trips = mine[sid].slice().sort((a,b)=>
+      (a.date||'').localeCompare(b.date||'') || String(a.id).localeCompare(String(b.id)));
+    const owed = {};
+    trips.forEach(t=>{ owed[t.id] = Math.max(0, num(t.hire) - num(t.hireAdvance)); });
+    (DB.supplierLedger||[])
+      .filter(l=>l.supplierId===sid && l.type==='credit')
+      .slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'') || String(a.id).localeCompare(String(b.id)))
+      .forEach(l=>{
+        let left = num(l.amount);
+        trips.forEach(t=>{
+          if(left <= 0 || owed[t.id] <= 0) return;
+          if(l.truckId && t.truckId !== l.truckId) return;   /* tagged: that truck only */
+          const take = Math.min(left, owed[t.id]);
+          owed[t.id] -= take;
+          left -= take;
+          trip[t.id] = (trip[t.id] || 0) + take;
+          (entry[l.id] = entry[l.id] || []).push({tripId:t.id, amount:take});
+        });
+      });
+  });
+  return {trip, entry};
+}
+function supplierPaidTo(tripId){
+  const idx = (IDX && IDX.supPaid) || supplierPaidIndex();
+  return (idx.trip || {})[tripId] || 0;
+}
+function supplierPaidBy(entryId){
+  const idx = (IDX && IDX.supPaid) || supplierPaidIndex();
+  return (idx.entry || {})[entryId] || [];
+}
+function tripSupplierBalance(t){
+  return num(t.hire) - num(t.hireAdvance) - supplierPaidTo(t.id);
+}
 
 function supplierBalance(sid){
   let bal = num((supplierById(sid)||{}).opening);
@@ -10117,7 +10179,16 @@ function supplierLedgerRows(sid){
   (DB.supplierLedger||[]).filter(l=>l.supplierId===sid).forEach(l=>{
     rows.push({date:l.date,
       label: l.note || (l.type==='credit' ? 'Payment made to supplier' : (l.reason||'Charge added')),
-      ref: [l.reason, l.mode].filter(Boolean).join(' · '),
+      /* say which loads it cleared, so the spread can be checked rather
+         than taken on trust */
+      ref: [l.reason, l.mode, l.type==='credit' ? (()=>{
+        const on = supplierPaidBy(l.id);
+        if(!on.length) return '';
+        return 'clears '+on.map(x=>{
+          const tp = DB.trips.find(y=>y.id===x.tripId);
+          return (tp && tp.lr ? 'LR '+tp.lr : 'a trip')+' '+money(x.amount);
+        }).join(', ');
+      })() : ''].filter(Boolean).join(' · '),
       truck: l.truckId ? truckName(l.truckId) : 'N/A',
       debit: l.type==='debit' ? num(l.amount) : 0,
       credit: l.type==='credit' ? num(l.amount) : 0,
