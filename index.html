@@ -3630,7 +3630,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.48 &middot; 08 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.49 &middot; 09 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -6335,7 +6335,9 @@ function ledgerRows(pid){
     /* the advance sits on the day the money moved, when that was recorded;
        the amount and every total are untouched by it */
     const aDate = advDateOf(t);
-    if(num(t.advCash)) rows.push({date:aDate, label:'Advance received in cash', ref:t.lr?('LR '+t.lr):'',
+    /* not always cash and not always at the trip — it is simply what came
+       in against this load, so the line says the amount and nothing more */
+    if(num(t.advCash)) rows.push({date:aDate, label:'Advance Amount', ref:t.lr?('LR '+t.lr):'',
       debit:0, credit:num(t.advCash), kind:'trip', tripId:t.id});
     if(num(t.fuelAmt)) rows.push({date:aDate, label:'Advance given as fuel',
       ref:[fuelNote(t), t.lr?('LR '+t.lr):''].filter(Boolean).join(' · '),
