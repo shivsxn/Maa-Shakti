@@ -3635,7 +3635,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.54 &middot; 10 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.55 &middot; 10 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -4604,14 +4604,26 @@ let modalStack = [];
    the DOM alone would miss a change made on another tab.
    ------------------------------------------------------------ */
 let formBase = null;
+/* Two objects holding the same values in a different key order are the same
+   answer, but JSON.stringify writes them differently and the comparison
+   would call an untouched screen edited. Sorting the keys makes the
+   snapshot depend on what is in it, not on the order it was built in. */
+function stableJson(v){
+  return JSON.stringify(v, (k, val)=>{
+    if(val && typeof val === 'object' && !Array.isArray(val)){
+      return Object.keys(val).sort().reduce((o, key)=>{ o[key] = val[key]; return o; }, {});
+    }
+    return val;
+  });
+}
 function formState(){
   if(!document.querySelector('#modalRoot .overlay')) return null;
   if(tripDraft && document.querySelector('.overlay .trip-pane')){
     readTripForm();
-    return JSON.stringify([tripDraft, tripExpDraft, lineDraft,
+    return stableJson([tripDraft, tripExpDraft, lineDraft,
       pendingAdvAttach.map(a=>a.id)]);
   }
-  return JSON.stringify(snapshotModal());
+  return stableJson(snapshotModal());
 }
 function formMark(){ formBase = formState(); }
 function formDirty(){
@@ -5542,9 +5554,28 @@ function readTripExpenses(){
 }
 /* ---------- the advance, line by line ---------- */
 let advDraft = [];
+/* Cash and diesel are on nearly every trip, so a trip with no advance on
+   it yet opens with those two lines ready rather than an empty list. They
+   are ordinary lines: rename them, delete them, add more. An untouched one
+   carries no amount and is dropped on save, so it costs nothing. */
+function blankAdvLines(t){
+  const on = (t && t.date) || today();
+  return [
+    {id:uid(), cat:'Cash advance',  amount:0, date:on, qty:'', rate:'', note:''},
+    {id:uid(), cat:'Fuel / Diesel', amount:0, date:on, qty:'', rate:'', note:''}
+  ];
+}
 function loadAdvLines(t){
-  advDraft = advanceLines(t).map(a=>({id:a.id||uid(), cat:a.cat||'', amount:num(a.amount),
-    date:a.date || (t&&t.date) || today(), qty:a.qty||'', rate:a.rate||'', note:a.note||''}));
+  const held = advanceLines(t);
+  advDraft = held.length
+    ? held.map(a=>({id:a.id||uid(), cat:a.cat||'', amount:num(a.amount),
+        date:a.date || (t&&t.date) || today(), qty:a.qty||'', rate:a.rate||'', note:a.note||''}))
+    : blankAdvLines(t);
+  /* published straight onto the draft, not only when the Advance tab is on
+     screen: the unsaved-changes baseline is taken while the details tab is
+     showing, and it has to already know about the two opening lines or the
+     first switch to Advance would look like an edit. */
+  if(t) t.advances = advDraft;
 }
 function advDraftTotal(){ return advDraft.reduce((s,x)=>s+num(x.amount), 0); }
 function quickAdvCats(){
@@ -5847,7 +5878,9 @@ function repaintTripPane(){
   setHtml(strip, tabStripHtml(tripDraft, existing));
   pane.classList.remove('pane-in'); void pane.offsetWidth; pane.classList.add('pane-in');
   lineDraft = JSON.parse(JSON.stringify((tripDraft && tripDraft.lines) || []));
-  advDraft = ((tripDraft && tripDraft.advances) || advDraft || []).slice();
+  /* advDraft is the live draft and readAdvLines keeps tripDraft in step with
+     it, so there is nothing to copy back here — doing so wiped the two
+     lines a new trip opens with, whose tripDraft.advances is still empty. */
   if(document.getElementById('lineRows')) paintTripLines();
   if(document.getElementById('advRows')) paintAdvLines();
   if(document.getElementById('tripExpRows')) paintTripExpenses();
@@ -6110,6 +6143,10 @@ function tripScreen(id, tab){
     loadTripExpenses('');
   }
   const t = tripDraft;
+  /* before the pane is built: openModal takes the unsaved-work baseline as
+     it renders, and that reads the advance draft. Loading afterwards let a
+     stale draft be published onto a trip that had just been read in. */
+  loadAdvLines(t);
 
   if(!existing && (!DB.parties.length || !DB.trucks.length)){
     openModal({title:'Add a truck and a party first',
@@ -6155,7 +6192,6 @@ function tripScreen(id, tab){
   });
 
   lineDraft = JSON.parse(JSON.stringify(t.lines || []));
-  loadAdvLines(t);
   if($('#lineRows')) paintTripLines();
   if($('#advRows')) paintAdvLines();
   if($('#tripExpRows')) paintTripExpenses();
@@ -6230,7 +6266,8 @@ function saveTripScreen(existing, quiet){
   /* the lines are the record now. The two old figures are kept in step so
      a backup restored into an older build, and the export columns, still
      read the same totals. */
-  rec.advances = (rec.advances || []).filter(a=>num(a.amount) > 0 || (a.cat||'').trim());
+  /* the two lines a trip opens with, left untouched, are not an advance */
+  rec.advances = (rec.advances || []).filter(a=>num(a.amount) > 0);
   const fuelLines = rec.advances.filter(a=>isFuelCat(a.cat));
   rec.fuelAmt = fuelLines.reduce((n,a)=>n+num(a.amount), 0);
   rec.advCash = rec.advances.filter(a=>!isFuelCat(a.cat)).reduce((n,a)=>n+num(a.amount), 0);
