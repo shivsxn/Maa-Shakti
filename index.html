@@ -2795,6 +2795,11 @@ tbody tr:last-child td {
 .self-line{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--card-2)}
 .self-line .hint{display:block;margin-top:5px}
 .self-line .self-drop{display:block;margin-top:7px;font-size:12.5px;font-weight:600;color:var(--red)}
+/* litres and rate, only on a fuel line, kept narrow so the row still reads
+   as one line rather than a form of its own */
+.adv-fuel{display:flex;align-items:center;gap:6px;flex:none}
+.adv-fuel input{width:86px;padding:8px 10px;font-size:13.5px;font-family:var(--mono);text-align:right}
+.adv-fuel-x{color:var(--muted);font-size:12.5px}
 .alloc-list{max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:var(--card-2)}
 .alloc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line-soft)}
 .alloc-row:last-child{border-bottom:0}
@@ -3630,7 +3635,7 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.53 &middot; 09 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.54 &middot; 10 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="topbar">
@@ -5293,28 +5298,18 @@ function renderTripList(){
       '</table></div>'+moreBar(list.length, full, 'renderTripList')+'</div>');
 }
 
-let fuelDirty = false;
-function fuelEdited(){ fuelDirty = true; recalcAdvance(); }
+
 function recalcAdvance(){
-  const amtEl = document.getElementById('f_fuelAmt');
-  if(!amtEl){
-    /* the details tab has freight but no advance boxes — still worth a total */
+  const tot = document.getElementById('f_advTotal');
+  if(!tot){
+    /* the details tab has freight but no advance lines — still worth a total */
     const fr = document.getElementById('f_freight');
     if(fr && tripDraft) tripDraft.freight = num(fr.value);
     paintTripTotals();
     return;
   }
-  const q = num(val('f_fuelQty')), r = num(val('f_fuelRate'));
-  if(!fuelDirty && q>0 && r>0) amtEl.value = Math.round(q*r*100)/100;
-  const hint = document.getElementById('fuelHint');
-  if(hint){
-    hint.innerHTML = fuelDirty
-      ? 'Entered by hand. <a href="#" onclick="event.preventDefault();fuelDirty=false;recalcAdvance()">Use quantity × rate</a>'
-      : (q>0 && r>0 ? 'Calculated as '+q+' × ₹'+r : 'Fill quantity and rate, or type the amount directly');
-  }
-  const total = num(val('f_advCash')) + num(amtEl.value);
-  const tot = document.getElementById('f_advTotal');
-  if(tot) tot.textContent = money(total);
+  const total = advDraftTotal();
+  tot.textContent = money(total);
 
   const lines = (tripDraft && tripDraft.lines) || [];
   const charges = lines.filter(x=>x.type==='charge').reduce((s,x)=>s+num(x.amount),0);
@@ -5366,11 +5361,9 @@ function recalcAdvance(){
   }
   const prev = document.getElementById('f_statusPreview');
   if(prev) prev.innerHTML = statusChip(tripStatus({id:(tripDraft&&tripDraft.id)||'',
-    advCash:total, fuelAmt:0, freight:freight, lines:lines}));
+    advances:[{amount:total}], freight:freight, lines:lines}));
   if(tripDraft){
-    tripDraft.advCash = num(val('f_advCash'));
-    tripDraft.fuelAmt = num(amtEl.value);
-    tripDraft.advDate = val('f_advDate');
+    tripDraft.advances = advDraft;
     tripDraft.freight = freight;
   }
   paintTripTotals();
@@ -5547,6 +5540,138 @@ function readTripExpenses(){
   if(tripExpenseTotal() !== before) recalcTripExpenses();
   return tripExpDraft;
 }
+/* ---------- the advance, line by line ---------- */
+let advDraft = [];
+function loadAdvLines(t){
+  advDraft = advanceLines(t).map(a=>({id:a.id||uid(), cat:a.cat||'', amount:num(a.amount),
+    date:a.date || (t&&t.date) || today(), qty:a.qty||'', rate:a.rate||'', note:a.note||''}));
+}
+function advDraftTotal(){ return advDraft.reduce((s,x)=>s+num(x.amount), 0); }
+function quickAdvCats(){
+  const seen = [];
+  DB.trips.forEach(t=>advanceLines(t).forEach(a=>{
+    const c = (a.cat||'').trim();
+    if(c && seen.indexOf(c) < 0) seen.push(c);
+  }));
+  const common = ['Cash advance','Fuel / Diesel','Fastag','Toll & Parking'];
+  common.forEach(c=>{ if(seen.indexOf(c) < 0) seen.push(c); });
+  return seen.slice(0, 6);
+}
+function buildAdvCatList(){
+  const dl = document.getElementById('advCatList');
+  if(!dl) return;
+  const seen = [];
+  DB.trips.forEach(t=>advanceLines(t).forEach(a=>{
+    const c = (a.cat||'').trim();
+    if(c && seen.indexOf(c) < 0) seen.push(c);
+  }));
+  ['Cash advance','Fuel / Diesel','Fastag','Toll & Parking','Loading advance','Driver bhatta']
+    .forEach(c=>{ if(seen.indexOf(c) < 0) seen.push(c); });
+  dl.innerHTML = seen.map(v=>'<option value="'+esc(v)+'"></option>').join('');
+}
+/* One line of the advance. Litres and rate appear only where they mean
+   something — on a fuel line — instead of standing empty on every trip
+   the way the four fixed boxes used to. */
+function advRow(x, i){
+  const fuel = isFuelCat(x.cat);
+  return '<div class="exp-entry" id="advrow'+i+'">'+
+    '<div class="exp-row">'+
+      '<input id="ad_c'+i+'" class="exp-what" list="advCatList" value="'+esc(x.cat||'')+'" '+
+        'placeholder="What for" oninput="advCatTyped('+i+')">'+
+      '<div class="exp-amt"><span class="exp-cur">\u20b9</span>'+
+        '<input id="ad_a'+i+'" type="number" min="0" step="1" value="'+(num(x.amount)||'')+'" '+
+          'placeholder="0" oninput="advAmtTyped('+i+')"></div>'+
+      (fuel
+        ? '<div class="adv-fuel">'+
+            '<input id="ad_q'+i+'" type="number" min="0" step="0.01" value="'+esc(x.qty||'')+'" '+
+              'placeholder="Litres" oninput="advFuelTyped('+i+')">'+
+            '<span class="adv-fuel-x">\u00d7</span>'+
+            '<input id="ad_r'+i+'" type="number" min="0" step="0.01" value="'+esc(x.rate||'')+'" '+
+              'placeholder="Rate" oninput="advFuelTyped('+i+')">'+
+          '</div>'
+        : '')+
+      '<button type="button" class="icon-btn" title="Remove this line" aria-label="Remove this line" '+
+        'onclick="removeAdvLine('+i+')">'+ICON_TRASH+'</button>'+
+    '</div>'+
+    '<div class="exp-more">'+
+      '<input id="ad_d'+i+'" type="date" value="'+esc(x.date||'')+'" onchange="readAdvLines()">'+
+      '<input id="ad_n'+i+'" value="'+esc(x.note||'')+'" placeholder="Any detail worth keeping" '+
+        'oninput="readAdvLines()">'+
+    '</div>'+
+  '</div>';
+}
+function paintAdvLines(){
+  const box = document.getElementById('advRows');
+  if(!box) return;
+  box.innerHTML = advDraft.length
+    ? advDraft.map(advRow).join('')
+    : '<div class="hint exp-empty">Nothing taken yet \u2014 cash handed over at loading, a diesel fill, '+
+      'a fastag top-up. Each line comes off the freight and lands in the party\u2019s ledger on its own date.</div>';
+  buildAdvCatList();
+  clampDates();
+  recalcAdvance();
+}
+function readAdvLines(){
+  advDraft = advDraft.map((x,i)=>{
+    const g = id => document.getElementById(id+i);
+    const c=g('ad_c'), a=g('ad_a'), q=g('ad_q'), r=g('ad_r'), d=g('ad_d'), n=g('ad_n');
+    return {id:x.id||uid(), cat:c?c.value.trim():x.cat, amount:a?num(a.value):num(x.amount),
+      qty:q?q.value:x.qty, rate:r?r.value:x.rate,
+      date:d?d.value:x.date, note:n?n.value.trim():x.note};
+  });
+  if(tripDraft) tripDraft.advances = advDraft;
+  recalcAdvance();
+  return advDraft;
+}
+/* typing a fuel category grows the litres and rate boxes in place */
+function advCatTyped(i){
+  const was = isFuelCat((advDraft[i]||{}).cat);
+  readAdvLines();
+  if(isFuelCat(advDraft[i].cat) !== was){
+    paintAdvLines();
+    const el = document.getElementById('ad_c'+i);
+    if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  }
+}
+/* litres x rate fills the amount; typing the amount by hand leaves it alone */
+function advFuelTyped(i){
+  readAdvLines();
+  const x = advDraft[i]; if(!x) return;
+  if(num(x.qty) > 0 && num(x.rate) > 0){
+    x.amount = Math.round(num(x.qty) * num(x.rate));
+    const a = document.getElementById('ad_a'+i);
+    if(a) a.value = x.amount;
+    if(tripDraft) tripDraft.advances = advDraft;
+    recalcAdvance();
+  }
+}
+function advAmtTyped(i){
+  const x = advDraft[i];
+  /* the figure was overruled, so the litres and rate stop driving it */
+  if(x && num(x.qty) && num(x.rate)){
+    const q = document.getElementById('ad_q'+i), r = document.getElementById('ad_r'+i);
+    const typed = num((document.getElementById('ad_a'+i)||{}).value);
+    if(typed !== Math.round(num(x.qty)*num(x.rate))){
+      if(q) q.value=''; if(r) r.value='';
+    }
+  }
+  readAdvLines();
+}
+function addAdvLine(cat){
+  readAdvLines();
+  advDraft.push({id:uid(), cat:cat||'', amount:0,
+    date:(tripDraft&&tripDraft.date)||today(), qty:'', rate:'', note:''});
+  paintAdvLines();
+  const i = advDraft.length - 1;
+  const el = document.getElementById(cat ? 'ad_a'+i : 'ad_c'+i);
+  if(el) el.focus();
+}
+function removeAdvLine(i){
+  readAdvLines();
+  advDraft.splice(i,1);
+  paintAdvLines();
+}
+
 function addTripExpense(category){
   readTripExpenses();
   tripExpDraft.push({id:uid(), date:(tripDraft&&tripDraft.date)||today(), category:category||'',
@@ -5655,7 +5780,7 @@ function blankTrip(){
   return {id:'', date:today(), lr:'', from:'', to:'', partyId:'', truckId:'', driverId:'',
     material:'', weight:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
     advCash:0, fuelQty:'', fuelRate:'', fuelAmt:0,
-    brokerage:0, lines:[], notes:'', advDate:'', selfFunded:false,
+    brokerage:0, lines:[], advances:[], notes:'', advDate:'', selfFunded:false,
     deliveredAt:'', podReceivedAt:'', podSubmittedAt:''};
 }
 /* pull whatever fields are on screen into the draft */
@@ -5668,7 +5793,8 @@ function readTripForm(){
   Object.entries(map).forEach(([el,key])=>{ if(g(el)) tripDraft[key] = g(el).value.trim(); });
   if(document.getElementById('lineRows')) readTripLines();
   if(document.getElementById('tripExpRows')) readTripExpenses();
-  ['freight','hire','advCash','fuelAmt','hireAdvance'].forEach(key=>{
+  if(document.getElementById('advRows')) readAdvLines();
+  ['freight','hire','hireAdvance'].forEach(key=>{
     const el = g('f_'+key); if(el) tripDraft[key] = num(el.value);
   });
   if(g('f_hire2')) tripDraft.hire = num(g('f_hire2').value);
@@ -5720,10 +5846,10 @@ function repaintTripPane(){
   pane.innerHTML = tripPaneHtml(tripDraft, existing, tripTab);
   setHtml(strip, tabStripHtml(tripDraft, existing));
   pane.classList.remove('pane-in'); void pane.offsetWidth; pane.classList.add('pane-in');
-  fuelDirty = !!(num(tripDraft.fuelAmt) && !(num(tripDraft.fuelQty)>0 && num(tripDraft.fuelRate)>0
-    && Math.abs(num(tripDraft.fuelQty)*num(tripDraft.fuelRate) - num(tripDraft.fuelAmt)) < 0.5));
   lineDraft = JSON.parse(JSON.stringify((tripDraft && tripDraft.lines) || []));
+  advDraft = ((tripDraft && tripDraft.advances) || advDraft || []).slice();
   if(document.getElementById('lineRows')) paintTripLines();
+  if(document.getElementById('advRows')) paintAdvLines();
   if(document.getElementById('tripExpRows')) paintTripExpenses();
   if(document.getElementById('f_advTotal')) recalcAdvance();
   clampDates();
@@ -5780,17 +5906,17 @@ function tripMoneyPane(t, existing){
           attachButton(aKey, 'advClip', 'Attach')+'</div>')+
       '</div>'+
       attachChips(aKey, locked)+
-      '<div class="form-grid four">'+
-        fText('f_advCash','Advance amount (₹)', t.advCash||'','number','min="0" step="1" oninput="recalcAdvance()"')+
-        fText('f_fuelQty','Fuel quantity (litres)', t.fuelQty,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
-        fText('f_fuelRate','Fuel rate (₹ per litre)', t.fuelRate,'number','min="0" step="0.01" oninput="recalcAdvance()"')+
-        fText('f_fuelAmt','Fuel amount (₹)', t.fuelAmt||'','number','min="0" step="1" oninput="fuelEdited()"')+
-        fText('f_advDate','Advance date (optional)', t.advDate||'','date')+
+      '<div class="exp-quick">'+
+        '<span class="exp-quick-label">Quick add</span>'+
+        quickAdvCats().map(c=>'<button type="button" class="exp-chip" '+
+          'onclick="addAdvLine('+JSON.stringify(c).replace(/"/g,'&quot;')+')">'+esc(c)+'</button>').join('')+
+        '<button type="button" class="btn btn-sm" style="margin-left:auto" '+
+          'onclick="addAdvLine()">+ Add line</button>'+
       '</div>'+
-      '<div class="grid-hint hint" id="fuelHint"></div>'+
-      '<div class="grid-hint hint">Leave the advance date blank and the advance sits in the party ledger on '+
-        'the trip date, as it always has. Fill it in when the money actually went on a different day \u2014 '+
-        'it moves only where the entry sits in the ledger, never the amount.</div>'+
+      '<div id="advRows"></div>'+
+      '<div class="grid-hint hint">Each line sits in the party ledger on its own date, so an advance paid '+
+        'at loading and one paid three days later read as two entries. Leave a date as the trip\u2019s own '+
+        'day and it behaves as it always has.</div>'+
       '<div class="line-block">'+
         '<div class="line-head">'+
           '<div class="adv-head">Charges and deductions</div>'+
@@ -5980,6 +6106,7 @@ function tripScreen(id, tab){
   if(!existing && (!tripDraft || tripDraft.id)){
     tripDraft = blankTrip();
     pendingAdvAttach = [];
+    advDraft = [];
     loadTripExpenses('');
   }
   const t = tripDraft;
@@ -6027,10 +6154,10 @@ function tripScreen(id, tab){
       'onclick="closeModal();delTrip(\''+existing.id+'\')">Delete this trip</button></div>' : '')
   });
 
-  fuelDirty = !!(num(t.fuelAmt) && !(num(t.fuelQty)>0 && num(t.fuelRate)>0
-    && Math.abs(num(t.fuelQty)*num(t.fuelRate) - num(t.fuelAmt)) < 0.5));
   lineDraft = JSON.parse(JSON.stringify(t.lines || []));
+  loadAdvLines(t);
   if($('#lineRows')) paintTripLines();
+  if($('#advRows')) paintAdvLines();
   if($('#tripExpRows')) paintTripExpenses();
   if($('#f_advTotal')) recalcAdvance();
   paintTripTotals();
@@ -6096,10 +6223,20 @@ function saveTripScreen(existing, quiet){
      carried. Converting one is confirmed first, in toggleSelfFunded. */
   if(selfFunded(rec)){
     Object.assign(rec, {partyId:'', freight:0, hire:0, hireAdvance:0, supplierId:'',
-      advCash:0, fuelQty:'', fuelRate:'', fuelAmt:0, advDate:'', lines:[],
+      advCash:0, fuelQty:'', fuelRate:'', fuelAmt:0, advDate:'', advances:[], lines:[],
       material:'', weight:'',
       deliveredAt:'', podReceivedAt:'', podSubmittedAt:'', completedAt:''});
   }
+  /* the lines are the record now. The two old figures are kept in step so
+     a backup restored into an older build, and the export columns, still
+     read the same totals. */
+  rec.advances = (rec.advances || []).filter(a=>num(a.amount) > 0 || (a.cat||'').trim());
+  const fuelLines = rec.advances.filter(a=>isFuelCat(a.cat));
+  rec.fuelAmt = fuelLines.reduce((n,a)=>n+num(a.amount), 0);
+  rec.advCash = rec.advances.filter(a=>!isFuelCat(a.cat)).reduce((n,a)=>n+num(a.amount), 0);
+  rec.fuelQty  = fuelLines.length === 1 ? (fuelLines[0].qty  || '') : '';
+  rec.fuelRate = fuelLines.length === 1 ? (fuelLines[0].rate || '') : '';
+  rec.advDate  = rec.advances.length ? (rec.advances[0].date || '') : '';
   rec.advance = tripAdvance(rec);
   rec.status  = tripStatus(rec);
   if(!rec.supplierId){
@@ -6349,16 +6486,14 @@ function ledgerRows(pid){
   DB.trips.filter(t=>t.partyId===pid).forEach(t=>{
     rows.push({date:t.date, label:'Freight — '+(t.from||'?')+' to '+(t.to||'?'), ref:t.lr?('LR '+t.lr):truckName(t.truckId),
       debit:num(t.freight), credit:0, kind:'trip', tripId:t.id});
-    /* the advance sits on the day the money moved, when that was recorded;
-       the amount and every total are untouched by it */
-    const aDate = advDateOf(t);
-    /* not always cash and not always at the trip — it is simply what came
-       in against this load, so the line says the amount and nothing more */
-    if(num(t.advCash)) rows.push({date:aDate, label:'Advance Amount', ref:t.lr?('LR '+t.lr):'',
-      debit:0, credit:num(t.advCash), kind:'trip', tripId:t.id});
-    if(num(t.fuelAmt)) rows.push({date:aDate, label:'Advance given as fuel',
-      ref:[fuelNote(t), t.lr?('LR '+t.lr):''].filter(Boolean).join(' · '),
-      debit:0, credit:num(t.fuelAmt), kind:'trip', tripId:t.id});
+    /* every advance line is its own entry, on the day that money moved,
+       so the statement reads the way the payments actually came in */
+    advanceLines(t).forEach(a=>{
+      if(!num(a.amount)) return;
+      rows.push({date: a.date || t.date, label: a.cat || 'Advance Amount',
+        ref: [advLineNote(a), a.note, t.lr?('LR '+t.lr):''].filter(Boolean).join(' · '),
+        debit:0, credit:num(a.amount), kind:'trip', tripId:t.id});
+    });
     tripLines(t).forEach(x=>{
       if(!num(x.amount)) return;
       rows.push({date:t.date,
@@ -7079,6 +7214,9 @@ function allCategories(){
 function buildExpCatList(){
   let dl = document.getElementById('expCatList');
   if(!dl){ dl = document.createElement('datalist'); dl.id = 'expCatList'; document.body.appendChild(dl); }
+  if(!document.getElementById('advCatList')){
+    const ad = document.createElement('datalist'); ad.id = 'advCatList'; document.body.appendChild(ad);
+  }
   dl.innerHTML = allCategories().map(c=>'<option value="'+esc(c)+'"></option>').join('');
   return dl;
 }
@@ -9139,6 +9277,10 @@ function seed(){
     {id:uid(),driverId:dr2.id,date:day(11),type:'salary',amount:20000,note:'Salary paid in full'}
   );
   DB.seeded = true;
+  /* the sample trips are written in the old shape for brevity; put them
+     through the same sweep a real book gets, so nothing downstream has to
+     cope with a trip that has no advance lines yet */
+  migrateAdvances();
 }
 
 
@@ -10509,11 +10651,40 @@ function shopLedgerRows(id){
 /* The day the advance actually went out. Blank means it went with the trip,
    which is how every record before this field was written. */
 function advDateOf(t){ return (t && t.advDate) || (t && t.date) || ''; }
+/* ------------------------------------------------------------
+   THE ADVANCE, AS LINES
+   An advance used to be two boxes: a cash figure and a fuel
+   figure. Real trips do not fit that \u2014 a fastag top-up, a
+   second cash payment three days later, a bit of the freight
+   handed over at loading. So it is a list now, the way the
+   expenses on a trip are, and each line carries its own day so it
+   sits in the party's ledger where the money actually moved.
+
+   Nothing about what an advance means has changed: the total is
+   still what comes off the freight, still what the party is
+   credited with, still what decides the balance and the status.
+   ------------------------------------------------------------ */
+function advanceLines(t){
+  if(!t) return [];
+  if(Array.isArray(t.advances)) return t.advances;
+  /* a record from a backup written before this, read before the sweep */
+  const out = [];
+  if(num(t.advCash)) out.push({id:'legacy-cash', cat:'Cash advance', amount:num(t.advCash),
+    date:t.advDate || t.date, qty:'', rate:'', note:''});
+  if(num(t.fuelAmt)) out.push({id:'legacy-fuel', cat:'Fuel / Diesel', amount:num(t.fuelAmt),
+    date:t.advDate || t.date, qty:t.fuelQty || '', rate:t.fuelRate || '', note:''});
+  if(!out.length && t.advCash===undefined && t.fuelAmt===undefined && t.advance!==undefined && num(t.advance))
+    out.push({id:'legacy', cat:'Advance', amount:num(t.advance), date:t.date, qty:'', rate:'', note:''});
+  return out;
+}
+/* a fuel line earns the litres-and-rate boxes; nothing else needs them */
+function isFuelCat(c){ return /fuel|diesel|petrol/i.test(String(c||'')); }
+function advLineNote(a){
+  if(!a) return '';
+  return num(a.qty) && num(a.rate) ? num(a.qty)+' L @ ₹'+num(a.rate)+'/L' : '';
+}
 function tripAdvance(t){
-  /* A record restored from an old backup may still carry only the single
-     `advance` figure, before the migration has run over it. */
-  if(t.advCash===undefined && t.fuelAmt===undefined && t.advance!==undefined) return num(t.advance);
-  return num(t.advCash) + num(t.fuelAmt);
+  return advanceLines(t).reduce((s,x)=>s+num(x.amount), 0);
 }
 /* A trip can carry any number of extra lines. A charge adds to what the
    party owes, a deduction takes away from it. Together they turn the
@@ -10605,6 +10776,18 @@ function migrateAdvances(){
   DB.trips.forEach(t=>{
     if(t.advCash===undefined){ t.advCash = num(t.advance); changed = true; }
     if(t.fuelAmt===undefined){ t.fuelAmt = 0; changed = true; }
+    /* the cash box and the fuel box become the first two lines, dated the
+       way they were shown before: the advance date if one was set, else
+       the trip's own day */
+    if(!Array.isArray(t.advances)){
+      t.advances = [];
+      const on = t.advDate || t.date;
+      if(num(t.advCash)) t.advances.push({id:uid(), cat:'Cash advance', amount:num(t.advCash),
+        date:on, qty:'', rate:'', note:''});
+      if(num(t.fuelAmt)) t.advances.push({id:uid(), cat:'Fuel / Diesel', amount:num(t.fuelAmt),
+        date:on, qty:t.fuelQty || '', rate:t.fuelRate || '', note:''});
+      changed = true;
+    }
     if(t.lines===undefined){
       t.lines = [];
       if(num(t.brokerage)) t.lines.push({id:uid(), type:'deduction', label:'Brokerage', amount:num(t.brokerage)});
