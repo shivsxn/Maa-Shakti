@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#151B2C">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -3626,35 +3626,30 @@ tr.row-link:hover td{background:var(--bg-2)}
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 
 /* ============================================================
-   PHONE — "HIGHWAY"
-   The colours of the road this business lives on: asphalt for
-   the things that matter most, marigold for money and the one
-   action that counts, vermilion, teal, indigo and plum for the
-   kinds of work, all on warm paper. Number plates in commercial
-   yellow, a road under every trip, truck-art bunting on the
-   darker cards. Nothing below reaches the desktop — every rule
-   hangs off body.phone, which only a phone (or the switch in
-   Tools) sets.
+   PHONE
+   The desktop's Daylight palette, carried to a phone: slate
+   greys, white cards, one blue accent for whatever can be
+   pressed, and colour otherwise kept for meaning — green for
+   money in, red for money owed or a document expired, amber for
+   something due soon. Motion is short and quiet: it shows where
+   a screen came from and then gets out of the way. Nothing below
+   reaches the desktop — every rule hangs off body.phone, which
+   only a phone (or the switch in Tools) sets.
    ============================================================ */
 .m-bar, .m-tabs, .m-fab { display:none; }
-.to-phone{position:fixed;right:16px;bottom:16px;z-index:90;height:44px;padding:0 18px;border-radius:22px;border:0;
-  background:#151B2C;color:#F7C35F;font:600 15px var(--sans);box-shadow:0 8px 20px -6px rgba(21,27,44,.5);cursor:pointer}
+.to-phone{position:fixed;right:16px;bottom:16px;z-index:90;height:44px;padding:0 18px;border-radius:10px;border:0;
+  background:#3557F0;color:#fff;font:600 14px var(--sans);box-shadow:0 8px 20px -8px rgba(53,87,240,.5);cursor:pointer}
 .to-phone[hidden]{display:none}
 body.phone{
-  --m-bg:#F4F1EA; --m-card:#FFFFFF; --m-line:#E9E3D6; --m-line-2:#F1ECE2; --m-sunk:#EDE8DC;
-  --m-ink:#171B26; --m-ink-2:#3A404E; --m-muted:#77726A; --m-muted-2:#A39E94;
-  --m-asphalt:#151B2C; --m-asphalt-2:#212A42; --m-asphalt-3:#323D5E;
-  --m-gold:#F2A93B; --m-gold-2:#F7C35F; --m-gold-deep:#B87708; --m-gold-soft:#FDF0D6;
-  --m-verm:#D9502A; --m-verm-soft:#FCE6DD;
-  --m-teal:#0F7A63; --m-teal-soft:#DDF1EA;
-  --m-indigo:#3446AE; --m-indigo-soft:#E6E9F8;
-  --m-plum:#86387F; --m-plum-soft:#F3E4F1;
-  --m-red:#C4372B; --m-pos:#0F7A63;
+  --m-bg:#F6F7F9; --m-card:#FFFFFF; --m-line:#E5E9EF; --m-line-2:#F0F3F7; --m-sunk:#EEF1F5;
+  --m-ink:#0B1220; --m-ink-2:#334155; --m-muted:#64748B; --m-muted-2:#94A3B8;
+  --m-acc:#3557F0; --m-acc-2:#2743C4; --m-acc-soft:#EEF3FF;
+  --m-pos:#067647; --m-pos-soft:#ECFDF3; --m-neg:#B42318; --m-neg-soft:#FEF3F2; --m-warn:#B54708; --m-warn-soft:#FFFAEB;
+  --m-dark:#0F172A; --m-dark-2:#1E293B;
   --m-font: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --m-ease: cubic-bezier(.2,.8,.2,1);
-  --m-spring: cubic-bezier(.3,1.35,.4,1);
-  --m-sh: 0 1px 2px rgba(60,42,12,.05), 0 10px 26px -18px rgba(60,42,12,.32);
-  --m-sh-lift: 0 2px 4px rgba(60,42,12,.06), 0 18px 34px -18px rgba(60,42,12,.42);
+  --m-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --m-ease: cubic-bezier(.2,0,0,1);
+  --m-sh: 0 1px 2px rgba(15,23,42,.04);
   min-width:0; background:var(--m-bg); color:var(--m-ink); font-family:var(--m-font);
   -webkit-tap-highlight-color:transparent; overscroll-behavior-y:none;
 }
@@ -3662,615 +3657,515 @@ body.phone .app{display:block;min-height:100vh}
 body.phone .sidebar, body.phone .topbar{display:none}
 body.phone .main{display:block}
 body.phone .content{padding:0;max-width:none}
+/* a screen sliding in must never widen the page, or the phone zooms out to fit it */
+body.phone #view{overflow-x:clip}
 body.phone:not(.m-native) .content{padding:12px 12px 96px}
 body.phone .num{font-family:var(--m-font);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-body.phone .mi{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+body.phone .mi{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
-/* tone tiles and faces */
-body.phone .m-sq{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;flex:none;font-style:normal}
-body.phone .m-sq .mi{width:23px;height:23px;stroke-width:2}
-body.phone .t-gold{background:var(--m-gold-soft);color:var(--m-gold-deep)}
-body.phone .t-teal{background:var(--m-teal-soft);color:var(--m-teal)}
-body.phone .t-verm{background:var(--m-verm-soft);color:var(--m-verm)}
-body.phone .t-indigo{background:var(--m-indigo-soft);color:var(--m-indigo)}
-body.phone .t-plum{background:var(--m-plum-soft);color:var(--m-plum)}
-body.phone .m-av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;flex:none;font:700 14px var(--m-font);font-style:normal;letter-spacing:.02em}
-body.phone .m-av-l{width:54px;height:54px;font-size:18px}
+/* icon tiles: neutral wherever they only name a thing, coloured where they carry a state */
+body.phone .m-sq{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;flex:none;font-style:normal;
+  background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-sq .mi{width:21px;height:21px}
+body.phone .m-attn .t-verm, body.phone .m-doc .t-verm, body.phone .m-total .t-verm, body.phone .m-menu-row.danger .m-sq{background:var(--m-neg-soft);color:var(--m-neg)}
+body.phone .m-attn .t-gold, body.phone .m-doc .t-gold{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .m-doc .t-teal, body.phone .m-total .t-teal{background:var(--m-pos-soft);color:var(--m-pos)}
+body.phone .m-attn .t-indigo{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-row .t-verm{background:var(--m-neg-soft);color:var(--m-neg)}
+body.phone .m-row .t-gold{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .m-row .t-indigo{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;font:600 13.5px var(--m-font);
+  font-style:normal;letter-spacing:.02em;background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-av-l{width:52px;height:52px;font-size:17px}
 
 /* ---------- the bar at the top ---------- */
 body.phone .m-bar{
-  display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:40;
-  height:64px; padding:0 12px 0 6px; padding-top:env(safe-area-inset-top); box-sizing:content-box;
-  background:rgba(244,241,234,.88); backdrop-filter:saturate(1.3) blur(14px); -webkit-backdrop-filter:saturate(1.3) blur(14px);
-  border-bottom:1px solid transparent; transition:border-color .25s, box-shadow .25s;
+  display:flex; align-items:center; gap:8px; position:sticky; top:0; z-index:40;
+  height:60px; padding:0 10px 0 6px; padding-top:env(safe-area-inset-top); box-sizing:content-box;
+  background:rgba(255,255,255,.94); backdrop-filter:saturate(1.2) blur(12px); -webkit-backdrop-filter:saturate(1.2) blur(12px);
+  border-bottom:1px solid var(--m-line);
 }
-body.phone.m-scrolled .m-bar{border-bottom-color:var(--m-line);box-shadow:0 8px 20px -18px rgba(60,42,12,.5)}
-body.phone .m-bar-start{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
-body.phone .m-bar-end{display:flex;align-items:center;gap:4px;flex:none}
+body.phone .m-bar-start{display:flex;align-items:center;gap:4px;min-width:0;flex:1}
+body.phone .m-bar-end{display:flex;align-items:center;gap:2px;flex:none}
 body.phone #mBarExtra{display:flex;align-items:center;gap:4px}
-body.phone .m-titles{display:flex;flex-direction:column;min-width:0;animation:mTitleIn .35s var(--m-ease) both}
+body.phone .m-titles{display:flex;flex-direction:column;min-width:0;animation:mFade .2s var(--m-ease) both}
 body.phone .m-titles-root{padding-left:10px}
-body.phone .m-kicker{font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
-body.phone .m-title{font-size:19px;font-weight:700;margin:0;letter-spacing:-.02em;line-height:1.2;
+body.phone .m-kicker{font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+body.phone .m-title{font-size:18px;font-weight:600;margin:0;letter-spacing:-.015em;line-height:1.25;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--m-ink)}
-body.phone .m-titles-root .m-title{font-size:24px}
-@keyframes mTitleIn{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
-body.phone .m-back{border:0;background:none;width:44px;height:44px;border-radius:50%;
-  display:grid;place-items:center;color:var(--m-ink);flex:none;cursor:pointer;transition:background .15s, transform .15s}
-body.phone .m-back:active{background:var(--m-sunk);transform:scale(.92)}
-body.phone .m-me{position:relative;border:0;background:none;padding:3px;margin-left:6px;border-radius:50%;cursor:pointer;
-  background:conic-gradient(from 200deg, var(--m-gold), var(--m-verm), var(--m-plum), var(--m-indigo), var(--m-teal), var(--m-gold))}
-body.phone .m-me .m-av{border:2.5px solid var(--m-bg);width:40px;height:40px}
-body.phone .m-sync{position:absolute;right:1px;bottom:1px;width:12px;height:12px;border-radius:50%;background:var(--m-muted-2);border:2.5px solid var(--m-bg)}
-body.phone .m-sync.on{background:#1FA855}
-body.phone .m-hello{display:flex;flex-direction:column;min-width:0;padding-left:6px;animation:mTitleIn .45s var(--m-ease) both}
-body.phone .m-hello span{font-size:12.5px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-hello b{font-size:20px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-outline{height:36px;padding:0 14px;border-radius:12px;border:1px solid var(--m-line);display:inline-flex;align-items:center;gap:6px;
-  background:#fff;color:var(--m-ink);font:600 14px var(--m-font);cursor:pointer;box-shadow:var(--m-sh)}
-body.phone .m-outline .mi{width:16px;height:16px}
-body.phone .m-lock{color:var(--m-teal);display:grid;place-items:center;width:36px;height:36px}
-body.phone .m-icon-btn{border:0;background:none;width:42px;height:42px;border-radius:50%;
-  display:grid;place-items:center;color:var(--m-ink-2);cursor:pointer;flex:none;transition:background .15s, transform .15s}
-body.phone .m-icon-btn:active{background:var(--m-sunk);transform:scale(.9)}
-body.phone .m-icon-s{width:30px;height:30px;color:var(--m-indigo);margin:-6px -8px -6px 4px}
-body.phone .m-wa{color:#1FA855}
-body.phone .m-call{background:var(--m-teal-soft);color:var(--m-teal)}
+body.phone .m-titles-root .m-title{font-size:21px;font-weight:700}
+body.phone .m-back{border:0;background:none;width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;color:var(--m-ink);flex:none;cursor:pointer;transition:background .15s}
+body.phone .m-back:active{background:var(--m-sunk)}
+body.phone .m-me{position:relative;border:0;background:none;padding:0;margin-left:8px;border-radius:50%;cursor:pointer}
+body.phone .m-me .m-av{width:38px;height:38px;background:var(--m-dark);color:#fff}
+body.phone .m-sync{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:var(--m-muted-2);border:2px solid #fff}
+body.phone .m-sync.on{background:#12B76A}
+body.phone .m-hello{display:flex;flex-direction:column;min-width:0;padding-left:8px}
+body.phone .m-hello span{font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-hello b{font-size:17px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-outline{height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--m-line);display:inline-flex;align-items:center;gap:6px;
+  background:#fff;color:var(--m-ink);font:600 13.5px var(--m-font);cursor:pointer}
+body.phone .m-outline .mi{width:15px;height:15px}
+body.phone .m-lock{color:var(--m-pos);display:grid;place-items:center;width:36px;height:36px}
+body.phone .m-icon-btn{border:0;background:none;width:40px;height:40px;border-radius:50%;
+  display:grid;place-items:center;color:var(--m-ink-2);cursor:pointer;flex:none;transition:background .15s}
+body.phone .m-icon-btn:active{background:var(--m-sunk)}
+body.phone .m-icon-s{width:30px;height:30px;color:var(--m-acc);margin:-6px -8px -6px 4px}
+body.phone .m-icon-s .mi{width:17px;height:17px}
+body.phone .m-wa{color:#12A150}
+body.phone .m-call{border:1px solid var(--m-line)}
 body.phone #bellBtn{display:none}
-body.phone.m-home #bellBtn{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--m-line);background:#fff;
-  border-radius:14px;box-shadow:var(--m-sh);color:var(--m-ink);position:relative}
-body.phone.m-home #bellBtn .ic{width:22px;height:22px;stroke:var(--m-ink)}
-body.phone.m-home #bellBtn.has .ic{animation:mRing 2.4s ease-in-out 1s 2}
-@keyframes mRing{0%,20%,100%{transform:rotate(0)}4%{transform:rotate(14deg)}8%{transform:rotate(-12deg)}12%{transform:rotate(8deg)}16%{transform:rotate(-5deg)}}
+body.phone.m-home #bellBtn{display:grid;place-items:center;width:40px;height:40px;border:0;background:none;
+  border-radius:50%;color:var(--m-ink);position:relative}
+body.phone.m-home #bellBtn .ic{width:22px;height:22px;stroke:var(--m-ink-2)}
 body.phone #pageActions{display:flex;gap:6px;overflow-x:auto;max-width:52vw}
 body.phone #pageActions:empty{display:none}
-body.phone #pageActions .btn{height:36px;padding:0 11px;font-size:13px;white-space:nowrap;border-radius:12px}
+body.phone #pageActions .btn{height:34px;padding:0 11px;font-size:13px;white-space:nowrap;border-radius:8px}
 
 /* ---------- the bar at the foot ---------- */
 body.phone.m-root .m-tabs{
-  display:grid; grid-template-columns:repeat(5,1fr); align-items:center; position:fixed; z-index:45;
-  left:12px; right:12px; bottom:calc(10px + env(safe-area-inset-bottom)); height:66px; padding:0 4px;
-  background:linear-gradient(180deg, var(--m-asphalt-2), var(--m-asphalt)); border-radius:24px;
-  box-shadow:0 18px 36px -14px rgba(21,27,44,.65), inset 0 1px 0 rgba(255,255,255,.07);
-  animation:mBarUp .45s var(--m-spring) both;
+  display:grid; grid-template-columns:repeat(4,1fr); position:fixed; z-index:45; left:0; right:0; bottom:0;
+  height:62px; padding-bottom:env(safe-area-inset-bottom); box-sizing:content-box;
+  background:#fff; border-top:1px solid var(--m-line);
 }
-@keyframes mBarUp{from{transform:translateY(120%)}to{transform:none}}
-body.phone .m-tab{position:relative;z-index:1;border:0;background:none;height:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  color:rgba(255,255,255,.5);font:600 11.5px var(--m-font);letter-spacing:.02em;cursor:pointer;transition:color .3s;overflow:hidden;border-radius:18px}
-body.phone .m-tab .mi{width:23px;height:23px;transition:transform .4s var(--m-spring)}
-body.phone .m-tab.on{color:var(--m-gold-2)}
-body.phone .m-tab.on .mi{transform:translateY(-1px) scale(1.1)}
-body.phone .m-tab-ind{position:absolute;top:8px;bottom:8px;width:calc((100% - 8px)/5 - 8px);left:calc(8px + (100% - 8px)/5 * var(--at,0));
-  border-radius:16px;background:rgba(242,169,59,.14);transition:left .5s var(--m-spring), opacity .25s;opacity:0}
+body.phone .m-tab{position:relative;z-index:1;border:0;background:none;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--m-muted);font:500 11.5px var(--m-font);cursor:pointer;transition:color .2s;overflow:hidden}
+body.phone .m-tab .mi{width:22px;height:22px}
+body.phone .m-tab.on{color:var(--m-acc);font-weight:600}
+body.phone .m-tab-ind{position:absolute;top:-1px;height:2px;width:calc(100% / 4 - 40px);left:calc(20px + 100% / 4 * var(--at,0));
+  background:var(--m-acc);border-radius:0 0 2px 2px;transition:left .28s var(--m-ease), opacity .2s;opacity:0}
 body.phone .m-tabs.has-on .m-tab-ind{opacity:1}
-body.phone .m-tab-add{justify-self:center;width:60px;height:60px;border-radius:50%;border:5px solid var(--m-bg);margin-top:-30px;cursor:pointer;
-  display:grid;place-items:center;color:var(--m-asphalt);position:relative;overflow:hidden;
-  background:linear-gradient(145deg, var(--m-gold-2), var(--m-gold) 55%, #E08E1C);
-  box-shadow:0 10px 22px -8px rgba(201,132,16,.8);transition:transform .35s var(--m-spring)}
-body.phone .m-tab-add .mi{width:28px;height:28px;stroke-width:2.6;transition:transform .4s var(--m-spring)}
-body.phone .m-tab-add:active{transform:scale(.9)}
-body.phone .m-tab-add:active .mi{transform:rotate(90deg)}
-body.phone.m-root .content{padding-bottom:100px}
+body.phone.m-root .content{padding-bottom:90px}
 
 /* ---------- pages, cards, buttons ---------- */
-body.phone .m-page{padding:10px 14px 110px;display:flex;flex-direction:column;gap:14px}
-body.phone .m-card{background:var(--m-card);border:1px solid var(--m-line);border-radius:20px;box-shadow:var(--m-sh)}
-body.phone .m-card-t{margin:0 0 6px;font-size:15px;font-weight:700}
-body.phone .m-hint{font-size:13px;color:var(--m-muted);line-height:1.5;padding:4px 0}
+body.phone .m-page{padding:12px 14px 110px;display:flex;flex-direction:column;gap:12px}
+body.phone .m-card{background:var(--m-card);border:1px solid var(--m-line);border-radius:12px;box-shadow:var(--m-sh)}
+body.phone .m-card-t{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--m-muted);text-transform:uppercase;letter-spacing:.06em}
+body.phone .m-hint{font-size:13px;color:var(--m-muted);line-height:1.5;padding:2px 0}
 body.phone .m-pos{color:var(--m-pos)}
-body.phone .m-neg{color:var(--m-red)}
-body.phone .m-count{font-size:13px;color:var(--m-muted);padding:0 4px}
-body.phone .m-count b{color:var(--m-ink)}
-body.phone .m-foot-note{text-align:center;font-size:12px;color:var(--m-muted-2);padding:0 6px}
-body.phone .m-btn{height:48px;padding:0 16px;border-radius:14px;font:600 15px var(--m-font);letter-spacing:.01em;position:relative;overflow:hidden;
+body.phone .m-neg{color:var(--m-neg)}
+body.phone .m-count{font-size:12.5px;color:var(--m-muted);padding:0 2px}
+body.phone .m-count b{color:var(--m-ink);font-weight:600}
+body.phone .m-foot-note{text-align:center;font-size:12px;color:var(--m-muted-2);padding:6px}
+body.phone .m-btn{height:44px;padding:0 14px;border-radius:10px;font:600 14.5px var(--m-font);position:relative;overflow:hidden;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1px solid transparent;
-  transition:transform .2s var(--m-spring), box-shadow .2s, background .2s}
-body.phone .m-btn:active{transform:scale(.965)}
-body.phone .m-btn .mi{width:19px;height:19px;stroke-width:2.1}
-body.phone .m-btn-dark{background:var(--m-asphalt);color:#fff;box-shadow:0 8px 18px -10px rgba(21,27,44,.8)}
-body.phone .m-btn-dark .mi{color:var(--m-gold-2)}
-body.phone .m-btn-gold{background:linear-gradient(145deg, var(--m-gold-2), var(--m-gold));color:var(--m-asphalt);box-shadow:0 10px 20px -10px rgba(201,132,16,.9)}
-body.phone .m-btn-ghost{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.18);color:#fff}
+  transition:background .15s, border-color .15s;white-space:nowrap}
+body.phone .m-btn .mi{width:18px;height:18px}
+body.phone .m-btn-dark{background:var(--m-acc);color:#fff}
+body.phone .m-btn-dark:active{background:var(--m-acc-2)}
+body.phone .m-btn-gold{background:#fff;color:var(--m-ink)}
+body.phone .m-btn-ghost{background:transparent;border-color:rgba(255,255,255,.28);color:#fff}
 body.phone .m-btn-ghost-dark{background:#fff;border-color:var(--m-line);color:var(--m-ink)}
-body.phone .m-btn-wa{background:#1FA855;color:#fff;box-shadow:0 8px 16px -10px rgba(31,168,85,.9)}
-body.phone .m-btn-done{background:var(--m-teal-soft);color:var(--m-teal);cursor:default}
-body.phone .m-btn-danger{background:#fff;border-color:#F1CBC4;color:var(--m-red);width:100%}
-body.phone .m-btn-s{height:40px;font-size:14px;padding:0 14px;border-radius:12px}
+body.phone .m-btn-ghost-dark:active, body.phone .m-btn-wa:active{background:var(--m-line-2)}
+body.phone .m-btn-wa{background:#fff;border-color:var(--m-line);color:var(--m-ink)}
+body.phone .m-btn-wa .mi{color:#12A150}
+body.phone .m-btn-done{background:var(--m-pos-soft);color:var(--m-pos);cursor:default}
+body.phone .m-btn-danger{background:#fff;border-color:#FDA29B;color:var(--m-neg);width:100%}
+body.phone .m-btn-s{height:38px;font-size:13.5px;padding:0 12px;border-radius:8px}
 body.phone .m-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-body.phone .m-link{border:0;background:none;padding:0;color:var(--m-indigo);font:600 14px var(--m-font);cursor:pointer;
+body.phone .m-link{border:0;background:none;padding:0;color:var(--m-acc);font:600 13.5px var(--m-font);cursor:pointer;
   display:inline-flex;align-items:center;gap:4px}
-body.phone .m-link .mi{width:15px;height:15px;stroke-width:2.4}
+body.phone .m-link .mi{width:15px;height:15px;stroke-width:2.2}
 body.phone .m-fab{
-  display:inline-flex; position:fixed; right:16px; bottom:calc(22px + env(safe-area-inset-bottom)); z-index:35;
-  align-items:center; gap:0; height:56px; padding:0 18px; border-radius:18px; border:0; overflow:hidden;
-  background:linear-gradient(145deg, var(--m-gold-2), var(--m-gold) 60%, #E08E1C); color:var(--m-asphalt);
-  font:700 15.5px var(--m-font); letter-spacing:.01em; white-space:nowrap; cursor:pointer;
-  box-shadow:0 14px 28px -12px rgba(201,132,16,.95); animation:mFabIn .5s var(--m-spring) .15s both;
-  transition:padding .35s var(--m-spring), transform .2s var(--m-spring);
+  display:inline-flex; position:fixed; right:16px; bottom:calc(20px + env(safe-area-inset-bottom)); z-index:35;
+  align-items:center; height:52px; padding:0 18px; border-radius:14px; border:0; overflow:hidden;
+  background:var(--m-acc); color:#fff; font:600 15px var(--m-font); white-space:nowrap; cursor:pointer;
+  box-shadow:0 6px 16px -6px rgba(53,87,240,.55), 0 2px 4px rgba(15,23,42,.08);
+  animation:mFade .25s var(--m-ease) .1s both; transition:padding .25s var(--m-ease), background .15s;
 }
-body.phone .m-fab .mi{width:24px;height:24px;stroke-width:2.6}
-body.phone .m-fab span{max-width:180px;margin-left:10px;transition:max-width .35s var(--m-ease), margin .35s var(--m-ease), opacity .2s}
-body.phone.m-down .m-fab{padding:0 16px}
+body.phone .m-fab:active{background:var(--m-acc-2)}
+body.phone .m-fab .mi{width:22px;height:22px;stroke-width:2.2}
+body.phone .m-fab span{max-width:180px;margin-left:8px;transition:max-width .25s var(--m-ease), margin .25s var(--m-ease), opacity .15s}
+body.phone.m-down .m-fab{padding:0 15px}
 body.phone.m-down .m-fab span{max-width:0;margin-left:0;opacity:0}
-body.phone .m-fab:active{transform:scale(.93)}
-@keyframes mFabIn{from{opacity:0;transform:scale(.6) translateY(20px)}to{opacity:1;transform:none}}
-body.phone.m-root .m-fab{bottom:calc(92px + env(safe-area-inset-bottom))}
-body.phone .m-more{background:#fff;border:1px solid var(--m-line);border-radius:14px;height:48px;
-  font:600 15px var(--m-font);color:var(--m-indigo);cursor:pointer}
+body.phone.m-root .m-fab{bottom:calc(78px + env(safe-area-inset-bottom))}
+body.phone .m-more{background:#fff;border:1px solid var(--m-line);border-radius:10px;height:44px;
+  font:600 14px var(--m-font);color:var(--m-acc);cursor:pointer}
 
 /* search, filters and segments */
-body.phone .m-search{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--m-line);box-shadow:var(--m-sh);
-  border-radius:16px;height:50px;padding:0 14px;flex:1;min-width:0;transition:border-color .2s, box-shadow .2s}
-body.phone .m-search:focus-within{border-color:var(--m-gold);box-shadow:0 0 0 4px rgba(242,169,59,.2)}
+body.phone .m-search{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--m-line);
+  border-radius:10px;height:46px;padding:0 12px;flex:1;min-width:0;transition:border-color .15s, box-shadow .15s}
+body.phone .m-search:focus-within{border-color:var(--m-acc);box-shadow:0 0 0 3px rgba(53,87,240,.14)}
 body.phone .m-page>.m-search{flex:none}
-body.phone .m-search .mi{color:var(--m-muted);width:21px;height:21px}
-body.phone .m-search input{border:0;outline:0;background:none;font:400 16px var(--m-font);flex:1;min-width:0;color:var(--m-ink);
+body.phone .m-search .mi{color:var(--m-muted-2);width:20px;height:20px}
+body.phone .m-search input{border:0;outline:0;background:none;font:400 15.5px var(--m-font);flex:1;min-width:0;color:var(--m-ink);
   padding:0;height:100%;box-shadow:none}
 body.phone .m-search input::placeholder{color:var(--m-muted-2)}
-body.phone .m-search-row{display:flex;gap:10px}
-body.phone .m-filter{flex:none;position:relative;width:50px;height:50px;display:grid;place-items:center;background:#fff;
-  border:1px solid var(--m-line);border-radius:16px;color:var(--m-ink);cursor:pointer;box-shadow:var(--m-sh)}
-body.phone .m-filter.on{background:var(--m-asphalt);color:var(--m-gold-2);border-color:var(--m-asphalt)}
-body.phone .m-filter em{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;border-radius:10px;background:var(--m-verm);color:#fff;
-  font:700 11px/20px var(--m-font);font-style:normal;animation:mPop .4s var(--m-spring)}
-body.phone .m-seg{display:flex;gap:4px;background:var(--m-sunk);border-radius:15px;padding:4px;position:relative}
-body.phone .m-seg button{flex:1;position:relative;z-index:1;border:0;background:none;height:36px;border-radius:11px;overflow:hidden;
-  font:600 13px var(--m-font);color:var(--m-muted);cursor:pointer;transition:background .25s, color .25s, box-shadow .25s}
-body.phone .m-seg button.on{background:#fff;color:var(--m-ink);box-shadow:0 2px 6px -2px rgba(60,42,12,.25)}
-body.phone .m-seg-3 button{height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+body.phone .m-search-row{display:flex;gap:8px}
+body.phone .m-filter{flex:none;position:relative;width:46px;height:46px;display:grid;place-items:center;background:#fff;
+  border:1px solid var(--m-line);border-radius:10px;color:var(--m-ink-2);cursor:pointer}
+body.phone .m-filter.on{border-color:var(--m-acc);color:var(--m-acc);background:var(--m-acc-soft)}
+body.phone .m-filter em{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:var(--m-acc);color:#fff;
+  font:700 10.5px/18px var(--m-font);font-style:normal}
+body.phone .m-seg{display:flex;gap:2px;background:var(--m-sunk);border-radius:10px;padding:3px;position:relative}
+body.phone .m-seg button{flex:1;position:relative;z-index:1;border:0;background:none;height:34px;border-radius:8px;overflow:hidden;
+  font:500 13px var(--m-font);color:var(--m-muted);cursor:pointer;transition:background .2s, color .2s, box-shadow .2s;white-space:nowrap}
+body.phone .m-seg button.on{background:#fff;color:var(--m-ink);font-weight:600;box-shadow:0 1px 3px rgba(15,23,42,.1)}
+body.phone .m-seg-3 button{height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
 body.phone .m-seg-3 button.on{background:none;box-shadow:none}
-body.phone .m-seg-3 b{font-size:20px;font-weight:700;color:var(--m-ink)}
+body.phone .m-seg-3 b{font-size:18px;font-weight:700;color:var(--m-ink)}
 body.phone .m-seg-3 span{font-size:12px}
-body.phone .m-seg-ind{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 16px)/3);border-radius:11px;background:#fff;
-  box-shadow:0 3px 10px -4px rgba(60,42,12,.35);transform:translateX(calc(var(--at,0) * (100% + 4px)));transition:transform .5s var(--m-spring)}
-body.phone .m-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-body.phone .m-chip{flex:none;height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--m-line);background:#fff;
-  font:600 13.5px var(--m-font);color:var(--m-ink-2);cursor:pointer;position:relative;overflow:hidden}
-body.phone .m-chip.on{background:var(--m-asphalt);border-color:var(--m-asphalt);color:#fff}
-body.phone .m-badge{font-style:normal;background:var(--m-verm);color:#fff;border-radius:10px;min-width:20px;height:20px;
-  padding:0 6px;font:700 11px/20px var(--m-font);text-align:center;display:inline-block;animation:mPop .45s var(--m-spring) .3s both}
-@keyframes mPop{from{transform:scale(0)}to{transform:scale(1)}}
+body.phone .m-seg-ind{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 10px)/3);border-radius:8px;background:#fff;
+  box-shadow:0 1px 3px rgba(15,23,42,.1);transform:translateX(calc(var(--at,0) * (100% + 2px)));transition:transform .28s var(--m-ease)}
+body.phone .m-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+body.phone .m-chip{flex:none;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--m-line);background:#fff;
+  font:500 13px var(--m-font);color:var(--m-ink-2);cursor:pointer;position:relative;overflow:hidden}
+body.phone .m-chip.on{background:var(--m-acc-soft);border-color:var(--m-acc);color:var(--m-acc)}
+body.phone .m-badge{font-style:normal;background:var(--m-neg);color:#fff;border-radius:9px;min-width:18px;height:18px;
+  padding:0 5px;font:600 10.5px/18px var(--m-font);text-align:center;display:inline-block}
 
-/* ---------- the dark cards: hero, ledger balance, trip band ---------- */
-body.phone .m-hero{position:relative;overflow:hidden;border-radius:26px;padding:26px 18px 18px;color:#fff;
-  background:radial-gradient(120% 90% at 100% 0%, var(--m-asphalt-3) 0%, transparent 55%),
-             radial-gradient(80% 60% at 0% 100%, rgba(217,80,42,.22) 0%, transparent 60%),
-             linear-gradient(160deg, var(--m-asphalt-2), var(--m-asphalt));
-  box-shadow:0 22px 40px -22px rgba(21,27,44,.75)}
-/* the fringe that hangs across the top of a decorated truck */
-body.phone .m-bunting{position:absolute;left:-6px;right:-6px;top:0;height:11px;opacity:.95;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='11'%3E%3Cpath d='M0 0h14L7 11z' fill='%23F2A93B'/%3E%3Cpath d='M14 0h14l-7 11z' fill='%23D9502A'/%3E%3Cpath d='M28 0h14l-7 11z' fill='%230F9A7C'/%3E%3Cpath d='M42 0h14l-7 11z' fill='%23B04BA8'/%3E%3C/svg%3E") repeat-x;
-  transform-origin:top center;animation:mSway 5s ease-in-out infinite}
-@keyframes mSway{0%,100%{transform:translateX(0) skewX(0)}50%{transform:translateX(3px) skewX(-3deg)}}
+/* ---------- the dark summary cards ---------- */
+body.phone .m-hero{position:relative;overflow:hidden;border-radius:14px;padding:18px 16px 16px;color:#fff;
+  background:linear-gradient(155deg, var(--m-dark-2), var(--m-dark));box-shadow:0 8px 24px -14px rgba(15,23,42,.6)}
 body.phone .m-hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-body.phone .m-hero-top span{font-size:14px;color:rgba(255,255,255,.7);font-weight:500}
-body.phone .m-hero-link{border:0;background:rgba(255,255,255,.08);color:var(--m-gold-2);font:600 13px var(--m-font);
-  height:30px;padding:0 8px 0 12px;border-radius:15px;display:inline-flex;align-items:center;gap:2px;cursor:pointer}
-body.phone .m-hero-link .mi{width:15px;height:15px}
-body.phone .m-hero-v{display:block;border:0;background:none;padding:0;margin:6px 0 16px;cursor:pointer;text-align:left;
-  font:700 40px/1.05 var(--m-font);letter-spacing:-.035em;color:var(--m-gold-2);
-  text-shadow:0 6px 24px rgba(242,169,59,.25)}
-body.phone .m-hero-v small{font-size:18px;color:rgba(255,255,255,.6);font-weight:600;letter-spacing:0;margin-left:6px}
-body.phone .m-hero-sub{font-size:13px;color:rgba(255,255,255,.62);margin:-8px 0 16px}
-body.phone .m-hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 0 2px;border-top:1px solid rgba(255,255,255,.1)}
-body.phone .m-hero-stats div{display:flex;flex-direction:column;gap:3px;min-width:0}
-body.phone .m-hero-stats b{font-size:18px;font-weight:700;color:#fff}
-body.phone .m-hero-stats span{font-size:11.5px;color:rgba(255,255,255,.58);line-height:1.3}
-body.phone .m-hero-add{width:100%;height:54px;border:0;border-radius:16px;margin-top:6px;cursor:pointer;position:relative;overflow:hidden;
-  background:linear-gradient(145deg, var(--m-gold-2), var(--m-gold) 55%, #E08E1C);color:var(--m-asphalt);
-  font:700 17px var(--m-font);letter-spacing:.02em;display:flex;align-items:center;justify-content:center;gap:10px;
-  box-shadow:0 14px 26px -12px rgba(242,169,59,.8);transition:transform .2s var(--m-spring)}
-body.phone .m-hero-add .mi{width:22px;height:22px;stroke-width:2.6}
-body.phone .m-hero-add:active{transform:scale(.97)}
-body.phone .m-hero-s{padding-top:24px}
-body.phone .m-hero-s .m-hero-v{font-size:36px}
+body.phone .m-hero-top span{font-size:13px;color:#CBD5E1;font-weight:500}
+body.phone .m-hero-link{border:0;background:rgba(255,255,255,.08);color:#E2E8F0;font:500 12.5px var(--m-font);
+  height:28px;padding:0 6px 0 10px;border-radius:7px;display:inline-flex;align-items:center;gap:2px;cursor:pointer}
+body.phone .m-hero-link .mi{width:14px;height:14px}
+body.phone .m-hero-v{display:block;border:0;background:none;padding:0;margin:6px 0 14px;cursor:pointer;text-align:left;
+  font:700 32px/1.1 var(--m-font);letter-spacing:-.03em;color:#fff}
+body.phone .m-hero-v small{font-size:16px;color:#94A3B8;font-weight:500;letter-spacing:0;margin-left:6px}
+body.phone .m-hero-sub{font-size:12.5px;color:#94A3B8;margin:-8px 0 14px}
+body.phone .m-hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 0 14px;border-top:1px solid rgba(255,255,255,.1)}
+body.phone .m-hero-stats div{display:flex;flex-direction:column;gap:2px;min-width:0}
+body.phone .m-hero-stats b{font-size:16px;font-weight:600;color:#fff}
+body.phone .m-hero-stats span{font-size:11.5px;color:#94A3B8;line-height:1.3}
+body.phone .m-hero-add{width:100%;height:46px;border:0;border-radius:10px;cursor:pointer;position:relative;overflow:hidden;
+  background:#fff;color:var(--m-ink);font:600 15px var(--m-font);display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s}
+body.phone .m-hero-add:active{background:#E2E8F0}
+body.phone .m-hero-add .mi{width:20px;height:20px;stroke-width:2.2;color:var(--m-acc)}
+body.phone .m-hero-s .m-hero-v{font-size:30px}
 
-/* ---------- the road ---------- */
-body.phone .m-road{position:relative;height:30px;min-width:60px}
-body.phone .m-lane{position:absolute;left:8px;right:8px;top:21px;height:2px;border-radius:2px;
-  background:repeating-linear-gradient(90deg, #CFC7B7 0 8px, transparent 8px 14px)}
-body.phone .m-fill{position:absolute;left:8px;top:21px;height:2px;border-radius:2px;width:calc((100% - 16px) * var(--p,0));
-  background:linear-gradient(90deg, var(--m-teal), #1FB08C)}
-body.phone .r-moving .m-fill{background:linear-gradient(90deg, var(--m-gold), var(--m-verm))}
-body.phone .r-moving .m-lane{animation:mLane .7s linear infinite}
-@keyframes mLane{to{background-position:-14px 0}}
-body.phone .m-pin-a, body.phone .m-pin-b{position:absolute;top:17px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid var(--m-ink)}
-body.phone .m-pin-a{left:3px}
-body.phone .m-pin-b{right:3px;border-color:#BDB5A5}
-body.phone .r-arrived .m-pin-b, body.phone .r-done .m-pin-b{border-color:var(--m-teal);background:var(--m-teal);animation:mPop .4s var(--m-spring) .6s both}
-body.phone .m-lorry{width:36px;height:20px;overflow:visible}
-body.phone .m-road .m-lorry{position:absolute;top:1px;left:calc(8px + (100% - 16px) * var(--p,0));translate:-50% 0}
-body.phone .r-arrived .m-road .m-lorry, body.phone .r-done .m-road .m-lorry{translate:-82% 0}
-body.phone .m-lorry .lb{fill:var(--m-asphalt)}
-body.phone .m-lorry .lc{fill:var(--m-verm)}
-body.phone .m-lorry .lw{fill:#CFE2F4}
-body.phone .m-lorry .ls{fill:var(--m-gold)}
-body.phone .m-lorry .ls2{fill:#1FB08C}
-body.phone .m-lorry .lt{fill:#222}
-body.phone .m-lorry .lh{fill:#C9C2B3}
-body.phone .r-moving .m-lorry{animation:mBob .5s ease-in-out infinite alternate}
-@keyframes mBob{from{transform:translateY(0)}to{transform:translateY(-1.5px)}}
-body.phone .r-self .m-lorry{opacity:.45;filter:grayscale(1)}
-body.phone .r-self .m-fill{background:#CFC7B7}
-body.phone .m-route{display:grid;grid-template-columns:minmax(0,auto) 1fr minmax(0,auto);align-items:center;gap:10px;margin:14px 0 12px}
-body.phone .m-route b{display:block;font-size:16.5px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
-body.phone .m-route span{display:block;font-size:12.5px;color:var(--m-muted);margin-top:4px}
+/* ---------- the route line ---------- */
+body.phone .m-road{position:relative;height:14px;min-width:60px}
+body.phone .m-lane{position:absolute;left:5px;right:5px;top:6px;height:2px;border-radius:2px;background:var(--m-line)}
+body.phone .m-fill{position:absolute;left:5px;top:6px;height:2px;border-radius:2px;width:calc((100% - 10px) * var(--p,0));background:var(--m-pos)}
+body.phone .r-moving .m-fill{background:var(--m-acc)}
+body.phone .r-self .m-fill{background:var(--m-muted-2)}
+body.phone .m-pin-a, body.phone .m-pin-b{position:absolute;top:3px;width:8px;height:8px;border-radius:50%;background:var(--m-ink-2)}
+body.phone .m-pin-a{left:1px}
+body.phone .m-pin-b{right:1px;background:#fff;box-shadow:inset 0 0 0 2px var(--m-muted-2)}
+body.phone .r-arrived .m-pin-b, body.phone .r-done .m-pin-b{background:var(--m-pos);box-shadow:none}
+body.phone .m-mark{position:absolute;top:1px;width:12px;height:12px;border-radius:50%;background:#fff;
+  left:calc(5px + (100% - 10px) * var(--p,0));translate:-50% 0;box-shadow:inset 0 0 0 3px var(--m-acc), 0 0 0 3px rgba(53,87,240,.15)}
+body.phone .r-arrived .m-mark, body.phone .r-done .m-mark, body.phone .r-self .m-mark{display:none}
+body.phone .m-route{display:grid;grid-template-columns:minmax(0,auto) 1fr minmax(0,auto);align-items:center;gap:12px;margin:12px 0 12px}
+body.phone .m-route b{display:block;font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+body.phone .m-route span{display:block;font-size:12px;color:var(--m-muted);margin-top:3px}
 body.phone .m-route-b{text-align:right}
-/* on the hero the truck drives the whole road, over and over */
-body.phone .m-road-hero{height:28px;margin:10px -4px 12px}
-body.phone .m-road-hero .m-lane{top:22px;left:0;right:0;background:repeating-linear-gradient(90deg, rgba(255,255,255,.28) 0 10px, transparent 10px 18px);
-  animation:mLaneH .9s linear infinite}
-@keyframes mLaneH{to{background-position:-18px 0}}
-body.phone .m-road-hero .m-lorry{position:absolute;top:0;left:0;width:40px;height:22px;animation:mCruise 9s linear infinite}
-body.phone .m-hero .m-lorry .lb{fill:var(--m-gold)}
-body.phone .m-hero .m-lorry .ls{fill:var(--m-verm)}
-body.phone .m-hero .m-lorry .ls2{fill:var(--m-asphalt)}
-body.phone .m-hero .m-lorry .lt{fill:#0B0F1A}
-@keyframes mCruise{from{transform:translateX(-50px)}to{transform:translateX(calc(100vw - 20px))}}
 
-/* ---------- number plates ---------- */
-body.phone .m-plate{display:inline-flex;align-items:stretch;background:#FFD338;border:1.5px solid #1A1A1A;border-radius:6px;overflow:hidden;
-  color:#111;font:700 14.5px/1 var(--m-font);letter-spacing:.07em;white-space:nowrap;align-self:flex-start;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35), 0 2px 0 rgba(0,0,0,.12)}
-body.phone .m-plate i{font-style:normal;background:#1F4FB3;color:#fff;font:700 6.5px/1 var(--m-font);letter-spacing:0;
-  writing-mode:vertical-rl;transform:rotate(180deg);display:grid;place-items:center;padding:0 2px}
-body.phone .m-plate>span{padding:5px 8px 4px}
-body.phone .m-plate b{font-weight:800}
-body.phone .m-plate-s{font-size:13px}
+/* ---------- registration chips ---------- */
+body.phone .m-plate{display:inline-flex;align-items:center;align-self:flex-start;background:var(--m-sunk);border:1px solid #DCE2EA;border-radius:6px;
+  color:var(--m-ink);font:500 13px/1 var(--m-mono);letter-spacing:.02em;white-space:nowrap;padding:5px 7px 4px}
+body.phone .m-plate b{font-weight:600}
+body.phone .m-plate-s{font-size:12.5px}
 
 /* ---------- home ---------- */
-body.phone .m-page-home{gap:16px}
 body.phone .m-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-body.phone .m-quick-b{border:1px solid var(--m-line);background:#fff;border-radius:18px;padding:14px 4px 12px;position:relative;overflow:hidden;
-  display:flex;flex-direction:column;align-items:center;gap:9px;box-shadow:var(--m-sh);
-  font:600 12.5px/1.2 var(--m-font);color:var(--m-ink);cursor:pointer;text-align:center;transition:transform .2s var(--m-spring)}
-body.phone .m-quick-b:active{transform:scale(.94)}
-body.phone .m-attn-row{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:2px 14px 6px;scrollbar-width:none}
-body.phone .m-attn{flex:none;width:240px;scroll-snap-align:start;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;
-  background:#fff;border:1px solid var(--m-line);border-radius:18px;padding:12px 14px;box-shadow:var(--m-sh);position:relative;overflow:hidden}
-body.phone .m-attn::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:currentColor}
-body.phone .a-verm{color:var(--m-verm)} body.phone .a-gold{color:var(--m-gold-deep)} body.phone .a-indigo{color:var(--m-indigo)}
+body.phone .m-quick-b{border:1px solid var(--m-line);background:#fff;border-radius:12px;padding:12px 4px 10px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;gap:8px;font:500 12px/1.25 var(--m-font);color:var(--m-ink);cursor:pointer;text-align:center;
+  transition:background .15s}
+body.phone .m-quick-b:active{background:var(--m-line-2)}
+body.phone .m-quick-b .m-sq{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-attn-row{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none}
+body.phone .m-attn{flex:none;width:236px;scroll-snap-align:start;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;
+  background:#fff;border:1px solid var(--m-line);border-radius:12px;padding:12px;position:relative;overflow:hidden}
 body.phone .m-attn span{display:flex;flex-direction:column;gap:2px;min-width:0}
-body.phone .m-attn b{font:700 15px var(--m-font);color:var(--m-ink)}
-body.phone .m-attn em{font-style:normal;font-size:12.5px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-attn .m-sq{width:40px;height:40px;border-radius:13px}
-body.phone .m-block{display:flex;flex-direction:column;gap:10px}
-body.phone .m-block-h{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
-body.phone .m-block-h h2{margin:0;font-size:17px;font-weight:700;letter-spacing:-.01em}
+body.phone .m-attn b{font:600 14px var(--m-font);color:var(--m-ink)}
+body.phone .m-attn em{font-style:normal;font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-attn .m-sq{width:38px;height:38px}
+body.phone .m-block{display:flex;flex-direction:column;gap:8px}
+body.phone .m-block-h{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
+body.phone .m-block-h h2{margin:0;font-size:13px;font-weight:600;color:var(--m-muted);text-transform:uppercase;letter-spacing:.06em}
 body.phone .m-sec{overflow:hidden}
-body.phone .m-sec-t{font-size:15.5px;font-weight:700;margin:0;padding:16px 16px 2px;letter-spacing:-.01em}
-body.phone .m-cells{display:grid;grid-template-columns:repeat(4,1fr);padding:6px 4px 12px;row-gap:4px}
-body.phone .m-cell{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:8px;border-radius:16px;
-  padding:10px 2px;font:500 12.5px/1.25 var(--m-font);color:var(--m-ink-2);cursor:pointer;position:relative;overflow:hidden;text-align:center;
-  transition:transform .2s var(--m-spring)}
-body.phone .m-cell:active{transform:scale(.92)}
-body.phone .m-cell .m-sq{transition:transform .3s var(--m-spring)}
-body.phone .m-cell .m-badge{position:absolute;top:4px;right:calc(50% - 32px)}
-/* the sign on the back of every truck */
-body.phone .m-sign{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0 4px}
-body.phone .m-sign-plate{display:flex;align-items:center;gap:10px;padding:10px 18px;border-radius:14px;position:relative;
-  background:#fff;border:2px dashed #E3D9C4;font:800 italic 17px var(--m-font);letter-spacing:.14em}
-body.phone .m-sign-plate span:first-child{color:var(--m-verm)}
-body.phone .m-sign-plate span:last-child{color:var(--m-teal)}
-body.phone .m-sign-plate em{font-style:normal;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;letter-spacing:0;
-  background:var(--m-gold);color:var(--m-asphalt);font-size:15px;box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--m-plum)}
-body.phone .m-sign-tag{font-size:12px;color:var(--m-muted);font-style:italic;text-align:center}
+body.phone .m-sec-t{font-size:13px;font-weight:600;margin:0;padding:14px 16px 0;color:var(--m-muted);text-transform:uppercase;letter-spacing:.06em}
+body.phone .m-cells{display:grid;grid-template-columns:repeat(4,1fr);padding:8px 4px 10px;row-gap:2px}
+body.phone .m-cell{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:7px;border-radius:10px;
+  padding:10px 2px;font:500 12px/1.25 var(--m-font);color:var(--m-ink-2);cursor:pointer;position:relative;overflow:hidden;text-align:center;
+  transition:background .15s}
+body.phone .m-cell:active{background:var(--m-line-2)}
+body.phone .m-cell .m-badge{position:absolute;top:5px;right:calc(50% - 28px)}
 
 /* ---------- lists of rows ---------- */
 body.phone .m-rows{overflow:hidden}
-body.phone .m-row{display:flex;align-items:center;gap:12px;padding:14px 14px;border-bottom:1px solid var(--m-line-2);cursor:pointer;
+body.phone .m-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--m-line-2);cursor:pointer;
   position:relative;overflow:hidden;transition:background .15s}
 body.phone .m-row:last-child{border-bottom:0}
-body.phone .m-row:active{background:#FAF7F1}
-body.phone .m-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-body.phone .m-row-main>b{font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-row:active{background:#F8FAFC}
+body.phone .m-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+body.phone .m-row-main>b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.phone .m-row-main>span{font-size:12.5px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-row-end{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none;text-align:right}
-body.phone .m-row-end b{font-size:15.5px;font-weight:700}
+body.phone .m-row-main>.m-plate{font-size:13px;color:var(--m-ink)}
+body.phone .m-row-end{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none;text-align:right}
+body.phone .m-row-end b{font-size:15px;font-weight:600}
 body.phone .m-row-end>span{font-size:11.5px;color:var(--m-muted)}
-body.phone .m-chev{color:#B8B1A4;width:18px;height:18px}
-body.phone .m-total{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 16px 18px;border-radius:20px;
-  background:#fff;border:1px solid var(--m-line);box-shadow:var(--m-sh)}
-body.phone .m-total div{display:flex;flex-direction:column;gap:3px}
-body.phone .m-total span{font-size:13px;color:var(--m-muted)}
-body.phone .m-total b{font-size:26px;font-weight:700;letter-spacing:-.03em}
-body.phone .m-total-in b{color:var(--m-teal)}
-body.phone .m-total-out b{color:var(--m-red)}
-body.phone .m-timeline .m-row{padding-left:18px}
-body.phone .m-timeline .m-row-main>b{white-space:normal;font-size:14.5px}
-body.phone .m-dot{width:10px;height:10px;border-radius:50%;flex:none;font-style:normal;box-shadow:0 0 0 4px var(--m-teal-soft);background:var(--m-teal)}
-body.phone .is-dr .m-dot{background:var(--m-verm);box-shadow:0 0 0 4px var(--m-verm-soft)}
-body.phone .m-month{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--m-muted);
-  padding:12px 18px 6px;background:#FBF9F4;border-bottom:1px solid var(--m-line-2)}
+body.phone .m-chev{color:#CBD5E1;width:18px;height:18px}
+body.phone .m-total{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:12px;
+  background:#fff;border:1px solid var(--m-line)}
+body.phone .m-total div{display:flex;flex-direction:column;gap:2px}
+body.phone .m-total span{font-size:12.5px;color:var(--m-muted)}
+body.phone .m-total b{font-size:23px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-total-in b{color:var(--m-pos)}
+body.phone .m-total-out b{color:var(--m-neg)}
+body.phone .m-timeline .m-row-main>b{white-space:normal;font-size:14px;font-weight:500}
+body.phone .m-dot{width:8px;height:8px;border-radius:50%;flex:none;font-style:normal;background:var(--m-pos)}
+body.phone .is-dr .m-dot{background:var(--m-neg)}
+body.phone .m-month{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--m-muted);
+  padding:10px 14px 6px;background:#F8FAFC;border-bottom:1px solid var(--m-line-2)}
 body.phone .m-list{overflow:hidden}
 body.phone .m-tool{display:flex;align-items:center;gap:14px;width:100%;border:0;border-bottom:1px solid var(--m-line-2);position:relative;overflow:hidden;
-  background:none;padding:12px 14px;text-align:left;cursor:pointer;color:var(--m-ink)}
+  background:none;padding:11px 14px;text-align:left;cursor:pointer;color:var(--m-ink);transition:background .15s}
+body.phone .m-tool:active{background:#F8FAFC}
 body.phone .m-tool:last-child{border-bottom:0}
-body.phone .m-tool>span{flex:1;display:flex;flex-direction:column;gap:2px}
-body.phone .m-tool b{font:600 15.5px var(--m-font)}
+body.phone .m-tool>span{flex:1;display:flex;flex-direction:column;gap:1px}
+body.phone .m-tool b{font:500 15px var(--m-font)}
 body.phone .m-tool em{font-style:normal;font-size:12.5px;color:var(--m-muted)}
+body.phone .m-tool .m-sq{width:38px;height:38px}
 
 /* ---------- tabs across the top ---------- */
-body.phone .m-tabs-top{display:flex;position:sticky;top:calc(64px + env(safe-area-inset-top));z-index:30;
-  background:rgba(244,241,234,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--m-line)}
-body.phone .m-tabs-top button{flex:1;border:0;background:none;height:50px;font:600 15px var(--m-font);color:var(--m-muted-2);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .3s}
-body.phone .m-tabs-top button.on{color:var(--m-ink)}
-body.phone .m-tabs-top .m-badge{animation:none}
-body.phone .m-ind{position:absolute;left:0;bottom:-1px;height:3px;width:calc(100% / var(--n,4));
-  transform:translateX(calc(var(--x,0) * 100%));transition:transform .5s var(--m-spring)}
-body.phone .m-ind::after{content:'';display:block;margin:0 auto;width:44%;height:100%;border-radius:3px 3px 0 0;background:var(--m-gold-deep)}
-body.phone .m-pane-l{animation:mPaneL .4s var(--m-ease) both}
-body.phone .m-pane-r{animation:mPaneR .4s var(--m-ease) both}
-@keyframes mPaneL{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
-@keyframes mPaneR{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
+body.phone .m-tabs-top{display:flex;position:sticky;top:calc(60px + env(safe-area-inset-top));z-index:30;
+  background:#fff;border-bottom:1px solid var(--m-line)}
+body.phone .m-tabs-top button{flex:1;border:0;background:none;height:46px;font:500 14px var(--m-font);color:var(--m-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .2s}
+body.phone .m-tabs-top button.on{color:var(--m-acc);font-weight:600}
+body.phone .m-ind{position:absolute;left:0;bottom:-1px;height:2px;width:calc(100% / var(--n,4));
+  transform:translateX(calc(var(--x,0) * 100%));transition:transform .28s var(--m-ease)}
+body.phone .m-ind::after{content:'';display:block;margin:0 auto;width:60%;height:100%;border-radius:2px 2px 0 0;background:var(--m-acc)}
+body.phone .m-pane-l{animation:mPaneL .24s var(--m-ease) both}
+body.phone .m-pane-r{animation:mPaneR .24s var(--m-ease) both}
+@keyframes mPaneL{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes mPaneR{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
 
 /* ---------- trips ---------- */
-body.phone .m-trip{padding:16px;cursor:pointer;position:relative;overflow:hidden;transition:transform .25s var(--m-spring), box-shadow .25s}
-body.phone .m-trip:active{transform:scale(.985);box-shadow:var(--m-sh-lift)}
+body.phone .m-trip{padding:14px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s}
+body.phone .m-trip:active{background:#F8FAFC}
 body.phone .m-trip-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-body.phone .m-trip-who{display:flex;flex-direction:column;gap:7px;min-width:0}
-body.phone .m-trip-party{font-size:13.5px;color:var(--m-muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-trip-amt{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:none}
-body.phone .m-trip-amt b{font-size:19px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-trip-who{display:flex;flex-direction:column;gap:6px;min-width:0}
+body.phone .m-trip-party{font-size:14.5px;color:var(--m-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-trip-amt{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+body.phone .m-trip-amt b{font-size:17px;font-weight:700;letter-spacing:-.02em}
 body.phone .m-trip-amt em{font-style:normal;font-size:12px;color:var(--m-muted)}
-body.phone .m-trip-foot{display:flex;justify-content:space-between;align-items:center;gap:10px}
-body.phone .m-state{display:inline-flex;align-items:center;gap:7px;padding:5px 11px 5px 9px;border-radius:20px;white-space:nowrap;
-  font:600 12.5px var(--m-font);background:var(--m-sunk);color:var(--m-ink-2)}
-body.phone .m-state i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
-body.phone .s-verm{background:var(--m-verm-soft);color:var(--m-verm)}
-body.phone .s-verm i{animation:mPulse 1.6s ease-out infinite}
-@keyframes mPulse{0%{box-shadow:0 0 0 0 rgba(217,80,42,.55)}100%{box-shadow:0 0 0 7px rgba(217,80,42,0)}}
-body.phone .s-teal{background:var(--m-teal-soft);color:var(--m-teal)}
-body.phone .s-gold{background:var(--m-gold-soft);color:var(--m-gold-deep)}
-body.phone .s-indigo{background:var(--m-indigo-soft);color:var(--m-indigo)}
+body.phone .m-trip-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--m-line-2)}
+body.phone .m-state{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:6px;white-space:nowrap;
+  font:600 12px var(--m-font);background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-state i{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+body.phone .s-verm{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .s-teal{background:var(--m-pos-soft);color:var(--m-pos)}
+body.phone .s-gold{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .s-indigo{background:var(--m-sunk);color:var(--m-ink-2)}
 body.phone .s-grey{background:var(--m-sunk);color:var(--m-muted)}
-body.phone .m-lr{font-size:13px;color:var(--m-muted);font-weight:600;letter-spacing:.02em}
+body.phone .m-lr{font:500 12.5px var(--m-mono);color:var(--m-muted)}
 
 /* ---------- one trip ---------- */
-body.phone .m-trip-band{position:relative;overflow:hidden;color:#fff;padding:22px 16px 18px;margin:0 0 0;
-  border-radius:0 0 28px 28px;
-  background:radial-gradient(110% 90% at 100% 0%, var(--m-asphalt-3) 0%, transparent 55%),
-             radial-gradient(70% 60% at 0% 100%, rgba(217,80,42,.24) 0%, transparent 60%),
-             linear-gradient(165deg, var(--m-asphalt-2), var(--m-asphalt))}
-body.phone .m-state-band{background:rgba(255,255,255,.1);color:#fff}
-body.phone .m-state-band.s-verm{color:#FFB199}
-body.phone .m-state-band.s-teal{color:#7FE0C5}
-body.phone .m-state-band.s-gold{color:var(--m-gold-2)}
-body.phone .m-state-band.s-indigo{color:#AEB9FF}
-body.phone .m-route-big{margin:16px 0 16px}
-body.phone .m-route-big b{font-size:21px;color:#fff}
-body.phone .m-route-big span{color:rgba(255,255,255,.6)}
-body.phone .m-route-big .m-lane{background:repeating-linear-gradient(90deg, rgba(255,255,255,.3) 0 8px, transparent 8px 14px)}
-body.phone .m-route-big .m-pin-a{background:var(--m-asphalt);border-color:#fff}
-body.phone .m-route-big .m-pin-b{background:var(--m-asphalt);border-color:rgba(255,255,255,.4)}
-body.phone .m-route-big .m-lorry .lb{fill:var(--m-gold)}
-body.phone .m-route-big .m-lorry .ls{fill:var(--m-verm)}
-body.phone .m-route-big .m-lorry .ls2{fill:var(--m-asphalt)}
-body.phone .m-trip-chips{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+body.phone .m-trip-band{color:#fff;padding:14px 16px 16px;background:linear-gradient(155deg, var(--m-dark-2), var(--m-dark))}
+body.phone .m-state-band{background:rgba(255,255,255,.1)!important;color:#E2E8F0!important}
+body.phone .m-route-big{margin:14px 0}
+body.phone .m-route-big b{font-size:19px;color:#fff}
+body.phone .m-route-big span{color:#94A3B8}
+body.phone .m-route-big .m-lane{background:rgba(255,255,255,.18)}
+body.phone .m-route-big .r-moving .m-fill, body.phone .m-route-big.r-moving .m-fill{background:#8FA7FF}
+body.phone .m-route-big .m-pin-a{background:#fff}
+body.phone .m-route-big .m-pin-b{background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+body.phone .m-route-big.r-arrived .m-pin-b, body.phone .m-route-big.r-done .m-pin-b{background:#32D583;box-shadow:none}
+body.phone .m-route-big.r-arrived .m-fill, body.phone .m-route-big.r-done .m-fill{background:#32D583}
+body.phone .m-route-big .m-mark{background:var(--m-dark);box-shadow:inset 0 0 0 3px #8FA7FF, 0 0 0 3px rgba(143,167,255,.2)}
+body.phone .m-trip-chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 body.phone .m-trip-chips button{border:0;background:none;padding:0;cursor:pointer}
-body.phone .m-chip-dark{display:inline-flex!important;align-items:center;gap:8px;height:32px;padding:0 12px!important;border-radius:16px;
-  background:rgba(255,255,255,.1)!important;color:#fff;font:600 13.5px var(--m-font)}
-body.phone .m-chip-dark .mi{width:17px;height:17px;color:var(--m-gold-2)}
-body.phone .m-page-trip{padding-top:14px}
-body.phone .m-party{padding:16px}
+body.phone .m-trip-band .m-plate{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
+body.phone .m-chip-dark{display:inline-flex!important;align-items:center;gap:7px;height:28px;padding:0 10px!important;border-radius:6px;
+  background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.18)!important;color:#fff;font:500 13px var(--m-font)}
+body.phone .m-chip-dark .mi{width:15px;height:15px;color:#CBD5E1}
+body.phone .m-page-trip{padding-top:12px}
+body.phone .m-party{padding:14px}
 body.phone .m-party-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 body.phone .m-party-name{border:0;background:none;padding:0;display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer;text-align:left;color:var(--m-ink)}
-body.phone .m-party-name>span{display:flex;flex-direction:column;gap:2px;min-width:0}
-body.phone .m-party-name b{font:700 16.5px var(--m-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-party-name>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+body.phone .m-party-name b{font:600 15.5px var(--m-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.phone .m-party-name em{font-style:normal;font-size:12.5px;color:var(--m-muted)}
-body.phone .m-steps{position:relative;display:grid;grid-template-columns:repeat(5,1fr);margin:20px -6px 18px}
-body.phone .m-steps-line{position:absolute;left:10%;right:10%;top:11px;height:3px;border-radius:3px;background:var(--m-sunk)}
-body.phone .m-steps-line i{display:block;height:100%;border-radius:3px;width:calc(var(--done,0) * 100%);
-  background:linear-gradient(90deg, var(--m-teal), #1FB08C);transform-origin:left}
+body.phone .m-steps{position:relative;display:grid;grid-template-columns:repeat(5,1fr);margin:18px -6px 16px}
+body.phone .m-steps-line{position:absolute;left:10%;right:10%;top:9px;height:2px;background:var(--m-line)}
+body.phone .m-steps-line i{display:block;height:100%;width:calc(var(--done,0) * 100%);background:var(--m-acc);transform-origin:left}
 body.phone .m-step{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;z-index:1}
-body.phone .m-step i{width:24px;height:24px;border-radius:50%;background:#fff;border:2.5px solid #D8D0C1;display:grid;place-items:center;font-style:normal}
-body.phone .m-step.done i{background:var(--m-teal);border-color:var(--m-teal);color:#fff}
-body.phone .m-step.next i{border-color:var(--m-gold);animation:mNext 1.8s ease-out infinite}
-@keyframes mNext{0%{box-shadow:0 0 0 0 rgba(242,169,59,.55)}100%{box-shadow:0 0 0 9px rgba(242,169,59,0)}}
-body.phone .m-step i .mi{width:13px;height:13px;stroke-width:3.2}
-body.phone .m-step span{font-size:12px;line-height:1.2;color:var(--m-muted);font-weight:500}
-body.phone .m-step.done span{color:var(--m-ink);font-weight:600}
+body.phone .m-step i{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--m-line);display:grid;place-items:center;font-style:normal}
+body.phone .m-step.done i{background:var(--m-acc);border-color:var(--m-acc);color:#fff}
+body.phone .m-step.next i{border-color:var(--m-acc)}
+body.phone .m-step i .mi{width:12px;height:12px;stroke-width:3}
+body.phone .m-step span{font-size:11.5px;line-height:1.2;color:var(--m-muted);font-weight:500}
+body.phone .m-step.done span{color:var(--m-ink)}
 body.phone .m-step em{font-style:normal;font-size:10.5px;color:var(--m-muted-2);margin-top:-3px}
-body.phone .m-bill{display:flex;flex-direction:column;gap:14px;padding:18px 16px 16px}
-body.phone .m-line{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:15px}
-body.phone .m-line>div{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+body.phone .m-bill{display:flex;flex-direction:column;gap:12px;padding:16px 14px 14px}
+body.phone .m-line{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:14.5px;color:var(--m-ink-2)}
+body.phone .m-line>div{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 body.phone .m-line>span{display:flex;flex-direction:column}
-body.phone .m-line b{font-weight:500;display:flex;align-items:center;text-align:right}
-body.phone .m-line-main{font-weight:700;font-size:16px}
-body.phone .m-line-main b{font-weight:700}
-body.phone .m-sub-l{font-style:normal;font-weight:500;font-size:12.5px;color:var(--m-muted);margin-top:2px}
-body.phone .m-meter{height:8px;border-radius:4px;background:var(--m-sunk);overflow:hidden;margin-top:4px}
-body.phone .m-meter i{display:block;height:100%;width:calc(var(--p,0) * 100%);border-radius:4px;background:linear-gradient(90deg, var(--m-teal), #1FB08C)}
-body.phone .m-pending{display:flex;justify-content:space-between;align-items:center;border-top:2px dashed var(--m-line);padding-top:14px;
-  font-size:16px;font-weight:700}
-body.phone .m-pending b{color:var(--m-verm);font-size:26px;font-weight:800;letter-spacing:-.03em}
-body.phone .m-pending.is-clear b{color:var(--m-teal)}
-body.phone .m-party-foot{display:flex;justify-content:space-between;align-items:center;min-height:40px}
-body.phone .m-note{padding:10px 12px;background:#FBF6EA;border:1px dashed #EAD9B4;border-radius:12px;font-size:14px;color:var(--m-ink-2);white-space:pre-wrap}
-body.phone .m-margin{display:flex;align-items:center;gap:16px;padding:16px}
-body.phone .m-margin>div:last-child{display:flex;flex-direction:column;gap:2px}
-body.phone .m-margin span{font-size:13px;color:var(--m-muted)}
-body.phone .m-margin b{font-size:26px;font-weight:800;letter-spacing:-.03em}
-body.phone .m-margin em{font-style:normal;font-size:12.5px;color:var(--m-muted)}
-body.phone .m-ring-big{position:relative;width:72px;height:72px;flex:none}
+body.phone .m-line b{font-weight:500;display:flex;align-items:center;text-align:right;color:var(--m-ink)}
+body.phone .m-line-main{font-weight:600;font-size:15px;color:var(--m-ink)}
+body.phone .m-line-main b{font-weight:600}
+body.phone .m-sub-l{font-style:normal;font-weight:400;font-size:12.5px;color:var(--m-muted);margin-top:2px}
+body.phone .m-meter{height:6px;border-radius:3px;background:var(--m-sunk);overflow:hidden;margin-top:2px}
+body.phone .m-meter i{display:block;height:100%;width:calc(var(--p,0) * 100%);border-radius:3px;background:var(--m-pos)}
+body.phone .m-pending{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--m-line);padding-top:12px;
+  font-size:15px;font-weight:600}
+body.phone .m-pending b{color:var(--m-ink);font-size:22px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-pending.is-clear b{color:var(--m-pos)}
+body.phone .m-party-foot{display:flex;justify-content:space-between;align-items:center;min-height:38px}
+body.phone .m-note{padding:10px 12px;background:#F8FAFC;border:1px solid var(--m-line);border-radius:8px;font-size:13.5px;color:var(--m-ink-2);white-space:pre-wrap}
+body.phone .m-margin{display:flex;align-items:center;gap:16px;padding:14px}
+body.phone .m-margin>div:last-child{display:flex;flex-direction:column;gap:1px}
+body.phone .m-margin span{font-size:12.5px;color:var(--m-muted)}
+body.phone .m-margin b{font-size:22px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-margin em{font-style:normal;font-size:12px;color:var(--m-muted)}
+body.phone .m-ring-big{position:relative;width:64px;height:64px;flex:none}
 body.phone .m-ring-big svg, body.phone .m-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-body.phone .m-ring-big circle, body.phone .m-ring circle{fill:none;stroke-width:3.4;stroke-linecap:round}
+body.phone .m-ring-big circle, body.phone .m-ring circle{fill:none;stroke-width:3;stroke-linecap:butt}
 body.phone .m-ring-big .bg, body.phone .m-ring .bg{stroke:var(--m-sunk)}
-body.phone .m-ring-big .fg{stroke:var(--m-teal);stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0) * 100)}
-body.phone .m-ring-big .fg.neg{stroke:var(--m-verm)}
-body.phone .m-ring-big b{position:absolute;inset:0;display:grid;place-items:center;font-size:17px;font-weight:800}
-body.phone .m-profit{padding:14px 16px 0;overflow:hidden}
+body.phone .m-ring-big .fg{stroke:var(--m-pos);stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0) * 100)}
+body.phone .m-ring-big .fg.neg{stroke:var(--m-neg)}
+body.phone .m-ring-big b{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;font-weight:700}
+body.phone .m-profit{padding:12px 14px 0;overflow:hidden}
 body.phone .m-pl-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0}
-body.phone .m-pl-head{font-size:16px;font-weight:700;padding-top:8px}
-body.phone .m-pl-box{background:#FAF7F0;border:1px solid var(--m-line-2);border-radius:16px;margin:4px 0 10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+body.phone .m-pl-head{font-size:15px;font-weight:600;padding-top:8px}
+body.phone .m-pl-box{background:#F8FAFC;border:1px solid var(--m-line-2);border-radius:8px;margin:2px 0 8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--m-ink-2)}
 body.phone .m-pl-box div{display:flex;justify-content:space-between}
-body.phone .m-pl-bar{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:6px 0 4px;font-size:14px}
-body.phone .m-pl-bar i{grid-column:1 / -1;height:6px;border-radius:3px;background:currentColor;transform:scaleX(var(--w,0));transform-origin:left}
-body.phone .m-pl-bar i.t-gold{color:var(--m-gold)} body.phone .m-pl-bar i.t-verm{color:var(--m-verm)}
-body.phone .m-pl-bar i.t-indigo{color:var(--m-indigo)} body.phone .m-pl-bar i.t-plum{color:var(--m-plum)} body.phone .m-pl-bar i.t-teal{color:var(--m-teal)}
-body.phone .m-pl-add{margin:10px 0 14px}
-body.phone .m-pl-total{display:flex;justify-content:space-between;align-items:center;border-top:2px dashed var(--m-line);
-  margin:6px -16px 0;padding:16px 16px 18px;font-size:20px;font-weight:800;background:#FDFBF6}
-body.phone .m-drv-card{padding:16px;display:flex;flex-direction:column;gap:16px}
+body.phone .m-pl-box b{color:var(--m-ink);font-weight:500}
+body.phone .m-pl-bar{display:grid;grid-template-columns:1fr auto;gap:5px 10px;padding:6px 0 4px;font-size:13.5px;color:var(--m-ink-2)}
+body.phone .m-pl-bar b{color:var(--m-ink);font-weight:500}
+body.phone .m-pl-bar i{grid-column:1 / -1;height:4px;border-radius:2px;background:#CBD5E1;transform:scaleX(var(--w,0));transform-origin:left}
+body.phone .m-pl-add{margin:8px 0 12px}
+body.phone .m-pl-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--m-line);
+  margin:6px -14px 0;padding:14px;font-size:17px;font-weight:700;background:#F8FAFC}
+body.phone .m-drv-card{padding:14px;display:flex;flex-direction:column;gap:14px}
 body.phone .m-drv{display:flex;align-items:center;gap:12px}
-body.phone .m-drv-bal{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:16px;background:#FAF7F0}
-body.phone .m-drv-bal span{font-size:13.5px;color:var(--m-muted)}
-body.phone .m-drv-bal b{font-size:22px;font-weight:800}
-body.phone .m-kvs{padding:16px;display:flex;flex-direction:column;gap:12px}
-body.phone .m-kv{display:grid;grid-template-columns:20px auto 1fr;align-items:center;gap:10px;font-size:14.5px}
-body.phone .m-kv .mi{width:18px;height:18px;color:var(--m-muted-2)}
+body.phone .m-drv-bal{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;background:#F8FAFC;border:1px solid var(--m-line-2)}
+body.phone .m-drv-bal span{font-size:13px;color:var(--m-muted)}
+body.phone .m-drv-bal b{font-size:19px;font-weight:700}
+body.phone .m-kvs{padding:14px;display:flex;flex-direction:column;gap:11px}
+body.phone .m-kv{display:grid;grid-template-columns:18px auto 1fr;align-items:center;gap:10px;font-size:14px}
+body.phone .m-kv .mi{width:17px;height:17px;color:var(--m-muted-2)}
 body.phone .m-kv span{color:var(--m-muted)}
-body.phone .m-kv b{font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.phone .m-kv b{font-weight:500;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* ---------- trucks and papers ---------- */
+/* ---------- trucks and documents ---------- */
 body.phone .m-truck{gap:12px}
-body.phone .m-truck-ic{width:48px;height:48px;border-radius:15px;background:#F3EEE3;display:grid;place-items:center;flex:none;font-style:normal}
-body.phone .m-truck-ic .m-lorry{width:32px;height:18px}
-body.phone .m-truck-ic.on{background:var(--m-verm-soft)}
-body.phone .m-truck-ic.on .m-lorry{animation:mBob .5s ease-in-out infinite alternate}
+body.phone .m-truck-ic{width:40px;height:40px;border-radius:10px;background:var(--m-sunk);color:var(--m-ink-2);display:grid;place-items:center;flex:none;font-style:normal}
+body.phone .m-truck-ic .mi{width:21px;height:21px}
+body.phone .m-truck-ic.on{background:var(--m-acc-soft);color:var(--m-acc)}
 body.phone .m-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-body.phone .m-tag{font-style:normal;display:inline-block;padding:2px 8px;border-radius:6px;font-size:11.5px;font-weight:700;letter-spacing:.02em;color:#fff;background:#8C8779}
-body.phone .m-tag.own{background:var(--m-indigo)}
-body.phone .m-tag.mkt{background:var(--m-verm)}
-body.phone .m-tag.bad{background:var(--m-red)}
-body.phone .m-tag.warn{background:var(--m-gold-deep)}
-body.phone .m-tag.ok{background:var(--m-teal)}
+body.phone .m-tag{font-style:normal;display:inline-block;padding:2px 7px;border-radius:5px;font-size:11.5px;font-weight:600;
+  color:var(--m-ink-2);background:var(--m-sunk)}
+body.phone .m-tag.own{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-tag.mkt{background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-tag.bad{background:var(--m-neg-soft);color:var(--m-neg)}
+body.phone .m-tag.warn{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .m-tag.ok{background:var(--m-pos-soft);color:var(--m-pos)}
 body.phone .m-where{font-style:normal;font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-doc{padding:14px 14px 12px;cursor:pointer;position:relative;overflow:hidden;transition:transform .25s var(--m-spring)}
-body.phone .m-doc:active{transform:scale(.985)}
+body.phone .m-doc{padding:14px 14px 12px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s}
+body.phone .m-doc:active{background:#F8FAFC}
 body.phone .m-doc-h{display:flex;align-items:center;gap:12px}
-body.phone .m-doc-h>span{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
-body.phone .m-doc-h b{font-size:15.5px;font-weight:700}
+body.phone .m-doc-h>span{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
+body.phone .m-doc-h b{font-size:15px;font-weight:600}
 body.phone .m-doc-h em{font-style:normal;font-size:12.5px;color:var(--m-muted)}
+body.phone .m-doc-h .m-sq{width:38px;height:38px}
 body.phone .m-rings{display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px;padding-top:12px;border-top:1px solid var(--m-line-2)}
 body.phone .m-ring{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
-body.phone .m-ring svg{width:44px;height:44px}
-body.phone .m-ring .fg{stroke:#C9C2B3;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0) * 100)}
-body.phone .m-ring b{position:absolute;top:0;height:44px;display:grid;place-items:center;font-size:15px;font-weight:700}
-body.phone .m-ring span{font-size:11.5px;color:var(--m-muted);font-weight:500}
-body.phone .r-red .fg{stroke:var(--m-red)} body.phone .r-red b{color:var(--m-red)}
-body.phone .r-amber .fg{stroke:var(--m-gold)} body.phone .r-amber b{color:var(--m-gold-deep)}
-body.phone .r-green .fg{stroke:var(--m-teal)} body.phone .r-green b{color:var(--m-teal)}
+body.phone .m-ring svg{width:40px;height:40px}
+body.phone .m-ring .fg{stroke:#CBD5E1;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0) * 100)}
+body.phone .m-ring b{position:absolute;top:0;height:40px;display:grid;place-items:center;font-size:14px;font-weight:600}
+body.phone .m-ring span{font-size:11.5px;color:var(--m-muted)}
+body.phone .r-red .fg{stroke:var(--m-neg)} body.phone .r-red b{color:var(--m-neg)}
+body.phone .r-amber .fg{stroke:#F79009} body.phone .r-amber b{color:var(--m-warn)}
+body.phone .r-green .fg{stroke:var(--m-pos)} body.phone .r-green b{color:var(--m-pos)}
 
-/* ---------- empty screens: a truck waiting on an empty road ---------- */
-body.phone .m-empty{text-align:center;padding:30px 20px 34px;display:flex;flex-direction:column;align-items:center;gap:10px}
-body.phone .m-empty .m-lorry{width:72px;height:40px;animation:mDriveIn 1s var(--m-ease) both}
-@keyframes mDriveIn{from{transform:translateX(-90px);opacity:0}to{transform:none;opacity:1}}
-body.phone .m-empty-road{width:180px;height:3px;margin-top:-8px;border-radius:2px;background:repeating-linear-gradient(90deg, #CFC7B7 0 10px, transparent 10px 18px)}
-body.phone .m-empty-t{font-size:17px;font-weight:700;margin-top:8px}
-body.phone .m-empty-s{font-size:13.5px;color:var(--m-muted);max-width:290px;line-height:1.5}
+/* ---------- empty screens ---------- */
+body.phone .m-empty{text-align:center;padding:32px 20px;display:flex;flex-direction:column;align-items:center;gap:8px}
+body.phone .m-empty-ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--m-sunk);color:var(--m-muted);font-style:normal}
+body.phone .m-empty-t{font-size:15.5px;font-weight:600;margin-top:6px}
+body.phone .m-empty-s{font-size:13px;color:var(--m-muted);max-width:280px;line-height:1.5}
+body.phone .m-empty .m-btn{margin-top:6px}
 
-/* ---------- the feel ---------- */
-body.phone .m-rip{position:absolute;border-radius:50%;background:currentColor;opacity:.14;transform:scale(0);pointer-events:none;
-  animation:mRip .6s cubic-bezier(.2,.7,.3,1) forwards}
+/* ---------- motion: short, and only to show where things came from ---------- */
+body.phone .m-rip{position:absolute;border-radius:50%;background:currentColor;opacity:.07;transform:scale(0);pointer-events:none;
+  animation:mRip .45s var(--m-ease) forwards}
 @keyframes mRip{to{transform:scale(1);opacity:0}}
-/* arriving on a screen: forward slides in from the right, back from the
-   left, a tab rises in place. The floating button is left out of the
-   slide — it would be carried with the page and jump once it stopped. */
-body.phone #view.mv-fwd > :not(.m-fab){animation:mFwd .42s var(--m-ease) both}
-body.phone #view.mv-back > :not(.m-fab){animation:mBackIn .42s var(--m-ease) both}
-body.phone #view.mv-tab > :not(.m-fab){animation:mTabIn .38s var(--m-ease) both}
-@keyframes mFwd{from{opacity:0;transform:translateX(44px)}to{opacity:1;transform:none}}
-@keyframes mBackIn{from{opacity:0;transform:translateX(-44px)}to{opacity:1;transform:none}}
-@keyframes mTabIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-/* then the cards rise one after another */
-body.phone.m-go .m-page > *{animation:mRise .55s var(--m-ease) both}
-body.phone.m-go .m-page > :nth-child(2){animation-delay:.05s}
-body.phone.m-go .m-page > :nth-child(3){animation-delay:.1s}
-body.phone.m-go .m-page > :nth-child(4){animation-delay:.15s}
-body.phone.m-go .m-page > :nth-child(5){animation-delay:.2s}
-body.phone.m-go .m-page > :nth-child(6){animation-delay:.25s}
-body.phone.m-go .m-page > :nth-child(n+7){animation-delay:.3s}
-body.phone.m-go .m-trip, body.phone.m-go .m-row, body.phone.m-go .m-doc{animation:mRise .5s var(--m-ease) both;
-  animation-delay:calc(min(var(--i,0), 10) * 45ms + 60ms)}
-body.phone.m-go .m-cell .m-sq{animation:mPop .5s var(--m-spring) both}
-body.phone.m-go .m-cell:nth-child(2) .m-sq{animation-delay:.05s} body.phone.m-go .m-cell:nth-child(3) .m-sq{animation-delay:.1s}
-body.phone.m-go .m-cell:nth-child(4) .m-sq{animation-delay:.15s} body.phone.m-go .m-cell:nth-child(n+5) .m-sq{animation-delay:.2s}
-@keyframes mRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-/* the numbers that move: roads fill, trucks drive to where they are, rings close */
-body.phone.m-go .m-fill{animation:mFillIn 1.1s var(--m-ease) .25s both}
+body.phone #view.mv-fwd > :not(.m-fab){animation:mFwd .26s var(--m-ease) both}
+body.phone #view.mv-back > :not(.m-fab){animation:mBackIn .26s var(--m-ease) both}
+body.phone #view.mv-tab > :not(.m-fab){animation:mFade .22s var(--m-ease) both}
+@keyframes mFwd{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes mBackIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+@keyframes mFade{from{opacity:0}to{opacity:1}}
+body.phone.m-go .m-page > *{animation:mRise .3s var(--m-ease) both}
+body.phone.m-go .m-page > :nth-child(2){animation-delay:.03s}
+body.phone.m-go .m-page > :nth-child(3){animation-delay:.06s}
+body.phone.m-go .m-page > :nth-child(4){animation-delay:.09s}
+body.phone.m-go .m-page > :nth-child(n+5){animation-delay:.12s}
+body.phone.m-go .m-trip, body.phone.m-go .m-row, body.phone.m-go .m-doc{animation:mRise .3s var(--m-ease) both;
+  animation-delay:calc(min(var(--i,0), 8) * 20ms)}
+@keyframes mRise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+body.phone.m-go .m-fill{animation:mFillIn .6s var(--m-ease) .1s both}
 @keyframes mFillIn{from{width:0}}
-body.phone.m-go .m-road .m-lorry{animation:mDrive 1.1s var(--m-ease) .25s both}
-body.phone.m-go .r-moving .m-road .m-lorry{animation:mDrive 1.1s var(--m-ease) .25s both, mBob .5s ease-in-out 1.35s infinite alternate}
-@keyframes mDrive{from{left:8px}}
-body.phone.m-go .m-road-hero .m-lorry{animation:mCruise 9s linear infinite}
-body.phone.m-go .m-steps-line i{animation:mGrow 1s var(--m-ease) .2s both}
+body.phone.m-go .m-mark{animation:mMark .6s var(--m-ease) .1s both}
+@keyframes mMark{from{left:5px}}
+body.phone.m-go .m-steps-line i{animation:mGrow .6s var(--m-ease) .1s both}
 @keyframes mGrow{from{transform:scaleX(0)}}
-body.phone.m-go .m-step.done i{animation:mPop .45s var(--m-spring) both;animation-delay:calc(var(--s) * .18s + .2s)}
-body.phone.m-go .m-meter i{animation:mMeter 1.1s var(--m-ease) .3s both}
+body.phone.m-go .m-meter i{animation:mMeter .6s var(--m-ease) .15s both}
 @keyframes mMeter{from{width:0}}
-body.phone.m-go .m-ring .fg, body.phone.m-go .m-ring-big .fg{animation:mRingIn 1.2s var(--m-ease) .3s both}
+body.phone.m-go .m-ring .fg, body.phone.m-go .m-ring-big .fg{animation:mRingIn .7s var(--m-ease) .15s both}
 @keyframes mRingIn{from{stroke-dashoffset:100}}
-body.phone.m-go .m-pl-bar i{animation:mBar 1s var(--m-ease) .3s both}
+body.phone.m-go .m-pl-bar i{animation:mBar .6s var(--m-ease) .15s both}
 @keyframes mBar{from{transform:scaleX(0)}}
-body.phone.m-go .m-hero-v{animation:mRise .6s var(--m-ease) .1s both}
-
-/* the moment of welcome on the first open */
-.m-splash{position:fixed;inset:0;z-index:400;display:grid;place-items:center;color:#fff;
-  background:radial-gradient(90% 60% at 50% 30%, #323D5E 0%, transparent 70%), linear-gradient(170deg, #212A42, #151B2C);
-  transition:opacity .45s ease, transform .45s ease}
-.m-splash.out{opacity:0;transform:scale(1.04);pointer-events:none}
-.m-splash-in{display:flex;flex-direction:column;align-items:center;gap:10px;width:260px}
-.m-splash-mark{width:84px;height:84px;border-radius:26px;display:grid;place-items:center;color:#151B2C;
-  font:800 32px 'Archivo', sans-serif;letter-spacing:-.02em;background:linear-gradient(145deg, #F7C35F, #F2A93B 55%, #E08E1C);
-  box-shadow:0 20px 40px -14px rgba(242,169,59,.7);animation:mPop .6s cubic-bezier(.3,1.35,.4,1) both}
-.m-splash-name{font:700 21px 'Archivo', sans-serif;margin-top:8px;animation:mRise .5s ease .2s both}
-.m-splash-tag{font:italic 500 13.5px 'Archivo', sans-serif;color:#F7C35F;animation:mRise .5s ease .32s both}
-.m-splash-road{position:relative;width:100%;height:30px;margin-top:18px;
-  background:repeating-linear-gradient(90deg, rgba(255,255,255,.3) 0 10px, transparent 10px 18px) 0 26px / 100% 2px no-repeat}
-.m-splash-road .m-lorry{position:absolute;top:0;left:0;width:44px;height:24px;animation:mSplashDrive 1.2s cubic-bezier(.4,0,.2,1) .2s both}
-.m-splash .m-lorry .lb{fill:#F2A93B} .m-splash .m-lorry .lc{fill:#D9502A} .m-splash .m-lorry .lw{fill:#CFE2F4}
-.m-splash .m-lorry .ls{fill:#D9502A} .m-splash .m-lorry .ls2{fill:#151B2C} .m-splash .m-lorry .lt{fill:#0B0F1A} .m-splash .m-lorry .lh{fill:#C9C2B3}
-@keyframes mSplashDrive{from{transform:translateX(-60px)}to{transform:translateX(230px)}}
 
 /* ---------- toasts ---------- */
-body.phone #toast{left:16px;right:16px;top:auto;bottom:calc(96px + env(safe-area-inset-bottom));transform:none;
+body.phone #toast{left:16px;right:16px;top:auto;bottom:calc(84px + env(safe-area-inset-bottom));transform:none;
   display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
-body.phone .toast{background:var(--m-asphalt);color:#fff;border-radius:16px;padding:13px 18px;font:500 14.5px var(--m-font);
-  box-shadow:0 16px 32px -14px rgba(21,27,44,.7);border:0;max-width:100%;animation:mToast .45s var(--m-spring) both}
-@keyframes mToast{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+body.phone .toast{background:var(--m-dark);color:#fff;border-radius:10px;padding:11px 16px;font:500 14px var(--m-font);
+  box-shadow:0 10px 24px -12px rgba(15,23,42,.6);border:0;max-width:100%;animation:mToast .22s var(--m-ease) both}
+@keyframes mToast{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 /* ---------- the forms, as full screens and sheets ---------- */
-body.phone .overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(21,27,44,.42)}
-body.phone .modal{left:0;border-left:0;box-shadow:none;animation:mUp .34s var(--m-ease);font-family:var(--m-font);background:#FBF9F5}
-@keyframes mUp{from{opacity:.3;transform:translateY(36px)}to{opacity:1;transform:none}}
-body.phone .modal-head{padding:12px 8px 12px 18px;border-radius:0;min-height:62px;background:#fff}
-body.phone .modal-title{font-size:18px;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;letter-spacing:-.01em}
-body.phone .modal .x{width:44px;height:44px;font-size:28px;border-radius:50%}
+body.phone .overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(15,23,42,.4)}
+body.phone .modal{left:0;border-left:0;box-shadow:none;animation:mUp .24s var(--m-ease);font-family:var(--m-font);background:var(--m-bg)}
+@keyframes mUp{from{opacity:.4;transform:translateY(16px)}to{opacity:1;transform:none}}
+body.phone .modal-head{padding:10px 6px 10px 16px;border-radius:0;min-height:58px;background:#fff}
+body.phone .modal-title{font-size:17px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+body.phone .modal .x{width:42px;height:42px;font-size:26px;border-radius:50%}
 body.phone .modal-body{padding:14px 14px 20px;max-width:none!important}
 body.phone .modal-full .modal-body{padding:12px 12px 20px}
 body.phone .modal-foot{padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-radius:0;background:#fff}
-body.phone .modal-foot .btn{flex:1;height:50px;font-size:15.5px;justify-content:center;border-radius:14px}
-body.phone .modal-foot .btn-primary{background:var(--m-asphalt);border-color:var(--m-asphalt);color:#fff;box-shadow:0 8px 18px -10px rgba(21,27,44,.8)}
-body.phone .modal-foot .btn-danger{border-radius:14px}
+body.phone .modal-foot .btn{flex:1;height:46px;font-size:15px;justify-content:center;border-radius:10px}
+body.phone .modal-foot .btn-primary{background:var(--m-acc);border-color:var(--m-acc);color:#fff}
 body.phone .modal .form-grid,
 body.phone .modal .form-grid.three,
 body.phone .modal .form-grid.four{grid-template-columns:1fr;gap:12px}
 body.phone .modal .form-grid .full{max-width:none}
 body.phone .modal input:not([type=checkbox]):not([type=radio]),
-body.phone .modal select, body.phone .modal textarea{font-size:16px;min-height:46px;border-radius:12px}
-body.phone .modal input:focus, body.phone .modal select:focus, body.phone .modal textarea:focus{border-color:var(--m-gold);box-shadow:0 0 0 4px rgba(242,169,59,.2)}
+body.phone .modal select, body.phone .modal textarea{font-size:16px;min-height:44px;border-radius:8px}
+body.phone .modal input:focus, body.phone .modal select:focus, body.phone .modal textarea:focus{border-color:var(--m-acc);box-shadow:0 0 0 3px rgba(53,87,240,.14)}
 body.phone .modal .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
 body.phone .modal .tabs .tab{flex:none;white-space:nowrap}
 body.phone .modal-ask{position:absolute;left:16px;right:16px;top:50%;bottom:auto;margin:0;width:auto;max-width:none;background:#fff;
-  translate:0 -50%;border-radius:24px;animation:mAsk .4s var(--m-spring) both}
-@keyframes mAsk{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
-body.phone .modal-ask .modal-head{border-radius:24px 24px 0 0}
-body.phone .modal-ask .modal-foot{border-radius:0 0 24px 24px}
-body.phone .modal-sheet{top:auto;max-height:88vh;border-radius:26px 26px 0 0;animation:mSheet .42s var(--m-spring) both;transition:transform .25s var(--m-ease)}
+  translate:0 -50%;border-radius:14px;animation:mAsk .2s var(--m-ease) both}
+@keyframes mAsk{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+body.phone .modal-ask .modal-head{border-radius:14px 14px 0 0}
+body.phone .modal-ask .modal-foot{border-radius:0 0 14px 14px}
+body.phone .modal-sheet{top:auto;max-height:88vh;border-radius:16px 16px 0 0;animation:mSheet .28s var(--m-ease) both;transition:transform .2s var(--m-ease)}
 @keyframes mSheet{from{transform:translateY(100%)}to{transform:none}}
-body.phone .modal-sheet .modal-head{border-radius:26px 26px 0 0;padding-top:22px;position:relative;touch-action:none}
-body.phone .modal-sheet .modal-head::before{content:'';position:absolute;top:9px;left:50%;width:40px;height:5px;margin-left:-20px;border-radius:3px;background:#DCD4C4}
+body.phone .modal-sheet .modal-head{border-radius:16px 16px 0 0;padding-top:20px;position:relative;touch-action:none}
+body.phone .modal-sheet .modal-head::before{content:'';position:absolute;top:8px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:#CBD5E1}
 body.phone .modal-sheet .modal-body{background:#fff}
 body.phone .m-menu{display:flex;flex-direction:column;margin:-6px -14px}
-body.phone .m-menu-row{display:flex;align-items:center;gap:14px;border:0;background:none;padding:10px 18px;text-align:left;position:relative;overflow:hidden;
-  font:500 16px var(--m-font);color:var(--m-ink);cursor:pointer}
-body.phone .m-menu-row .m-sq{width:40px;height:40px;border-radius:13px}
+body.phone .m-menu-row{display:flex;align-items:center;gap:14px;border:0;background:none;padding:9px 16px;text-align:left;position:relative;overflow:hidden;
+  font:500 15px var(--m-font);color:var(--m-ink);cursor:pointer;transition:background .15s}
+body.phone .m-menu-row:active{background:#F8FAFC}
+body.phone .m-menu-row .m-sq{width:36px;height:36px}
 body.phone .m-menu-row span{flex:1}
-body.phone .m-menu-row em{font-style:normal;color:var(--m-muted);font-size:14px;font-weight:600}
-body.phone .m-menu-row.danger{color:var(--m-red)}
+body.phone .m-menu-row em{font-style:normal;color:var(--m-muted);font-size:13.5px;font-weight:500}
+body.phone .m-menu-row.danger{color:var(--m-neg)}
 body.phone .modal .m-btn{width:100%}
+body.phone .trip-top .slip-lr{font-family:var(--m-font);letter-spacing:0;font-size:13px}
+body.phone .trip-totals{border-radius:8px;font-family:var(--m-font)}
+body.phone .trip-totals b{font-family:var(--m-font)}
+body.phone .trip-nav{display:none}
 
 /* ---------- desktop screens shown on a phone ----------
    Reports, the driver account and the rest keep their own layout;
@@ -4285,8 +4180,8 @@ body.phone:not(.m-native) .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:t
 body.phone:not(.m-native) .tbl-wrap table{min-width:760px}
 body.phone:not(.m-native) .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
 body.phone:not(.m-native) .tabs .tab{flex:none;white-space:nowrap}
-body.phone:not(.m-native) .card, body.phone:not(.m-native) .kpi{max-width:100%;border-radius:18px}
-body.phone:not(.m-native) #view > *{animation:mRise .45s var(--m-ease) both}
+body.phone:not(.m-native) .card, body.phone:not(.m-native) .kpi{max-width:100%}
+body.phone:not(.m-native) #view > *{animation:mFade .22s var(--m-ease) both}
 /* a line of the advance or of the expenses, stacked to fit */
 body.phone .exp-row .exp-what{flex:1 1 100%}
 body.phone .exp-row .exp-amt{flex:1 1 40%}
@@ -4296,23 +4191,87 @@ body.phone .exp-more{grid-template-columns:1fr;max-width:none}
 body.phone .exp-more input{height:40px;font-size:15px}
 body.phone .exp-entry input, body.phone .exp-entry select{min-width:0}
 
-body.phone .m-row-main>.m-plate{font-size:14.5px;color:#111;overflow:hidden}
-body.phone .m-ring circle{stroke-linecap:butt}
-body.phone .m-ring-big b{font-size:15px}
-body.phone .m-two .m-btn{white-space:nowrap;padding:0 10px;font-size:14.5px}
-body.phone .m-splash .m-lorry .lb{fill:#F2A93B}
-body.phone .m-splash .m-lorry .ls{fill:#D9502A}
-body.phone .m-splash .m-lorry .ls2{fill:#151B2C}
-body.phone .m-road-hero .m-lane{top:20px}
-/* the trip form, dressed to match */
-body.phone .trip-top .slip-lr{font-family:var(--m-font);letter-spacing:0;font-size:13px}
-body.phone .trip-totals{border-radius:14px;font-family:var(--m-font)}
-body.phone .trip-totals b{font-family:var(--m-font)}
-body.phone .trip-nav{display:none}
-body.phone .modal .tabs .tab.on{color:var(--m-ink)}
-body.phone .modal .tabs .tab.on{border-bottom-color:var(--m-gold-deep)}
+/* ---------- the dashboard ---------- */
+body.phone .m-sec-h{margin:6px 2px -4px;font-size:12px;font-weight:600;color:var(--m-muted);text-transform:uppercase;letter-spacing:.07em}
+body.phone .m-sec-h em{font-style:normal;color:var(--m-muted-2);margin-left:4px}
+body.phone .m-sec-h-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:6px}
+body.phone .m-sec-h-row .m-sec-h{margin-top:0}
+body.phone .m-sec-h-row .m-link{margin-bottom:-4px}
+body.phone .m-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.phone .m-kpi-c{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;padding:12px 14px;cursor:pointer;
+  background:#fff;border:1px solid var(--m-line);border-radius:12px;position:relative;overflow:hidden;transition:background .15s}
+body.phone .m-kpi-c:active{background:#F8FAFC}
+body.phone .m-kpi-c span{font-size:12px;color:var(--m-muted);font-weight:500}
+body.phone .m-kpi-c b{font-size:19px;font-weight:700;letter-spacing:-.02em;color:var(--m-ink)}
+body.phone .m-kpi-c b.m-neg{color:var(--m-neg)}
+body.phone .m-kpi-c em{font-style:normal;font-size:11.5px;color:var(--m-muted-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body.phone .m-hero .m-two{margin-top:2px}
+body.phone .m-hero .m-two .m-btn{font-size:14px;padding:0 8px}
+body.phone .m-shorts{display:grid;grid-template-columns:1fr 1fr;background:#fff;border:1px solid var(--m-line);border-radius:12px;overflow:hidden}
+body.phone .m-short{display:flex;align-items:center;gap:10px;border:0;background:none;padding:13px 14px;text-align:left;cursor:pointer;position:relative;overflow:hidden;
+  font:500 13.5px var(--m-font);color:var(--m-ink);border-bottom:1px solid var(--m-line-2);transition:background .15s}
+body.phone .m-short:nth-child(odd){border-right:1px solid var(--m-line-2)}
+body.phone .m-short:nth-last-child(-n+2){border-bottom:0}
+body.phone .m-short:active{background:#F8FAFC}
+body.phone .m-short .mi{width:19px;height:19px;color:var(--m-muted)}
+body.phone .m-short span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* still, for anyone who has asked their phone for less movement */
+/* ---------- trips as lines ---------- */
+body.phone .m-sumline{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--m-muted);padding:0 2px}
+body.phone .m-sumline b{color:var(--m-ink);font-weight:600}
+body.phone .m-sumline b.m-neg{color:var(--m-neg)}
+body.phone .m-month{display:flex;justify-content:space-between}
+body.phone .m-month em{font-style:normal;font-weight:500;letter-spacing:0;text-transform:none}
+body.phone .m-trow{gap:12px;align-items:center}
+body.phone .m-tdate{width:40px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;height:44px;
+  border-radius:8px;background:var(--m-sunk)}
+body.phone .m-tdate b{font-size:16px;font-weight:700;line-height:1;color:var(--m-ink)}
+body.phone .m-tdate span{font-size:10.5px;font-weight:600;text-transform:uppercase;color:var(--m-muted);margin-top:3px;letter-spacing:.04em}
+body.phone .m-trow .m-row-main>b{font-size:14.5px}
+body.phone .m-arrow{font-style:normal;color:var(--m-muted-2);font-weight:400;margin:0 2px}
+body.phone .m-trow .m-row-end{gap:5px}
+body.phone .m-trow .m-row-end b{font-size:14.5px}
+body.phone .m-trow .m-state{font-size:11px;padding:2px 7px}
+
+/* ---------- a trip, top to bottom ---------- */
+body.phone .m-tsum{padding:14px}
+body.phone .m-tsum-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body.phone .m-tsum .m-route{margin:14px 0 14px}
+body.phone .m-tsum .m-route b{font-size:18px;font-weight:700}
+body.phone .m-tsum-facts{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:1px;background:var(--m-line-2);border:1px solid var(--m-line-2);border-radius:8px;overflow:hidden}
+body.phone .m-tsum-facts button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:0;background:#fff;padding:9px 10px;text-align:left;cursor:pointer;min-width:0}
+body.phone .m-tsum-facts span{font-size:11px;color:var(--m-muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+body.phone .m-tsum-facts b{font-size:13px;font-weight:600;color:var(--m-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body.phone .m-tsum-facts .m-mono{font-family:var(--m-mono);font-weight:500;font-size:12.5px}
+body.phone .m-money3{display:grid;grid-template-columns:repeat(3,1fr);padding:14px 14px 12px;gap:6px 8px}
+body.phone .m-money3>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+body.phone .m-money3 span{font-size:12px;color:var(--m-muted)}
+body.phone .m-money3 b{font-size:17px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-money3 .m-meter{grid-column:1 / -1;margin-top:6px}
+body.phone .m-doc3 b{font-size:22px}
+body.phone .m-btn-wide{width:100%;height:48px;font-size:15px}
+body.phone .m-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+body.phone .m-act{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:10px;cursor:pointer;position:relative;overflow:hidden;
+  background:#fff;border:1px solid var(--m-line);font:500 12px var(--m-font);color:var(--m-ink);transition:background .15s}
+body.phone .m-act:active{background:#F8FAFC}
+body.phone .m-act .mi{width:20px;height:20px;color:var(--m-acc)}
+body.phone .m-act[disabled]{color:var(--m-muted-2);cursor:default}
+body.phone .m-act[disabled] .mi{color:var(--m-muted-2)}
+body.phone .m-tl{padding:6px 14px 10px}
+body.phone .m-tl-row{display:flex;align-items:center;gap:12px;padding:10px 0;position:relative}
+body.phone .m-tl-row:not(:last-of-type)::after{content:'';position:absolute;left:10px;top:34px;bottom:-10px;width:2px;background:var(--m-line)}
+body.phone .m-tl-row.done:not(:last-of-type)::after{background:var(--m-acc)}
+body.phone .m-tl-dot{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;font-style:normal;
+  background:#fff;border:2px solid var(--m-line);position:relative;z-index:1}
+body.phone .m-tl-row.done .m-tl-dot{background:var(--m-acc);border-color:var(--m-acc);color:#fff}
+body.phone .m-tl-row.next .m-tl-dot{border-color:var(--m-acc)}
+body.phone .m-tl-dot .mi{width:12px;height:12px;stroke-width:3}
+body.phone .m-tl-row .m-row-main>b{font-size:14px;font-weight:500;color:var(--m-muted)}
+body.phone .m-tl-row.done .m-row-main>b, body.phone .m-tl-row.next .m-row-main>b{color:var(--m-ink)}
+body.phone .m-tl-row .m-row-main>span{font-size:12px}
+body.phone .m-tl-more{margin:6px 0 4px 34px}
+body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay:calc(var(--i,0) * 40ms + 60ms)}
+
 @media (prefers-reduced-motion: reduce){
   body.phone *, body.phone *::before, body.phone *::after{animation:none!important;transition:none!important}
 }
@@ -4331,7 +4290,7 @@ body.phone .modal .tabs .tab.on{border-bottom-color:var(--m-gold-deep)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.58 &middot; 23 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.59 &middot; 24 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -12750,13 +12709,13 @@ function copyRules(){
    phone version of its own (reports, the driver account, the
    supplier ledger) is shown as the desktop one, fitted to width.
 
-   The look is the trade's own: asphalt and marigold, number
-   plates in commercial yellow, a road on every trip with the
-   truck placed where the load has got to, and a little truck
-   art along the edges.
+   The look follows the desktop's Daylight theme: slate greys,
+   one blue accent, and colour kept for what it means — green
+   for money in, red for money owed or a document expired,
+   amber for something due soon.
    ============================================================ */
 const PHONE_MQ = window.matchMedia('(max-width: 760px), (pointer: coarse) and (max-height: 520px) and (max-width: 1000px)');
-const M_ASPHALT = '#151B2C';
+const M_ASPHALT = '#FFFFFF';
 function layoutPref(){ try{ return localStorage.getItem('mvl_layout') || 'auto'; }catch(e){ return 'auto'; } }
 function isPhone(){
   const p = layoutPref();
@@ -12910,14 +12869,6 @@ const MI = {
 function mi(k, cls){ return '<svg class="mi'+(cls?' '+cls:'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(MI[k]||'')+'</svg>'; }
 /* a line icon on a tinted tile — gold, teal, vermilion, indigo, plum */
 function mSq(k, tone){ return '<i class="m-sq t-'+(tone||'gold')+'">'+mi(k)+'</i>'; }
-/* the truck that rides the roads, drawn side-on and facing forward */
-const M_TRUCK = '<svg class="m-lorry" viewBox="0 0 44 24" aria-hidden="true">'+
-  '<rect x="1" y="3" width="26" height="14" rx="2.5" class="lb"/>'+
-  '<path d="M27 7h8.5l6.5 6.5V17H27z" class="lc"/><path d="M30 9h4.6l3.6 4H30z" class="lw"/>'+
-  '<rect x="4" y="6" width="20" height="2" rx="1" class="ls"/><rect x="4" y="10" width="14" height="2" rx="1" class="ls2"/>'+
-  '<circle cx="9" cy="18.5" r="3.6" class="lt"/><circle cx="34" cy="18.5" r="3.6" class="lt"/>'+
-  '<circle cx="9" cy="18.5" r="1.3" class="lh"/><circle cx="34" cy="18.5" r="1.3" class="lh"/></svg>';
-
 /* ---------- small pieces ---------- */
 function mInitials(s){
   const w = String(s||'').trim().split(/\s+/).filter(Boolean);
@@ -12932,12 +12883,11 @@ function mAvatar(name, cls){ return '<i class="m-av t-'+mHue(name)+(cls?' '+cls:
 function mPlateParts(n){
   return String(n||'').replace(/\s+/g,'').match(/^([A-Z]{2})(\d{1,2})([A-Z]{0,3})(\d{1,4})$/);
 }
-/* A commercial plate is yellow with black letters, the blue IND strip on
-   its left edge. Drawn that way, a truck is recognised before it is read. */
+/* the registration as a chip, spaced the way it is read out */
 function mPlate(n, cls){
   const m = mPlateParts(n);
   const txt = m ? m[1]+' '+m[2]+(m[3]?' '+m[3]:'')+' <b>'+m[4]+'</b>' : esc(String(n||'—'));
-  return '<span class="m-plate'+(cls?' '+cls:'')+'"><i>IND</i><span>'+txt+'</span></span>';
+  return '<span class="m-plate'+(cls?' '+cls:'')+'">'+txt+'</span>';
 }
 function mPlateText(n){
   const m = mPlateParts(n);
@@ -12969,7 +12919,7 @@ function mFab(label, action){
   return '<button class="m-fab" onclick="'+action+'">'+mi('plus')+'<span>'+esc(label)+'</span></button>';
 }
 function mEmpty(title, text, btn){
-  return '<div class="m-empty">'+M_TRUCK+'<div class="m-empty-road"></div>'+
+  return '<div class="m-empty"><i class="m-empty-ic">'+mi('note')+'</i>'+
     '<div class="m-empty-t">'+esc(title)+'</div>'+
     (text?'<div class="m-empty-s">'+esc(text)+'</div>':'')+(btn||'')+'</div>';
 }
@@ -13019,16 +12969,14 @@ function mScreen(){
   if(route === 'shops'     && !sub.open) return ()=>mContacts('shops');
   return null;
 }
-/* home, trips, the khata book and tools sit on the bar at the foot, with
-   New Trip raised in the middle of it */
-const M_TABS = [['dashboard','Home','home'],['trips','Trips','route'],null,['m_dir','Khata','book'],['m_tools','Tools','tools']];
+/* home, trips, the khata book and tools sit on the bar at the foot */
+const M_TABS = [['dashboard','Home','home'],['trips','Trips','route'],['m_dir','Khata','book'],['m_tools','Tools','tools']];
 function mIsRoot(){ return ['dashboard','m_tools','m_dir'].includes(route) || (route==='trips' && !sub.open); }
 function mTabsPaint(){
   const bar = $('#mTabs');
   if(!bar.firstChild){
-    bar.innerHTML = '<i class="m-tab-ind"></i>'+M_TABS.map(t=> t
-      ? '<button class="m-tab" data-k="'+t[0]+'" onclick="mTab(\''+t[0]+'\')">'+mi(t[2])+'<span>'+t[1]+'</span></button>'
-      : '<button class="m-tab-add" onclick="mBuzz(12);tripForm()" aria-label="New trip">'+mi('plus')+'</button>').join('');
+    bar.innerHTML = '<i class="m-tab-ind"></i>'+M_TABS.map(t=>
+      '<button class="m-tab" data-k="'+t[0]+'" onclick="mTab(\''+t[0]+'\')">'+mi(t[2])+'<span>'+t[1]+'</span></button>').join('');
   }
   const root = mIsRoot();
   document.body.classList.toggle('m-root', root);
@@ -13133,25 +13081,10 @@ document.addEventListener('pointerdown', e=>{
   };
   document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
 });
-/* the first open of the day on a phone gets a moment of welcome */
-function mSplash(){
-  if(!onPhone() || mStill()) return;
-  try{ if(sessionStorage.getItem('mvl_splash')) return; sessionStorage.setItem('mvl_splash','1'); }catch(e){}
-  const el = document.createElement('div');
-  el.className = 'm-splash';
-  el.innerHTML = '<div class="m-splash-in"><div class="m-splash-mark">MV</div>'+
-    '<div class="m-splash-name">'+esc(mBiz())+'</div>'+
-    '<div class="m-splash-tag">Har safar, hisaab ke saath</div>'+
-    '<div class="m-splash-road">'+M_TRUCK+'</div></div>';
-  document.body.appendChild(el);
-  setTimeout(()=>el.classList.add('out'), 1150);
-  setTimeout(()=>el.remove(), 1650);
-}
-
 /* ---------- Home ---------- */
 function mGreeting(){
   const h = istClock().getUTCHours();
-  return h < 5 ? 'Working late' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  return h >= 4 && h < 12 ? 'Good morning' : h >= 12 && h < 17 ? 'Good afternoon' : 'Good evening';
 }
 function mWeekday(){
   const t = today();
@@ -13161,87 +13094,6 @@ function mWeekday(){
 function mCell(icon, tone, label, act, badge){
   return '<button class="m-cell" onclick="'+act+'">'+mSq(icon, tone)+
     '<span>'+esc(label)+'</span>'+(badge?'<em class="m-badge">'+badge+'</em>':'')+'</button>';
-}
-function mHome(){
-  const s = DB.settings || {};
-  const who = s.owner || mBiz();
-  const first = String(who).split(/\s+/)[0];
-  const synced = typeof syncReady === 'function' && syncReady();
-  mBarSet('<button class="m-me" onclick="mGo(\'settings\')" aria-label="Settings">'+mAvatar(who, 'm-av-me')+
-      '<i class="m-sync'+(synced?' on':'')+'"></i></button>'+
-    '<div class="m-hello"><span>'+esc(mGreeting())+' · '+esc(mWeekday())+'</span><b>Namaste, '+esc(first)+'</b></div>');
-  const due = totalReceivable();
-  const billable = DB.trips.filter(t=>!selfFunded(t));
-  const unpaid = billable.filter(t=>tripBalance(t) > 0);
-  const podDue = billable.filter(t=>['delivered','received'].includes(tripStage(t))).length;
-  const papers = truckAlerts().length;
-  const owing = DB.parties.filter(p=>partyBalance(p.id) > 0).length;
-  const onRoad = DB.trucks.filter(t=>mTruckState(t).on).length;
-  const month = thisMonth();
-  const monthFreight = billable.filter(t=>monthKey(t.date)===month).reduce((a,t)=>a+num(t.freight),0);
-  const oldest = unpaid.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))[0];
-  const attn = [];
-  if(papers) attn.push({tone:'verm', icon:'shield', t:plural(papers,'truck paper'), s:'expired or expiring soon', act:"mGo('trucks',{tab:'docs'})"});
-  if(podDue) attn.push({tone:'gold', icon:'pod', t:plural(podDue,'POD')+' due', s:'delivered, paperwork pending', act:"mGo('trips',{stage:'podpending'})"});
-  if(oldest && daysSince(oldest.date) > 15) attn.push({tone:'indigo', icon:'rupee', t:daysSince(oldest.date)+' days unpaid',
-    s:partyName(oldest.partyId)+' · '+money(tripBalance(oldest)), act:"mOpen('trips','"+oldest.id+"')"});
-  const recent = DB.trips.slice().sort(newestFirst).slice(0,3);
-  $('#view').innerHTML =
-  '<div class="m-page m-page-home">'+
-    '<section class="m-hero">'+
-      '<div class="m-bunting"></div>'+
-      '<div class="m-hero-top"><span>To collect from parties</span>'+
-        '<button class="m-hero-link" onclick="mGo(\'parties\')">Party khata'+mi('chev')+'</button></div>'+
-      '<button class="m-hero-v num" onclick="mGo(\'parties\')" data-count="'+due+'">'+money(due)+'</button>'+
-      '<div class="m-hero-stats">'+
-        '<div><b class="num" data-count="'+onRoad+'" data-fmt="plain">'+onRoad+'</b><span>'+(onRoad===1?'truck':'trucks')+' on the road</span></div>'+
-        '<div><b class="num" data-count="'+monthFreight+'">'+money(monthFreight)+'</b><span>freight in '+esc(monthName(month).split(' ')[0])+'</span></div>'+
-        '<div><b class="num" data-count="'+unpaid.length+'" data-fmt="plain">'+unpaid.length+'</b><span>trips unpaid</span></div>'+
-      '</div>'+
-      '<div class="m-road m-road-hero"><i class="m-lane"></i>'+M_TRUCK+'</div>'+
-      '<button class="m-hero-add" onclick="tripForm()">'+mi('plus')+'<span>New Trip</span></button>'+
-    '</section>'+
-    '<div class="m-quick">'+
-      '<button class="m-quick-b" onclick="mGo(\'trips\')">'+mSq('route','indigo')+'<span>My Trips</span></button>'+
-      '<button class="m-quick-b" onclick="mPickParty()">'+mSq('wallet','teal')+'<span>Payment In</span></button>'+
-      '<button class="m-quick-b" onclick="mGo(\'parties\')">'+mSq('book','gold')+'<span>Party Khata</span></button>'+
-      '<button class="m-quick-b" onclick="mGo(\'reports\')">'+mSq('chart','verm')+'<span>Profit &amp; Loss</span></button>'+
-    '</div>'+
-    (attn.length ? '<div class="m-attn-row">'+attn.map(a=>
-      '<button class="m-attn a-'+a.tone+'" onclick="'+a.act+'">'+mSq(a.icon, a.tone)+
-        '<span><b>'+esc(a.t)+'</b><em>'+esc(a.s)+'</em></span></button>').join('')+'</div>' : '')+
-    (recent.length ? '<section class="m-block">'+
-      '<div class="m-block-h"><h2>Latest trips</h2><button class="m-link" onclick="mTab(\'trips\')">See all'+mi('chev')+'</button></div>'+
-      recent.map(mTripCard).join('')+'</section>' : '')+
-    '<section class="m-card m-sec"><h2 class="m-sec-t">Party</h2><div class="m-cells">'+
-      mCell('rupee','verm','Unpaid Trips',"mGo('trips',{mpay:'unpaid'})", unpaid.length||'')+
-      mCell('wallet','teal','Payment Received','mPickParty()')+
-      mCell('bell','gold','Collection Reminders',"mGo('parties',{owing:1})", owing||'')+
-      mCell('note','indigo','Party Statement','mPickParty(true)')+
-    '</div></section>'+
-    '<section class="m-card m-sec"><h2 class="m-sec-t">Truck supplier</h2><div class="m-cells">'+
-      mCell('book','indigo','Supplier Khata',"mGo('suppliers')")+
-      mCell('truck','verm','Market Trucks',"mGo('trucks',{tab:'fleet',tt:'market'})")+
-      mCell('pod','gold','POD due Trips',"mGo('trips',{stage:'podpending'})", podDue||'')+
-      mCell('users','plum','Add Party','partyForm()')+
-    '</div></section>'+
-    '<section class="m-card m-sec"><h2 class="m-sec-t">Driver, expenses &amp; more</h2><div class="m-cells">'+
-      mCell('wheel','teal','Driver Khata',"mGo('drivers')")+
-      mCell('shop','plum','Shop Khata',"mGo('shops')")+
-      mCell('receipt','verm','My Expenses',"mGo('expenses')")+
-      mCell('truck','indigo','My Trucks',"mGo('trucks',{tab:'fleet'})")+
-      mCell('shield','gold','Truck Papers',"mGo('trucks',{tab:'docs'})", papers||'')+
-      mCell('pod','teal','Deliveries',"mGo('pod')")+
-      mCell('chart','verm','Reports',"mGo('reports')")+
-      mCell('trend','indigo','Insights',"mGo('insights')")+
-    '</div></section>'+
-    mSignature()+
-  '</div>';
-}
-/* the sign painted on the back of every truck on the highway */
-function mSignature(){
-  return '<div class="m-sign"><div class="m-sign-plate"><span>HORN</span><em>OK</em><span>PLEASE</span></div>'+
-    '<div class="m-sign-tag">'+esc(mBiz())+' · har safar, hisaab ke saath</div></div>';
 }
 function mPickParty(statement){
   if(!DB.parties.length){ partyForm(); return; }
@@ -13264,14 +13116,13 @@ function mTools(){
       cell('trend','indigo','Insights',"mGo('insights')",'How the business is doing')+
       cell('pod','gold','Deliveries & POD',"mGo('pod')",'Delivery and proof of delivery')+
       cell('receipt','teal','Expenses',"mGo('expenses')",'Money going out')+
-      cell('shield','plum','Truck Papers',"mGo('trucks',{tab:'docs'})",'Insurance, permits, fitness')+
+      cell('shield','plum','Truck Documents',"mGo('trucks',{tab:'docs'})",'Insurance, permits, fitness')+
     '</section>'+
     '<section class="m-card m-list">'+
       cell('gear','indigo','Settings & Backup',"mGo('settings')",'Business details, sync, backup')+
       cell('download','teal','Export trips',"exportCSV('trips')",'A spreadsheet of every trip')+
       cell('monitor','gold','Computer layout',"setLayout('desktop')",'The full desktop screens on this phone')+
     '</section>'+
-    mSignature()+
     '<div class="m-foot-note">'+esc(($('#syncFoot')||{}).textContent||'')+'</div>'+
   '</div>';
 }
@@ -13383,7 +13234,7 @@ function mLedger(){
   }).join('');
   $('#view').innerHTML = '<div class="m-page">'+
     '<section class="m-hero m-hero-s">'+
-      '<div class="m-bunting"></div>'+
+      
       '<div class="m-hero-top"><span>'+(bal>=0?'Balance to collect':'Advance held')+'</span></div>'+
       '<div class="m-hero-v num" data-count="'+Math.abs(bal)+'">'+money(Math.abs(bal))+'</div>'+
       '<div class="m-hero-sub">'+plural(trips.length,'trip')+' · '+plural(rows.filter(r=>r.kind==='entry').length,'payment')+
@@ -13432,12 +13283,12 @@ function mTrips(){
     '</div>'+
     mStageSeg()+
     '<div id="mList"></div>'+
-  '</div>'+(mIsRoot() ? '' : mFab('Add Trip','tripForm()'));
+  '</div>'+mFab('New trip','tripForm()');
   mTripsPaint();
 }
 /* one tap between the stages a trip is in, without opening the filters */
 function mStageSeg(){
-  const opts = [['','All'],['transit','On road'],['podpending','POD due'],['__unpaid','Unpaid']];
+  const opts = [['','All'],['transit','In transit'],['podpending','POD due'],['__unpaid','Unpaid']];
   const cur = sub.mpay==='unpaid' && !sub.stage ? '__unpaid' : (sub.stage||'');
   return '<div class="m-seg">'+opts.map(([k,l])=>
     '<button class="'+(cur===k?'on':'')+'" onclick="mStagePick(\''+k+'\')">'+l+'</button>').join('')+'</div>';
@@ -13476,49 +13327,15 @@ function mTripState(t){
   if(st==='submitted') return {label:'POD submitted', tone:'teal', p:1, k:'arrived'};
   if(st==='received')  return {label:'POD received', tone:'gold', p:1, k:'arrived'};
   if(st==='delivered') return {label:'Delivered', tone:'indigo', p:1, k:'arrived'};
-  return {label:'On the road', tone:'verm', p:0.52, k:'moving'};
+  return {label:'In transit', tone:'verm', p:0.5, k:'moving'};
 }
-function mTripCard(t, i){
-  const s = mTripState(t);
-  const bal = tripBalance(t);
-  const amount = selfFunded(t) ? tripExpensesOf(t.id) : num(t.freight);
-  return '<article class="m-card m-trip" style="--i:'+(i||0)+'" onclick="mOpen(\'trips\',\''+t.id+'\')">'+
-    '<div class="m-trip-top"><div class="m-trip-who"><span class="m-trip-party">'+esc(selfFunded(t)?'Self funded':partyName(t.partyId))+'</span>'+
-      mPlate(truckName(t.truckId))+'</div>'+
-      '<div class="m-trip-amt"><b class="num">'+money(amount)+'</b><em>'+(selfFunded(t)?'spent':bal>0?money(bal)+' due':bal<0?'paid over':'settled')+'</em></div></div>'+
-    mRoute(t, s)+
-    '<div class="m-trip-foot"><span class="m-state s-'+s.tone+'"><i></i>'+s.label+'</span>'+
-      (t.lr?'<span class="m-lr">#'+esc(t.lr)+'</span>':'')+'</div>'+
-  '</article>';
-}
-function mTripsPaint(){
-  const box = $('#mList'); if(!box) return;
-  const all = mTripList();
-  const list = all.slice(0, pageLimit());
-  tripNav = list.map(t=>t.id);
-  if(!all.length){
-    box.innerHTML = DB.trips.length
-      ? mEmpty('No trip matches', 'Clear the search or the filters to see every trip.',
-          '<button class="m-btn m-btn-ghost-dark" onclick="mClearTripFilters()">Clear filters</button>')
-      : mEmpty('No trips yet', 'A trip records one load: truck, party, route and freight.',
-          '<button class="m-btn m-btn-dark" onclick="tripForm()">Add your first trip</button>');
-    return;
-  }
-  const due = all.reduce((s,t)=>s+Math.max(0, tripBalance(t)), 0);
-  box.innerHTML =
-    '<div class="m-count">'+plural(all.length,'trip')+(due?' · <b>'+money(due)+'</b> to collect':'')+'</div>'+
-    list.map(mTripCard).join('')+
-    (all.length > list.length
-      ? '<button class="m-more" onclick="sub.limit=pageLimit()+'+PAGE+';mTripsPaint()">Show '+Math.min(PAGE, all.length-list.length)+' more</button>' : '');
-}
-/* the road between two places, with the truck where the load has got to:
-   halfway and rolling while it is on the road, parked at the far end once
-   it is delivered */
+/* the line between two places, filled as far as the load has got:
+   halfway while it is in transit, all the way once it is delivered */
 function mRoute(t, s, big){
   s = s || mTripState(t);
   return '<div class="m-route r-'+s.k+(big?' m-route-big':'')+'" style="--p:'+s.p+'">'+
     '<div class="m-route-a"><b>'+esc(mPlaceName(t.from))+'</b><span>'+mShortDate(t.date)+'</span></div>'+
-    '<div class="m-road"><i class="m-lane"></i><i class="m-fill"></i><i class="m-pin-a"></i><i class="m-pin-b"></i>'+M_TRUCK+'</div>'+
+    '<div class="m-road"><i class="m-lane"></i><i class="m-fill"></i><i class="m-pin-a"></i><i class="m-pin-b"></i><i class="m-mark"></i></div>'+
     '<div class="m-route-b"><b>'+esc(mPlaceName(t.to))+'</b><span>'+(t.deliveredAt?mShortDate(t.deliveredAt):'on the way')+'</span></div>'+
   '</div>';
 }
@@ -13554,49 +13371,6 @@ function mTripFilterSheet(){
   });
 }
 
-/* ---------- one trip, read on a phone ---------- */
-function mTrip(){
-  const t = DB.trips.find(x=>x.id===sub.open);
-  if(!t){ sub.open = null; return mTrips(); }
-  const locked = tripLocked(t);
-  const s = mTripState(t);
-  mTitle(t.lr ? 'LR '+t.lr : 'Trip', (locked ? '<span class="m-lock" title="Completed and locked">'+mi('lock')+'</span>'
-            : '<button class="m-outline" onclick="tripDetail(\''+t.id+'\')">'+mi('pencil')+'Edit</button>')+
-    '<button class="m-icon-btn" aria-label="More" onclick="mTripMenu()">'+mi('kebab')+'</button>', fdate(t.date));
-  const drv = t.driverId ? driverById(t.driverId) : null;
-  const tabs = selfFunded(t) ? [['cost','Cost'],['driver','Driver'],['more','More']]
-                             : [['party','Party'],['profit','Profit'],['driver','Driver'],['more','More']];
-  if(!tabs.some(x=>x[0]===sub.tt)) sub.tt = tabs[0][0];
-  $('#view').innerHTML =
-  '<section class="m-trip-band">'+
-    '<div class="m-bunting"></div>'+
-    '<span class="m-state s-'+s.tone+' m-state-band"><i></i>'+s.label+'</span>'+
-    mRoute(t, s, true)+
-    '<div class="m-trip-chips">'+
-      '<button onclick="mTruckOpen(\''+t.truckId+'\')">'+mPlate(truckName(t.truckId),'m-plate-s')+'</button>'+
-      '<button class="m-chip-dark" onclick="'+(drv?"mOpen('drivers','"+drv.id+"')":(locked?'':"tripDetail('"+t.id+"')"))+'">'+mi('wheel')+'<span>'+esc(drv?drv.name:'No driver')+'</span></button>'+
-    '</div>'+
-  '</section>'+
-  mTopTabs('trip', tabs, sub.tt, k=>"sub.tt='"+k+"';mTabSwap();mTrip();mSettle()")+
-  mPane('<div class="m-page m-page-trip">'+({party:mTripParty, profit:mTripProfit, cost:mTripProfit,
-    driver:mTripDriver, more:mTripMore}[sub.tt])(t)+'</div>');
-}
-/* the five steps a billed trip moves through, the last one reached by money */
-function mSteps(t){
-  const st = tripStage(t);
-  const reach = {transit:0, delivered:1, received:2, submitted:3}[st];
-  const settled = num(t.freight) > 0 && tripBalance(t) <= 0;
-  const steps = [['Started','date'],['Delivered','deliveredAt'],['POD in','podReceivedAt'],['POD sent','podSubmittedAt'],['Settled',null]];
-  const done = steps.map((x,i)=> i===0 || (i<4 ? i<=reach : settled));
-  const last = done.lastIndexOf(true);
-  return '<div class="m-steps" style="--done:'+(last/4)+'">'+
-    '<div class="m-steps-line"><i></i></div>'+
-    steps.map(([l,f],i)=>{
-      const when = f && t[f] ? mShortDate(t[f]) : '';
-      return '<div class="m-step'+(done[i]?' done':'')+(i===last+1?' next':'')+'" style="--s:'+i+'"><i>'+(done[i]?mi('check'):'')+'</i><span>'+l+'</span>'+
-        '<em>'+(when||' ')+'</em></div>';
-    }).join('')+'</div>';
-}
 function mNextStep(t){
   const st = tripStage(t);
   if(st==='transit')   return {label:'Mark Delivered', field:'deliveredAt', word:'delivered'};
@@ -13615,47 +13389,6 @@ function mLine(label, amount, add, act, tone){
   return '<div class="m-line"><div><span>'+label+'</span>'+
       (add && act ? '<button class="m-link" onclick="'+act+'">'+mi('plus')+add+'</button>' : '')+'</div>'+
     '<b class="num'+(tone?' '+tone:'')+'">'+money(amount)+'</b></div>';
-}
-function mTripParty(t){
-  const p = partyById(t.partyId);
-  const locked = tripLocked(t);
-  const next = locked ? null : mNextStep(t);
-  const adv = tripAdvance(t), chg = tripCharges(t), ded = tripDeductions(t), paid = allocatedTo(t.id);
-  const bal = tripBalance(t);
-  const billed = tripFreightNet(t);
-  const got = Math.max(0, Math.min(1, billed ? (billed - Math.max(0,bal)) / billed : 0));
-  const msg = 'Namaste '+(p?p.name:'')+', for LR '+(t.lr||'-')+' ('+mPlaceName(t.from)+' to '+mPlaceName(t.to)+', '+
-    fdate(t.date)+', truck '+mPlateText(truckName(t.truckId))+') the balance pending is '+money(bal)+'. Kindly arrange the payment. — '+mBiz();
-  const edit = locked ? '' : "tripDetail('"+t.id+"','details')";
-  return '<section class="m-card m-party">'+
-    '<div class="m-party-top"><button class="m-party-name" onclick="'+(p?"mOpen('parties','"+p.id+"')":'')+'">'+mAvatar(p?p.name:'?')+
-      '<span><b>'+esc(p?p.name:'—')+'</b><em>'+esc([p&&p.city, p&&p.phone].filter(Boolean).join(' · ')||'Party')+'</em></span></button>'+
-      (p&&p.phone?'<button class="m-icon-btn" aria-label="Call" onclick="mCall(\''+esc(p.phone)+'\')">'+mi('phone')+'</button>':'')+'</div>'+
-    mSteps(t)+
-    '<div class="m-two">'+
-      (next ? '<button class="m-btn m-btn-dark" onclick="mStep(\''+t.id+'\',\''+next.field+'\',\''+next.word+'\')">'+mi('check')+next.label+'</button>'
-            : bal>0 && !locked ? '<button class="m-btn m-btn-dark" onclick="mAddPayment(\''+t.id+'\')">'+mi('wallet')+'Add Payment</button>'
-            : '<button class="m-btn m-btn-done" disabled>'+mi('check')+(tripCompleted(t)?'Completed':'Settled')+'</button>')+
-      '<button class="m-btn m-btn-ghost-dark" onclick="printTripBill(\''+t.id+'\')">'+mi('print')+'View Bill</button>'+
-    '</div>'+
-  '</section>'+
-  '<section class="m-card m-bill">'+
-    '<div class="m-line m-line-main"><span>Freight amount</span><b class="num">'+money(t.freight)+
-      (edit?'<button class="m-icon-btn m-icon-s" aria-label="Edit freight" onclick="'+edit+'">'+mi('pencil')+'</button>':'')+'</b></div>'+
-    mLine('(−) Advance', adv, locked?'':'Add advance', "tripDetail('"+t.id+"','money')")+
-    mLine('(+) Charges', chg, locked?'':'Add charges', edit)+
-    (ded ? mLine('(−) Deductions', ded, '', '') : '')+
-    mLine('(−) Payments', paid, locked||bal<=0?'':'Add payment', "mAddPayment('"+t.id+"')")+
-    '<div class="m-meter" style="--p:'+got.toFixed(3)+'"><i></i></div>'+
-    '<div class="m-pending'+(bal<=0?' is-clear':'')+'"><span>'+(bal<0?'Paid over':bal===0?'All received':'Pending balance')+'</span>'+
-      '<b class="num" data-count="'+Math.abs(bal)+'">'+money(Math.abs(bal))+'</b></div>'+
-    '<div class="m-party-foot">'+
-      '<button class="m-link" onclick="mTripNote(\''+t.id+'\')">'+mi(t.notes?'note':'plus')+(t.notes?'Edit note':'Add note')+'</button>'+
-      (bal>0 ? '<button class="m-btn m-btn-wa m-btn-s" onclick="mWa(\''+esc(p&&p.phone||'')+'\','+esc(JSON.stringify(msg))+')">'+mi('wa')+'Request Money</button>' : '')+
-    '</div>'+
-    (t.notes ? '<div class="m-note">'+esc(t.notes)+'</div>' : '')+
-  '</section>'+
-  (selfFunded(t)||!t.hire ? '' : mTripSupplier(t));
 }
 function mTripSupplier(t){
   const sid = tripSupplier(t);
@@ -13722,30 +13455,6 @@ function mTripDriver(t){
       '<button class="m-btn m-btn-ghost-dark" onclick="mOpen(\'drivers\',\''+d.id+'\')">'+mi('book')+'Khata</button>'+
     '</div>'+
   '</section>';
-}
-function mTripMore(t){
-  const locked = tripLocked(t);
-  const pods = typeof podCount==='function' ? podCount(t.id) : 0;
-  const row = (icon, l, v) => v ? '<div class="m-kv">'+mi(icon)+'<span>'+l+'</span><b>'+v+'</b></div>' : '';
-  return '<section class="m-card m-kvs">'+
-    '<h3 class="m-card-t">Delivery &amp; POD</h3>'+
-    (selfFunded(t) ? '<div class="m-hint">Nothing is delivered on a self funded run.</div>' :
-      row('pin','Delivered', t.deliveredAt?fdate(t.deliveredAt):'Not yet')+
-      row('pod','POD from driver', t.podReceivedAt?fdate(t.podReceivedAt):'Not yet')+
-      row('check','POD to party', t.podSubmittedAt?fdate(t.podSubmittedAt):'Not yet')+
-      row('note','POD pages', pods?String(pods):'None')+
-      '<button class="m-btn m-btn-ghost-dark" onclick="tripDetail(\''+t.id+'\',\'delivery\')">'+(locked?'View':'Update')+' delivery &amp; POD</button>')+
-  '</section>'+
-  '<section class="m-card m-kvs">'+
-    '<h3 class="m-card-t">Trip</h3>'+
-    row('route','From', esc(t.from))+
-    row('pin','To', esc(t.to))+
-    row('note','LR number', esc(t.lr))+
-    row('receipt','Material', esc(t.material))+
-    row('truck','Weight', esc(t.weight))+
-    (tripCompleted(t)?row('lock','Completed', t.completedAt?fdate(t.completedAt):'Yes'):'')+
-  '</section>'+
-  (locked?'':'<button class="m-btn m-btn-danger" onclick="delTrip(\''+t.id+'\')">'+mi('trash')+' Delete this trip</button>');
 }
 function mTripMenu(){
   const t = DB.trips.find(x=>x.id===sub.open); if(!t) return;
@@ -13824,9 +13533,9 @@ function mTrucks(){
   if(sub.tab!=='docs') sub.tab = 'fleet';
   if(sub.tab==='docs' && sub.dt) return mDocList();
   const alerts = truckAlerts().length;
-  mTitle('Trucks & Papers', '', plural(DB.trucks.length,'truck')+(alerts?' · '+alerts+' papers to chase':''));
-  const head = mTopTabs('trucks', [['fleet','Trucks'],['docs','Papers', alerts||'']], sub.tab, k=>"sub.tab='"+k+"';render()");
-  if(sub.tab==='docs'){ $('#view').innerHTML = head+mPane(mDocsBody())+mFab('Add Paper','truckDocForm()'); return; }
+  mTitle('Trucks & Documents', '', plural(DB.trucks.length,'truck')+(alerts?' · '+plural(alerts,'document')+' need attention':''));
+  const head = mTopTabs('trucks', [['fleet','Trucks'],['docs','Documents', alerts||'']], sub.tab, k=>"sub.tab='"+k+"';render()");
+  if(sub.tab==='docs'){ $('#view').innerHTML = head+mPane(mDocsBody())+mFab('Add document','truckDocForm()'); return; }
   const states = {}; DB.trucks.forEach(t=>{ states[t.id] = mTruckState(t); });
   const onTrip = DB.trucks.filter(t=>states[t.id].on).length;
   const f = sub.tf || 'all';
@@ -13872,12 +13581,12 @@ function mTrucksPaint(){
       : s.last ? 'at '+esc(mPlaceName(s.last.to||s.last.from)) : 'no trips yet';
     const bad = (t.docs||[]).filter(d=>docStatus(d.expiry).key==='expired').length;
     return '<div class="m-row m-truck" style="--i:'+i+'" onclick="mTruckOpen(\''+t.id+'\')">'+
-      '<i class="m-truck-ic '+(s.on?'on':'')+'">'+M_TRUCK+'</i>'+
+      '<i class="m-truck-ic '+(s.on?'on':'')+'">'+mi('truck')+'</i>'+
       '<div class="m-row-main">'+mPlate(t.number)+
         '<span class="m-tags"><em class="m-tag '+(t.type==='owned'?'own':'mkt')+'">'+(t.type==='owned'?'Own':'Market')+'</em>'+
-        (bad?'<em class="m-tag bad">'+plural(bad,'paper')+' expired</em>':'')+
+        (bad?'<em class="m-tag bad">'+plural(bad,'document')+' expired</em>':'')+
         '<em class="m-where">'+where+'</em></span></div>'+
-      '<span class="m-state s-'+(s.on?'verm':'teal')+'"><i></i>'+(s.on?'On trip':'Free')+'</span>'+
+      '<span class="m-state s-'+(s.on?'verm':'teal')+'"><i></i>'+(s.on?'On trip':'Available')+'</span>'+
     '</div>';
   }).join('')+'</section>';
 }
@@ -13891,35 +13600,8 @@ function mDocGroups(){
   const order = DOC_TYPES.concat(Object.keys(g).filter(k=>!DOC_TYPES.includes(k)).sort());
   return order.filter(k=>g[k]).map(k=>({k, rows:g[k]}));
 }
-function mDocsBody(){
-  const groups = mDocGroups();
-  const bad = truckAlerts();
-  const total = groups.reduce((s,g)=>s+g.rows.length,0);
-  const okAll = groups.reduce((s,g)=>s+g.rows.filter(r=>r.st.key==='active').length,0);
-  const ring = (n, of, cls, l) => '<div class="m-ring '+cls+'" style="--p:'+(of?n/of:0).toFixed(3)+'">'+
-    '<svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15.9" pathLength="100"/><circle class="fg" cx="18" cy="18" r="15.9" pathLength="100"/></svg>'+
-    '<b>'+n+'</b><span>'+l+'</span></div>';
-  return '<div class="m-page">'+
-    '<section class="m-hero m-hero-s m-docs-hero">'+
-      '<div class="m-bunting"></div>'+
-      '<div class="m-hero-top"><span>'+(bad.length?'Papers to chase':'All papers in order')+'</span></div>'+
-      '<div class="m-hero-v num">'+(bad.length?bad.length:okAll)+'<small>'+(bad.length?' of '+total:' valid')+'</small></div>'+
-      '<div class="m-hero-sub">'+plural(total,'paper')+' across '+plural(DB.trucks.filter(t=>(t.docs||[]).length).length,'truck')+'</div>'+
-    '</section>'+
-    (groups.length ? groups.map((g,i)=>{
-      const c = k => g.rows.filter(r=>r.st.key===k).length;
-      const n = g.rows.length;
-      return '<section class="m-card m-doc" style="--i:'+i+'" onclick="mGo(\'trucks\',{tab:\'docs\',dt:'+esc(JSON.stringify(g.k))+'})">'+
-        '<div class="m-doc-h">'+mSq('shield', c('expired')?'verm':c('soon')?'gold':'teal')+
-          '<span><b>'+esc(g.k)+'</b><em>'+plural(n,'truck')+'</em></span>'+mi('chev','m-chev')+'</div>'+
-        '<div class="m-rings">'+ring(c('expired'),n,'r-red','Expired')+ring(c('soon'),n,'r-amber','Due soon')+ring(c('active'),n,'r-green','All ok')+'</div>'+
-      '</section>';
-    }).join('') : mEmpty('No papers yet','Record insurance, permits, fitness and the rest, and you are warned before any of them runs out.',
-        '<button class="m-btn m-btn-dark" onclick="truckDocForm()">Add a paper</button>'))+
-  '</div>';
-}
 function mDocList(){
-  mTitle(sub.dt, '', 'Truck papers');
+  mTitle(sub.dt, '', 'Truck documents');
   const g = mDocGroups().find(x=>x.k===sub.dt);
   const rank = {expired:0, soon:1, active:2, none:3};
   const rows = g ? g.rows.slice().sort((a,b)=>rank[a.st.key]-rank[b.st.key] || (a.d.expiry||'').localeCompare(b.d.expiry||'')) : [];
@@ -13929,7 +13611,265 @@ function mDocList(){
       '<div class="m-row-main">'+mPlate(r.t.number)+'<span>'+(r.d.expiry?fdate(r.d.expiry)+' · '+esc(docWhen(r.st.days)):'No expiry date')+'</span></div>'+
       '<div class="m-row-end">'+chip(r.st)+'</div>'+
     '</div>').join('')+'</section>' : mEmpty('None of these on file',''))+'</div>'+
-  mFab('Add Paper','truckDocForm()');
+  mFab('Add document','truckDocForm()');
+}
+
+function mHome(){
+  const s = DB.settings || {};
+  const who = s.owner || mBiz();
+  const first = String(who).split(/\s+/)[0];
+  const synced = typeof syncReady === 'function' && syncReady();
+  mBarSet('<button class="m-me" onclick="mGo(\'settings\')" aria-label="Settings">'+mAvatar(who, 'm-av-me')+
+      '<i class="m-sync'+(synced?' on':'')+'"></i></button>'+
+    '<div class="m-hello"><span>'+esc(mWeekday())+'</span><b>'+esc(mGreeting())+', '+esc(first)+'</b></div>');
+  const due = totalReceivable();
+  const owe = mKindTotal('suppliers') + mKindTotal('drivers') + mKindTotal('shops');
+  const billable = DB.trips.filter(t=>!selfFunded(t));
+  const unpaid = billable.filter(t=>tripBalance(t) > 0);
+  const podDue = billable.filter(t=>['delivered','received'].includes(tripStage(t))).length;
+  const papers = truckAlerts().length;
+  const owing = DB.parties.filter(p=>partyBalance(p.id) > 0).length;
+  const onRoad = DB.trucks.filter(t=>mTruckState(t).on).length;
+  const month = thisMonth();
+  const monthTrips = billable.filter(t=>monthKey(t.date)===month);
+  const monthFreight = monthTrips.reduce((a,t)=>a+num(t.freight),0);
+  const oldest = unpaid.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))[0];
+  const attn = [];
+  if(papers) attn.push({tone:'verm', icon:'shield', t:plural(papers,'document')+' need renewal', s:'Expired or expiring within 30 days', act:"mGo('trucks',{tab:'docs'})"});
+  if(podDue) attn.push({tone:'gold', icon:'pod', t:plural(podDue,'POD')+' pending', s:'Delivered, paperwork not yet with the party', act:"mGo('trips',{stage:'podpending'})"});
+  if(oldest && daysSince(oldest.date) > 15) attn.push({tone:'indigo', icon:'rupee', t:'Oldest unpaid: '+daysSince(oldest.date)+' days',
+    s:partyName(oldest.partyId)+' · '+money(tripBalance(oldest))+' due', act:"mOpen('trips','"+oldest.id+"')"});
+  const recent = DB.trips.slice().sort(newestFirst).slice(0,4);
+  const kpi = (label, value, note, act, cls, fmt) => '<button class="m-kpi-c" onclick="'+act+'"><span>'+label+'</span>'+
+    '<b class="num'+(cls?' '+cls:'')+'" data-count="'+value+'"'+(fmt?' data-fmt="'+fmt+'"':'')+'>'+(fmt==='plain'?value:money(value))+'</b><em>'+note+'</em></button>';
+  const link = (icon, label, act, badge) => '<button class="m-short" onclick="'+act+'">'+mi(icon)+'<span>'+esc(label)+'</span>'+
+    (badge?'<em class="m-badge">'+badge+'</em>':'')+'</button>';
+  $('#view').innerHTML =
+  '<div class="m-page m-page-home">'+
+    '<section class="m-hero">'+
+      '<div class="m-hero-top"><span>Receivable from parties</span>'+
+        '<button class="m-hero-link" onclick="mGo(\'parties\')">Party khata'+mi('chev')+'</button></div>'+
+      '<button class="m-hero-v num" onclick="mGo(\'parties\')" data-count="'+due+'">'+money(due)+'</button>'+
+      '<div class="m-hero-sub">'+(owing ? 'Across '+plural(owing,'party') : 'Nothing outstanding')+'</div>'+
+      '<div class="m-two">'+
+        '<button class="m-btn m-btn-gold" onclick="tripForm()">'+mi('plus')+'New trip</button>'+
+        '<button class="m-btn m-btn-ghost" onclick="mPickParty()">'+mi('wallet')+'Record payment</button>'+
+      '</div>'+
+    '</section>'+
+    '<section class="m-kpi-grid">'+
+      kpi('Payable', owe, 'Suppliers, drivers, shops', "mTab('m_dir')", owe>0?'m-neg':'')+
+      kpi('Freight this month', monthFreight, plural(monthTrips.length,'trip')+' in '+esc(monthName(month).split(' ')[0]), "mTab('trips')")+
+      kpi('In transit', onRoad, onRoad===1?'truck on the road':'trucks on the road', "mGo('trucks',{tab:'fleet',tf:'on'})", '', 'plain')+
+      kpi('Unpaid trips', unpaid.length, unpaid.length ? money(unpaid.reduce((a,t)=>a+tripBalance(t),0))+' due' : 'All collected', "mGo('trips',{mpay:'unpaid'})", '', 'plain')+
+    '</section>'+
+    (attn.length ? '<h2 class="m-sec-h">Needs attention</h2><section class="m-card m-rows">'+attn.map((a,i)=>
+      '<div class="m-row" style="--i:'+i+'" onclick="'+a.act+'">'+mSq(a.icon, a.tone)+
+        '<div class="m-row-main"><b>'+esc(a.t)+'</b><span>'+esc(a.s)+'</span></div>'+mi('chev','m-chev')+'</div>').join('')+'</section>' : '')+
+    (recent.length ? '<div class="m-sec-h-row"><h2 class="m-sec-h">Recent trips</h2><button class="m-link" onclick="mTab(\'trips\')">View all'+mi('chev')+'</button></div>'+
+      '<section class="m-card m-rows">'+recent.map(mTripRow).join('')+'</section>' : '')+
+    '<h2 class="m-sec-h">Shortcuts</h2>'+
+    '<section class="m-shorts">'+
+      link('rupee','Unpaid trips',"mGo('trips',{mpay:'unpaid'})", unpaid.length||'')+
+      link('bell','Reminders',"mGo('parties',{owing:1})")+
+      link('note','Party statement','mPickParty(true)')+
+      link('pod','POD pending',"mGo('trips',{stage:'podpending'})", podDue||'')+
+      link('book','Supplier khata',"mGo('suppliers')")+
+      link('wheel','Driver khata',"mGo('drivers')")+
+      link('shop','Shop khata',"mGo('shops')")+
+      link('receipt','Expenses',"mGo('expenses')")+
+      link('truck','Trucks',"mGo('trucks',{tab:'fleet'})")+
+      link('shield','Documents',"mGo('trucks',{tab:'docs'})", papers||'')+
+      link('chart','Reports & P&L',"mGo('reports')")+
+      link('trend','Insights',"mGo('insights')")+
+    '</section>'+
+  '</div>';
+}
+/* one trip as a line: the day, the route, who and which truck, the money and where it stands */
+function mTripRow(t, i){
+  const s = mTripState(t);
+  const bal = tripBalance(t);
+  const amount = selfFunded(t) ? tripExpensesOf(t.id) : num(t.freight);
+  const d = t.date ? fdate(t.date) : '';
+  return '<div class="m-row m-trow" style="--i:'+(i||0)+'" onclick="mOpen(\'trips\',\''+t.id+'\')">'+
+    '<div class="m-tdate"><b>'+esc(d.slice(0,2))+'</b><span>'+esc(d.slice(3,6))+'</span></div>'+
+    '<div class="m-row-main"><b>'+esc(mPlaceName(t.from))+' <i class="m-arrow">→</i> '+esc(mPlaceName(t.to))+'</b>'+
+      '<span>'+esc(selfFunded(t)?'Self funded':partyName(t.partyId))+' · '+esc(mPlateText(truckName(t.truckId)))+'</span></div>'+
+    '<div class="m-row-end"><b class="num">'+money(amount)+'</b>'+
+      '<span class="m-state s-'+s.tone+'">'+s.label+'</span>'+
+      (!selfFunded(t) && bal>0 && s.k!=='moving' ? '' : '')+'</div>'+
+  '</div>';
+}
+function mTripCard(t, i){ return mTripRow(t, i); }
+function mTripsPaint(){
+  const box = $('#mList'); if(!box) return;
+  const all = mTripList();
+  const list = all.slice(0, pageLimit());
+  tripNav = list.map(t=>t.id);
+  if(!all.length){
+    box.innerHTML = DB.trips.length
+      ? mEmpty('No trip matches', 'Clear the search or the filters to see every trip.',
+          '<button class="m-btn m-btn-ghost-dark" onclick="mClearTripFilters()">Clear filters</button>')
+      : mEmpty('No trips yet', 'A trip records one load: truck, party, route and freight.',
+          '<button class="m-btn m-btn-dark" onclick="tripForm()">Add your first trip</button>');
+    return;
+  }
+  const due = all.reduce((s,t)=>s+Math.max(0, tripBalance(t)), 0);
+  const freight = all.reduce((s,t)=>s+(selfFunded(t)?0:num(t.freight)), 0);
+  /* a month heading over its trips, the way a statement is read */
+  const groups = [];
+  list.forEach(t=>{
+    const k = monthKey(t.date) || '';
+    let g = groups[groups.length-1];
+    if(!g || g.k !== k){ g = {k, rows:[]}; groups.push(g); }
+    g.rows.push(t);
+  });
+  let n = 0;
+  box.innerHTML =
+    '<div class="m-sumline"><span>'+plural(all.length,'trip')+'</span><span>Freight <b class="num">'+money(freight)+'</b></span>'+
+      '<span>Due <b class="num '+(due?'m-neg':'')+'">'+money(due)+'</b></span></div>'+
+    groups.map(g=>'<section class="m-card m-rows"><div class="m-month">'+esc(g.k?monthName(g.k):'No date')+
+      '<em>'+plural(g.rows.length,'trip')+'</em></div>'+g.rows.map(t=>mTripRow(t, n++)).join('')+'</section>').join('')+
+    (all.length > list.length
+      ? '<button class="m-more" onclick="sub.limit=pageLimit()+'+PAGE+';mTripsPaint()">Show '+Math.min(PAGE, all.length-list.length)+' more</button>' : '');
+}
+
+/* ---------- one trip, read top to bottom ---------- */
+function mTrip(){
+  const t = DB.trips.find(x=>x.id===sub.open);
+  if(!t){ sub.open = null; return mTrips(); }
+  const locked = tripLocked(t);
+  const s = mTripState(t);
+  const self = selfFunded(t);
+  mTitle(t.lr ? 'LR '+t.lr : 'Trip', (locked ? '<span class="m-lock" title="Completed and locked">'+mi('lock')+'</span>'
+            : '<button class="m-outline" onclick="tripDetail(\''+t.id+'\')">'+mi('pencil')+'Edit</button>')+
+    '<button class="m-icon-btn" aria-label="More" onclick="mTripMenu()">'+mi('kebab')+'</button>', fdate(t.date));
+  const p = partyById(t.partyId);
+  const drv = t.driverId ? driverById(t.driverId) : null;
+  const bal = tripBalance(t), billed = tripFreightNet(t);
+  const got = Math.max(0, Math.min(1, billed ? (billed - Math.max(0,bal)) / billed : 0));
+  const next = locked || self ? null : mNextStep(t);
+  const msg = 'Namaste '+(p?p.name:'')+', for LR '+(t.lr||'-')+' ('+mPlaceName(t.from)+' to '+mPlaceName(t.to)+', '+
+    fdate(t.date)+', truck '+mPlateText(truckName(t.truckId))+') the balance pending is '+money(bal)+'. Kindly arrange the payment. — '+mBiz();
+  const act = (icon, label, fn, off) => '<button class="m-act"'+(off?' disabled':'')+' onclick="'+fn+'">'+mi(icon)+'<span>'+label+'</span></button>';
+  $('#view').innerHTML = '<div class="m-page m-page-trip">'+
+    '<section class="m-card m-tsum">'+
+      '<div class="m-tsum-top"><span class="m-state s-'+s.tone+'"><i></i>'+s.label+'</span>'+
+        (tripCompleted(t)?'<span class="m-tag ok">Completed</span>':'')+'</div>'+
+      mRoute(t, s)+
+      '<div class="m-tsum-facts">'+
+        '<button onclick="'+(p?"mOpen('parties','"+p.id+"')":'')+'"><span>Party</span><b>'+esc(self?'Self funded':(p?p.name:'—'))+'</b></button>'+
+        '<button onclick="mTruckOpen(\''+t.truckId+'\')"><span>Truck</span><b class="m-mono">'+esc(mPlateText(truckName(t.truckId)))+'</b></button>'+
+        '<button onclick="'+(drv?"mOpen('drivers','"+drv.id+"')":'')+'"><span>Driver</span><b>'+esc(drv?drv.name:'—')+'</b></button>'+
+      '</div>'+
+    '</section>'+
+    (self ? '' :
+    '<section class="m-card m-money3">'+
+      '<div><span>Billed</span><b class="num">'+money(billed)+'</b></div>'+
+      '<div><span>Received</span><b class="num m-pos">'+money(tripSettledTotal(t))+'</b></div>'+
+      '<div><span>'+(bal<0?'Paid over':'Balance')+'</span><b class="num '+(bal>0?'m-neg':'m-pos')+'" data-count="'+Math.abs(bal)+'">'+money(Math.abs(bal))+'</b></div>'+
+      '<div class="m-meter" style="--p:'+got.toFixed(3)+'"><i></i></div>'+
+    '</section>')+
+    (next ? '<button class="m-btn m-btn-dark m-btn-wide" onclick="mStep(\''+t.id+'\',\''+next.field+'\',\''+next.word+'\')">'+mi('check')+next.label+'</button>' : '')+
+    '<div class="m-acts">'+
+      (self ? act('receipt','Expense',"tripDetail('"+t.id+"','expenses')", locked)
+            : act('wallet','Payment',"mAddPayment('"+t.id+"')", locked || bal<=0))+
+      act('print','Bill',"printTripBill('"+t.id+"')", self)+
+      act('wa','Remind',"mWa('"+esc(p&&p.phone||'')+"',"+esc(JSON.stringify(msg))+")", self || bal<=0)+
+      act('note', t.notes?'Note ✓':'Note', "mTripNote('"+t.id+"')")+
+    '</div>'+
+    (t.notes ? '<div class="m-note">'+esc(t.notes)+'</div>' : '')+
+    (self ? '' : '<h2 class="m-sec-h">Progress</h2>'+mTimeline(t))+
+    (self ? '' : '<h2 class="m-sec-h">Billing</h2>'+mTripBilling(t))+
+    (self || !t.hire ? '' : mTripSupplier(t))+
+    '<h2 class="m-sec-h">'+(self?'Cost of this run':'Profit')+'</h2>'+mTripProfit(t)+
+    '<h2 class="m-sec-h">Driver</h2>'+mTripDriver(t)+
+    '<h2 class="m-sec-h">Details</h2>'+mTripMore(t)+
+  '</div>';
+}
+/* the stages as a list down the page, each with its day, and the next
+   one offered as a step you can take */
+function mTimeline(t){
+  const locked = tripLocked(t);
+  const st = tripStage(t);
+  const reach = {transit:0, delivered:1, received:2, submitted:3}[st];
+  const settled = num(t.freight) > 0 && tripBalance(t) <= 0;
+  const next = locked ? null : mNextStep(t);
+  const steps = [
+    ['Trip started', t.date, true],
+    ['Delivered', t.deliveredAt, reach>=1, 'deliveredAt'],
+    ['POD received from driver', t.podReceivedAt, reach>=2, 'podReceivedAt'],
+    ['POD submitted to party', t.podSubmittedAt, reach>=3, 'podSubmittedAt'],
+    ['Payment settled', '', settled]
+  ];
+  return '<section class="m-card m-tl">'+steps.map(([l, d, done, f], i)=>{
+    const isNext = next && f === next.field;
+    return '<div class="m-tl-row'+(done?' done':'')+(isNext?' next':'')+'" style="--i:'+i+'">'+
+      '<i class="m-tl-dot">'+(done?mi('check'):'')+'</i>'+
+      '<div class="m-row-main"><b>'+l+'</b><span>'+(done ? (d ? fdate(d) : (i===4 ? 'Nothing left to collect' : 'Done'))
+        : i===4 ? money(Math.max(0,tripBalance(t)))+' still to collect' : 'Pending')+'</span></div>'+
+      (isNext ? '<button class="m-btn m-btn-s m-btn-ghost-dark" onclick="mStep(\''+t.id+'\',\''+f+'\',\''+next.word+'\')">Mark</button>' : '')+
+    '</div>';
+  }).join('')+
+  '<button class="m-link m-tl-more" onclick="tripDetail(\''+t.id+'\',\'delivery\')">'+(locked?'View':'Edit')+' dates and POD pages'+mi('chev')+'</button>'+
+  '</section>';
+}
+function mTripBilling(t){
+  const locked = tripLocked(t);
+  const adv = tripAdvance(t), chg = tripCharges(t), ded = tripDeductions(t), paid = allocatedTo(t.id);
+  const bal = tripBalance(t);
+  const edit = locked ? '' : "tripDetail('"+t.id+"','details')";
+  return '<section class="m-card m-bill">'+
+    '<div class="m-line m-line-main"><span>Freight</span><b class="num">'+money(t.freight)+
+      (edit?'<button class="m-icon-btn m-icon-s" aria-label="Edit freight" onclick="'+edit+'">'+mi('pencil')+'</button>':'')+'</b></div>'+
+    mLine('Advance', adv, locked?'':'Add advance', "tripDetail('"+t.id+"','money')")+
+    mLine('Extra charges', chg, locked?'':'Add charge', edit)+
+    (ded ? mLine('Deductions', ded, '', '') : '')+
+    mLine('Payments against this trip', paid, locked||bal<=0?'':'Add payment', "mAddPayment('"+t.id+"')")+
+    '<div class="m-pending'+(bal<=0?' is-clear':'')+'"><span>'+(bal<0?'Paid over':bal===0?'Fully received':'Balance due')+'</span>'+
+      '<b class="num">'+money(Math.abs(bal))+'</b></div>'+
+  '</section>';
+}
+function mTripMore(t){
+  const locked = tripLocked(t);
+  const row = (icon, l, v) => v ? '<div class="m-kv">'+mi(icon)+'<span>'+l+'</span><b>'+v+'</b></div>' : '';
+  return '<section class="m-card m-kvs">'+
+    row('route','From', esc(t.from))+
+    row('pin','To', esc(t.to))+
+    row('note','LR number', esc(t.lr))+
+    row('receipt','Material', esc(t.material))+
+    row('truck','Weight', esc(t.weight))+
+    (tripCompleted(t)?row('lock','Completed', t.completedAt?fdate(t.completedAt):'Yes'):'')+
+  '</section>'+
+  (locked?'':'<button class="m-btn m-btn-danger" onclick="delTrip(\''+t.id+'\')">'+mi('trash')+' Delete this trip</button>');
+}
+
+/* ---------- documents, sorted by what needs doing ---------- */
+function mDocsBody(){
+  const rows = [];
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>rows.push({t, d, st:docStatus(d.expiry)})));
+  const byKey = k => rows.filter(r=>r.st.key===k).sort((a,b)=>(a.d.expiry||'').localeCompare(b.d.expiry||''));
+  const groups = [['expired','Expired'],['soon','Expiring within 30 days'],['active','Valid'],['none','No expiry date']];
+  const count = k => rows.filter(r=>r.st.key===k).length;
+  const chip = st => '<em class="m-tag '+({expired:'bad', soon:'warn', active:'ok', none:''}[st.key])+'">'+esc(st.label)+'</em>';
+  let n = 0;
+  return '<div class="m-page">'+
+    '<section class="m-card m-money3 m-doc3">'+
+      '<div><span>Expired</span><b class="num '+(count('expired')?'m-neg':'')+'">'+count('expired')+'</b></div>'+
+      '<div><span>Due soon</span><b class="num" style="color:'+(count('soon')?'var(--m-warn)':'inherit')+'">'+count('soon')+'</b></div>'+
+      '<div><span>Valid</span><b class="num m-pos">'+count('active')+'</b></div>'+
+    '</section>'+
+    (rows.length ? groups.map(([k,l])=>{
+      const list = byKey(k);
+      if(!list.length) return '';
+      return '<h2 class="m-sec-h">'+l+' <em>'+list.length+'</em></h2><section class="m-card m-rows">'+list.map(r=>
+        '<div class="m-row" style="--i:'+(n++)+'" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">'+
+          '<div class="m-row-main"><b>'+esc(r.d.header||'Document')+'</b>'+
+            '<span>'+esc(mPlateText(r.t.number))+' · '+(r.d.expiry?fdate(r.d.expiry)+' · '+esc(docWhen(r.st.days)):'no date')+'</span></div>'+
+          '<div class="m-row-end">'+chip(r.st)+'</div>'+
+        '</div>').join('')+'</section>';
+    }).join('') : mEmpty('No documents yet','Record insurance, permits, fitness and the rest, and you are warned before any of them runs out.',
+        '<button class="m-btn m-btn-dark" onclick="truckDocForm()">Add a document</button>'))+
+  '</div>';
 }
 
 /* the title a desktop screen gives itself, carried into the phone's bar */
@@ -13965,7 +13905,6 @@ applyTheme(currentTheme());
 applyBrand();
 applyLayout();
 render();
-mSplash();
 startAuth();
 buildDocTypeList();
 setTimeout(pruneOriginals, 3000);
