@@ -4031,7 +4031,7 @@ body.phone .exp-entry input, body.phone .exp-entry select{min-width:0}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.56 &middot; 23 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.57 &middot; 23 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -4107,13 +4107,32 @@ function money(n, sign){
   if(sign && v>0) return '+₹'+s;
   return (v<0?'−₹':'₹')+s;
 }
-/* The device's own date. toISOString() is UTC, which in India reads as
-   yesterday until half past five in the morning — an expense entered
-   early would have been filed on the wrong day. */
-function today(){
-  const d = new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+/* ------------------------------------------------------------
+   INDIA STANDARD TIME
+   Every "today", every month and every clock time in the app is
+   Delhi's, whatever the phone or laptop is set to. UTC reads as
+   yesterday until half past five in the morning, and a device left
+   on another zone would file the day's entries on the wrong date.
+   IST is UTC+5:30 all year round — India has no summer time — so
+   shifting the moment by five and a half hours and reading the UTC
+   fields gives the wall clock in Delhi exactly.
+   Stored instants (when a record was last saved, when it synced)
+   stay as they are; only the way they are read changes.
+   ------------------------------------------------------------ */
+const IST_MS = 330 * 60000;
+function istClock(at){
+  const ms = at === undefined ? Date.now() : new Date(at).getTime();
+  return new Date(ms + IST_MS);
 }
+function today(){ return istClock().toISOString().slice(0,10); }
+/* the Delhi date and time of a stored moment */
+function istDay(stamp){ return stamp ? istClock(stamp).toISOString().slice(0,10) : ''; }
+function istTime(stamp){
+  const d = istClock(stamp);
+  const h = d.getUTCHours(), m = String(d.getUTCMinutes()).padStart(2,'0');
+  return (h % 12 || 12)+':'+m+' '+(h < 12 ? 'AM' : 'PM');
+}
+function istWhen(stamp){ return stamp ? fdate(istDay(stamp))+', '+istTime(stamp)+' IST' : ''; }
 function fdate(d){
   if(!d) return '—';
   const [y,m,dd] = d.split('-');
@@ -5403,7 +5422,7 @@ function viewInsights(){
 
   const unpaid = trips.filter(t=>!selfFunded(t) && tripStatus(t)!=='paid')
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  const oldestDays = unpaid.length ? Math.round((Date.now()-new Date(unpaid[0].date).getTime())/86400000) : 0;
+  const oldestDays = unpaid.length ? (daysSince(unpaid[0].date) || 0) : 0;
 
   const from = sub.from, to = sub.to;
   const win = trips.filter(t=>t.date>=from && t.date<=to);
@@ -9663,7 +9682,7 @@ function loadSample(){
   confirmAsk(msg, ()=>{ seed(); save(); go('dashboard'); toast('Sample data added'); }, already);
 }
 function seed(){
-  const d = new Date(); const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0');
+  const y = today().slice(0,4), m = today().slice(5,7);
   const day = n => y+'-'+m+'-'+String(n).padStart(2,'0');
   const t1={id:uid(),type:'owned',number:'HR55 AB 1234',model:'Tata Signa 3118',capacity:'25',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
   const t2={id:uid(),type:'owned',number:'HR38 CD 7788',model:'Ashok Leyland 2820',capacity:'31',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
@@ -9673,7 +9692,7 @@ function seed(){
   const p3={id:uid(),name:'Annapurna Grain Agency',phone:'99106 78120',city:'Delhi',gst:'',opening:0,address:''};
   const dr1={id:uid(),name:'Ramesh Yadav',phone:'99999 11223',licence:'HR5520190001234',salary:22000,join:'',aadhaar:'',address:''};
   const dr2={id:uid(),name:'Sukhbir Singh',phone:'98180 44556',licence:'HR3820170007788',salary:20000,join:'',aadhaar:'',address:''};
-  const iso = n => new Date(Date.now()+n*86400000).toISOString().slice(0,10);
+  const iso = n => addDays(today(), n);
   t1.docs=[{id:uid(),header:'Insurance',expiry:iso(210),notes:'Comprehensive'},
            {id:uid(),header:'Pollution Certificate (PUC)',expiry:iso(12),notes:''},
            {id:uid(),header:'Fitness Certificate',expiry:iso(-6),notes:'Renewal pending'}];
@@ -9693,7 +9712,7 @@ function seed(){
     {date:day(12),lr:'MV-1044',from:'Jaipur',to:'Gurugram',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Empty return load',weight:'18',freight:26000,advance:0,hire:0,status:'paid',notes:''},
     {date:day(16),lr:'MV-1045',from:'Gurugram (Haryana)',to:'Indore (Madhya Pradesh)',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advCash:11000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,lines:[{id:uid(),type:'deduction',label:'Brokerage',amount:2000},{id:uid(),type:'charge',label:'Detention',amount:1500}],advance:20000,hire:0,status:'partial',notes:''}
   ];
-  const stageDay = n => new Date(Date.now()-n*86400000).toISOString().slice(0,10);
+  const stageDay = n => addDays(today(), -n);
   trips.forEach((t,i)=>{
     const extra = [
       {deliveredAt:stageDay(9), podReceivedAt:stageDay(7), podSubmittedAt:''},
@@ -11578,22 +11597,23 @@ const PRESETS = [
   {k:'fy',    label:'Financial year'},
   {k:'all',   label:'All time'}
 ];
+/* the first of the month, counting back from this one in Delhi.
+   Built in UTC and read in UTC: a local midnight turned into an ISO
+   string in India lands on the evening before, which had "last month"
+   starting on the 31st. */
 function monthStart(offset){
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth()-offset, 1).toISOString().slice(0,10);
+  const t = today();
+  return new Date(Date.UTC(+t.slice(0,4), +t.slice(5,7)-1-offset, 1)).toISOString().slice(0,10);
 }
 function rangeFor(k){
-  const d = new Date();
   if(k==='month') return [thisMonth()+'-01', today()];
-  if(k==='last'){
-    const s = monthStart(1);
-    return [s, new Date(d.getFullYear(), d.getMonth(), 0).toISOString().slice(0,10)];
-  }
+  if(k==='last') return [monthStart(1), prevDay(monthStart(0))];
   if(k==='3m')  return [monthStart(2), today()];
   if(k==='6m')  return [monthStart(5), today()];
   if(k==='12m') return [monthStart(11), today()];
   if(k==='fy'){
-    const y = d.getMonth()>=3 ? d.getFullYear() : d.getFullYear()-1;
+    const t = today();
+    const y = +t.slice(5,7) >= 4 ? +t.slice(0,4) : +t.slice(0,4)-1;
     return [y+'-04-01', today()];
   }
   const dates = DB.trips.map(t=>t.date).concat(DB.expenses.map(e=>e.date)).filter(Boolean).sort();
@@ -11653,11 +11673,8 @@ function shortMoney(n){
   return (num(n)<0?'-₹':'₹')+s;
 }
 function monthsBack(n){
-  const out=[], d=new Date();
-  for(let i=n-1;i>=0;i--){
-    const x=new Date(d.getFullYear(), d.getMonth()-i, 1);
-    out.push(x.toISOString().slice(0,7));
-  }
+  const out=[];
+  for(let i=n-1;i>=0;i--) out.push(monthStart(i).slice(0,7));
   return out;
 }
 function monthLabel(k){
@@ -12271,11 +12288,11 @@ function askWhichCopy(remote){
     body:'<p style="margin:0 0 14px;font-size:14.5px">The cloud copy and this device do not match. Which should be kept?</p>'+
       '<div class="card card-pad" style="margin-bottom:10px"><div class="stat-label">In the cloud</div>'+
       '<div style="margin-top:5px">'+esc(count(remote))+'</div>'+
-      '<div class="hint">Last saved '+(remote.updatedAt?fdate(remote.updatedAt.slice(0,10)):'date unknown')+'</div>'+
+      '<div class="hint">Last saved '+(remote.updatedAt?istWhen(remote.updatedAt):'date unknown')+'</div>'+
       '<button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="useCloudCopy()">Use the cloud copy</button></div>'+
       '<div class="card card-pad"><div class="stat-label">On this device</div>'+
       '<div style="margin-top:5px">'+esc(count(DB))+'</div>'+
-      '<div class="hint">Last saved '+(DB.updatedAt?fdate(DB.updatedAt.slice(0,10)):'date unknown')+'</div>'+
+      '<div class="hint">Last saved '+(DB.updatedAt?istWhen(DB.updatedAt):'date unknown')+'</div>'+
       '<button class="btn btn-sm" style="margin-top:10px" onclick="useDeviceCopy()">Keep this device</button></div>'+
       '<div class="note" style="margin-top:12px">Nothing is overwritten until you choose. Download a backup from Settings if you are unsure.</div>'
   });
@@ -12352,8 +12369,7 @@ function syncPanel(){
     (FB.user
       ? '<p class="hint" style="margin:0 0 14px">Signed in as <b>'+esc(FB.user.email||'your account')+'</b>. '+
         'Every change is saved to your Firebase project and reaches your other devices within a few seconds.</p>'+
-        (FB.lastSync? '<div class="hint" style="margin-bottom:12px">Last saved '+fdate(FB.lastSync.slice(0,10))+
-          ' at '+FB.lastSync.slice(11,16)+'</div>':'')+
+        (FB.lastSync? '<div class="hint" style="margin-bottom:12px">Last saved '+istWhen(FB.lastSync)+'</div>':'')+
         '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
           '<button class="btn" onclick="syncPush(true);toast(\'Saving now\')">Sync now</button>'+
           '<button class="btn btn-danger" onclick="signOutNow()">Sign out</button>'+
