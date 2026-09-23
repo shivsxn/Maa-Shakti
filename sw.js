@@ -4,7 +4,7 @@
    connection, which lets the app still open in a yard with no signal.
    Records never pass through here: they live on the device and in the
    cloud project, exactly as they do in the browser. */
-const CACHE = 'mvl-shell-v1';
+const CACHE = 'mvl-shell-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
