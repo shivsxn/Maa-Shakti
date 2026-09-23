@@ -4136,13 +4136,25 @@ body.phone .modal-foot .btn{flex:1;height:46px;font-size:15px;justify-content:ce
 body.phone .modal-foot .btn-primary{background:var(--m-acc);border-color:var(--m-acc);color:#fff}
 body.phone .modal .form-grid,
 body.phone .modal .form-grid.three,
-body.phone .modal .form-grid.four{grid-template-columns:1fr;gap:12px}
+body.phone .modal .form-grid.four{grid-template-columns:minmax(0,1fr);gap:12px}
+body.phone .modal .form-grid > *, body.phone .modal .field{min-width:0;max-width:100%}
+body.phone .modal .seg{flex-wrap:wrap}
+body.phone .modal-body{overflow-x:hidden}
+body.phone .modal-body > *{max-width:100%}
+body.phone pre{white-space:pre-wrap;word-break:break-word}
+/* a charge or deduction line: its kind and amount side by side, what it is for underneath */
+body.phone .line-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:10px;border:1px solid var(--m-line);border-radius:10px;background:#fff}
+body.phone .line-row > *{min-width:0;width:100%}
+body.phone .line-row input:not([type=number]){grid-column:1 / -1}
+body.phone .line-row .rmdoc{grid-column:1 / -1;justify-self:end;width:auto}
+body.phone .docrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:10px;border:1px solid var(--m-line);border-radius:10px;background:#fff}
+body.phone .docrow > *{min-width:0;max-width:100%}
+body.phone .docrow > :first-child{grid-column:1 / -1}
+body.phone .docrow .rmdoc{grid-column:1 / -1;justify-self:end}
 body.phone .modal .form-grid .full{max-width:none}
 body.phone .modal input:not([type=checkbox]):not([type=radio]),
 body.phone .modal select, body.phone .modal textarea{font-size:16px;min-height:44px;border-radius:8px}
 body.phone .modal input:focus, body.phone .modal select:focus, body.phone .modal textarea:focus{border-color:var(--m-acc);box-shadow:0 0 0 3px rgba(53,87,240,.14)}
-body.phone .modal .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
-body.phone .modal .tabs .tab{flex:none;white-space:nowrap}
 body.phone .modal-ask{position:absolute;left:16px;right:16px;top:50%;bottom:auto;margin:0;width:auto;max-width:none;background:#fff;
   translate:0 -50%;border-radius:14px;animation:mAsk .2s var(--m-ease) both}
 @keyframes mAsk{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
@@ -4177,9 +4189,58 @@ body.phone:not(.m-native) .filter-row{flex-wrap:wrap}
 body.phone:not(.m-native) .filter-row > *{flex:1 1 44%;min-width:0;max-width:none}
 body.phone:not(.m-native) .filter-row .search{flex-basis:100%}
 body.phone:not(.m-native) .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-body.phone:not(.m-native) .tbl-wrap table{min-width:760px}
-body.phone:not(.m-native) .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
-body.phone:not(.m-native) .tabs .tab{flex:none;white-space:nowrap}
+/* nothing may run past the right edge: side-by-side blocks stack, and
+   the summary cards sit two to a row with figures sized to fit */
+body.phone:not(.m-native) .ex-head{grid-template-columns:1fr}
+body.phone:not(.m-native) .summary{grid-template-columns:1fr 1fr}
+body.phone:not(.m-native) .kpi{min-width:0;padding:12px}
+body.phone:not(.m-native) .kpi-value{font-size:20px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone:not(.m-native) .kpi-label{white-space:normal}
+body.phone:not(.m-native) .donut-row{flex-direction:column;align-items:stretch;gap:12px}
+body.phone:not(.m-native) .donut-row .chart{flex:none;max-width:190px;margin:0 auto}
+body.phone:not(.m-native) #view img, body.phone:not(.m-native) #view svg, body.phone:not(.m-native) #view canvas{max-width:100%}
+body.phone:not(.m-native) .g-wide, body.phone:not(.m-native) .g2, body.phone:not(.m-native) .grid.g-wide{grid-template-columns:1fr!important}
+body.phone:not(.m-native) .g-wide > *, body.phone:not(.m-native) .grid > *{min-width:0}
+body.phone .range-dates{flex-wrap:wrap;display:grid;grid-template-columns:auto 1fr;gap:8px 10px;width:100%}
+body.phone .range-dates input{width:100%;min-width:0}
+body.phone .range-presets{flex-wrap:wrap}
+body.phone .donut-legend > div{min-width:0}
+body.phone .donut-legend > div > span:not(.legend-key){min-width:0}
+body.phone .pl-line{gap:10px}
+body.phone .pl-line span:first-child{min-width:0}
+/* a long route wraps in the form's heading instead of pushing the truck number off the screen */
+body.phone .modal-full .modal-title{white-space:normal;overflow:visible;line-height:1.3;font-size:16px}
+body.phone .modal-full .modal-title .title-truck{display:inline-block;margin:2px 0 0 0;font-size:12px}
+/* tabs wrap onto a second line as small buttons rather than slide out of view */
+body.phone .tabs{display:flex;flex-wrap:wrap;gap:6px;overflow:visible;border-bottom:0;padding:0;margin-bottom:12px}
+body.phone .tabs .tab{flex:none;white-space:nowrap;border:1px solid var(--m-line);border-radius:8px;padding:7px 11px;margin:0;
+  background:#fff;font-size:13px;color:var(--m-ink-2);box-shadow:none}
+body.phone .tabs .tab.on{background:var(--m-acc-soft);border-color:var(--m-acc);color:var(--m-acc)}
+body.phone .modal .tabs .tab.on{border-bottom-color:var(--m-acc)}
+/* A table becomes a stack of cards on a phone: one card per row, each
+   value beside the column name it came from. The names are copied from
+   the table's own header, so every table in the app is covered. */
+body.phone .tbl-wrap{overflow:visible!important}
+body.phone table.m-stacked{min-width:0!important;width:100%;border-collapse:separate;border-spacing:0;table-layout:auto}
+body.phone table.m-stacked thead{display:none}
+body.phone table.m-stacked tbody, body.phone table.m-stacked tfoot{display:block;width:100%}
+body.phone table.m-stacked tr{display:block;padding:10px 14px;border-bottom:1px solid var(--m-line-2);height:auto}
+body.phone table.m-stacked tbody tr:last-child{border-bottom:0}
+body.phone table.m-stacked tfoot tr{background:#F8FAFC;border-top:1px solid var(--m-line);border-bottom:0}
+body.phone table.m-stacked td, body.phone table.m-stacked tfoot th{display:grid;grid-template-columns:minmax(78px,38%) minmax(0,1fr);column-gap:14px;
+  justify-items:end;align-items:start;
+  padding:3px 0!important;border:0!important;text-align:right!important;white-space:normal;width:auto!important;min-width:0;max-width:none;
+  position:static;background:none;font-size:13.5px;line-height:1.4}
+body.phone table.m-stacked td::before, body.phone table.m-stacked tfoot th::before{content:attr(data-label);grid-column:1;grid-row:1 / span 9;justify-self:start;
+  text-align:left;color:var(--m-muted);font-size:12px;font-weight:500;text-transform:none;letter-spacing:0;padding-top:1px}
+body.phone table.m-stacked td[data-label=""]::before, body.phone table.m-stacked tfoot th[data-label=""]::before{display:none}
+body.phone table.m-stacked td[data-label=""], body.phone table.m-stacked tfoot th[data-label=""]{grid-template-columns:minmax(0,1fr)}
+body.phone table.m-stacked td > *{grid-column:-2;max-width:100%;margin-left:0;margin-right:0}
+body.phone table.m-stacked td > .row-actions, body.phone table.m-stacked td > .btn{display:flex;gap:8px}
+body.phone table.m-stacked [data-mempty]{display:none!important}
+body.phone table.m-stacked td:first-child{font-weight:600;color:var(--m-ink)}
+body.phone table.m-stacked [data-mhide]{display:none!important}
+body.phone table.m-stacked .row-actions{justify-content:flex-end}
 body.phone:not(.m-native) .card, body.phone:not(.m-native) .kpi{max-width:100%}
 body.phone:not(.m-native) #view > *{animation:mFade .22s var(--m-ease) both}
 /* a line of the advance or of the expenses, stacked to fit */
@@ -4290,7 +4351,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.59 &middot; 24 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.60 &middot; 24 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -13884,6 +13945,45 @@ new MutationObserver(()=>{
     if(/^\s*\u2190/.test(b.textContent)) b.hidden = true;
   });
 }).observe($('#pageActions'), {childList:true, subtree:true});
+
+/* Every table on a phone is laid out as cards (see the stylesheet). The
+   column names each value needs are written onto its cell here, from the
+   table's own header, whenever a screen or a form is drawn. */
+function mStackTables(){
+  if(!onPhone()) return;
+  document.querySelectorAll('#view table, #modalRoot table').forEach(tb=>{
+    if(tb.closest('.dp') || !tb.tBodies.length) return;
+    const head = tb.tHead && tb.tHead.rows[0];
+    const labels = [];
+    if(head) [...head.cells].forEach(th=>{ for(let i=0;i<(th.colSpan||1);i++) labels.push(th.textContent.trim()); });
+    const fresh = !tb.classList.contains('m-stacked');
+    tb.querySelectorAll('tbody tr, tfoot tr').forEach(tr=>{
+      let col = 0;
+      [...tr.cells].forEach(td=>{
+        const span = td.colSpan || 1;
+        if(!td.hasAttribute('data-label') || td.dataset.mauto){
+          td.setAttribute('data-label', span > 1 ? '' : (labels[col] || ''));
+          td.dataset.mauto = '1';
+        }
+        /* a column the desktop leaves out at this width stays out, and a
+           cell with nothing in it does not become an empty line */
+        if(fresh && getComputedStyle(td).display === 'none') td.dataset.mhide = '1';
+        if(!td.textContent.trim() && !td.querySelector('button,img,input,select,svg,a')) td.dataset.mempty = '1';
+        else delete td.dataset.mempty;
+        col += span;
+      });
+    });
+    tb.classList.add('m-stacked');
+  });
+}
+let mStackDue = false;
+const mStackWatch = new MutationObserver(()=>{
+  if(mStackDue || !onPhone()) return;
+  mStackDue = true;
+  requestAnimationFrame(()=>{ mStackDue = false; mStackTables(); });
+});
+mStackWatch.observe($('#view'), {childList:true, subtree:true});
+mStackWatch.observe($('#modalRoot'), {childList:true, subtree:true});
 
 /* ============================================================
    START
