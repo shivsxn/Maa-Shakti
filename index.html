@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#151A21">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -3627,362 +3627,545 @@ tr.row-link:hover td{background:var(--bg-2)}
 
 /* ============================================================
    PHONE
-   Its own colours, the ones a phone app in this trade wears:
-   a green status bar, white cards on a cool grey page, one blue
-   for anything you can press and a navy for the main action.
-   Nothing below reaches the desktop — every rule hangs off the
-   body.phone class, which only a phone (or the Tools switch) sets.
+   The desktop's Daylight palette, carried to a phone: slate
+   greys, white cards, one blue accent for whatever can be
+   pressed, and colour otherwise kept for meaning — green for
+   money in, red for money owed or a document expired, amber for
+   something due soon. Motion is short and quiet: it shows where
+   a screen came from and then gets out of the way. Nothing below
+   reaches the desktop — every rule hangs off body.phone, which
+   only a phone (or the switch in Tools) sets.
    ============================================================ */
 .m-bar, .m-tabs, .m-fab { display:none; }
-.to-phone{position:fixed;right:16px;bottom:16px;z-index:90;height:44px;padding:0 18px;border-radius:22px;border:0;
-  background:#0B3FD1;color:#fff;font:600 15px var(--sans);box-shadow:0 8px 20px -6px rgba(11,63,209,.5);cursor:pointer}
+.to-phone{position:fixed;right:16px;bottom:16px;z-index:90;height:44px;padding:0 18px;border-radius:10px;border:0;
+  background:#3557F0;color:#fff;font:600 14px var(--sans);box-shadow:0 8px 20px -8px rgba(53,87,240,.5);cursor:pointer}
 .to-phone[hidden]{display:none}
 body.phone{
-  --m-bg:#F0F1F4; --m-card:#fff; --m-line:#E3E5EA; --m-line-2:#EDEEF2;
-  --m-ink:#1B1D22; --m-ink-2:#3C4048; --m-muted:#6B7079; --m-muted-2:#9095A0;
-  --m-blue:#0B3FD1; --m-blue-2:#1747D6; --m-blue-soft:#E8EEFD; --m-navy:#283A63; --m-band:#1C2233;
-  --m-green:#00875A; --m-green-soft:#E3F4EC; --m-orange:#E8642A; --m-amber:#EE8A12; --m-red:#DA3328;
-  --m-font: Roboto, 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --m-bg:#F6F7F9; --m-card:#FFFFFF; --m-line:#E5E9EF; --m-line-2:#F0F3F7; --m-sunk:#EEF1F5;
+  --m-ink:#0B1220; --m-ink-2:#334155; --m-muted:#64748B; --m-muted-2:#94A3B8;
+  --m-acc:#3557F0; --m-acc-2:#2743C4; --m-acc-soft:#EEF3FF;
+  --m-pos:#067647; --m-pos-soft:#ECFDF3; --m-neg:#B42318; --m-neg-soft:#FEF3F2; --m-warn:#B54708; --m-warn-soft:#FFFAEB;
+  --m-dark:#0F172A; --m-dark-2:#1E293B;
+  --m-font: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --m-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --m-ease: cubic-bezier(.2,0,0,1);
+  --m-sh: 0 1px 2px rgba(15,23,42,.04);
   min-width:0; background:var(--m-bg); color:var(--m-ink); font-family:var(--m-font);
-  -webkit-tap-highlight-color:transparent;
+  -webkit-tap-highlight-color:transparent; overscroll-behavior-y:none;
 }
 body.phone .app{display:block;min-height:100vh}
 body.phone .sidebar, body.phone .topbar{display:none}
 body.phone .main{display:block}
 body.phone .content{padding:0;max-width:none}
-body.phone:not(.m-native) .content{padding:12px 12px 90px}
-body.phone .num{font-family:var(--m-font);font-variant-numeric:tabular-nums}
+/* a screen sliding in must never widen the page, or the phone zooms out to fit it */
+body.phone #view{overflow-x:clip}
+body.phone:not(.m-native) .content{padding:12px 12px 96px}
+body.phone .num{font-family:var(--m-font);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+body.phone .mi{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* icon tiles: neutral wherever they only name a thing, coloured where they carry a state */
+body.phone .m-sq{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;flex:none;font-style:normal;
+  background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-sq .mi{width:21px;height:21px}
+body.phone .m-attn .t-verm, body.phone .m-doc .t-verm, body.phone .m-total .t-verm, body.phone .m-menu-row.danger .m-sq{background:var(--m-neg-soft);color:var(--m-neg)}
+body.phone .m-attn .t-gold, body.phone .m-doc .t-gold{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .m-doc .t-teal, body.phone .m-total .t-teal{background:var(--m-pos-soft);color:var(--m-pos)}
+body.phone .m-attn .t-indigo{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-row .t-verm{background:var(--m-neg-soft);color:var(--m-neg)}
+body.phone .m-row .t-gold{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .m-row .t-indigo{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none;font:600 13.5px var(--m-font);
+  font-style:normal;letter-spacing:.02em;background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-av-l{width:52px;height:52px;font-size:17px}
 
 /* ---------- the bar at the top ---------- */
 body.phone .m-bar{
-  display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:40;
-  height:60px; padding:0 12px 0 8px; padding-top:env(safe-area-inset-top);
-  box-sizing:content-box; background:#fff; border-bottom:1px solid var(--m-line);
+  display:flex; align-items:center; gap:8px; position:sticky; top:0; z-index:40;
+  height:60px; padding:0 10px 0 6px; padding-top:env(safe-area-inset-top); box-sizing:content-box;
+  background:rgba(255,255,255,.94); backdrop-filter:saturate(1.2) blur(12px); -webkit-backdrop-filter:saturate(1.2) blur(12px);
+  border-bottom:1px solid var(--m-line);
 }
-body.phone .m-bar-start{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
-body.phone .m-bar-end{display:flex;align-items:center;gap:6px;flex:none}
-body.phone #mBarExtra{display:flex;align-items:center;gap:6px}
-body.phone .m-title{font-size:20px;font-weight:600;margin:0;letter-spacing:-.01em;
+body.phone .m-bar-start{display:flex;align-items:center;gap:4px;min-width:0;flex:1}
+body.phone .m-bar-end{display:flex;align-items:center;gap:2px;flex:none}
+body.phone #mBarExtra{display:flex;align-items:center;gap:4px}
+body.phone .m-titles{display:flex;flex-direction:column;min-width:0;animation:mFade .2s var(--m-ease) both}
+body.phone .m-titles-root{padding-left:10px}
+body.phone .m-kicker{font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+body.phone .m-title{font-size:18px;font-weight:600;margin:0;letter-spacing:-.015em;line-height:1.25;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--m-ink)}
-body.phone .m-title-root{padding-left:8px}
+body.phone .m-titles-root .m-title{font-size:21px;font-weight:700}
 body.phone .m-back{border:0;background:none;width:42px;height:42px;border-radius:50%;
-  display:grid;place-items:center;color:var(--m-ink);flex:none;cursor:pointer}
-body.phone .m-back:active{background:var(--m-line-2)}
-body.phone .m-avatar{width:40px;height:40px;border-radius:50%;flex:none;background:#DDE1E8;color:#6B7280;
-  display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:.02em;margin-left:6px}
-body.phone .m-avatar-s{width:38px;height:38px;font-size:13.5px;margin-left:0;background:var(--m-blue-soft);color:var(--m-blue)}
-body.phone .m-who{display:flex;flex-direction:column;min-width:0}
-body.phone .m-who b{font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-who span{font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-outline{height:36px;padding:0 16px;border-radius:8px;border:1.5px solid var(--m-navy);
-  background:#fff;color:var(--m-navy);font:600 15px var(--m-font);cursor:pointer}
-body.phone .m-outline:active{background:var(--m-blue-soft)}
-body.phone .m-lock{color:var(--m-green);display:grid;place-items:center;width:36px;height:36px}
+  display:grid;place-items:center;color:var(--m-ink);flex:none;cursor:pointer;transition:background .15s}
+body.phone .m-back:active{background:var(--m-sunk)}
+body.phone .m-me{position:relative;border:0;background:none;padding:0;margin-left:8px;border-radius:50%;cursor:pointer}
+body.phone .m-me .m-av{width:38px;height:38px;background:var(--m-dark);color:#fff}
+body.phone .m-sync{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border-radius:50%;background:var(--m-muted-2);border:2px solid #fff}
+body.phone .m-sync.on{background:#12B76A}
+body.phone .m-hello{display:flex;flex-direction:column;min-width:0;padding-left:8px}
+body.phone .m-hello span{font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-hello b{font-size:17px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-outline{height:34px;padding:0 12px;border-radius:8px;border:1px solid var(--m-line);display:inline-flex;align-items:center;gap:6px;
+  background:#fff;color:var(--m-ink);font:600 13.5px var(--m-font);cursor:pointer}
+body.phone .m-outline .mi{width:15px;height:15px}
+body.phone .m-lock{color:var(--m-pos);display:grid;place-items:center;width:36px;height:36px}
 body.phone .m-icon-btn{border:0;background:none;width:40px;height:40px;border-radius:50%;
-  display:grid;place-items:center;color:var(--m-ink-2);cursor:pointer;flex:none}
-body.phone .m-icon-btn:active{background:var(--m-line-2)}
-body.phone .m-icon-s{width:30px;height:30px;color:var(--m-blue);margin:-6px -8px -6px 4px}
-body.phone .m-wa{color:#1FA855}
-body.phone .mi{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
-/* the bell, moved in from the desktop bar, rings only on the home screen */
+  display:grid;place-items:center;color:var(--m-ink-2);cursor:pointer;flex:none;transition:background .15s}
+body.phone .m-icon-btn:active{background:var(--m-sunk)}
+body.phone .m-icon-s{width:30px;height:30px;color:var(--m-acc);margin:-6px -8px -6px 4px}
+body.phone .m-icon-s .mi{width:17px;height:17px}
+body.phone .m-wa{color:#12A150}
+body.phone .m-call{border:1px solid var(--m-line)}
 body.phone #bellBtn{display:none}
 body.phone.m-home #bellBtn{display:grid;place-items:center;width:40px;height:40px;border:0;background:none;
-  color:var(--m-navy);position:relative;border-radius:50%}
-body.phone.m-home #bellBtn .ic{width:24px;height:24px;fill:var(--m-navy);stroke:var(--m-navy)}
+  border-radius:50%;color:var(--m-ink);position:relative}
+body.phone.m-home #bellBtn .ic{width:22px;height:22px;stroke:var(--m-ink-2)}
 body.phone #pageActions{display:flex;gap:6px;overflow-x:auto;max-width:52vw}
 body.phone #pageActions:empty{display:none}
-body.phone #pageActions .btn{height:36px;padding:0 11px;font-size:13px;white-space:nowrap}
+body.phone #pageActions .btn{height:34px;padding:0 11px;font-size:13px;white-space:nowrap;border-radius:8px}
 
-/* ---------- the tabs at the foot ---------- */
+/* ---------- the bar at the foot ---------- */
 body.phone.m-root .m-tabs{
-  display:flex; position:fixed; left:0; right:0; bottom:0; z-index:40; background:#fff;
-  border-top:1px solid var(--m-line); padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  display:grid; grid-template-columns:repeat(4,1fr); position:fixed; z-index:45; left:0; right:0; bottom:0;
+  height:62px; padding-bottom:env(safe-area-inset-bottom); box-sizing:content-box;
+  background:#fff; border-top:1px solid var(--m-line);
 }
-body.phone .m-tab{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;
-  padding:8px 4px;border-radius:12px;color:var(--m-muted-2);font:500 14px var(--m-font);cursor:pointer}
-body.phone .m-tab .mi{width:26px;height:26px}
-body.phone .m-tab.on{background:var(--m-blue-soft);color:var(--m-blue);font-weight:600}
-body.phone .m-tab.on .mi{fill:var(--m-blue);stroke:var(--m-blue)}
-body.phone.m-root .content{padding-bottom:84px}
+body.phone .m-tab{position:relative;z-index:1;border:0;background:none;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--m-muted);font:500 11.5px var(--m-font);cursor:pointer;transition:color .2s;overflow:hidden}
+body.phone .m-tab .mi{width:22px;height:22px}
+body.phone .m-tab.on{color:var(--m-acc);font-weight:600}
+body.phone .m-tab-ind{position:absolute;top:-1px;height:2px;width:calc(100% / 4 - 40px);left:calc(20px + 100% / 4 * var(--at,0));
+  background:var(--m-acc);border-radius:0 0 2px 2px;transition:left .28s var(--m-ease), opacity .2s;opacity:0}
+body.phone .m-tabs.has-on .m-tab-ind{opacity:1}
+body.phone.m-root .content{padding-bottom:90px}
 
-/* ---------- pages and cards ---------- */
-body.phone .m-page{padding:12px 12px 100px;display:flex;flex-direction:column;gap:12px}
-body.phone .m-card{background:var(--m-card);border:1px solid var(--m-line);border-radius:12px;
-  box-shadow:0 1px 2px rgba(20,24,32,.04)}
-body.phone .m-card-t{margin:0 0 4px;font-size:15px;font-weight:600}
-body.phone .m-hint{font-size:13px;color:var(--m-muted);line-height:1.45;padding:4px 0}
-body.phone .m-pos{color:var(--m-green)}
-body.phone .m-neg{color:var(--m-red)}
-body.phone .m-blue{color:var(--m-blue)}
-body.phone .m-count{font-size:13px;color:var(--m-muted);padding:0 4px}
+/* ---------- pages, cards, buttons ---------- */
+body.phone .m-page{padding:12px 14px 110px;display:flex;flex-direction:column;gap:12px}
+body.phone .m-card{background:var(--m-card);border:1px solid var(--m-line);border-radius:12px;box-shadow:var(--m-sh)}
+body.phone .m-card-t{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--m-muted);text-transform:uppercase;letter-spacing:.06em}
+body.phone .m-hint{font-size:13px;color:var(--m-muted);line-height:1.5;padding:2px 0}
+body.phone .m-pos{color:var(--m-pos)}
+body.phone .m-neg{color:var(--m-neg)}
+body.phone .m-count{font-size:12.5px;color:var(--m-muted);padding:0 2px}
+body.phone .m-count b{color:var(--m-ink);font-weight:600}
 body.phone .m-foot-note{text-align:center;font-size:12px;color:var(--m-muted-2);padding:6px}
-body.phone .m-empty{text-align:center;padding:36px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}
-body.phone .m-empty-t{font-size:16px;font-weight:600}
-body.phone .m-empty-s{font-size:13.5px;color:var(--m-muted);max-width:300px;line-height:1.45}
-
-/* buttons */
-body.phone .m-btn{height:46px;padding:0 16px;border-radius:8px;font:600 16px var(--m-font);letter-spacing:.02em;
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1.5px solid transparent}
-body.phone .m-btn .mi{width:19px;height:19px}
-body.phone .m-btn-blue{background:var(--m-blue);color:#fff}
-body.phone .m-btn-blue:active{background:#0932A8}
-body.phone .m-btn-line{background:#fff;border-color:var(--m-blue);color:var(--m-blue)}
-body.phone .m-btn-green-line{background:#fff;border-color:var(--m-green);color:var(--m-green)}
-body.phone .m-btn-green-line[disabled]{border-color:var(--m-line);color:var(--m-muted-2);cursor:default}
-body.phone .m-btn-danger{background:#fff;border-color:#F1C4C0;color:var(--m-red);width:100%}
-body.phone .m-btn-s{height:38px;font-size:14.5px;padding:0 14px}
-body.phone .m-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-body.phone .m-link{border:0;background:none;padding:0;color:var(--m-blue-2);font:500 15px var(--m-font);cursor:pointer;
+body.phone .m-btn{height:44px;padding:0 14px;border-radius:10px;font:600 14.5px var(--m-font);position:relative;overflow:hidden;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1px solid transparent;
+  transition:background .15s, border-color .15s;white-space:nowrap}
+body.phone .m-btn .mi{width:18px;height:18px}
+body.phone .m-btn-dark{background:var(--m-acc);color:#fff}
+body.phone .m-btn-dark:active{background:var(--m-acc-2)}
+body.phone .m-btn-gold{background:#fff;color:var(--m-ink)}
+body.phone .m-btn-ghost{background:transparent;border-color:rgba(255,255,255,.28);color:#fff}
+body.phone .m-btn-ghost-dark{background:#fff;border-color:var(--m-line);color:var(--m-ink)}
+body.phone .m-btn-ghost-dark:active, body.phone .m-btn-wa:active{background:var(--m-line-2)}
+body.phone .m-btn-wa{background:#fff;border-color:var(--m-line);color:var(--m-ink)}
+body.phone .m-btn-wa .mi{color:#12A150}
+body.phone .m-btn-done{background:var(--m-pos-soft);color:var(--m-pos);cursor:default}
+body.phone .m-btn-danger{background:#fff;border-color:#FDA29B;color:var(--m-neg);width:100%}
+body.phone .m-btn-s{height:38px;font-size:13.5px;padding:0 12px;border-radius:8px}
+body.phone .m-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+body.phone .m-link{border:0;background:none;padding:0;color:var(--m-acc);font:600 13.5px var(--m-font);cursor:pointer;
   display:inline-flex;align-items:center;gap:4px}
-body.phone .m-link .mi{width:16px;height:16px;stroke-width:2.4}
-body.phone .m-link-icon .mi{width:20px;height:20px}
+body.phone .m-link .mi{width:15px;height:15px;stroke-width:2.2}
 body.phone .m-fab{
-  display:inline-flex; position:fixed; left:50%; transform:translateX(-50%); bottom:calc(20px + env(safe-area-inset-bottom));
-  z-index:35; align-items:center; gap:10px; height:54px; padding:0 30px; border-radius:28px; border:0;
-  background:var(--m-blue); color:#fff; font:600 17px var(--m-font); letter-spacing:.06em; text-transform:uppercase;
-  box-shadow:0 8px 20px -6px rgba(11,63,209,.5); cursor:pointer; white-space:nowrap;
+  display:inline-flex; position:fixed; right:16px; bottom:calc(20px + env(safe-area-inset-bottom)); z-index:35;
+  align-items:center; height:52px; padding:0 18px; border-radius:14px; border:0; overflow:hidden;
+  background:var(--m-acc); color:#fff; font:600 15px var(--m-font); white-space:nowrap; cursor:pointer;
+  box-shadow:0 6px 16px -6px rgba(53,87,240,.55), 0 2px 4px rgba(15,23,42,.08);
+  animation:mFade .25s var(--m-ease) .1s both; transition:padding .25s var(--m-ease), background .15s;
 }
-body.phone .m-fab-green{background:var(--m-green);box-shadow:0 8px 20px -6px rgba(0,135,90,.5)}
-body.phone .m-fab .mi{width:22px;height:22px;stroke-width:2.4}
-body.phone.m-root .m-fab{bottom:calc(92px + env(safe-area-inset-bottom))}
-body.phone .m-more{border:0;background:#fff;border:1px solid var(--m-line);border-radius:10px;height:46px;
-  font:600 15px var(--m-font);color:var(--m-blue);cursor:pointer}
+body.phone .m-fab:active{background:var(--m-acc-2)}
+body.phone .m-fab .mi{width:22px;height:22px;stroke-width:2.2}
+body.phone .m-fab span{max-width:180px;margin-left:8px;transition:max-width .25s var(--m-ease), margin .25s var(--m-ease), opacity .15s}
+body.phone.m-down .m-fab{padding:0 15px}
+body.phone.m-down .m-fab span{max-width:0;margin-left:0;opacity:0}
+body.phone.m-root .m-fab{bottom:calc(78px + env(safe-area-inset-bottom))}
+body.phone .m-more{background:#fff;border:1px solid var(--m-line);border-radius:10px;height:44px;
+  font:600 14px var(--m-font);color:var(--m-acc);cursor:pointer}
 
-/* search and chips */
+/* search, filters and segments */
 body.phone .m-search{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--m-line);
-  border-radius:10px;height:50px;padding:0 14px;flex:1;min-width:0}
-body.phone .m-search .mi{color:var(--m-ink-2);width:24px;height:24px}
-body.phone .m-search input{border:0;outline:0;background:none;font:400 17px var(--m-font);flex:1;min-width:0;color:var(--m-ink);
+  border-radius:10px;height:46px;padding:0 12px;flex:1;min-width:0;transition:border-color .15s, box-shadow .15s}
+body.phone .m-search:focus-within{border-color:var(--m-acc);box-shadow:0 0 0 3px rgba(53,87,240,.14)}
+body.phone .m-page>.m-search{flex:none}
+body.phone .m-search .mi{color:var(--m-muted-2);width:20px;height:20px}
+body.phone .m-search input{border:0;outline:0;background:none;font:400 15.5px var(--m-font);flex:1;min-width:0;color:var(--m-ink);
   padding:0;height:100%;box-shadow:none}
 body.phone .m-search input::placeholder{color:var(--m-muted-2)}
-body.phone .m-search-row{display:flex;gap:10px}
-body.phone .m-filter{flex:none;display:flex;align-items:center;gap:8px;height:50px;padding:0 16px;background:#fff;
-  border:1px solid var(--m-line);border-radius:10px;font:600 16px var(--m-font);letter-spacing:.06em;color:var(--m-ink-2);cursor:pointer}
-body.phone .m-filter.on{border-color:var(--m-blue);color:var(--m-blue);background:var(--m-blue-soft)}
-body.phone .m-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-body.phone .m-chip{flex:none;height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--m-line);background:#fff;
-  font:500 14px var(--m-font);color:var(--m-ink-2);cursor:pointer}
-body.phone .m-chip em{font-style:normal;color:var(--m-muted-2);margin-left:2px}
-body.phone .m-chip.on{background:var(--m-blue-soft);border-color:var(--m-blue);color:var(--m-blue)}
-body.phone .m-chip.on em{color:var(--m-blue)}
-body.phone .m-badge{font-style:normal;background:var(--m-red);color:#fff;border-radius:10px;min-width:20px;height:20px;
-  padding:0 6px;font:700 11.5px/20px var(--m-font);text-align:center;display:inline-block}
+body.phone .m-search-row{display:flex;gap:8px}
+body.phone .m-filter{flex:none;position:relative;width:46px;height:46px;display:grid;place-items:center;background:#fff;
+  border:1px solid var(--m-line);border-radius:10px;color:var(--m-ink-2);cursor:pointer}
+body.phone .m-filter.on{border-color:var(--m-acc);color:var(--m-acc);background:var(--m-acc-soft)}
+body.phone .m-filter em{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:var(--m-acc);color:#fff;
+  font:700 10.5px/18px var(--m-font);font-style:normal}
+body.phone .m-seg{display:flex;gap:2px;background:var(--m-sunk);border-radius:10px;padding:3px;position:relative}
+body.phone .m-seg button{flex:1;position:relative;z-index:1;border:0;background:none;height:34px;border-radius:8px;overflow:hidden;
+  font:500 13px var(--m-font);color:var(--m-muted);cursor:pointer;transition:background .2s, color .2s, box-shadow .2s;white-space:nowrap}
+body.phone .m-seg button.on{background:#fff;color:var(--m-ink);font-weight:600;box-shadow:0 1px 3px rgba(15,23,42,.1)}
+body.phone .m-seg-3 button{height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+body.phone .m-seg-3 button.on{background:none;box-shadow:none}
+body.phone .m-seg-3 b{font-size:18px;font-weight:700;color:var(--m-ink)}
+body.phone .m-seg-3 span{font-size:12px}
+body.phone .m-seg-ind{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 10px)/3);border-radius:8px;background:#fff;
+  box-shadow:0 1px 3px rgba(15,23,42,.1);transform:translateX(calc(var(--at,0) * (100% + 2px)));transition:transform .28s var(--m-ease)}
+body.phone .m-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+body.phone .m-chip{flex:none;height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--m-line);background:#fff;
+  font:500 13px var(--m-font);color:var(--m-ink-2);cursor:pointer;position:relative;overflow:hidden}
+body.phone .m-chip.on{background:var(--m-acc-soft);border-color:var(--m-acc);color:var(--m-acc)}
+body.phone .m-badge{font-style:normal;background:var(--m-neg);color:#fff;border-radius:9px;min-width:18px;height:18px;
+  padding:0 5px;font:600 10.5px/18px var(--m-font);text-align:center;display:inline-block}
+
+/* ---------- the dark summary cards ---------- */
+body.phone .m-hero{position:relative;overflow:hidden;border-radius:14px;padding:18px 16px 16px;color:#fff;
+  background:linear-gradient(155deg, var(--m-dark-2), var(--m-dark));box-shadow:0 8px 24px -14px rgba(15,23,42,.6)}
+body.phone .m-hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+body.phone .m-hero-top span{font-size:13px;color:#CBD5E1;font-weight:500}
+body.phone .m-hero-link{border:0;background:rgba(255,255,255,.08);color:#E2E8F0;font:500 12.5px var(--m-font);
+  height:28px;padding:0 6px 0 10px;border-radius:7px;display:inline-flex;align-items:center;gap:2px;cursor:pointer}
+body.phone .m-hero-link .mi{width:14px;height:14px}
+body.phone .m-hero-v{display:block;border:0;background:none;padding:0;margin:6px 0 14px;cursor:pointer;text-align:left;
+  font:700 32px/1.1 var(--m-font);letter-spacing:-.03em;color:#fff}
+body.phone .m-hero-v small{font-size:16px;color:#94A3B8;font-weight:500;letter-spacing:0;margin-left:6px}
+body.phone .m-hero-sub{font-size:12.5px;color:#94A3B8;margin:-8px 0 14px}
+body.phone .m-hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 0 14px;border-top:1px solid rgba(255,255,255,.1)}
+body.phone .m-hero-stats div{display:flex;flex-direction:column;gap:2px;min-width:0}
+body.phone .m-hero-stats b{font-size:16px;font-weight:600;color:#fff}
+body.phone .m-hero-stats span{font-size:11.5px;color:#94A3B8;line-height:1.3}
+body.phone .m-hero-add{width:100%;height:46px;border:0;border-radius:10px;cursor:pointer;position:relative;overflow:hidden;
+  background:#fff;color:var(--m-ink);font:600 15px var(--m-font);display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s}
+body.phone .m-hero-add:active{background:#E2E8F0}
+body.phone .m-hero-add .mi{width:20px;height:20px;stroke-width:2.2;color:var(--m-acc)}
+body.phone .m-hero-s .m-hero-v{font-size:30px}
+
+/* ---------- the route line ---------- */
+body.phone .m-road{position:relative;height:14px;min-width:60px}
+body.phone .m-lane{position:absolute;left:5px;right:5px;top:6px;height:2px;border-radius:2px;background:var(--m-line)}
+body.phone .m-fill{position:absolute;left:5px;top:6px;height:2px;border-radius:2px;width:calc((100% - 10px) * var(--p,0));background:var(--m-pos)}
+body.phone .r-moving .m-fill{background:var(--m-acc)}
+body.phone .r-self .m-fill{background:var(--m-muted-2)}
+body.phone .m-pin-a, body.phone .m-pin-b{position:absolute;top:3px;width:8px;height:8px;border-radius:50%;background:var(--m-ink-2)}
+body.phone .m-pin-a{left:1px}
+body.phone .m-pin-b{right:1px;background:#fff;box-shadow:inset 0 0 0 2px var(--m-muted-2)}
+body.phone .r-arrived .m-pin-b, body.phone .r-done .m-pin-b{background:var(--m-pos);box-shadow:none}
+body.phone .m-mark{position:absolute;top:1px;width:12px;height:12px;border-radius:50%;background:#fff;
+  left:calc(5px + (100% - 10px) * var(--p,0));translate:-50% 0;box-shadow:inset 0 0 0 3px var(--m-acc), 0 0 0 3px rgba(53,87,240,.15)}
+body.phone .r-arrived .m-mark, body.phone .r-done .m-mark, body.phone .r-self .m-mark{display:none}
+body.phone .m-route{display:grid;grid-template-columns:minmax(0,auto) 1fr minmax(0,auto);align-items:center;gap:12px;margin:12px 0 12px}
+body.phone .m-route b{display:block;font-size:15.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+body.phone .m-route span{display:block;font-size:12px;color:var(--m-muted);margin-top:3px}
+body.phone .m-route-b{text-align:right}
+
+/* ---------- registration chips ---------- */
+body.phone .m-plate{display:inline-flex;align-items:center;align-self:flex-start;background:var(--m-sunk);border:1px solid #DCE2EA;border-radius:6px;
+  color:var(--m-ink);font:500 13px/1 var(--m-mono);letter-spacing:.02em;white-space:nowrap;padding:5px 7px 4px}
+body.phone .m-plate b{font-weight:600}
+body.phone .m-plate-s{font-size:12.5px}
 
 /* ---------- home ---------- */
-body.phone .m-hero{padding:18px 16px 16px}
-body.phone .m-hero-l{font-size:17px;color:var(--m-navy);font-weight:500}
-body.phone .m-hero-v{border:0;background:none;padding:0;margin:6px 0 16px;font:500 34px var(--m-font);color:var(--m-ink);
-  letter-spacing:-.01em;cursor:pointer;display:block}
-body.phone .m-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-body.phone .m-quick button{border:1px solid var(--m-line);background:#fff;border-radius:10px;padding:14px 4px 12px;
-  display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 2px 6px -3px rgba(20,24,32,.12);
-  font:500 14.5px var(--m-font);color:var(--m-ink);cursor:pointer}
-body.phone .m-quick i{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff}
-body.phone .m-quick i .mi{width:24px;height:24px}
-body.phone .q-navy{background:#3E5596}
-body.phone .q-green{background:#2EAF55}
-body.phone .q-orange{background:#EE8527}
-body.phone .m-add{width:100%;height:52px;border:0;border-radius:8px;background:var(--m-navy);color:#fff;
-  font:600 19px var(--m-font);letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;
-  box-shadow:0 4px 10px -4px rgba(40,58,99,.5)}
-body.phone .m-add .mi{width:24px;height:24px;stroke-width:2.2}
-body.phone .m-alert{display:flex;align-items:center;gap:12px;border:1px solid #F5C9C4;background:#FDF1EF;color:#9B271D;
-  border-radius:12px;padding:12px 14px;font:400 14.5px var(--m-font);text-align:left;cursor:pointer}
-body.phone .m-alert span{flex:1}
+body.phone .m-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+body.phone .m-quick-b{border:1px solid var(--m-line);background:#fff;border-radius:12px;padding:12px 4px 10px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;gap:8px;font:500 12px/1.25 var(--m-font);color:var(--m-ink);cursor:pointer;text-align:center;
+  transition:background .15s}
+body.phone .m-quick-b:active{background:var(--m-line-2)}
+body.phone .m-quick-b .m-sq{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-attn-row{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:0 14px 2px;scrollbar-width:none}
+body.phone .m-attn{flex:none;width:236px;scroll-snap-align:start;display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer;
+  background:#fff;border:1px solid var(--m-line);border-radius:12px;padding:12px;position:relative;overflow:hidden}
+body.phone .m-attn span{display:flex;flex-direction:column;gap:2px;min-width:0}
+body.phone .m-attn b{font:600 14px var(--m-font);color:var(--m-ink)}
+body.phone .m-attn em{font-style:normal;font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-attn .m-sq{width:38px;height:38px}
+body.phone .m-block{display:flex;flex-direction:column;gap:8px}
+body.phone .m-block-h{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
+body.phone .m-block-h h2{margin:0;font-size:13px;font-weight:600;color:var(--m-muted);text-transform:uppercase;letter-spacing:.06em}
 body.phone .m-sec{overflow:hidden}
-body.phone .m-sec-t{font-size:19px;font-weight:600;margin:0;padding:16px 16px 4px}
-body.phone .m-cells{display:grid;grid-template-columns:repeat(4,1fr);padding:4px 4px 12px}
-body.phone .m-cell{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:8px;
-  padding:10px 2px;font:400 14.5px/1.3 var(--m-font);color:var(--m-ink);cursor:pointer;position:relative;text-align:center}
-body.phone .m-cell:active{background:var(--m-line-2);border-radius:10px}
-body.phone .m-cell .m-badge{position:absolute;top:4px;right:calc(50% - 30px)}
-body.phone .mg{width:46px;height:46px}
-body.phone .m-sec-more{width:100%;border:0;border-top:1px solid var(--m-line);background:#EEF0F4;height:44px;
-  font:500 15px var(--m-font);color:var(--m-navy);cursor:pointer}
+body.phone .m-sec-t{font-size:13px;font-weight:600;margin:0;padding:14px 16px 0;color:var(--m-muted);text-transform:uppercase;letter-spacing:.06em}
+body.phone .m-cells{display:grid;grid-template-columns:repeat(4,1fr);padding:8px 4px 10px;row-gap:2px}
+body.phone .m-cell{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:7px;border-radius:10px;
+  padding:10px 2px;font:500 12px/1.25 var(--m-font);color:var(--m-ink-2);cursor:pointer;position:relative;overflow:hidden;text-align:center;
+  transition:background .15s}
+body.phone .m-cell:active{background:var(--m-line-2)}
+body.phone .m-cell .m-badge{position:absolute;top:5px;right:calc(50% - 28px)}
 
 /* ---------- lists of rows ---------- */
 body.phone .m-rows{overflow:hidden}
-body.phone .m-row{display:flex;align-items:center;gap:12px;padding:14px 14px;border-bottom:1px solid var(--m-line-2);cursor:pointer}
+body.phone .m-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--m-line-2);cursor:pointer;
+  position:relative;overflow:hidden;transition:background .15s}
 body.phone .m-row:last-child{border-bottom:0}
-body.phone .m-row:active{background:#F7F8FA}
-body.phone .m-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
-body.phone .m-row-main b{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-row-main>span{font-size:13px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-row-end{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none;text-align:right}
-body.phone .m-row-end b{font-size:16px;font-weight:600}
-body.phone .m-row-end>span{font-size:12px;color:var(--m-muted)}
-body.phone .m-chev{color:#A5A9B2;width:18px;height:18px}
-body.phone .m-entry .m-row-main b{white-space:normal;font-size:15px}
-body.phone .m-total{display:flex;align-items:center;justify-content:space-between;padding:16px}
-body.phone .m-total span{font-size:15px;color:var(--m-muted)}
-body.phone .m-total b{font-size:22px;font-weight:600}
-body.phone .m-bal{padding:18px 16px 16px;display:flex;flex-direction:column;gap:4px}
-body.phone .m-bal-l{font-size:15px;color:var(--m-muted)}
-body.phone .m-bal-v{font-size:32px;font-weight:500}
-body.phone .m-bal-s{font-size:13px;color:var(--m-muted);margin-bottom:12px}
+body.phone .m-row:active{background:#F8FAFC}
+body.phone .m-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+body.phone .m-row-main>b{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-row-main>span{font-size:12.5px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-row-main>.m-plate{font-size:13px;color:var(--m-ink)}
+body.phone .m-row-end{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none;text-align:right}
+body.phone .m-row-end b{font-size:15px;font-weight:600}
+body.phone .m-row-end>span{font-size:11.5px;color:var(--m-muted)}
+body.phone .m-chev{color:#CBD5E1;width:18px;height:18px}
+body.phone .m-total{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:12px;
+  background:#fff;border:1px solid var(--m-line)}
+body.phone .m-total div{display:flex;flex-direction:column;gap:2px}
+body.phone .m-total span{font-size:12.5px;color:var(--m-muted)}
+body.phone .m-total b{font-size:23px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-total-in b{color:var(--m-pos)}
+body.phone .m-total-out b{color:var(--m-neg)}
+body.phone .m-timeline .m-row-main>b{white-space:normal;font-size:14px;font-weight:500}
+body.phone .m-dot{width:8px;height:8px;border-radius:50%;flex:none;font-style:normal;background:var(--m-pos)}
+body.phone .is-dr .m-dot{background:var(--m-neg)}
+body.phone .m-month{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--m-muted);
+  padding:10px 14px 6px;background:#F8FAFC;border-bottom:1px solid var(--m-line-2)}
 body.phone .m-list{overflow:hidden}
-body.phone .m-tool{display:flex;align-items:center;gap:14px;width:100%;border:0;border-bottom:1px solid var(--m-line-2);
-  background:none;padding:12px 14px;text-align:left;cursor:pointer;color:var(--m-ink)}
+body.phone .m-tool{display:flex;align-items:center;gap:14px;width:100%;border:0;border-bottom:1px solid var(--m-line-2);position:relative;overflow:hidden;
+  background:none;padding:11px 14px;text-align:left;cursor:pointer;color:var(--m-ink);transition:background .15s}
+body.phone .m-tool:active{background:#F8FAFC}
 body.phone .m-tool:last-child{border-bottom:0}
-body.phone .m-tool span{flex:1;display:flex;flex-direction:column;gap:2px}
-body.phone .m-tool b{font:500 16px var(--m-font)}
-body.phone .m-tool em{font-style:normal;font-size:13px;color:var(--m-muted)}
-body.phone .m-tool .mi{color:#A5A9B2;width:18px}
-body.phone .m-tool .mg{width:40px;height:40px}
+body.phone .m-tool>span{flex:1;display:flex;flex-direction:column;gap:1px}
+body.phone .m-tool b{font:500 15px var(--m-font)}
+body.phone .m-tool em{font-style:normal;font-size:12.5px;color:var(--m-muted)}
+body.phone .m-tool .m-sq{width:38px;height:38px}
+
+/* ---------- tabs across the top ---------- */
+body.phone .m-tabs-top{display:flex;position:sticky;top:calc(60px + env(safe-area-inset-top));z-index:30;
+  background:#fff;border-bottom:1px solid var(--m-line)}
+body.phone .m-tabs-top button{flex:1;border:0;background:none;height:46px;font:500 14px var(--m-font);color:var(--m-muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:color .2s}
+body.phone .m-tabs-top button.on{color:var(--m-acc);font-weight:600}
+body.phone .m-ind{position:absolute;left:0;bottom:-1px;height:2px;width:calc(100% / var(--n,4));
+  transform:translateX(calc(var(--x,0) * 100%));transition:transform .28s var(--m-ease)}
+body.phone .m-ind::after{content:'';display:block;margin:0 auto;width:60%;height:100%;border-radius:2px 2px 0 0;background:var(--m-acc)}
+body.phone .m-pane-l{animation:mPaneL .24s var(--m-ease) both}
+body.phone .m-pane-r{animation:mPaneR .24s var(--m-ease) both}
+@keyframes mPaneL{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@keyframes mPaneR{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
 
 /* ---------- trips ---------- */
-body.phone .m-trip{padding:16px 16px 14px;cursor:pointer}
-body.phone .m-trip:active{background:#FAFBFC}
+body.phone .m-trip{padding:14px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s}
+body.phone .m-trip:active{background:#F8FAFC}
 body.phone .m-trip-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-body.phone .m-trip-party{font-size:14.5px;color:var(--m-muted);margin-bottom:4px}
-body.phone .m-plate{font-size:18px;font-weight:500;letter-spacing:.01em;color:var(--m-ink);white-space:nowrap}
-body.phone .m-plate b{font-weight:500;color:var(--m-blue-2)}
-body.phone .m-pill{display:inline-flex;align-items:center;gap:4px;background:#EEF0F3;border-radius:18px;padding:7px 12px 7px 16px;
-  font-size:17px;font-weight:500;white-space:nowrap}
-body.phone .m-pill .mi{width:14px;height:14px;stroke-width:2.2;color:var(--m-muted)}
-body.phone .m-route{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin:14px 0 12px}
-body.phone .m-route b{display:block;font-size:17px;font-weight:500}
-body.phone .m-route span{display:block;font-size:14.5px;color:var(--m-muted);margin-top:6px}
-body.phone .m-route-b{text-align:right}
-body.phone .m-route-mid{display:flex;align-items:center;gap:6px;color:#8C919B}
-body.phone .m-route-mid i{flex:1;height:1px;background:#C9CCD3}
-body.phone .m-route-mid .mi{width:32px;height:32px;stroke-width:1.4}
-body.phone .m-trip-foot{display:flex;justify-content:space-between;align-items:center;gap:10px}
-body.phone .m-state{display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:500;white-space:nowrap}
-body.phone .m-state i{width:9px;height:9px;border-radius:50%;display:inline-block}
-body.phone .d-blue{background:#2E7CF6}
-body.phone .d-green{background:var(--m-green)}
-body.phone .d-amber{background:var(--m-amber)}
-body.phone .d-grey{background:#A5A9B2}
-body.phone .m-lr{font-size:15px;color:var(--m-ink-2);font-weight:500}
+body.phone .m-trip-who{display:flex;flex-direction:column;gap:6px;min-width:0}
+body.phone .m-trip-party{font-size:14.5px;color:var(--m-ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-trip-amt{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+body.phone .m-trip-amt b{font-size:17px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-trip-amt em{font-style:normal;font-size:12px;color:var(--m-muted)}
+body.phone .m-trip-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--m-line-2)}
+body.phone .m-state{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:6px;white-space:nowrap;
+  font:600 12px var(--m-font);background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-state i{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+body.phone .s-verm{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .s-teal{background:var(--m-pos-soft);color:var(--m-pos)}
+body.phone .s-gold{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .s-indigo{background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .s-grey{background:var(--m-sunk);color:var(--m-muted)}
+body.phone .m-lr{font:500 12.5px var(--m-mono);color:var(--m-muted)}
 
 /* ---------- one trip ---------- */
-body.phone .m-trip-band{background:var(--m-band);padding:12px 12px}
-body.phone .m-trip-id{background:#fff;border-radius:10px;display:flex;justify-content:space-between;gap:10px;padding:0 6px}
-body.phone .m-trip-id button{border:0;background:none;display:flex;align-items:center;gap:10px;padding:16px 8px;min-width:0;
-  font:400 18px var(--m-font);color:var(--m-blue-2);cursor:pointer}
-body.phone .m-trip-id button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.phone .m-trip-id .mi{color:var(--m-ink);width:22px;height:22px}
-body.phone .m-tabs-top{display:flex;background:#fff;border-bottom:1px solid var(--m-line);position:sticky;top:calc(61px + env(safe-area-inset-top));z-index:30}
-body.phone .m-tabs-top button{flex:1;border:0;background:none;height:54px;font:400 18px var(--m-font);color:#9095A0;
-  position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-body.phone .m-tabs-top button.on{color:var(--m-blue)}
-body.phone .m-tabs-top button.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:4px;
-  background:var(--m-blue);border-radius:4px 4px 0 0}
+body.phone .m-trip-band{color:#fff;padding:14px 16px 16px;background:linear-gradient(155deg, var(--m-dark-2), var(--m-dark))}
+body.phone .m-state-band{background:rgba(255,255,255,.1)!important;color:#E2E8F0!important}
+body.phone .m-route-big{margin:14px 0}
+body.phone .m-route-big b{font-size:19px;color:#fff}
+body.phone .m-route-big span{color:#94A3B8}
+body.phone .m-route-big .m-lane{background:rgba(255,255,255,.18)}
+body.phone .m-route-big .r-moving .m-fill, body.phone .m-route-big.r-moving .m-fill{background:#8FA7FF}
+body.phone .m-route-big .m-pin-a{background:#fff}
+body.phone .m-route-big .m-pin-b{background:transparent;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5)}
+body.phone .m-route-big.r-arrived .m-pin-b, body.phone .m-route-big.r-done .m-pin-b{background:#32D583;box-shadow:none}
+body.phone .m-route-big.r-arrived .m-fill, body.phone .m-route-big.r-done .m-fill{background:#32D583}
+body.phone .m-route-big .m-mark{background:var(--m-dark);box-shadow:inset 0 0 0 3px #8FA7FF, 0 0 0 3px rgba(143,167,255,.2)}
+body.phone .m-trip-chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+body.phone .m-trip-chips button{border:0;background:none;padding:0;cursor:pointer}
+body.phone .m-trip-band .m-plate{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#fff}
+body.phone .m-chip-dark{display:inline-flex!important;align-items:center;gap:7px;height:28px;padding:0 10px!important;border-radius:6px;
+  background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.18)!important;color:#fff;font:500 13px var(--m-font)}
+body.phone .m-chip-dark .mi{width:15px;height:15px;color:#CBD5E1}
 body.phone .m-page-trip{padding-top:12px}
-body.phone .m-party{padding:16px 16px 14px}
+body.phone .m-party{padding:14px}
 body.phone .m-party-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-body.phone .m-party-name{border:0;background:none;padding:0;display:flex;align-items:center;gap:10px;min-width:0;
-  font:500 18px var(--m-font);color:var(--m-blue-2);cursor:pointer;text-align:left}
-body.phone .m-party-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-body.phone .m-party-name .mi{color:var(--m-ink);fill:var(--m-ink)}
-body.phone .m-party .m-route b{font-size:19px}
-body.phone .m-lr-mid{text-align:center;font-size:16px;font-weight:500;margin:-6px 0 6px}
-body.phone .m-steps{display:grid;grid-template-columns:repeat(5,1fr);margin:14px -8px 16px;position:relative}
-body.phone .m-step{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;position:relative}
-body.phone .m-step::before{content:'';position:absolute;top:9px;left:-50%;right:50%;height:2px;background:#D5D8DE}
-body.phone .m-step:first-child::before{display:none}
-body.phone .m-step.done::before{background:var(--m-green)}
-body.phone .m-step i{width:20px;height:20px;border-radius:50%;background:#C9CCD3;position:relative;z-index:1;display:grid;place-items:center}
-body.phone .m-step.done i{background:var(--m-green);color:#fff}
-body.phone .m-step i .mi{width:13px;height:13px;stroke-width:3}
-body.phone .m-step span{font-size:13px;line-height:1.2;color:var(--m-muted)}
-body.phone .m-step.done span{color:var(--m-ink);font-weight:500}
-body.phone .m-step em{font-style:normal;font-size:11px;color:var(--m-muted-2);margin-top:-4px}
-body.phone .m-lines{display:flex;flex-direction:column;gap:14px;padding:16px}
-body.phone .m-party .m-lines{padding:20px 0 0}
-body.phone .m-line{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:16px}
-body.phone .m-line>div{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
-body.phone .m-line b{font-weight:400;display:flex;align-items:center;text-align:right}
-body.phone .m-line-main{font-weight:500}
-body.phone .m-line-main b{font-weight:500}
-body.phone .m-pending{display:flex;justify-content:space-between;align-items:center;border-top:2px dashed #C9CCD3;
-  margin-top:18px;padding-top:16px;font-size:20px;font-weight:600}
-body.phone .m-pending b{color:var(--m-blue);font-weight:600}
-body.phone .m-party-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;min-height:44px}
-body.phone .m-note{margin-top:10px;padding:10px 12px;background:#F6F7F9;border-radius:8px;font-size:14px;color:var(--m-ink-2);white-space:pre-wrap}
-body.phone .m-sup .m-link{align-self:flex-start}
-body.phone .m-profit{padding:18px 16px 0;overflow:hidden}
+body.phone .m-party-name{border:0;background:none;padding:0;display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer;text-align:left;color:var(--m-ink)}
+body.phone .m-party-name>span{display:flex;flex-direction:column;gap:1px;min-width:0}
+body.phone .m-party-name b{font:600 15.5px var(--m-font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-party-name em{font-style:normal;font-size:12.5px;color:var(--m-muted)}
+body.phone .m-steps{position:relative;display:grid;grid-template-columns:repeat(5,1fr);margin:18px -6px 16px}
+body.phone .m-steps-line{position:absolute;left:10%;right:10%;top:9px;height:2px;background:var(--m-line)}
+body.phone .m-steps-line i{display:block;height:100%;width:calc(var(--done,0) * 100%);background:var(--m-acc);transform-origin:left}
+body.phone .m-step{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;z-index:1}
+body.phone .m-step i{width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--m-line);display:grid;place-items:center;font-style:normal}
+body.phone .m-step.done i{background:var(--m-acc);border-color:var(--m-acc);color:#fff}
+body.phone .m-step.next i{border-color:var(--m-acc)}
+body.phone .m-step i .mi{width:12px;height:12px;stroke-width:3}
+body.phone .m-step span{font-size:11.5px;line-height:1.2;color:var(--m-muted);font-weight:500}
+body.phone .m-step.done span{color:var(--m-ink)}
+body.phone .m-step em{font-style:normal;font-size:10.5px;color:var(--m-muted-2);margin-top:-3px}
+body.phone .m-bill{display:flex;flex-direction:column;gap:12px;padding:16px 14px 14px}
+body.phone .m-line{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:14.5px;color:var(--m-ink-2)}
+body.phone .m-line>div{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+body.phone .m-line>span{display:flex;flex-direction:column}
+body.phone .m-line b{font-weight:500;display:flex;align-items:center;text-align:right;color:var(--m-ink)}
+body.phone .m-line-main{font-weight:600;font-size:15px;color:var(--m-ink)}
+body.phone .m-line-main b{font-weight:600}
+body.phone .m-sub-l{font-style:normal;font-weight:400;font-size:12.5px;color:var(--m-muted);margin-top:2px}
+body.phone .m-meter{height:6px;border-radius:3px;background:var(--m-sunk);overflow:hidden;margin-top:2px}
+body.phone .m-meter i{display:block;height:100%;width:calc(var(--p,0) * 100%);border-radius:3px;background:var(--m-pos)}
+body.phone .m-pending{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--m-line);padding-top:12px;
+  font-size:15px;font-weight:600}
+body.phone .m-pending b{color:var(--m-ink);font-size:22px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-pending.is-clear b{color:var(--m-pos)}
+body.phone .m-party-foot{display:flex;justify-content:space-between;align-items:center;min-height:38px}
+body.phone .m-note{padding:10px 12px;background:#F8FAFC;border:1px solid var(--m-line);border-radius:8px;font-size:13.5px;color:var(--m-ink-2);white-space:pre-wrap}
+body.phone .m-margin{display:flex;align-items:center;gap:16px;padding:14px}
+body.phone .m-margin>div:last-child{display:flex;flex-direction:column;gap:1px}
+body.phone .m-margin span{font-size:12.5px;color:var(--m-muted)}
+body.phone .m-margin b{font-size:22px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-margin em{font-style:normal;font-size:12px;color:var(--m-muted)}
+body.phone .m-ring-big{position:relative;width:64px;height:64px;flex:none}
+body.phone .m-ring-big svg, body.phone .m-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+body.phone .m-ring-big circle, body.phone .m-ring circle{fill:none;stroke-width:3;stroke-linecap:butt}
+body.phone .m-ring-big .bg, body.phone .m-ring .bg{stroke:var(--m-sunk)}
+body.phone .m-ring-big .fg{stroke:var(--m-pos);stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0) * 100)}
+body.phone .m-ring-big .fg.neg{stroke:var(--m-neg)}
+body.phone .m-ring-big b{position:absolute;inset:0;display:grid;place-items:center;font-size:14px;font-weight:700}
+body.phone .m-profit{padding:12px 14px 0;overflow:hidden}
 body.phone .m-pl-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0}
-body.phone .m-pl-head{font-size:17px;font-weight:500;padding-top:10px}
-body.phone .m-pl-sub{font-size:15.5px;padding-left:16px;color:var(--m-ink-2)}
-body.phone .m-pl-box{background:#EEF0F3;border-radius:14px;margin:4px 0 10px 14px;padding:10px 16px;display:flex;flex-direction:column;gap:12px;font-size:14.5px}
+body.phone .m-pl-head{font-size:15px;font-weight:600;padding-top:8px}
+body.phone .m-pl-box{background:#F8FAFC;border:1px solid var(--m-line-2);border-radius:8px;margin:2px 0 8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--m-ink-2)}
 body.phone .m-pl-box div{display:flex;justify-content:space-between}
-body.phone .m-pl-add{margin:10px 0 16px 16px}
-body.phone .m-pl-total{display:flex;justify-content:space-between;align-items:center;border-top:2px dashed #C9CCD3;
-  margin:6px -16px 0;padding:18px 16px 20px;font-size:22px;font-weight:700}
+body.phone .m-pl-box b{color:var(--m-ink);font-weight:500}
+body.phone .m-pl-bar{display:grid;grid-template-columns:1fr auto;gap:5px 10px;padding:6px 0 4px;font-size:13.5px;color:var(--m-ink-2)}
+body.phone .m-pl-bar b{color:var(--m-ink);font-weight:500}
+body.phone .m-pl-bar i{grid-column:1 / -1;height:4px;border-radius:2px;background:#CBD5E1;transform:scaleX(var(--w,0));transform-origin:left}
+body.phone .m-pl-add{margin:8px 0 12px}
+body.phone .m-pl-total{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--m-line);
+  margin:6px -14px 0;padding:14px;font-size:17px;font-weight:700;background:#F8FAFC}
+body.phone .m-drv-card{padding:14px;display:flex;flex-direction:column;gap:14px}
 body.phone .m-drv{display:flex;align-items:center;gap:12px}
-body.phone .m-drv .m-avatar{margin-left:0}
+body.phone .m-drv-bal{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;background:#F8FAFC;border:1px solid var(--m-line-2)}
+body.phone .m-drv-bal span{font-size:13px;color:var(--m-muted)}
+body.phone .m-drv-bal b{font-size:19px;font-weight:700}
+body.phone .m-kvs{padding:14px;display:flex;flex-direction:column;gap:11px}
+body.phone .m-kv{display:grid;grid-template-columns:18px auto 1fr;align-items:center;gap:10px;font-size:14px}
+body.phone .m-kv .mi{width:17px;height:17px;color:var(--m-muted-2)}
+body.phone .m-kv span{color:var(--m-muted)}
+body.phone .m-kv b{font-weight:500;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* ---------- trucks and papers ---------- */
-body.phone .m-tabs-2{top:calc(61px + env(safe-area-inset-top))}
-body.phone .m-tabs-2 .m-badge{margin-left:4px}
-body.phone .m-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-body.phone .m-kpi{border:1px solid var(--m-line);background:#fff;border-radius:6px;padding:10px 12px;text-align:left;
-  display:flex;flex-direction:column;gap:6px;cursor:pointer;font-family:var(--m-font)}
-body.phone .m-kpi span{font-size:14px;color:var(--m-muted)}
-body.phone .m-kpi b{font-size:19px;font-weight:500}
-body.phone .m-kpi.green span{color:var(--m-green)}
-body.phone .m-kpi.blue span{color:var(--m-blue-2)}
-body.phone .m-kpi.on{border:1.5px solid var(--m-blue);background:var(--m-blue-soft)}
-body.phone .m-truck{gap:8px}
-body.phone .m-tags{display:flex;gap:6px;flex-wrap:wrap}
-body.phone .m-tag{font-style:normal;display:inline-block;padding:3px 10px;border-radius:4px;font-size:13.5px;font-weight:500;color:#fff;background:#8C919B}
-body.phone .m-tag.own{background:#1650E0}
-body.phone .m-tag.mkt{background:var(--m-orange)}
-body.phone .m-tag.bad{background:var(--m-red)}
-body.phone .m-tag.warn{background:var(--m-amber)}
-body.phone .m-tag.ok{background:var(--m-green)}
-body.phone .m-where{display:flex;gap:8px;font-size:14px;color:var(--m-muted)}
-body.phone .m-where i{font-style:normal;color:#A5A9B2}
-body.phone .m-docs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
-body.phone .m-docs-head div{display:flex;flex-direction:column;gap:4px}
-body.phone .m-docs-head b{font-size:17px;font-weight:600}
-body.phone .m-docs-head span{font-size:13.5px;color:var(--m-muted)}
-body.phone .m-doc{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px;cursor:pointer}
-body.phone .m-doc>div:first-child{display:flex;flex-direction:column;gap:10px;min-width:0}
-body.phone .m-doc>div:first-child b{font-size:18px;font-weight:500}
-body.phone .m-rings{display:flex;gap:8px;flex:none}
-body.phone .m-ring{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:50px;color:#9095A0}
-body.phone .m-ring i{font-style:normal;width:34px;height:34px;border-radius:50%;border:1.5px solid currentColor;
-  display:grid;place-items:center;font-size:13px;color:var(--m-ink)}
-body.phone .m-ring span{font-size:12px;white-space:nowrap}
-body.phone .m-ring.r-red{color:var(--m-red)}
-body.phone .m-ring.r-amber{color:var(--m-amber)}
-body.phone .m-ring.r-green{color:var(--m-green)}
+/* ---------- trucks and documents ---------- */
+body.phone .m-truck{gap:12px}
+body.phone .m-truck-ic{width:40px;height:40px;border-radius:10px;background:var(--m-sunk);color:var(--m-ink-2);display:grid;place-items:center;flex:none;font-style:normal}
+body.phone .m-truck-ic .mi{width:21px;height:21px}
+body.phone .m-truck-ic.on{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+body.phone .m-tag{font-style:normal;display:inline-block;padding:2px 7px;border-radius:5px;font-size:11.5px;font-weight:600;
+  color:var(--m-ink-2);background:var(--m-sunk)}
+body.phone .m-tag.own{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-tag.mkt{background:var(--m-sunk);color:var(--m-ink-2)}
+body.phone .m-tag.bad{background:var(--m-neg-soft);color:var(--m-neg)}
+body.phone .m-tag.warn{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .m-tag.ok{background:var(--m-pos-soft);color:var(--m-pos)}
+body.phone .m-where{font-style:normal;font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-doc{padding:14px 14px 12px;cursor:pointer;position:relative;overflow:hidden;transition:background .15s}
+body.phone .m-doc:active{background:#F8FAFC}
+body.phone .m-doc-h{display:flex;align-items:center;gap:12px}
+body.phone .m-doc-h>span{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
+body.phone .m-doc-h b{font-size:15px;font-weight:600}
+body.phone .m-doc-h em{font-style:normal;font-size:12.5px;color:var(--m-muted)}
+body.phone .m-doc-h .m-sq{width:38px;height:38px}
+body.phone .m-rings{display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px;padding-top:12px;border-top:1px solid var(--m-line-2)}
+body.phone .m-ring{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px}
+body.phone .m-ring svg{width:40px;height:40px}
+body.phone .m-ring .fg{stroke:#CBD5E1;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--p,0) * 100)}
+body.phone .m-ring b{position:absolute;top:0;height:40px;display:grid;place-items:center;font-size:14px;font-weight:600}
+body.phone .m-ring span{font-size:11.5px;color:var(--m-muted)}
+body.phone .r-red .fg{stroke:var(--m-neg)} body.phone .r-red b{color:var(--m-neg)}
+body.phone .r-amber .fg{stroke:#F79009} body.phone .r-amber b{color:var(--m-warn)}
+body.phone .r-green .fg{stroke:var(--m-pos)} body.phone .r-green b{color:var(--m-pos)}
 
-/* ---------- the forms, as full screens ---------- */
-body.phone .overlay{backdrop-filter:none;-webkit-backdrop-filter:none}
-body.phone .modal{left:0;border-left:0;box-shadow:none;animation:mUp .22s cubic-bezier(.2,.8,.2,1);font-family:var(--m-font)}
-@keyframes mUp{from{opacity:.4;transform:translateY(24px)}to{opacity:1;transform:none}}
-body.phone .modal-head{padding:12px 8px 12px 16px;border-radius:0;min-height:60px}
-body.phone .modal-title{font-size:18px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-body.phone .modal .x{width:44px;height:44px;font-size:28px}
+/* ---------- empty screens ---------- */
+body.phone .m-empty{text-align:center;padding:32px 20px;display:flex;flex-direction:column;align-items:center;gap:8px}
+body.phone .m-empty-ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--m-sunk);color:var(--m-muted);font-style:normal}
+body.phone .m-empty-t{font-size:15.5px;font-weight:600;margin-top:6px}
+body.phone .m-empty-s{font-size:13px;color:var(--m-muted);max-width:280px;line-height:1.5}
+body.phone .m-empty .m-btn{margin-top:6px}
+
+/* ---------- motion: short, and only to show where things came from ---------- */
+body.phone .m-rip{position:absolute;border-radius:50%;background:currentColor;opacity:.07;transform:scale(0);pointer-events:none;
+  animation:mRip .45s var(--m-ease) forwards}
+@keyframes mRip{to{transform:scale(1);opacity:0}}
+body.phone #view.mv-fwd > :not(.m-fab){animation:mFwd .26s var(--m-ease) both}
+body.phone #view.mv-back > :not(.m-fab){animation:mBackIn .26s var(--m-ease) both}
+body.phone #view.mv-tab > :not(.m-fab){animation:mFade .22s var(--m-ease) both}
+@keyframes mFwd{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes mBackIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:none}}
+@keyframes mFade{from{opacity:0}to{opacity:1}}
+body.phone.m-go .m-page > *{animation:mRise .3s var(--m-ease) both}
+body.phone.m-go .m-page > :nth-child(2){animation-delay:.03s}
+body.phone.m-go .m-page > :nth-child(3){animation-delay:.06s}
+body.phone.m-go .m-page > :nth-child(4){animation-delay:.09s}
+body.phone.m-go .m-page > :nth-child(n+5){animation-delay:.12s}
+body.phone.m-go .m-trip, body.phone.m-go .m-row, body.phone.m-go .m-doc{animation:mRise .3s var(--m-ease) both;
+  animation-delay:calc(min(var(--i,0), 8) * 20ms)}
+@keyframes mRise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+body.phone.m-go .m-fill{animation:mFillIn .6s var(--m-ease) .1s both}
+@keyframes mFillIn{from{width:0}}
+body.phone.m-go .m-mark{animation:mMark .6s var(--m-ease) .1s both}
+@keyframes mMark{from{left:5px}}
+body.phone.m-go .m-steps-line i{animation:mGrow .6s var(--m-ease) .1s both}
+@keyframes mGrow{from{transform:scaleX(0)}}
+body.phone.m-go .m-meter i{animation:mMeter .6s var(--m-ease) .15s both}
+@keyframes mMeter{from{width:0}}
+body.phone.m-go .m-ring .fg, body.phone.m-go .m-ring-big .fg{animation:mRingIn .7s var(--m-ease) .15s both}
+@keyframes mRingIn{from{stroke-dashoffset:100}}
+body.phone.m-go .m-pl-bar i{animation:mBar .6s var(--m-ease) .15s both}
+@keyframes mBar{from{transform:scaleX(0)}}
+
+/* ---------- toasts ---------- */
+body.phone #toast{left:16px;right:16px;top:auto;bottom:calc(84px + env(safe-area-inset-bottom));transform:none;
+  display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+body.phone .toast{background:var(--m-dark);color:#fff;border-radius:10px;padding:11px 16px;font:500 14px var(--m-font);
+  box-shadow:0 10px 24px -12px rgba(15,23,42,.6);border:0;max-width:100%;animation:mToast .22s var(--m-ease) both}
+@keyframes mToast{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- the forms, as full screens and sheets ---------- */
+body.phone .overlay{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(15,23,42,.4)}
+body.phone .modal{left:0;border-left:0;box-shadow:none;animation:mUp .24s var(--m-ease);font-family:var(--m-font);background:var(--m-bg)}
+@keyframes mUp{from{opacity:.4;transform:translateY(16px)}to{opacity:1;transform:none}}
+body.phone .modal-head{padding:10px 6px 10px 16px;border-radius:0;min-height:58px;background:#fff}
+body.phone .modal-title{font-size:17px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+body.phone .modal .x{width:42px;height:42px;font-size:26px;border-radius:50%}
 body.phone .modal-body{padding:14px 14px 20px;max-width:none!important}
 body.phone .modal-full .modal-body{padding:12px 12px 20px}
-body.phone .modal-foot{padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-radius:0}
-body.phone .modal-foot .btn{flex:1;height:48px;font-size:15.5px;justify-content:center}
+body.phone .modal-foot{padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-radius:0;background:#fff}
+body.phone .modal-foot .btn{flex:1;height:46px;font-size:15px;justify-content:center;border-radius:10px}
+body.phone .modal-foot .btn-primary{background:var(--m-acc);border-color:var(--m-acc);color:#fff}
 body.phone .modal .form-grid,
 body.phone .modal .form-grid.three,
 body.phone .modal .form-grid.four{grid-template-columns:1fr;gap:12px}
 body.phone .modal .form-grid .full{max-width:none}
 body.phone .modal input:not([type=checkbox]):not([type=radio]),
-body.phone .modal select, body.phone .modal textarea{font-size:16px;min-height:46px}
+body.phone .modal select, body.phone .modal textarea{font-size:16px;min-height:44px;border-radius:8px}
+body.phone .modal input:focus, body.phone .modal select:focus, body.phone .modal textarea:focus{border-color:var(--m-acc);box-shadow:0 0 0 3px rgba(53,87,240,.14)}
 body.phone .modal .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
 body.phone .modal .tabs .tab{flex:none;white-space:nowrap}
-body.phone .modal-ask{position:absolute;left:16px;right:16px;top:50%;bottom:auto;margin:0;width:auto;max-width:none;
-  transform:translateY(-50%);border-radius:16px;animation:none}
-body.phone .modal-sheet{top:auto;max-height:88vh;border-radius:18px 18px 0 0;animation:mSheet .24s cubic-bezier(.2,.8,.2,1)}
-@keyframes mSheet{from{transform:translateY(40%)}to{transform:none}}
-body.phone .modal-sheet .modal-head{border-radius:18px 18px 0 0}
+body.phone .modal-ask{position:absolute;left:16px;right:16px;top:50%;bottom:auto;margin:0;width:auto;max-width:none;background:#fff;
+  translate:0 -50%;border-radius:14px;animation:mAsk .2s var(--m-ease) both}
+@keyframes mAsk{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+body.phone .modal-ask .modal-head{border-radius:14px 14px 0 0}
+body.phone .modal-ask .modal-foot{border-radius:0 0 14px 14px}
+body.phone .modal-sheet{top:auto;max-height:88vh;border-radius:16px 16px 0 0;animation:mSheet .28s var(--m-ease) both;transition:transform .2s var(--m-ease)}
+@keyframes mSheet{from{transform:translateY(100%)}to{transform:none}}
+body.phone .modal-sheet .modal-head{border-radius:16px 16px 0 0;padding-top:20px;position:relative;touch-action:none}
+body.phone .modal-sheet .modal-head::before{content:'';position:absolute;top:8px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:#CBD5E1}
+body.phone .modal-sheet .modal-body{background:#fff}
 body.phone .m-menu{display:flex;flex-direction:column;margin:-6px -14px}
-body.phone .m-menu-row{display:flex;align-items:center;gap:14px;border:0;background:none;padding:14px 18px;text-align:left;
-  font:400 16px var(--m-font);color:var(--m-ink);cursor:pointer}
-body.phone .m-menu-row:active{background:var(--m-line-2)}
+body.phone .m-menu-row{display:flex;align-items:center;gap:14px;border:0;background:none;padding:9px 16px;text-align:left;position:relative;overflow:hidden;
+  font:500 15px var(--m-font);color:var(--m-ink);cursor:pointer;transition:background .15s}
+body.phone .m-menu-row:active{background:#F8FAFC}
+body.phone .m-menu-row .m-sq{width:36px;height:36px}
 body.phone .m-menu-row span{flex:1}
-body.phone .m-menu-row em{font-style:normal;color:var(--m-muted);font-size:14px}
-body.phone .m-menu-row.danger{color:var(--m-red)}
+body.phone .m-menu-row em{font-style:normal;color:var(--m-muted);font-size:13.5px;font-weight:500}
+body.phone .m-menu-row.danger{color:var(--m-neg)}
 body.phone .modal .m-btn{width:100%}
+body.phone .trip-top .slip-lr{font-family:var(--m-font);letter-spacing:0;font-size:13px}
+body.phone .trip-totals{border-radius:8px;font-family:var(--m-font)}
+body.phone .trip-totals b{font-family:var(--m-font)}
+body.phone .trip-nav{display:none}
 
 /* ---------- desktop screens shown on a phone ----------
    Reports, the driver account and the rest keep their own layout;
@@ -3994,19 +4177,11 @@ body.phone:not(.m-native) .filter-row{flex-wrap:wrap}
 body.phone:not(.m-native) .filter-row > *{flex:1 1 44%;min-width:0;max-width:none}
 body.phone:not(.m-native) .filter-row .search{flex-basis:100%}
 body.phone:not(.m-native) .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+body.phone:not(.m-native) .tbl-wrap table{min-width:760px}
 body.phone:not(.m-native) .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
 body.phone:not(.m-native) .tabs .tab{flex:none;white-space:nowrap}
-body.phone:not(.m-native) .card{max-width:100%}
-body.phone:not(.m-native) .tbl-wrap table{min-width:760px}
-body.phone .m-row-main>.m-plate{font-size:18px;color:var(--m-ink);overflow:visible}
-body.phone .m-page>.m-search{flex:none}
-body.phone .m-kpi span{font-size:13px;line-height:1.25}
-body.phone .m-doc>div:first-child{flex:1}
-body.phone .m-doc .m-link{font-size:14px;white-space:nowrap}
-body.phone .m-rings{gap:4px}
-body.phone .m-ring{min-width:46px}
-body.phone .m-ring span{font-size:11px}
-body.phone .modal-foot .btn-primary{background:var(--m-blue);border-color:var(--m-blue);color:#fff}
+body.phone:not(.m-native) .card, body.phone:not(.m-native) .kpi{max-width:100%}
+body.phone:not(.m-native) #view > *{animation:mFade .22s var(--m-ease) both}
 /* a line of the advance or of the expenses, stacked to fit */
 body.phone .exp-row .exp-what{flex:1 1 100%}
 body.phone .exp-row .exp-amt{flex:1 1 40%}
@@ -4016,6 +4191,90 @@ body.phone .exp-more{grid-template-columns:1fr;max-width:none}
 body.phone .exp-more input{height:40px;font-size:15px}
 body.phone .exp-entry input, body.phone .exp-entry select{min-width:0}
 
+/* ---------- the dashboard ---------- */
+body.phone .m-sec-h{margin:6px 2px -4px;font-size:12px;font-weight:600;color:var(--m-muted);text-transform:uppercase;letter-spacing:.07em}
+body.phone .m-sec-h em{font-style:normal;color:var(--m-muted-2);margin-left:4px}
+body.phone .m-sec-h-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:6px}
+body.phone .m-sec-h-row .m-sec-h{margin-top:0}
+body.phone .m-sec-h-row .m-link{margin-bottom:-4px}
+body.phone .m-kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.phone .m-kpi-c{display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;padding:12px 14px;cursor:pointer;
+  background:#fff;border:1px solid var(--m-line);border-radius:12px;position:relative;overflow:hidden;transition:background .15s}
+body.phone .m-kpi-c:active{background:#F8FAFC}
+body.phone .m-kpi-c span{font-size:12px;color:var(--m-muted);font-weight:500}
+body.phone .m-kpi-c b{font-size:19px;font-weight:700;letter-spacing:-.02em;color:var(--m-ink)}
+body.phone .m-kpi-c b.m-neg{color:var(--m-neg)}
+body.phone .m-kpi-c em{font-style:normal;font-size:11.5px;color:var(--m-muted-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body.phone .m-hero .m-two{margin-top:2px}
+body.phone .m-hero .m-two .m-btn{font-size:14px;padding:0 8px}
+body.phone .m-shorts{display:grid;grid-template-columns:1fr 1fr;background:#fff;border:1px solid var(--m-line);border-radius:12px;overflow:hidden}
+body.phone .m-short{display:flex;align-items:center;gap:10px;border:0;background:none;padding:13px 14px;text-align:left;cursor:pointer;position:relative;overflow:hidden;
+  font:500 13.5px var(--m-font);color:var(--m-ink);border-bottom:1px solid var(--m-line-2);transition:background .15s}
+body.phone .m-short:nth-child(odd){border-right:1px solid var(--m-line-2)}
+body.phone .m-short:nth-last-child(-n+2){border-bottom:0}
+body.phone .m-short:active{background:#F8FAFC}
+body.phone .m-short .mi{width:19px;height:19px;color:var(--m-muted)}
+body.phone .m-short span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- trips as lines ---------- */
+body.phone .m-sumline{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--m-muted);padding:0 2px}
+body.phone .m-sumline b{color:var(--m-ink);font-weight:600}
+body.phone .m-sumline b.m-neg{color:var(--m-neg)}
+body.phone .m-month{display:flex;justify-content:space-between}
+body.phone .m-month em{font-style:normal;font-weight:500;letter-spacing:0;text-transform:none}
+body.phone .m-trow{gap:12px;align-items:center}
+body.phone .m-tdate{width:40px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;height:44px;
+  border-radius:8px;background:var(--m-sunk)}
+body.phone .m-tdate b{font-size:16px;font-weight:700;line-height:1;color:var(--m-ink)}
+body.phone .m-tdate span{font-size:10.5px;font-weight:600;text-transform:uppercase;color:var(--m-muted);margin-top:3px;letter-spacing:.04em}
+body.phone .m-trow .m-row-main>b{font-size:14.5px}
+body.phone .m-arrow{font-style:normal;color:var(--m-muted-2);font-weight:400;margin:0 2px}
+body.phone .m-trow .m-row-end{gap:5px}
+body.phone .m-trow .m-row-end b{font-size:14.5px}
+body.phone .m-trow .m-state{font-size:11px;padding:2px 7px}
+
+/* ---------- a trip, top to bottom ---------- */
+body.phone .m-tsum{padding:14px}
+body.phone .m-tsum-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+body.phone .m-tsum .m-route{margin:14px 0 14px}
+body.phone .m-tsum .m-route b{font-size:18px;font-weight:700}
+body.phone .m-tsum-facts{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:1px;background:var(--m-line-2);border:1px solid var(--m-line-2);border-radius:8px;overflow:hidden}
+body.phone .m-tsum-facts button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:0;background:#fff;padding:9px 10px;text-align:left;cursor:pointer;min-width:0}
+body.phone .m-tsum-facts span{font-size:11px;color:var(--m-muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+body.phone .m-tsum-facts b{font-size:13px;font-weight:600;color:var(--m-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body.phone .m-tsum-facts .m-mono{font-family:var(--m-mono);font-weight:500;font-size:12.5px}
+body.phone .m-money3{display:grid;grid-template-columns:repeat(3,1fr);padding:14px 14px 12px;gap:6px 8px}
+body.phone .m-money3>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+body.phone .m-money3 span{font-size:12px;color:var(--m-muted)}
+body.phone .m-money3 b{font-size:17px;font-weight:700;letter-spacing:-.02em}
+body.phone .m-money3 .m-meter{grid-column:1 / -1;margin-top:6px}
+body.phone .m-doc3 b{font-size:22px}
+body.phone .m-btn-wide{width:100%;height:48px;font-size:15px}
+body.phone .m-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+body.phone .m-act{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:10px;cursor:pointer;position:relative;overflow:hidden;
+  background:#fff;border:1px solid var(--m-line);font:500 12px var(--m-font);color:var(--m-ink);transition:background .15s}
+body.phone .m-act:active{background:#F8FAFC}
+body.phone .m-act .mi{width:20px;height:20px;color:var(--m-acc)}
+body.phone .m-act[disabled]{color:var(--m-muted-2);cursor:default}
+body.phone .m-act[disabled] .mi{color:var(--m-muted-2)}
+body.phone .m-tl{padding:6px 14px 10px}
+body.phone .m-tl-row{display:flex;align-items:center;gap:12px;padding:10px 0;position:relative}
+body.phone .m-tl-row:not(:last-of-type)::after{content:'';position:absolute;left:10px;top:34px;bottom:-10px;width:2px;background:var(--m-line)}
+body.phone .m-tl-row.done:not(:last-of-type)::after{background:var(--m-acc)}
+body.phone .m-tl-dot{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;font-style:normal;
+  background:#fff;border:2px solid var(--m-line);position:relative;z-index:1}
+body.phone .m-tl-row.done .m-tl-dot{background:var(--m-acc);border-color:var(--m-acc);color:#fff}
+body.phone .m-tl-row.next .m-tl-dot{border-color:var(--m-acc)}
+body.phone .m-tl-dot .mi{width:12px;height:12px;stroke-width:3}
+body.phone .m-tl-row .m-row-main>b{font-size:14px;font-weight:500;color:var(--m-muted)}
+body.phone .m-tl-row.done .m-row-main>b, body.phone .m-tl-row.next .m-row-main>b{color:var(--m-ink)}
+body.phone .m-tl-row .m-row-main>span{font-size:12px}
+body.phone .m-tl-more{margin:6px 0 4px 34px}
+body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay:calc(var(--i,0) * 40ms + 60ms)}
+
+@media (prefers-reduced-motion: reduce){
+  body.phone *, body.phone *::before, body.phone *::after{animation:none!important;transition:none!important}
+}
 </style>
 </head>
 <body>
@@ -4031,7 +4290,7 @@ body.phone .exp-entry input, body.phone .exp-entry select{min-width:0}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.56 &middot; 23 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.59 &middot; 24 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -4107,13 +4366,32 @@ function money(n, sign){
   if(sign && v>0) return '+₹'+s;
   return (v<0?'−₹':'₹')+s;
 }
-/* The device's own date. toISOString() is UTC, which in India reads as
-   yesterday until half past five in the morning — an expense entered
-   early would have been filed on the wrong day. */
-function today(){
-  const d = new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+/* ------------------------------------------------------------
+   INDIA STANDARD TIME
+   Every "today", every month and every clock time in the app is
+   Delhi's, whatever the phone or laptop is set to. UTC reads as
+   yesterday until half past five in the morning, and a device left
+   on another zone would file the day's entries on the wrong date.
+   IST is UTC+5:30 all year round — India has no summer time — so
+   shifting the moment by five and a half hours and reading the UTC
+   fields gives the wall clock in Delhi exactly.
+   Stored instants (when a record was last saved, when it synced)
+   stay as they are; only the way they are read changes.
+   ------------------------------------------------------------ */
+const IST_MS = 330 * 60000;
+function istClock(at){
+  const ms = at === undefined ? Date.now() : new Date(at).getTime();
+  return new Date(ms + IST_MS);
 }
+function today(){ return istClock().toISOString().slice(0,10); }
+/* the Delhi date and time of a stored moment */
+function istDay(stamp){ return stamp ? istClock(stamp).toISOString().slice(0,10) : ''; }
+function istTime(stamp){
+  const d = istClock(stamp);
+  const h = d.getUTCHours(), m = String(d.getUTCMinutes()).padStart(2,'0');
+  return (h % 12 || 12)+':'+m+' '+(h < 12 ? 'AM' : 'PM');
+}
+function istWhen(stamp){ return stamp ? fdate(istDay(stamp))+', '+istTime(stamp)+' IST' : ''; }
 function fdate(d){
   if(!d) return '—';
   const [y,m,dd] = d.split('-');
@@ -5403,7 +5681,7 @@ function viewInsights(){
 
   const unpaid = trips.filter(t=>!selfFunded(t) && tripStatus(t)!=='paid')
     .sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  const oldestDays = unpaid.length ? Math.round((Date.now()-new Date(unpaid[0].date).getTime())/86400000) : 0;
+  const oldestDays = unpaid.length ? (daysSince(unpaid[0].date) || 0) : 0;
 
   const from = sub.from, to = sub.to;
   const win = trips.filter(t=>t.date>=from && t.date<=to);
@@ -9663,7 +9941,7 @@ function loadSample(){
   confirmAsk(msg, ()=>{ seed(); save(); go('dashboard'); toast('Sample data added'); }, already);
 }
 function seed(){
-  const d = new Date(); const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0');
+  const y = today().slice(0,4), m = today().slice(5,7);
   const day = n => y+'-'+m+'-'+String(n).padStart(2,'0');
   const t1={id:uid(),type:'owned',number:'HR55 AB 1234',model:'Tata Signa 3118',capacity:'25',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
   const t2={id:uid(),type:'owned',number:'HR38 CD 7788',model:'Ashok Leyland 2820',capacity:'31',owner:'',ownerPhone:'',insurance:'',fitness:'',notes:''};
@@ -9673,7 +9951,7 @@ function seed(){
   const p3={id:uid(),name:'Annapurna Grain Agency',phone:'99106 78120',city:'Delhi',gst:'',opening:0,address:''};
   const dr1={id:uid(),name:'Ramesh Yadav',phone:'99999 11223',licence:'HR5520190001234',salary:22000,join:'',aadhaar:'',address:''};
   const dr2={id:uid(),name:'Sukhbir Singh',phone:'98180 44556',licence:'HR3820170007788',salary:20000,join:'',aadhaar:'',address:''};
-  const iso = n => new Date(Date.now()+n*86400000).toISOString().slice(0,10);
+  const iso = n => addDays(today(), n);
   t1.docs=[{id:uid(),header:'Insurance',expiry:iso(210),notes:'Comprehensive'},
            {id:uid(),header:'Pollution Certificate (PUC)',expiry:iso(12),notes:''},
            {id:uid(),header:'Fitness Certificate',expiry:iso(-6),notes:'Renewal pending'}];
@@ -9693,7 +9971,7 @@ function seed(){
     {date:day(12),lr:'MV-1044',from:'Jaipur',to:'Gurugram',partyId:p1.id,truckId:t1.id,driverId:dr1.id,material:'Empty return load',weight:'18',freight:26000,advance:0,hire:0,status:'paid',notes:''},
     {date:day(16),lr:'MV-1045',from:'Gurugram (Haryana)',to:'Indore (Madhya Pradesh)',partyId:p2.id,truckId:t2.id,driverId:dr2.id,material:'Steel coils',weight:'29',freight:71000,advCash:11000,fuelQty:'100',fuelRate:'90',fuelAmt:9000,lines:[{id:uid(),type:'deduction',label:'Brokerage',amount:2000},{id:uid(),type:'charge',label:'Detention',amount:1500}],advance:20000,hire:0,status:'partial',notes:''}
   ];
-  const stageDay = n => new Date(Date.now()-n*86400000).toISOString().slice(0,10);
+  const stageDay = n => addDays(today(), -n);
   trips.forEach((t,i)=>{
     const extra = [
       {deliveredAt:stageDay(9), podReceivedAt:stageDay(7), podSubmittedAt:''},
@@ -11578,22 +11856,23 @@ const PRESETS = [
   {k:'fy',    label:'Financial year'},
   {k:'all',   label:'All time'}
 ];
+/* the first of the month, counting back from this one in Delhi.
+   Built in UTC and read in UTC: a local midnight turned into an ISO
+   string in India lands on the evening before, which had "last month"
+   starting on the 31st. */
 function monthStart(offset){
-  const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth()-offset, 1).toISOString().slice(0,10);
+  const t = today();
+  return new Date(Date.UTC(+t.slice(0,4), +t.slice(5,7)-1-offset, 1)).toISOString().slice(0,10);
 }
 function rangeFor(k){
-  const d = new Date();
   if(k==='month') return [thisMonth()+'-01', today()];
-  if(k==='last'){
-    const s = monthStart(1);
-    return [s, new Date(d.getFullYear(), d.getMonth(), 0).toISOString().slice(0,10)];
-  }
+  if(k==='last') return [monthStart(1), prevDay(monthStart(0))];
   if(k==='3m')  return [monthStart(2), today()];
   if(k==='6m')  return [monthStart(5), today()];
   if(k==='12m') return [monthStart(11), today()];
   if(k==='fy'){
-    const y = d.getMonth()>=3 ? d.getFullYear() : d.getFullYear()-1;
+    const t = today();
+    const y = +t.slice(5,7) >= 4 ? +t.slice(0,4) : +t.slice(0,4)-1;
     return [y+'-04-01', today()];
   }
   const dates = DB.trips.map(t=>t.date).concat(DB.expenses.map(e=>e.date)).filter(Boolean).sort();
@@ -11653,11 +11932,8 @@ function shortMoney(n){
   return (num(n)<0?'-₹':'₹')+s;
 }
 function monthsBack(n){
-  const out=[], d=new Date();
-  for(let i=n-1;i>=0;i--){
-    const x=new Date(d.getFullYear(), d.getMonth()-i, 1);
-    out.push(x.toISOString().slice(0,7));
-  }
+  const out=[];
+  for(let i=n-1;i>=0;i--) out.push(monthStart(i).slice(0,7));
   return out;
 }
 function monthLabel(k){
@@ -12271,11 +12547,11 @@ function askWhichCopy(remote){
     body:'<p style="margin:0 0 14px;font-size:14.5px">The cloud copy and this device do not match. Which should be kept?</p>'+
       '<div class="card card-pad" style="margin-bottom:10px"><div class="stat-label">In the cloud</div>'+
       '<div style="margin-top:5px">'+esc(count(remote))+'</div>'+
-      '<div class="hint">Last saved '+(remote.updatedAt?fdate(remote.updatedAt.slice(0,10)):'date unknown')+'</div>'+
+      '<div class="hint">Last saved '+(remote.updatedAt?istWhen(remote.updatedAt):'date unknown')+'</div>'+
       '<button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="useCloudCopy()">Use the cloud copy</button></div>'+
       '<div class="card card-pad"><div class="stat-label">On this device</div>'+
       '<div style="margin-top:5px">'+esc(count(DB))+'</div>'+
-      '<div class="hint">Last saved '+(DB.updatedAt?fdate(DB.updatedAt.slice(0,10)):'date unknown')+'</div>'+
+      '<div class="hint">Last saved '+(DB.updatedAt?istWhen(DB.updatedAt):'date unknown')+'</div>'+
       '<button class="btn btn-sm" style="margin-top:10px" onclick="useDeviceCopy()">Keep this device</button></div>'+
       '<div class="note" style="margin-top:12px">Nothing is overwritten until you choose. Download a backup from Settings if you are unsure.</div>'
   });
@@ -12352,8 +12628,7 @@ function syncPanel(){
     (FB.user
       ? '<p class="hint" style="margin:0 0 14px">Signed in as <b>'+esc(FB.user.email||'your account')+'</b>. '+
         'Every change is saved to your Firebase project and reaches your other devices within a few seconds.</p>'+
-        (FB.lastSync? '<div class="hint" style="margin-bottom:12px">Last saved '+fdate(FB.lastSync.slice(0,10))+
-          ' at '+FB.lastSync.slice(11,16)+'</div>':'')+
+        (FB.lastSync? '<div class="hint" style="margin-bottom:12px">Last saved '+istWhen(FB.lastSync)+'</div>':'')+
         '<div style="display:flex;gap:9px;flex-wrap:wrap">'+
           '<button class="btn" onclick="syncPush(true);toast(\'Saving now\')">Sync now</button>'+
           '<button class="btn btn-danger" onclick="signOutNow()">Sign out</button>'+
@@ -12426,15 +12701,21 @@ function copyRules(){
 /* ============================================================
    PHONE
    On a phone the same records get a phone's screens: a home
-   page of tiles, lists of cards, a trip read top to bottom, and
-   a back arrow that goes back. Nothing here keeps numbers of its
-   own — every figure is asked of the same functions the desktop
+   page, lists of cards, a trip read top to bottom, and a back
+   arrow that goes back. Nothing here keeps numbers of its own —
+   every figure is asked of the same functions the desktop
    screens use, and every change goes through the same forms, so
    the two can never tell a different story. A screen with no
    phone version of its own (reports, the driver account, the
    supplier ledger) is shown as the desktop one, fitted to width.
+
+   The look follows the desktop's Daylight theme: slate greys,
+   one blue accent, and colour kept for what it means — green
+   for money in, red for money owed or a document expired,
+   amber for something due soon.
    ============================================================ */
 const PHONE_MQ = window.matchMedia('(max-width: 760px), (pointer: coarse) and (max-height: 520px) and (max-width: 1000px)');
+const M_ASPHALT = '#FFFFFF';
 function layoutPref(){ try{ return localStorage.getItem('mvl_layout') || 'auto'; }catch(e){ return 'auto'; } }
 function isPhone(){
   const p = layoutPref();
@@ -12443,6 +12724,7 @@ function isPhone(){
   return PHONE_MQ.matches;
 }
 function onPhone(){ return document.body.classList.contains('phone'); }
+function mStill(){ return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
 /* The bell and the page's own buttons are single elements that half the
    app writes into by id. Rather than keep two of each, the one element
@@ -12463,7 +12745,7 @@ function applyLayout(){
   const tp = $('#toPhone');
   if(tp) tp.hidden = ph || layoutPref() !== 'desktop' || !PHONE_MQ.matches;
   const meta = document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.setAttribute('content', ph ? '#00875A'
+  if(meta) meta.setAttribute('content', ph ? M_ASPHALT
     : (getComputedStyle(document.documentElement).getPropertyValue('--side').trim() || '#131720'));
 }
 function setLayout(k){
@@ -12483,6 +12765,9 @@ PHONE_MQ.addEventListener && PHONE_MQ.addEventListener('change', ()=>{
    leaves the app the way every other app does. */
 let mHist = [];
 let mArmed = false;
+/* which way the next screen arrives: forward slides in from the right,
+   back from the left, a tab change rises in place */
+let mDir = '';
 function mArm(){
   if(mArmed) return;
   try{ history.pushState({mvl:1}, ''); mArmed = true; }catch(e){}
@@ -12496,6 +12781,8 @@ window.addEventListener('popstate', ()=>{
 function mRemember(){
   mHist.push({route, sub:Object.assign({}, sub), y:window.scrollY});
   if(mHist.length > 40) mHist.shift();
+  mDir = 'fwd';
+  mForgetTabs();
 }
 function mBack(){
   const ov = document.querySelector('#modalRoot .overlay');
@@ -12505,11 +12792,15 @@ function mBack(){
     const p = mHist.pop();
     keepSub(route, sub);
     route = p.route; sub = p.sub;
+    mDir = 'back'; mForgetTabs();
     render();
     window.scrollTo(0, p.y || 0);
     return true;
   }
-  if(route !== 'dashboard'){ keepSub(route, sub); route = 'dashboard'; sub = Object.assign({}, SUBS.dashboard || {}); render(); window.scrollTo(0,0); return true; }
+  if(route !== 'dashboard'){
+    keepSub(route, sub); route = 'dashboard'; sub = Object.assign({}, SUBS.dashboard || {});
+    mDir = 'back'; mForgetTabs(); render(); window.scrollTo(0,0); return true;
+  }
   return false;
 }
 /* a pushed screen with its own starting state, remembered for back */
@@ -12521,104 +12812,115 @@ function mGo(r, preset){
   window.scrollTo(0,0); closeModal(); render();
 }
 function mOpen(r, id, extra){ mGo(r, Object.assign({open:id}, extra || {})); }
-/* the three tabs at the foot are roots: leaving one forgets the trail */
+/* the tabs at the foot are roots: leaving one forgets the trail */
 function mTab(r){
+  if(r === route && !sub.open){ window.scrollTo({top:0, behavior: mStill() ? 'auto' : 'smooth'}); return; }
+  mBuzz(6);
   mHist = r === 'dashboard' ? [] : [{route:'dashboard', sub:{}, y:0}];
   keepSub(route, sub);
   route = r; sub = Object.assign({}, SUBS[r] || {});
+  delete sub.open;
+  mDir = 'tab'; mForgetTabs();
   window.scrollTo(0,0); closeModal(); render();
 }
+/* a small tick under the thumb where the phone can give one */
+function mBuzz(ms){ try{ if(navigator.vibrate && !mStill()) navigator.vibrate(ms || 10); }catch(e){} }
 
 /* ---------- icons ---------- */
 const MI = {
   back:'<path d="M20 12H5"/><path d="M11 5l-7 7 7 7"/>',
   bell:'<path d="M18 15v-4a6 6 0 10-12 0v4l-1.6 2.4h15.2z"/><path d="M10 20a2 2 0 004 0"/>',
   search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
-  filter:'<path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z"/>',
-  arrow:'<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/><path d="M13 8.5l3.5 3.5-3.5 3.5"/>',
+  filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
   chev:'<path d="M9 5l7 7-7 7"/>',
-  kebab:'<circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>',
+  kebab:'<circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/>',
   pencil:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   truck:'<path d="M2 7h11v9H2z"/><path d="M13 10h4.5L21 13.5V16h-8"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
   wheel:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2"/><path d="M3.8 10.5c2.6-.9 5.3-1.3 8.2-1.3s5.6.4 8.2 1.3"/><path d="M10.4 13.6L7 19.4M13.6 13.6l3.4 5.8"/>',
   user:'<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0115 0"/>',
+  users:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3 19a6 6 0 0112 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.5 14.2A5 5 0 0121 19"/>',
   phone:'<path d="M6.6 3.5l3 3.3-1.8 2.5a12 12 0 006.9 6.9l2.5-1.8 3.3 3-1.6 2.6C12 20 4 12 4 5.1z"/>',
   wa:'<path d="M4 20l1.2-4A8 8 0 1112 20a8 8 0 01-4-1.1z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1.1-1 .9a4.6 4.6 0 01-2.7-2.7l.9-1-1.1-2z"/>',
   note:'<path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5"/><path d="M8 13h8M8 17h5"/>',
-  home:'<path d="M4 4h12a3 3 0 013 3v13H7a3 3 0 01-3-3z"/><path d="M4 17a3 3 0 013-3h12"/>',
+  home:'<path d="M3.5 10.5L12 4l8.5 6.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-5h4v5"/>',
+  book:'<path d="M4 4h12a3 3 0 013 3v13H7a3 3 0 01-3-3z"/><path d="M4 17a3 3 0 013-3h12"/>',
+  route:'<circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8 18h7a3 3 0 000-6H9a3 3 0 010-6h7"/>',
   tools:'<path d="M14.5 5.5a4 4 0 00-5 5L4 16l4 4 5.5-5.5a4 4 0 005-5l-2.4 2.4-2.6-.6-.6-2.6z"/>',
-  dir:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3 19a6 6 0 0112 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.5 14.2A5 5 0 0121 19"/>',
   check:'<path d="M5 12.5l4.2 4.2L19 7"/>',
   trash:'<path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l.9 13h9.2l.9-13"/>',
   print:'<path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/>',
-  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>'
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  rupee:'<path d="M7 4.5h10M7 9h10"/><path d="M9.5 4.5c3.6 0 5.5 1.7 5.5 4.5s-2.2 4.5-5.5 4.5H8l7.5 7"/>',
+  wallet:'<rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M15.5 14.5h2"/>',
+  receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+  pod:'<path d="M14 3H6v18h7"/><path d="M14 3l4 4v4"/><circle cx="17.5" cy="17" r="3.8"/><path d="M17.5 15.2v2l1.3 1"/>',
+  chart:'<path d="M4 20V11M10 20V5M16 20v-6M22 20H2"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/>',
+  shield:'<path d="M12 3l7 3v5c0 5-3 8.2-7 10-4-1.8-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',
+  download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  monitor:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  shop:'<path d="M4 9h16l-1 11H5z"/><path d="M4 9l1.6-4h12.8L20 9"/><path d="M9 13h6"/>',
+  pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  cloud:'<path d="M7 18a4.5 4.5 0 01-.6-9 6 6 0 0111.4 1.5A4 4 0 0117 18z"/>',
+  spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/>'
 };
 function mi(k, cls){ return '<svg class="mi'+(cls?' '+cls:'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(MI[k]||'')+'</svg>'; }
-
-/* The tiles' pictures: two tones of blue with one accent, drawn to sit
-   on white the way the rest of a phone's apps do. */
-const MG_A = '#C8D8FA', MG_B = '#7FA3EE', MG_C = '#3160D8';
-const MG = {
-  unpaid:'<circle cx="15" cy="17" r="6" fill="'+MG_A+'"/><circle cx="15" cy="17" r="2.4" fill="'+MG_C+'"/><path d="M15 23l0 7" stroke="'+MG_C+'" stroke-width="2.4"/><rect x="24" y="8" width="16" height="22" rx="3" fill="'+MG_B+'"/><text x="32" y="23" font-size="12" font-weight="700" text-anchor="middle" fill="#fff">₹</text><path d="M14 38c6 0 6-6 14-6s8 5 14 5" stroke="'+MG_C+'" stroke-width="2.2" fill="none" stroke-dasharray="3 3"/><circle cx="34" cy="38" r="4" fill="'+MG_C+'"/>',
-  invoice:'<rect x="10" y="6" width="24" height="32" rx="3" fill="'+MG_A+'"/><path d="M15 14h14M15 20h14M15 26h8" stroke="'+MG_B+'" stroke-width="2.4"/><circle cx="33" cy="34" r="8" fill="'+MG_C+'"/><text x="33" y="38.5" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">₹</text>',
-  remind:'<path d="M14 30V21a10 10 0 0120 0v9l3 4H11z" fill="'+MG_B+'"/><circle cx="24" cy="38" r="3" fill="'+MG_C+'"/><circle cx="34" cy="14" r="7" fill="'+MG_C+'"/><text x="34" y="18" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">₹</text>',
-  payin:'<rect x="6" y="14" width="30" height="20" rx="3" fill="'+MG_A+'"/><rect x="6" y="19" width="30" height="4" fill="'+MG_B+'"/><circle cx="34" cy="32" r="8" fill="'+MG_C+'"/><path d="M34 28v8M30 32l4 4 4-4" stroke="#fff" stroke-width="2" fill="none"/>',
-  supkhata:'<rect x="18" y="6" width="20" height="28" rx="3" fill="'+MG_A+'"/><rect x="22" y="11" width="12" height="5" rx="1" fill="'+MG_B+'"/><circle cx="16" cy="28" r="5" fill="'+MG_C+'"/><path d="M8 40a8 8 0 0116 0z" fill="'+MG_C+'"/>',
-  supreport:'<rect x="14" y="8" width="26" height="24" rx="3" fill="'+MG_A+'"/><path d="M19 14h16M19 19h16" stroke="'+MG_B+'" stroke-width="2"/><path d="M22 28l5-4 4 3 5-5" stroke="'+MG_C+'" stroke-width="2" fill="none"/><path d="M15 34a8 8 0 1 1-8 8h8z" fill="'+MG_C+'"/>',
-  pod:'<rect x="10" y="6" width="22" height="30" rx="3" fill="'+MG_A+'"/><rect x="15" y="11" width="12" height="9" rx="1.5" fill="none" stroke="'+MG_B+'" stroke-width="2"/><path d="M17.5 15.5l2 2 4-4" stroke="'+MG_C+'" stroke-width="2" fill="none"/><path d="M15 25h12M15 30h8" stroke="'+MG_B+'" stroke-width="2"/><circle cx="33" cy="35" r="7" fill="'+MG_C+'"/><path d="M33 31v4l3 2" stroke="#fff" stroke-width="2" fill="none"/>',
-  driver:'<rect x="18" y="6" width="18" height="24" rx="2" fill="'+MG_B+'"/><rect x="12" y="12" width="18" height="22" rx="2" fill="'+MG_A+'"/><circle cx="17" cy="28" r="5" fill="'+MG_C+'"/><path d="M8 40c1-6 17-6 18 0" fill="'+MG_C+'"/><path d="M24 36c4-4 10-4 14-1" stroke="'+MG_C+'" stroke-width="2.4" fill="none"/>',
-  shop:'<path d="M8 22l14-8 14 8v16H8z" fill="'+MG_A+'"/><path d="M14 26h16v10H14z" fill="#fff"/><path d="M16 29h12M16 33h8" stroke="'+MG_B+'" stroke-width="2"/><path d="M6 14l10-8 4 4-10 8z" fill="'+MG_C+'"/><rect x="31" y="27" width="9" height="12" rx="1.5" fill="'+MG_C+'"/>',
-  expense:'<rect x="12" y="6" width="22" height="30" rx="3" fill="'+MG_A+'"/><path d="M17 13h12M17 18h12M17 23h7" stroke="'+MG_B+'" stroke-width="2"/><path d="M12 36l4-3 4 3 4-3 4 3" stroke="'+MG_B+'" stroke-width="2" fill="none"/><circle cx="34" cy="34" r="7" fill="'+MG_C+'"/><text x="34" y="38" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">₹</text>',
-  trucks:'<rect x="5" y="12" width="24" height="18" rx="3" fill="'+MG_A+'"/><path d="M29 17h6l6 6v7H29z" fill="'+MG_B+'"/><circle cx="13" cy="32" r="4.5" fill="'+MG_C+'"/><circle cx="34" cy="32" r="4.5" fill="'+MG_C+'"/>',
-  docs:'<rect x="10" y="6" width="24" height="32" rx="3" fill="'+MG_A+'"/><path d="M15 14h14M15 20h14M15 26h9" stroke="'+MG_B+'" stroke-width="2.4"/><circle cx="33" cy="34" r="7" fill="'+MG_C+'"/><path d="M29.5 34l2.4 2.4 4.4-4.6" stroke="#fff" stroke-width="2" fill="none"/>',
-  pnl:'<rect x="8" y="24" width="7" height="14" rx="1.5" fill="'+MG_B+'"/><rect x="19" y="14" width="7" height="24" rx="1.5" fill="'+MG_A+'"/><rect x="30" y="8" width="7" height="30" rx="1.5" fill="'+MG_C+'"/>',
-  insight:'<rect x="6" y="8" width="34" height="28" rx="3" fill="'+MG_A+'"/><path d="M11 29l7-8 6 5 9-11" stroke="'+MG_C+'" stroke-width="2.6" fill="none"/><circle cx="33" cy="15" r="2.6" fill="'+MG_C+'"/>',
-  party:'<circle cx="18" cy="16" r="7" fill="'+MG_B+'"/><path d="M6 38a12 12 0 0124 0z" fill="'+MG_A+'"/><circle cx="33" cy="30" r="8" fill="'+MG_C+'"/><path d="M33 26v8M29 30h8" stroke="#fff" stroke-width="2.2"/>',
-  market:'<rect x="5" y="12" width="24" height="18" rx="3" fill="#F6C9A6"/><path d="M29 17h6l6 6v7H29z" fill="#EE9A5A"/><circle cx="13" cy="32" r="4.5" fill="#D4661F"/><circle cx="34" cy="32" r="4.5" fill="#D4661F"/>',
-  settings:'<circle cx="24" cy="24" r="14" fill="'+MG_A+'"/><circle cx="24" cy="24" r="6" fill="'+MG_C+'"/><path d="M24 6v6M24 36v6M6 24h6M36 24h6M11 11l4 4M33 33l4 4M37 11l-4 4M15 33l-4 4" stroke="'+MG_B+'" stroke-width="3"/>',
-  desktop:'<rect x="6" y="8" width="36" height="24" rx="3" fill="'+MG_A+'"/><rect x="10" y="12" width="28" height="16" rx="1.5" fill="#fff"/><path d="M18 38h12M24 32v6" stroke="'+MG_C+'" stroke-width="3"/>',
-  csv:'<rect x="10" y="6" width="24" height="32" rx="3" fill="'+MG_A+'"/><path d="M15 14h14M15 20h14M15 26h14" stroke="'+MG_B+'" stroke-width="2"/><circle cx="33" cy="34" r="7" fill="'+MG_C+'"/><path d="M33 30v7M30 34l3 3 3-3" stroke="#fff" stroke-width="2" fill="none"/>'
-};
-function mg(k){ return '<svg class="mg" viewBox="0 0 48 48" aria-hidden="true">'+(MG[k]||'')+'</svg>'; }
-
+/* a line icon on a tinted tile — gold, teal, vermilion, indigo, plum */
+function mSq(k, tone){ return '<i class="m-sq t-'+(tone||'gold')+'">'+mi(k)+'</i>'; }
 /* ---------- small pieces ---------- */
 function mInitials(s){
   const w = String(s||'').trim().split(/\s+/).filter(Boolean);
   return ((w[0]||'?')[0] + (w.length>1 ? w[w.length-1][0] : '')).toUpperCase();
 }
-/* UP75 AT 9415 reads as UP 75 AT 9415 with the last four in blue — the
-   digits people actually say when they talk about a truck */
-function mPlate(n){
-  const s = String(n||'').trim();
-  const m = s.replace(/\s+/g,'').match(/^([A-Z]{2})(\d{1,2})([A-Z]{0,3})(\d{1,4})$/);
-  if(!m) return '<span class="m-plate">'+esc(s||'—')+'</span>';
-  return '<span class="m-plate">'+m[1]+' '+m[2]+(m[3]?' '+m[3]:'')+' <b>'+m[4]+'</b></span>';
+/* the same name always gets the same colour, so a face is found by colour */
+function mHue(s){
+  let h = 0; String(s||'').split('').forEach(c=>{ h = (h*31 + c.charCodeAt(0)) >>> 0; });
+  return ['gold','teal','verm','indigo','plum'][h % 5];
+}
+function mAvatar(name, cls){ return '<i class="m-av t-'+mHue(name)+(cls?' '+cls:'')+'">'+esc(mInitials(name))+'</i>'; }
+function mPlateParts(n){
+  return String(n||'').replace(/\s+/g,'').match(/^([A-Z]{2})(\d{1,2})([A-Z]{0,3})(\d{1,4})$/);
+}
+/* the registration as a chip, spaced the way it is read out */
+function mPlate(n, cls){
+  const m = mPlateParts(n);
+  const txt = m ? m[1]+' '+m[2]+(m[3]?' '+m[3]:'')+' <b>'+m[4]+'</b>' : esc(String(n||'—'));
+  return '<span class="m-plate'+(cls?' '+cls:'')+'">'+txt+'</span>';
 }
 function mPlateText(n){
-  const m = String(n||'').replace(/\s+/g,'').match(/^([A-Z]{2})(\d{1,2})([A-Z]{0,3})(\d{1,4})$/);
+  const m = mPlateParts(n);
   return m ? m[1]+' '+m[2]+(m[3]?' '+m[3]:'')+' '+m[4] : String(n||'');
 }
 function mPlaceName(v){ return splitPlace(v).name || '—'; }
+function mShortDate(d){ return d ? fdate(d).slice(0,6) : ''; }
 function mWa(phone, text){
   let d = String(phone||'').replace(/\D/g,'');
   if(d.length === 10) d = '91'+d;
   window.open('https://wa.me/'+d+'?text='+encodeURIComponent(text), '_blank');
 }
 function mCall(phone){ if(phone) location.href = 'tel:'+String(phone).replace(/[^\d+]/g,''); }
+function mBiz(){ return (DB.settings||{}).business || 'Maa Vandana Logistics'; }
 function mBarSet(start, extra){
   $('#mBarStart').innerHTML = start;
   $('#mBarExtra').innerHTML = extra || '';
 }
-function mTitle(title, extra){
+function mTitle(title, extra, kicker){
   mBarSet('<button class="m-back" onclick="mBack()" aria-label="Back">'+mi('back')+'</button>'+
-    '<h1 class="m-title" id="mFallTitle">'+esc(title)+'</h1>', extra);
+    '<div class="m-titles">'+(kicker?'<span class="m-kicker">'+esc(kicker)+'</span>':'')+
+    '<h1 class="m-title" id="mFallTitle">'+esc(title)+'</h1></div>', extra);
 }
-function mFab(label, action, tone){
-  return '<button class="m-fab'+(tone?' m-fab-'+tone:'')+'" onclick="'+action+'">'+mi('plus')+'<span>'+esc(label)+'</span></button>';
+function mRootTitle(title, kicker, extra){
+  mBarSet('<div class="m-titles m-titles-root"><span class="m-kicker">'+esc(kicker)+'</span>'+
+    '<h1 class="m-title">'+esc(title)+'</h1></div>', extra);
+}
+function mFab(label, action){
+  return '<button class="m-fab" onclick="'+action+'">'+mi('plus')+'<span>'+esc(label)+'</span></button>';
 }
 function mEmpty(title, text, btn){
-  return '<div class="m-empty"><div class="m-empty-t">'+esc(title)+'</div>'+
+  return '<div class="m-empty"><i class="m-empty-ic">'+mi('note')+'</i>'+
+    '<div class="m-empty-t">'+esc(title)+'</div>'+
     (text?'<div class="m-empty-s">'+esc(text)+'</div>':'')+(btn||'')+'</div>';
 }
 function mSearch(ph, value, oninput){
@@ -12629,8 +12931,29 @@ function mSearch(ph, value, oninput){
 function mSheet(title, items){
   openModal({title, wide:'sheet', body:'<div class="m-menu">'+items.filter(Boolean).map(i=>
     '<button class="m-menu-row'+(i.danger?' danger':'')+'" onclick="closeModal();'+i.act+'">'+
-      (i.icon?mi(i.icon):'')+'<span>'+esc(i.label)+'</span>'+
+      (i.icon?mSq(i.icon, i.danger?'verm':(i.tone||'indigo')):'')+'<span>'+esc(i.label)+'</span>'+
       (i.note?'<em>'+esc(i.note)+'</em>':'')+'</button>').join('')+'</div>'});
+}
+/* Tabs whose underline glides from the old tab to the new one. The screen
+   is drawn with the line where it was, then moved once it is on screen. */
+let mTabMem = {}, mPaneDir = '';
+function mForgetTabs(){ mTabMem = {}; }
+function mTopTabs(group, tabs, cur, act){
+  const idx = Math.max(0, tabs.findIndex(t=>t[0]===cur));
+  const was = mTabMem[group];
+  mTabMem[group] = idx;
+  mPaneDir = was === undefined || was === idx ? '' : (idx > was ? 'l' : 'r');
+  return '<nav class="m-tabs-top" style="--n:'+tabs.length+'">'+tabs.map(([k,l,badge],i)=>
+    '<button class="'+(i===idx?'on':'')+'" onclick="'+act(k)+'">'+l+(badge?'<em class="m-badge">'+badge+'</em>':'')+'</button>').join('')+
+    '<i class="m-ind" data-to="'+idx+'" style="--x:'+(was===undefined?idx:was)+'"></i></nav>';
+}
+/* a tab changed in place: the page is already here, so only the pane moves */
+function mTabSwap(){ $('#view').classList.remove('mv-fwd','mv-back','mv-tab'); }
+function mPane(html){ return '<div class="m-pane'+(mPaneDir?' m-pane-'+mPaneDir:'')+'">'+html+'</div>'; }
+function mSettle(){
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    document.querySelectorAll('.m-ind[data-to]').forEach(i=>i.style.setProperty('--x', i.dataset.to));
+  }));
 }
 
 /* ---------- the screens a phone has of its own ---------- */
@@ -12646,18 +12969,37 @@ function mScreen(){
   if(route === 'shops'     && !sub.open) return ()=>mContacts('shops');
   return null;
 }
-const M_ROOTS = ['dashboard','m_tools','m_dir'];
+/* home, trips, the khata book and tools sit on the bar at the foot */
+const M_TABS = [['dashboard','Home','home'],['trips','Trips','route'],['m_dir','Khata','book'],['m_tools','Tools','tools']];
+function mIsRoot(){ return ['dashboard','m_tools','m_dir'].includes(route) || (route==='trips' && !sub.open); }
 function mTabsPaint(){
-  const tabs = [['dashboard','Khata','home'],['m_tools','Tools','tools'],['m_dir','Directory','dir']];
-  $('#mTabs').innerHTML = tabs.map(([k,l,i])=>
-    '<button class="m-tab'+(route===k?' on':'')+'" onclick="mTab(\''+k+'\')">'+mi(i)+'<span>'+l+'</span></button>').join('');
-  document.body.classList.toggle('m-root', M_ROOTS.includes(route));
+  const bar = $('#mTabs');
+  if(!bar.firstChild){
+    bar.innerHTML = '<i class="m-tab-ind"></i>'+M_TABS.map(t=>
+      '<button class="m-tab" data-k="'+t[0]+'" onclick="mTab(\''+t[0]+'\')">'+mi(t[2])+'<span>'+t[1]+'</span></button>').join('');
+  }
+  const root = mIsRoot();
+  document.body.classList.toggle('m-root', root);
+  let at = -1;
+  bar.querySelectorAll('.m-tab').forEach(b=>{
+    const on = b.dataset.k === route && root;
+    b.classList.toggle('on', on);
+    if(on) at = [...bar.children].indexOf(b) - 1;
+  });
+  bar.style.setProperty('--at', at);
+  bar.classList.toggle('has-on', at > -1);
 }
 /* true when the phone drew the screen; false leaves it to the desktop view */
 function mRender(){
   const fn = mScreen();
+  const v = $('#view');
   document.body.classList.toggle('m-home', route === 'dashboard');
   document.body.classList.toggle('m-native', !!fn);
+  /* entrance animations play when you arrive, not when a save repaints */
+  if(mDir) mAnimate(); else document.body.classList.remove('m-go');
+  v.classList.remove('mv-fwd','mv-back','mv-tab');
+  if(mDir && !mStill()){ void v.offsetWidth; v.classList.add('mv-'+mDir); }
+  mDir = '';
   mTabsPaint();
   $('#pageActions').innerHTML = '';
   if(!fn){
@@ -12666,6 +13008,7 @@ function mRender(){
     return false;
   }
   fn();
+  mSettle();
   return true;
 }
 /* A form saved from a phone screen may repaint whatever desktop view it
@@ -12684,145 +13027,150 @@ function mAfterSave(){
   });
 }
 
-/* ---------- Khata: the home screen ---------- */
-function mFoldOpen(k){ try{ return localStorage.getItem('mvl_mfold_'+k) === '1'; }catch(e){ return false; } }
-function mFold(k){
-  try{ localStorage.setItem('mvl_mfold_'+k, mFoldOpen(k) ? '0' : '1'); }catch(e){}
-  render();
+/* the arrival animations are switched on for a moment and then off again,
+   so a list redrawn while you type does not replay them */
+let mGoTimer = 0;
+function mAnimate(){
+  if(mStill()) return;
+  document.body.classList.add('m-go');
+  clearTimeout(mGoTimer);
+  mGoTimer = setTimeout(()=>document.body.classList.remove('m-go'), 1700);
 }
-function mGrid(k, title, items, more){
-  const open = mFoldOpen(k);
-  const cell = i => '<button class="m-cell" onclick="'+i.act+'">'+mg(i.g)+
-    '<span>'+esc(i.label)+'</span>'+(i.badge?'<em class="m-badge">'+i.badge+'</em>':'')+'</button>';
-  return '<section class="m-card m-sec">'+
-    '<h2 class="m-sec-t">'+esc(title)+'</h2>'+
-    '<div class="m-cells">'+items.map(cell).join('')+(open?more.map(cell).join(''):'')+'</div>'+
-    (more.length?'<button class="m-sec-more" onclick="mFold(\''+k+'\')">'+(open?'View Less':'View More')+'</button>':'')+
-  '</section>';
+
+/* ---------- feel ----------
+   A ripple spreads from wherever the thumb lands; the top bar lifts a
+   shadow once the page moves under it; the New Trip pill tucks into a
+   circle while you scroll down a list and opens again on the way up. */
+const M_RIPPLE = '.m-btn,.m-cell,.m-row,.m-tool,.m-quick-b,.m-trip,.m-tab,.m-tab-add,.m-fab,.m-chip,.m-kpi,.m-doc,.m-menu-row,.m-hero-add,.m-attn,.m-seg button';
+document.addEventListener('pointerdown', e=>{
+  if(!onPhone() || mStill()) return;
+  const el = e.target.closest && e.target.closest(M_RIPPLE);
+  if(!el || el.disabled) return;
+  const r = el.getBoundingClientRect();
+  const size = Math.max(r.width, r.height) * 2.2;
+  const s = document.createElement('span');
+  s.className = 'm-rip';
+  s.style.cssText = 'width:'+size+'px;height:'+size+'px;left:'+(e.clientX-r.left-size/2)+'px;top:'+(e.clientY-r.top-size/2)+'px';
+  el.appendChild(s);
+  s.addEventListener('animationend', ()=>s.remove());
+}, {passive:true});
+let mLastY = 0;
+window.addEventListener('scroll', ()=>{
+  if(!onPhone()) return;
+  const y = window.scrollY;
+  document.body.classList.toggle('m-scrolled', y > 6);
+  if(Math.abs(y - mLastY) > 8){
+    document.body.classList.toggle('m-down', y > mLastY && y > 120);
+    mLastY = y;
+  }
+}, {passive:true});
+/* a sheet can be pulled down to put it away, the way a phone's own are */
+document.addEventListener('pointerdown', e=>{
+  if(!onPhone()) return;
+  const head = e.target.closest && e.target.closest('.modal-sheet .modal-head');
+  if(!head || e.target.closest('button')) return;
+  const sheet = head.closest('.modal-sheet');
+  const y0 = e.clientY; let dy = 0;
+  sheet.style.transition = 'none';
+  const move = ev=>{ dy = Math.max(0, ev.clientY - y0); sheet.style.transform = 'translateY('+dy+'px)'; };
+  const up = ()=>{
+    document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up);
+    sheet.style.transition = '';
+    if(dy > 90){ sheet.style.transform = 'translateY(100%)'; setTimeout(closeModalAsk, 160); }
+    else sheet.style.transform = '';
+  };
+  document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
+});
+/* ---------- Home ---------- */
+function mGreeting(){
+  const h = istClock().getUTCHours();
+  return h >= 4 && h < 12 ? 'Good morning' : h >= 12 && h < 17 ? 'Good afternoon' : 'Good evening';
 }
-function mHome(){
-  const s = DB.settings || {};
-  const biz = s.business || 'Maa Vandana Logistics';
-  const who = s.owner || biz;
-  mBarSet('<div class="m-avatar">'+esc(mInitials(who))+'</div>'+
-    '<div class="m-who"><b>'+esc(who)+'</b>'+(s.owner?'<span>'+esc(biz)+'</span>':'')+'</div>',
-    '<button class="m-outline" onclick="mGo(\'settings\')">Backup</button>');
-  const due = totalReceivable();
-  const unpaid = DB.trips.filter(t=>!selfFunded(t) && tripBalance(t) > 0).length;
-  const podDue = DB.trips.filter(t=>!selfFunded(t) && ['delivered','received'].includes(tripStage(t))).length;
-  const papers = truckAlerts().length;
-  const owing = DB.parties.filter(p=>partyBalance(p.id) > 0).length;
-  $('#view').innerHTML =
-  '<div class="m-page">'+
-    '<section class="m-card m-hero">'+
-      '<div class="m-hero-l">Total Party Balance</div>'+
-      '<button class="m-hero-v num" onclick="mGo(\'parties\')" data-count="'+due+'">'+money(due)+'</button>'+
-      '<div class="m-quick">'+
-        '<button onclick="mGo(\'trips\')"><i class="q-navy">'+mi('note')+'</i><span>My Trips</span></button>'+
-        '<button onclick="mGo(\'parties\')"><i class="q-green">'+mi('home')+'</i><span>Party Khata</span></button>'+
-        '<button onclick="mGo(\'reports\')"><i class="q-orange">'+mi('print')+'</i><span>Balance Report</span></button>'+
-      '</div>'+
-      '<button class="m-add" onclick="tripForm()">'+mi('plus')+'<span>Add Trip</span></button>'+
-    '</section>'+
-    (papers ? '<button class="m-alert" onclick="mGo(\'trucks\',{tab:\'docs\'})">'+mi('bell')+
-      '<span><b>'+plural(papers,'truck paper')+'</b> expired or expiring soon</span>'+mi('chev')+'</button>' : '')+
-    mGrid('party','Party',[
-      {g:'unpaid', label:'Unpaid Trips', act:"mGo('trips',{mpay:'unpaid'})", badge:unpaid||''},
-      {g:'payin', label:'Payment Received', act:'mPickParty()'},
-      {g:'remind', label:'Collection Reminders', act:"mGo('parties',{owing:1})", badge:owing||''}
-    ],[
-      {g:'party', label:'Add Party', act:'partyForm()'},
-      {g:'invoice', label:'Party Statement', act:'mPickParty(true)'}
-    ])+
-    mGrid('sup','Truck Supplier',[
-      {g:'supkhata', label:'Supplier Khata', act:"mGo('suppliers')"},
-      {g:'market', label:'Market Trucks', act:"mGo('trucks',{tab:'fleet',tt:'market'})"},
-      {g:'pod', label:'POD due Trips', act:"mGo('trips',{stage:'podpending'})", badge:podDue||''}
-    ],[
-      {g:'supreport', label:'Supplier Reports', act:"mGo('reports')"}
-    ])+
-    mGrid('more','Driver, Expenses & More',[
-      {g:'driver', label:'Driver Khata', act:"mGo('drivers')"},
-      {g:'shop', label:'Shop Khata', act:"mGo('shops')"},
-      {g:'expense', label:'My Expenses', act:"mGo('expenses')"},
-      {g:'trucks', label:'My Trucks', act:"mGo('trucks',{tab:'fleet'})"}
-    ],[
-      {g:'docs', label:'Truck Documents', act:"mGo('trucks',{tab:'docs'})", badge:papers||''},
-      {g:'pod', label:'Deliveries', act:"mGo('pod')"},
-      {g:'pnl', label:'Reports & P&L', act:"mGo('reports')"},
-      {g:'insight', label:'Insights', act:"mGo('insights')"}
-    ])+
-  '</div>';
+function mWeekday(){
+  const t = today();
+  const d = new Date(Date.UTC(+t.slice(0,4), +t.slice(5,7)-1, +t.slice(8,10))).getUTCDay();
+  return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d]+', '+fdate(t).slice(0,6);
+}
+function mCell(icon, tone, label, act, badge){
+  return '<button class="m-cell" onclick="'+act+'">'+mSq(icon, tone)+
+    '<span>'+esc(label)+'</span>'+(badge?'<em class="m-badge">'+badge+'</em>':'')+'</button>';
 }
 function mPickParty(statement){
   if(!DB.parties.length){ partyForm(); return; }
   const bal = allBalances();
   mSheet(statement ? 'Statement for which party?' : 'Payment from which party?',
     DB.parties.slice().sort((a,b)=>(bal[b.id]||0)-(bal[a.id]||0)).map(p=>({
-      label:p.name, note: bal[p.id] ? money(bal[p.id]) : 'Nil',
+      label:p.name, note: bal[p.id] ? money(bal[p.id]) : 'Nil', icon:'user', tone:mHue(p.name),
       act: statement ? "mOpen('parties','"+p.id+"')" : "ledgerForm('"+p.id+"')"
     })));
 }
 
 /* ---------- Tools ---------- */
 function mTools(){
-  mBarSet('<h1 class="m-title m-title-root">Tools</h1>');
-  const cell = (g, label, act, note) => '<button class="m-tool" onclick="'+act+'">'+mg(g)+
-    '<span><b>'+esc(label)+'</b>'+(note?'<em>'+esc(note)+'</em>':'')+'</span>'+mi('chev')+'</button>';
+  mRootTitle('Tools', 'Reports, papers and settings');
+  const cell = (icon, tone, label, act, note) => '<button class="m-tool" onclick="'+act+'">'+mSq(icon, tone)+
+    '<span><b>'+esc(label)+'</b>'+(note?'<em>'+esc(note)+'</em>':'')+'</span>'+mi('chev','m-chev')+'</button>';
   $('#view').innerHTML = '<div class="m-page">'+
     '<section class="m-card m-list">'+
-      cell('pnl','Reports & P&L',"mGo('reports')",'Profit, dues and performance')+
-      cell('insight','Insights',"mGo('insights')",'How the business is doing')+
-      cell('pod','Deliveries & POD',"mGo('pod')",'Delivery and proof of delivery')+
-      cell('expense','Expenses',"mGo('expenses')",'Money going out')+
-      cell('docs','Truck Documents',"mGo('trucks',{tab:'docs'})",'Insurance, permits, fitness')+
+      cell('chart','verm','Reports & P&L',"mGo('reports')",'Profit, dues and performance')+
+      cell('trend','indigo','Insights',"mGo('insights')",'How the business is doing')+
+      cell('pod','gold','Deliveries & POD',"mGo('pod')",'Delivery and proof of delivery')+
+      cell('receipt','teal','Expenses',"mGo('expenses')",'Money going out')+
+      cell('shield','plum','Truck Documents',"mGo('trucks',{tab:'docs'})",'Insurance, permits, fitness')+
     '</section>'+
     '<section class="m-card m-list">'+
-      cell('settings','Settings & Backup',"mGo('settings')",'Business details, sync, backup')+
-      cell('csv','Export trips',"exportCSV('trips')",'A spreadsheet of every trip')+
-      cell('desktop','Computer layout',"setLayout('desktop')",'The full desktop screens on this phone')+
+      cell('gear','indigo','Settings & Backup',"mGo('settings')",'Business details, sync, backup')+
+      cell('download','teal','Export trips',"exportCSV('trips')",'A spreadsheet of every trip')+
+      cell('monitor','gold','Computer layout',"setLayout('desktop')",'The full desktop screens on this phone')+
     '</section>'+
     '<div class="m-foot-note">'+esc(($('#syncFoot')||{}).textContent||'')+'</div>'+
   '</div>';
 }
 
-/* ---------- Directory and the khata lists ---------- */
+/* ---------- the khata book: parties, suppliers, drivers, shops ---------- */
 const M_KINDS = {
   parties:{label:'Parties', title:'Party Khata', add:'partyForm()', addLabel:'Add Party',
     rows:()=>DB.parties, bal:()=>allBalances(), sub:p=>[p.city, p.phone].filter(Boolean).join(' · '),
-    pos:'To collect', neg:'Advance held', open:id=>"mOpen('parties','"+id+"')"},
+    pos:'to collect', neg:'advance held', open:id=>"mOpen('parties','"+id+"')"},
   suppliers:{label:'Suppliers', title:'Supplier Khata', add:'supplierForm()', addLabel:'Add Supplier',
     rows:()=>DB.suppliers||[], bal:()=>allSupplierBalances(), sub:s=>[s.person, s.city, s.phone].filter(Boolean).join(' · '),
-    pos:'To pay', neg:'Paid ahead', open:id=>"mOpen('suppliers','"+id+"')"},
+    pos:'to pay', neg:'paid ahead', open:id=>"mOpen('suppliers','"+id+"')"},
   drivers:{label:'Drivers', title:'Driver Khata', add:'driverForm()', addLabel:'Add Driver',
     rows:()=>DB.drivers, bal:()=>{ const m={}; DB.drivers.forEach(d=>{ m[d.id]=driverBalance(d.id); }); return m; },
     sub:d=>[d.phone, hasLeft(d) ? 'Left '+fdate(d.left) : ''].filter(Boolean).join(' · '),
-    pos:'To pay', neg:'Advance given', open:id=>"mOpen('drivers','"+id+"')"},
+    pos:'to pay', neg:'advance given', open:id=>"mOpen('drivers','"+id+"')"},
   shops:{label:'Shops', title:'Shop Khata', add:'shopForm()', addLabel:'Add Shop',
     rows:()=>DB.shops||[], bal:()=>allShopBalances(), sub:s=>[s.person, s.phone].filter(Boolean).join(' · '),
-    pos:'To pay', neg:'Paid ahead', open:id=>"mOpen('shops','"+id+"')"}
+    pos:'to pay', neg:'paid ahead', open:id=>"mOpen('shops','"+id+"')"}
 };
+function mKindTotal(kind){
+  const K = M_KINDS[kind], bal = K.bal();
+  return K.rows().reduce((s,x)=>s+Math.max(0, bal[x.id]||0), 0);
+}
 function mDirectory(){
   if(!M_KINDS[sub.kind]) sub.kind = 'parties';
-  mBarSet('<h1 class="m-title m-title-root">Directory</h1>');
-  $('#view').innerHTML = '<div class="m-page">'+
-    '<div class="m-chips">'+Object.keys(M_KINDS).map(k=>
-      '<button class="m-chip'+(sub.kind===k?' on':'')+'" onclick="sub.kind=\''+k+'\';sub.q=\'\';render()">'+
-        M_KINDS[k].label+' <em>'+M_KINDS[k].rows().length+'</em></button>').join('')+'</div>'+
-    mSearch('Search '+M_KINDS[sub.kind].label.toLowerCase(), sub.q, 'sub.q=this.value;defer(mContactsPaint)')+
-    '<div id="mList"></div>'+
-  '</div>'+mFab(M_KINDS[sub.kind].addLabel, M_KINDS[sub.kind].add);
+  mRootTitle('Khata', 'Everyone you deal with');
+  const K = M_KINDS[sub.kind];
+  const tabs = Object.keys(M_KINDS).map(k=>[k, M_KINDS[k].label]);
+  $('#view').innerHTML =
+    mTopTabs('dir', tabs, sub.kind, k=>"sub.kind='"+k+"';sub.q='';render()")+
+    mPane('<div class="m-page">'+mTotalCard(sub.kind)+
+      mSearch('Search '+K.label.toLowerCase(), sub.q, 'sub.q=this.value;defer(mContactsPaint)')+
+      '<div id="mList"></div></div>')+
+    mFab(K.addLabel, K.add);
   mContactsPaint();
+}
+function mTotalCard(kind){
+  const total = mKindTotal(kind);
+  const P = kind==='parties';
+  return '<section class="m-total '+(P?'m-total-in':'m-total-out')+'"><div><span>'+(P?'Total to collect':'Total to pay')+'</span>'+
+    '<b class="num" data-count="'+total+'">'+money(total)+'</b></div>'+mSq(P?'rupee':'wallet', P?'teal':'verm')+'</section>';
 }
 function mContacts(kind){
   const K = M_KINDS[kind];
   sub.kind = kind;
-  mTitle(sub.owing ? 'Collection Reminders' : K.title);
-  const bal = K.bal();
-  const total = K.rows().reduce((s,x)=>s+Math.max(0, bal[x.id]||0), 0);
-  $('#view').innerHTML = '<div class="m-page">'+
-    '<section class="m-card m-total"><span>'+(kind==='parties'?'Total to collect':'Total to pay')+'</span>'+
-      '<b class="num '+(kind==='parties'?'m-pos':'m-neg')+'">'+money(total)+'</b></section>'+
+  mTitle(sub.owing ? 'Collection Reminders' : K.title, '', sub.owing ? 'Parties who owe you' : plural(K.rows().length, K.label.toLowerCase().replace(/s$/,'')));
+  $('#view').innerHTML = '<div class="m-page">'+mTotalCard(kind)+
     mSearch('Search '+K.label.toLowerCase(), sub.q, 'sub.q=this.value;defer(mContactsPaint)')+
     '<div id="mList"></div>'+
   '</div>'+mFab(K.addLabel, K.add);
@@ -12840,19 +13188,17 @@ function mContactsPaint(){
   rows.sort((a,b)=>Math.abs(bal[b.id]||0)-Math.abs(bal[a.id]||0) || (a.name||'').localeCompare(b.name||''));
   if(!rows.length){
     box.innerHTML = mEmpty(q ? 'Nobody matches that' : sub.owing ? 'Nobody owes you anything' : 'No '+K.label.toLowerCase()+' yet',
-      q ? 'Try a shorter search.' : '', q||sub.owing ? '' : '<button class="m-btn m-btn-blue" onclick="'+K.add+'">'+esc(K.addLabel)+'</button>');
+      q ? 'Try a shorter search.' : '', q||sub.owing ? '' : '<button class="m-btn m-btn-dark" onclick="'+K.add+'">'+esc(K.addLabel)+'</button>');
     return;
   }
-  const biz = (DB.settings||{}).business || 'Maa Vandana Logistics';
-  box.innerHTML = '<section class="m-card m-rows">'+rows.map(x=>{
+  box.innerHTML = '<section class="m-card m-rows">'+rows.map((x,i)=>{
     const b = bal[x.id] || 0;
     const remind = kind==='parties' && b > 0;
-    const msg = 'Namaste '+(x.name||'')+', your balance with '+biz+' is '+money(b)+'. Kindly arrange the payment. Thank you.';
-    return '<div class="m-row" onclick="'+K.open(x.id)+'">'+
-      '<div class="m-avatar m-avatar-s">'+esc(mInitials(x.name))+'</div>'+
+    const msg = 'Namaste '+(x.name||'')+', your balance with '+mBiz()+' is '+money(b)+'. Kindly arrange the payment. Thank you.';
+    return '<div class="m-row" style="--i:'+i+'" onclick="'+K.open(x.id)+'">'+mAvatar(x.name)+
       '<div class="m-row-main"><b>'+esc(x.name||'—')+'</b><span>'+esc(K.sub(x)||' ')+'</span></div>'+
       '<div class="m-row-end"><b class="num '+(b>0?(kind==='parties'?'m-pos':'m-neg'):'')+'">'+(b?money(Math.abs(b)):'Nil')+'</b>'+
-        '<span>'+(b>0?K.pos:b<0?K.neg:'Settled')+'</span></div>'+
+        '<span>'+(b>0?K.pos:b<0?K.neg:'settled')+'</span></div>'+
       (remind ? '<button class="m-icon-btn m-wa" aria-label="Remind on WhatsApp" onclick="event.stopPropagation();mWa(\''+esc(x.phone||'')+'\','+esc(JSON.stringify(msg))+')">'+mi('wa')+'</button>'
         : x.phone ? '<button class="m-icon-btn" aria-label="Call" onclick="event.stopPropagation();mCall(\''+esc(x.phone)+'\')">'+mi('phone')+'</button>' : '')+
     '</div>';
@@ -12864,50 +13210,57 @@ function mLedger(){
   const p = partyById(sub.open);
   if(!p){ sub.open = null; return mContacts('parties'); }
   mTitle(p.name, (p.phone?'<button class="m-icon-btn" aria-label="Call" onclick="mCall(\''+esc(p.phone)+'\')">'+mi('phone')+'</button>':'')+
-    '<button class="m-icon-btn" aria-label="More" onclick="mLedgerMenu()">'+mi('kebab')+'</button>');
+    '<button class="m-icon-btn" aria-label="More" onclick="mLedgerMenu()">'+mi('kebab')+'</button>', p.city || 'Party khata');
   const rows = ledgerRows(p.id);
   const bal = partyBalance(p.id);
-  const biz = (DB.settings||{}).business || 'Maa Vandana Logistics';
-  const msg = 'Namaste '+p.name+', your balance with '+biz+' is '+money(bal)+'. Kindly arrange the payment. Thank you.';
+  const msg = 'Namaste '+p.name+', your balance with '+mBiz()+' is '+money(bal)+'. Kindly arrange the payment. Thank you.';
   const trips = DB.trips.filter(t=>t.partyId===p.id);
+  /* newest first, with the month written above its entries */
+  let lastMonth = '';
+  const list = rows.slice().reverse().map((r,i)=>{
+    const mk = r.date ? monthKey(r.date) : '';
+    const head = mk !== lastMonth ? '<div class="m-month">'+esc(mk ? monthName(mk) : 'Opening')+'</div>' : '';
+    lastMonth = mk;
+    const act = r.kind==='trip' ? "mOpen('trips','"+r.tripId+"')"
+      : r.kind==='entry' ? "ledgerForm('"+p.id+"','"+r.entryId+"')" : '';
+    return head+'<div class="m-row m-entry '+(r.debit?'is-dr':'is-cr')+'" style="--i:'+i+'"'+(act?' onclick="'+act+'"':'')+'>'+
+      '<i class="m-dot"></i>'+
+      '<div class="m-row-main"><b>'+esc(r.label)+'</b><span>'+[r.date?fdate(r.date):'', r.ref].filter(Boolean).map(esc).join(' · ')+'</span></div>'+
+      '<div class="m-row-end">'+(r.debit
+        ? '<b class="num m-neg">+'+money(r.debit)+'</b>'
+        : '<b class="num m-pos">−'+money(r.credit).replace('−','')+'</b>')+
+        '<span>bal '+money(r.running)+'</span></div>'+
+    '</div>';
+  }).join('');
   $('#view').innerHTML = '<div class="m-page">'+
-    '<section class="m-card m-bal">'+
-      '<div class="m-bal-l">'+(bal>=0?'Balance to collect':'Advance held')+'</div>'+
-      '<div class="m-bal-v num '+(bal>0?'m-pos':'')+'">'+money(Math.abs(bal))+'</div>'+
-      '<div class="m-bal-s">'+plural(trips.length,'trip')+' · '+plural(rows.filter(r=>r.kind==='entry').length,'entry')+'</div>'+
+    '<section class="m-hero m-hero-s">'+
+      
+      '<div class="m-hero-top"><span>'+(bal>=0?'Balance to collect':'Advance held')+'</span></div>'+
+      '<div class="m-hero-v num" data-count="'+Math.abs(bal)+'">'+money(Math.abs(bal))+'</div>'+
+      '<div class="m-hero-sub">'+plural(trips.length,'trip')+' · '+plural(rows.filter(r=>r.kind==='entry').length,'payment')+
+        (p.phone?' · '+esc(p.phone):'')+'</div>'+
       '<div class="m-two">'+
-        '<button class="m-btn m-btn-blue" onclick="ledgerForm(\''+p.id+'\')">'+mi('plus')+' Add Entry</button>'+
-        (bal>0 ? '<button class="m-btn m-btn-line" onclick="mWa(\''+esc(p.phone||'')+'\','+esc(JSON.stringify(msg))+')">'+mi('wa')+' Remind</button>'
-               : '<button class="m-btn m-btn-line" onclick="printPartyStatement(\''+p.id+'\')">'+mi('print')+' Statement</button>')+
+        '<button class="m-btn m-btn-gold" onclick="ledgerForm(\''+p.id+'\')">'+mi('plus')+' Add Entry</button>'+
+        (bal>0 ? '<button class="m-btn m-btn-ghost" onclick="mWa(\''+esc(p.phone||'')+'\','+esc(JSON.stringify(msg))+')">'+mi('wa')+' Remind</button>'
+               : '<button class="m-btn m-btn-ghost" onclick="printPartyStatement(\''+p.id+'\')">'+mi('print')+' Statement</button>')+
       '</div>'+
     '</section>'+
-    (rows.length ? '<section class="m-card m-rows">'+rows.slice().reverse().map(r=>{
-      const act = r.kind==='trip' ? "mOpen('trips','"+r.tripId+"')"
-        : r.kind==='entry' ? "ledgerForm('"+p.id+"','"+r.entryId+"')" : '';
-      return '<div class="m-row m-entry"'+(act?' onclick="'+act+'"':'')+'>'+
-        '<div class="m-row-main"><b>'+esc(r.label)+'</b><span>'+[r.date?fdate(r.date):'', r.ref].filter(Boolean).map(esc).join(' · ')+'</span></div>'+
-        '<div class="m-row-end">'+(r.debit
-          ? '<b class="num m-neg">+'+money(r.debit)+'</b>'
-          : '<b class="num m-pos">−'+money(r.credit).replace('−','')+'</b>')+
-          '<span>Bal '+money(r.running)+'</span></div>'+
-      '</div>';
-    }).join('')+'</section>'
-    : mEmpty('Nothing on this khata yet','Trips for this party and the payments they make appear here.'))+
+    (rows.length ? '<section class="m-card m-rows m-timeline">'+list+'</section>'
+      : mEmpty('Nothing on this khata yet','Trips for this party and the payments they make appear here.'))+
   '</div>'+mFab('Add Trip', "tripFormFor('"+p.id+"')");
 }
 function mLedgerMenu(){
   const id = sub.open;
   mSheet('Party', [
     {icon:'pencil', label:'Edit party', act:"partyForm('"+id+"')"},
-    {icon:'print', label:'Statement (print or PDF)', act:"printPartyStatement('"+id+"')"},
+    {icon:'print', label:'Statement (print or PDF)', act:"printPartyStatement('"+id+"')", tone:'teal'},
     {icon:'trash', label:'Delete party', act:"delParty('"+id+"')", danger:true}
   ]);
 }
 /* a new trip that already knows its party */
 function tripFormFor(pid){
   tripForm();
-  const hid = document.getElementById('f_party');
-  if(hid && tripDraft && !tripDraft.id){
+  if(document.getElementById('f_party') && tripDraft && !tripDraft.id){
     tripDraft.partyId = pid;
     if(typeof repaintTripPane === 'function' && repaintTripPane()){ formMark(); }
   }
@@ -12918,15 +13271,36 @@ function mTripFilters(){
   return ['party','truck','mpay','stage','dFrom','dTo'].filter(k=>sub[k]).length;
 }
 function mTrips(){
-  mTitle(sub.mpay==='unpaid' ? 'Unpaid Trips' : sub.stage==='podpending' ? 'POD due Trips' : 'Trips');
+  const title = sub.mpay==='unpaid' ? 'Unpaid Trips' : sub.stage==='podpending' ? 'POD due Trips' : 'Trips';
+  if(title === 'Trips') mRootTitle('Trips', 'Every load you have moved',
+    '<button class="m-icon-btn" aria-label="Export" onclick="exportCSV(\'trips\')">'+mi('download')+'</button>');
+  else mTitle(title, '', 'Filtered');
   const n = mTripFilters();
   $('#view').innerHTML = '<div class="m-page">'+
     '<div class="m-search-row">'+
-      mSearch('Search for Trips', sub.q, 'sub.q=this.value;sub.limit=0;defer(mTripsPaint)')+
-      '<button class="m-filter'+(n?' on':'')+'" onclick="mTripFilterSheet()">'+mi('filter')+'<span>Filters'+(n?' ('+n+')':'')+'</span></button>'+
+      mSearch('Party, truck, LR or place', sub.q, 'sub.q=this.value;sub.limit=0;defer(mTripsPaint)')+
+      '<button class="m-filter'+(n?' on':'')+'" onclick="mTripFilterSheet()" aria-label="Filters">'+mi('filter')+(n?'<em>'+n+'</em>':'')+'</button>'+
     '</div>'+
+    mStageSeg()+
     '<div id="mList"></div>'+
-  '</div>'+mFab('Add Trip','tripForm()','green');
+  '</div>'+mFab('New trip','tripForm()');
+  mTripsPaint();
+}
+/* one tap between the stages a trip is in, without opening the filters */
+function mStageSeg(){
+  const opts = [['','All'],['transit','In transit'],['podpending','POD due'],['__unpaid','Unpaid']];
+  const cur = sub.mpay==='unpaid' && !sub.stage ? '__unpaid' : (sub.stage||'');
+  return '<div class="m-seg">'+opts.map(([k,l])=>
+    '<button class="'+(cur===k?'on':'')+'" onclick="mStagePick(\''+k+'\')">'+l+'</button>').join('')+'</div>';
+}
+function mStagePick(k){
+  if(k==='__unpaid'){ sub.stage=''; sub.mpay='unpaid'; }
+  else { sub.stage = k; if(sub.mpay==='unpaid') sub.mpay=''; }
+  sub.limit = 0;
+  document.querySelectorAll('.m-seg button').forEach(b=>b.classList.toggle('on', b.getAttribute('onclick').includes("'"+k+"'")));
+  const f = $('.m-filter'); const n = mTripFilters();
+  if(f){ f.classList.toggle('on', !!n); f.innerHTML = mi('filter')+(n?'<em>'+n+'</em>':''); }
+  mAnimate();
   mTripsPaint();
 }
 function mTripList(){
@@ -12941,56 +13315,28 @@ function mTripList(){
   else if(sub.stage) list = list.filter(t=>!selfFunded(t) && tripStage(t)===sub.stage);
   if(sub.dFrom) list = list.filter(t=>t.date>=sub.dFrom);
   if(sub.dTo)   list = list.filter(t=>t.date<=sub.dTo);
-  if(q) list = list.filter(t=>[partyName(t.partyId), truckName(t.truckId), driverName(t.driverId),
+  if(q) list = list.filter(t=>[partyName(t.partyId), truckName(t.truckId), mPlateText(truckName(t.truckId)), driverName(t.driverId),
     t.lr, t.from, t.to, t.material].join(' ').toLowerCase().includes(q));
   return list;
 }
 /* the words a trip's status line uses, in the order it moves through them */
 function mTripState(t){
-  if(selfFunded(t)) return {label:'Self funded run', dot:'grey'};
-  if(tripCompleted(t)) return {label:'Trip Settled', dot:'green'};
+  if(selfFunded(t)) return {label:'Self funded run', tone:'grey', p:0.5, k:'self'};
+  if(tripCompleted(t)) return {label:'Settled', tone:'teal', p:1, k:'done'};
   const st = tripStage(t);
-  if(st==='submitted') return {label:'POD Submitted', dot:'green'};
-  if(st==='received')  return {label:'POD Received', dot:'amber'};
-  if(st==='delivered') return {label:'Trip Completed', dot:'blue'};
-  return {label:'Trip Started', dot:'blue'};
+  if(st==='submitted') return {label:'POD submitted', tone:'teal', p:1, k:'arrived'};
+  if(st==='received')  return {label:'POD received', tone:'gold', p:1, k:'arrived'};
+  if(st==='delivered') return {label:'Delivered', tone:'indigo', p:1, k:'arrived'};
+  return {label:'In transit', tone:'verm', p:0.5, k:'moving'};
 }
-function mTripsPaint(){
-  const box = $('#mList'); if(!box) return;
-  const all = mTripList();
-  const list = all.slice(0, pageLimit());
-  tripNav = list.map(t=>t.id);
-  if(!all.length){
-    box.innerHTML = DB.trips.length
-      ? mEmpty('No trip matches', 'Clear the search or the filters to see every trip.',
-          '<button class="m-btn m-btn-line" onclick="mClearTripFilters()">Clear filters</button>')
-      : mEmpty('No trips yet', 'A trip records one load: truck, party, route and freight.',
-          '<button class="m-btn m-btn-blue" onclick="tripForm()">Add your first trip</button>');
-    return;
-  }
-  const due = all.reduce((s,t)=>s+Math.max(0, tripBalance(t)), 0);
-  box.innerHTML =
-    '<div class="m-count">'+plural(all.length,'trip')+(due?' · '+money(due)+' to collect':'')+'</div>'+
-    list.map(t=>{
-      const s = mTripState(t);
-      const amount = selfFunded(t) ? tripExpensesOf(t.id) : num(t.freight);
-      return '<article class="m-card m-trip" onclick="mOpen(\'trips\',\''+t.id+'\')">'+
-        '<div class="m-trip-top"><div><div class="m-trip-party">'+esc(selfFunded(t)?'Self funded':partyName(t.partyId))+'</div>'+
-          mPlate(truckName(t.truckId))+'</div>'+
-          '<span class="m-pill num">'+money(amount)+mi('chev')+'</span></div>'+
-        mRoute(t)+
-        '<div class="m-trip-foot"><span class="m-state"><i class="d-'+s.dot+'"></i>'+s.label+'</span>'+
-          (t.lr?'<span class="m-lr">#'+esc(t.lr)+'</span>':'')+'</div>'+
-      '</article>';
-    }).join('')+
-    (all.length > list.length
-      ? '<button class="m-more" onclick="sub.limit=pageLimit()+'+PAGE+';mTripsPaint()">Show '+Math.min(PAGE, all.length-list.length)+' more</button>' : '');
-}
-function mRoute(t){
-  return '<div class="m-route">'+
-    '<div class="m-route-a"><b>'+esc(mPlaceName(t.from))+'</b><span>'+fdate(t.date)+'</span></div>'+
-    '<div class="m-route-mid"><i></i>'+mi('arrow')+'<i></i></div>'+
-    '<div class="m-route-b"><b>'+esc(mPlaceName(t.to))+'</b><span>'+(t.deliveredAt?fdate(t.deliveredAt):'--')+'</span></div>'+
+/* the line between two places, filled as far as the load has got:
+   halfway while it is in transit, all the way once it is delivered */
+function mRoute(t, s, big){
+  s = s || mTripState(t);
+  return '<div class="m-route r-'+s.k+(big?' m-route-big':'')+'" style="--p:'+s.p+'">'+
+    '<div class="m-route-a"><b>'+esc(mPlaceName(t.from))+'</b><span>'+mShortDate(t.date)+'</span></div>'+
+    '<div class="m-road"><i class="m-lane"></i><i class="m-fill"></i><i class="m-pin-a"></i><i class="m-pin-b"></i><i class="m-mark"></i></div>'+
+    '<div class="m-route-b"><b>'+esc(mPlaceName(t.to))+'</b><span>'+(t.deliveredAt?mShortDate(t.deliveredAt):'on the way')+'</span></div>'+
   '</div>';
 }
 function mClearTripFilters(){
@@ -13000,7 +13346,7 @@ function mClearTripFilters(){
 function mTripFilterSheet(){
   const opt = (v, l, cur) => '<option value="'+esc(v)+'"'+(v===(cur||'')?' selected':'')+'>'+esc(l)+'</option>';
   openModal({
-    title:'Filters', wide:'sheet', okText:'Apply',
+    title:'Filters', wide:'sheet', okText:'Show trips',
     body:'<div class="form-grid">'+
       '<div class="field full"><label for="mf_party">Party</label><select id="mf_party">'+opt('','All parties',sub.party)+
         DB.parties.map(p=>opt(p.id, p.name, sub.party)).join('')+
@@ -13011,120 +13357,47 @@ function mTripFilterSheet(){
         [['','Any payment'],['unpaid','Unpaid (anything due)'],['pending','Pending'],['partial','Part paid'],['paid','Paid']]
           .map(([v,l])=>opt(v,l,sub.mpay)).join('')+'</select></div>'+
       '<div class="field full"><label for="mf_stage">Trip status</label><select id="mf_stage">'+
-        [['','Any status'],['transit','Trip started (in transit)'],['delivered','Delivered'],['received','POD received'],
+        [['','Any status'],['transit','On the road'],['delivered','Delivered'],['received','POD received'],
          ['submitted','POD submitted'],['podpending','POD due']].map(([v,l])=>opt(v,l,sub.stage)).join('')+'</select></div>'+
       fText('mf_from','From date', sub.dFrom||'', 'date')+
       fText('mf_to','To date', sub.dTo||'', 'date')+
-      '<div class="field full"><button type="button" class="m-btn m-btn-line" onclick="mClearTripFilters()">Clear all filters</button></div>'+
+      '<div class="field full"><button type="button" class="m-btn m-btn-ghost-dark" onclick="mClearTripFilters()">Clear all filters</button></div>'+
     '</div>',
     onOk(){
       sub.party = val('mf_party'); sub.truck = val('mf_truck'); sub.mpay = val('mf_pay');
       sub.stage = val('mf_stage'); sub.dFrom = val('mf_from'); sub.dTo = val('mf_to'); sub.limit = 0;
-      closeModal(); render();
+      closeModal(); mDir = 'tab'; render();
     }
   });
 }
 
-/* ---------- one trip, read on a phone ---------- */
-function mTrip(){
-  const t = DB.trips.find(x=>x.id===sub.open);
-  if(!t){ sub.open = null; return mTrips(); }
-  const locked = tripLocked(t);
-  mTitle('Trip Details',
-    (locked ? '<span class="m-lock">'+mi('lock')+'</span>'
-            : '<button class="m-outline" onclick="tripDetail(\''+t.id+'\')">Edit</button>')+
-    '<button class="m-icon-btn" aria-label="More" onclick="mTripMenu()">'+mi('kebab')+'</button>');
-  const drv = t.driverId ? driverById(t.driverId) : null;
-  const tabs = selfFunded(t) ? [['cost','Cost'],['driver','Driver'],['more','More']]
-                             : [['party','Party'],['profit','Profit'],['driver','Driver'],['more','More']];
-  if(!tabs.some(x=>x[0]===sub.tt)) sub.tt = tabs[0][0];
-  $('#view').innerHTML =
-  '<div class="m-trip-band"><div class="m-trip-id">'+
-    '<button onclick="mTruckOpen(\''+t.truckId+'\')">'+mi('truck')+'<span>'+esc(mPlateText(truckName(t.truckId)))+'</span></button>'+
-    '<button onclick="'+(drv?"mOpen('drivers','"+drv.id+"')":"tripDetail('"+t.id+"')")+'">'+mi('wheel')+'<span>'+esc(drv?drv.name:'No driver')+'</span></button>'+
-  '</div></div>'+
-  '<nav class="m-tabs-top">'+tabs.map(([k,l])=>
-    '<button class="'+(sub.tt===k?'on':'')+'" onclick="sub.tt=\''+k+'\';mTrip()">'+l+'</button>').join('')+'</nav>'+
-  '<div class="m-page m-page-trip">'+({party:mTripParty, profit:mTripProfit, cost:mTripProfit,
-    driver:mTripDriver, more:mTripMore}[sub.tt])(t)+'</div>';
-}
-/* the five steps a billed trip moves through, the last one reached by money */
-function mSteps(t){
-  const st = tripStage(t);
-  const reach = {transit:0, delivered:1, received:2, submitted:3}[st];
-  const settled = num(t.freight) > 0 && tripBalance(t) <= 0;
-  const steps = [['Started',null],['Delivered','deliveredAt'],['POD Received','podReceivedAt'],['POD Submitted','podSubmittedAt'],['Settled',null]];
-  return '<div class="m-steps">'+steps.map(([l,f],i)=>{
-    const done = i===0 || (i<4 ? i<=reach : settled);
-    const when = f && t[f] ? fdate(t[f]).slice(0,6) : '';
-    return '<div class="m-step'+(done?' done':'')+'"><i>'+(done?mi('check'):'')+'</i><span>'+l+'</span>'+
-      (when?'<em>'+when+'</em>':'')+'</div>';
-  }).join('')+'</div>';
-}
 function mNextStep(t){
   const st = tripStage(t);
-  if(st==='transit')   return {label:'Complete Trip', field:'deliveredAt'};
-  if(st==='delivered') return {label:'POD Received', field:'podReceivedAt'};
-  if(st==='received')  return {label:'POD Submitted', field:'podSubmittedAt'};
+  if(st==='transit')   return {label:'Mark Delivered', field:'deliveredAt', word:'delivered'};
+  if(st==='delivered') return {label:'POD Received', field:'podReceivedAt', word:'POD received from the driver'};
+  if(st==='received')  return {label:'POD Submitted', field:'podSubmittedAt', word:'POD submitted to the party'};
   return null;
 }
-function mStep(id, field, label){
+function mStep(id, field, word){
   const t = DB.trips.find(x=>x.id===id); if(!t || lockedStop(t)) return;
-  confirmAsk('Mark this trip as '+label.replace('Complete Trip','delivered').toLowerCase()+' today, '+fdate(today())+'? '+
-    'You can change the date later from Edit → Delivery & POD.', ()=>{ setStage(id, field, today()); toast('Updated'); });
+  confirmAsk('Mark this trip as '+word+' today, '+fdate(today())+'? '+
+    'You can change the date later from Edit → Delivery & POD.', ()=>{
+      mBuzz(18); setStage(id, field, today()); toast('Updated — '+word);
+    });
 }
 function mLine(label, amount, add, act, tone){
   return '<div class="m-line"><div><span>'+label+'</span>'+
-      (add && act ? '<button class="m-link" onclick="'+act+'">'+add+'</button>' : '')+'</div>'+
+      (add && act ? '<button class="m-link" onclick="'+act+'">'+mi('plus')+add+'</button>' : '')+'</div>'+
     '<b class="num'+(tone?' '+tone:'')+'">'+money(amount)+'</b></div>';
-}
-function mTripParty(t){
-  const p = partyById(t.partyId);
-  const locked = tripLocked(t);
-  const next = locked ? null : mNextStep(t);
-  const adv = tripAdvance(t), chg = tripCharges(t), ded = tripDeductions(t), paid = allocatedTo(t.id);
-  const bal = tripBalance(t);
-  const biz = (DB.settings||{}).business || 'Maa Vandana Logistics';
-  const msg = 'Namaste '+(p?p.name:'')+', for LR '+(t.lr||'-')+' ('+mPlaceName(t.from)+' to '+mPlaceName(t.to)+', '+
-    fdate(t.date)+', truck '+truckName(t.truckId)+') the balance pending is '+money(bal)+'. Kindly arrange the payment. — '+biz;
-  const edit = locked ? '' : "tripDetail('"+t.id+"','details')";
-  return '<section class="m-card m-party">'+
-    '<div class="m-party-top"><button class="m-party-name" onclick="'+(p?"mOpen('parties','"+p.id+"')":'')+'">'+mi('user')+
-      '<span>'+esc(p?p.name:'—')+'</span></button><span class="m-pill num">'+money(t.freight)+'</span></div>'+
-    mRoute(t)+
-    (t.lr?'<div class="m-lr-mid">#'+esc(t.lr)+'</div>':'')+
-    mSteps(t)+
-    '<div class="m-two">'+
-      (next ? '<button class="m-btn m-btn-green-line" onclick="mStep(\''+t.id+'\',\''+next.field+'\',\''+next.label+'\')">'+next.label+'</button>'
-            : bal>0 && !locked ? '<button class="m-btn m-btn-green-line" onclick="mAddPayment(\''+t.id+'\')">Add Payment</button>'
-            : '<button class="m-btn m-btn-green-line" disabled>'+(tripCompleted(t)?'Completed':'Settled')+'</button>')+
-      '<button class="m-btn m-btn-blue" onclick="printTripBill(\''+t.id+'\')">View Bill</button>'+
-    '</div>'+
-    '<div class="m-lines">'+
-      '<div class="m-line m-line-main"><span>Freight Amount</span><b class="num">'+money(t.freight)+
-        (edit?'<button class="m-icon-btn m-icon-s" aria-label="Edit freight" onclick="'+edit+'">'+mi('pencil')+'</button>':'')+'</b></div>'+
-      mLine('(−) Advance', adv, locked?'':'Add Advance', "tripDetail('"+t.id+"','money')")+
-      mLine('(+) Charges', chg, locked?'':'Add Charges', edit)+
-      (ded ? mLine('(−) Deductions', ded, '', '') : '')+
-      mLine('(−) Payments', paid, locked||bal<=0?'':'Add Payment', "mAddPayment('"+t.id+"')")+
-    '</div>'+
-    '<div class="m-pending"><span>'+(bal<0?'Paid over':'Pending Balance')+'</span><b class="num">'+money(Math.abs(bal))+'</b></div>'+
-    '<div class="m-party-foot">'+
-      '<button class="m-link m-link-icon" onclick="mTripNote(\''+t.id+'\')">'+mi(t.notes?'note':'plus')+(t.notes?'Note':'Note')+'</button>'+
-      (bal>0 ? '<button class="m-btn m-btn-line m-btn-s" onclick="mWa(\''+esc(p&&p.phone||'')+'\','+esc(JSON.stringify(msg))+')">Request Money</button>' : '')+
-    '</div>'+
-    (t.notes ? '<div class="m-note">'+esc(t.notes)+'</div>' : '')+
-  '</section>'+
-  (selfFunded(t)||!t.hire ? '' : mTripSupplier(t));
 }
 function mTripSupplier(t){
   const sid = tripSupplier(t);
   const due = typeof tripSupplierBalance==='function' ? tripSupplierBalance(t) : num(t.hire) - num(t.hireAdvance);
-  return '<section class="m-card m-lines m-sup">'+
-    '<div class="m-line m-line-main"><span>Market truck hire'+(sid?' · '+esc(supplierName(sid)):'')+'</span><b class="num">'+money(t.hire)+'</b></div>'+
+  return '<section class="m-card m-bill">'+
+    '<div class="m-line m-line-main"><span>Market truck hire'+(sid?'<em class="m-sub-l">'+esc(supplierName(sid))+'</em>':'')+'</span><b class="num">'+money(t.hire)+'</b></div>'+
     (num(t.hireAdvance)?mLine('(−) Paid at loading', num(t.hireAdvance)):'')+
     '<div class="m-line"><span>Still to pay the supplier</span><b class="num '+(due>0?'m-neg':'')+'">'+money(Math.max(0,due))+'</b></div>'+
-    (sid?'<button class="m-link" onclick="mOpen(\'suppliers\',\''+sid+'\')">Open supplier khata</button>':'')+
+    (sid?'<button class="m-link" onclick="mOpen(\'suppliers\',\''+sid+'\')">Open supplier khata'+mi('chev')+'</button>':'')+
   '</section>';
 }
 function mTripProfit(t){
@@ -13133,77 +13406,64 @@ function mTripProfit(t){
   exps.forEach(e=>{ const k = e.category || 'Other'; byCat[k] = (byCat[k]||0) + num(e.amount); });
   const expTotal = exps.reduce((s,e)=>s+num(e.amount), 0);
   const hire = num(t.hire);
-  const revenue = selfFunded(t) ? 0 : tripFreightNet(t);
-  const profit = revenue - hire - expTotal;
+  const self = selfFunded(t);
+  const revenue = self ? 0 : tripFreightNet(t);
+  const cost = expTotal + hire;
+  const profit = revenue - cost;
   const locked = tripLocked(t);
-  return '<section class="m-card m-profit">'+
-    (selfFunded(t) ? '<div class="m-hint">A self funded run has no party and no freight — only what it cost to move.</div>' :
-    '<div class="m-pl-row m-pl-head"><span>(+) Revenue</span><b class="num m-blue">'+money(revenue)+'</b></div>'+
-    '<div class="m-pl-row m-pl-sub"><span>'+esc(partyName(t.partyId))+'</span><b class="num">'+money(revenue)+'</b></div>'+
+  const keep = revenue > 0 ? Math.max(0, Math.min(1, profit / revenue)) : 0;
+  const bar = (label, v, tone) => '<div class="m-pl-bar"><span>'+esc(label)+'</span><b class="num">'+money(v)+'</b>'+
+    '<i class="t-'+tone+'" style="--w:'+(revenue||cost ? Math.min(1, v/Math.max(revenue, cost)) : 0).toFixed(3)+'"></i></div>';
+  return (self ? '' :
+  '<section class="m-card m-margin">'+
+    '<div class="m-ring-big" style="--p:'+keep.toFixed(3)+'"><svg viewBox="0 0 36 36"><circle class="bg" cx="18" cy="18" r="15.9" pathLength="100"/>'+
+      '<circle class="fg'+(profit<0?' neg':'')+'" cx="18" cy="18" r="15.9" pathLength="100"/></svg>'+
+      '<b class="num">'+(revenue?Math.round(profit/revenue*100):0)+'%</b></div>'+
+    '<div><span>'+(profit>=0?'You keep':'This trip loses')+'</span><b class="num '+(profit>=0?'m-pos':'m-neg')+'" data-count="'+Math.abs(profit)+'">'+money(Math.abs(profit))+'</b>'+
+      '<em>of '+money(revenue)+' billed</em></div>'+
+  '</section>')+
+  '<section class="m-card m-profit">'+
+    (self ? '<div class="m-hint">A self funded run has no party and no freight — only what it cost to move.</div>' :
+    '<div class="m-pl-row m-pl-head"><span>(+) Revenue</span><b class="num m-pos">'+money(revenue)+'</b></div>'+
     '<div class="m-pl-box">'+
-      '<div><span>Freight Amount</span><b class="num">'+money(t.freight)+'</b></div>'+
+      '<div><span>Freight amount</span><b class="num">'+money(t.freight)+'</b></div>'+
       '<div><span>Charges</span><b class="num">'+money(tripCharges(t))+'</b></div>'+
       '<div><span>Deductions</span><b class="num">'+money(tripDeductions(t))+'</b></div>'+
     '</div>')+
-    '<div class="m-pl-row m-pl-head"><span>(−) Expenses</span><b class="num">'+money(expTotal+hire)+'</b></div>'+
-    (hire ? '<div class="m-pl-row m-pl-sub"><span>Truck hire</span><b class="num">'+money(hire)+'</b></div>' : '')+
-    Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]).map(k=>
-      '<div class="m-pl-row m-pl-sub"><span>'+esc(k)+'</span><b class="num">'+money(byCat[k])+'</b></div>').join('')+
-    (locked?'':'<button class="m-link m-pl-add" onclick="tripDetail(\''+t.id+'\',\'expenses\')">Add Expense</button>')+
-    '<div class="m-pl-total"><span>'+(selfFunded(t)?'Cost of this run':'Profit')+'</span>'+
-      '<b class="num '+(selfFunded(t)?'':profit>=0?'m-pos':'m-neg')+'">'+money(selfFunded(t)?expTotal:profit)+'</b></div>'+
+    '<div class="m-pl-row m-pl-head"><span>(−) Expenses</span><b class="num m-neg">'+money(cost)+'</b></div>'+
+    (hire ? bar('Truck hire', hire, 'verm') : '')+
+    Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]).map((k,i)=>bar(k, byCat[k], ['gold','indigo','plum','teal'][i%4])).join('')+
+    (!cost ? '<div class="m-hint">Nothing spent on this trip yet.</div>' : '')+
+    (locked?'':'<button class="m-link m-pl-add" onclick="tripDetail(\''+t.id+'\',\'expenses\')">'+mi('plus')+'Add expense</button>')+
+    '<div class="m-pl-total"><span>'+(self?'Cost of this run':'Profit')+'</span>'+
+      '<b class="num '+(self?'':profit>=0?'m-pos':'m-neg')+'">'+money(self?expTotal:profit)+'</b></div>'+
   '</section>';
 }
 function mTripDriver(t){
   const d = t.driverId ? driverById(t.driverId) : null;
   if(!d) return '<section class="m-card">'+mEmpty('No driver on this trip','Pick the driver from Edit → Trip details.',
-    tripLocked(t)?'':'<button class="m-btn m-btn-line" onclick="tripDetail(\''+t.id+'\',\'details\')">Choose driver</button>')+'</section>';
+    tripLocked(t)?'':'<button class="m-btn m-btn-ghost-dark" onclick="tripDetail(\''+t.id+'\',\'details\')">Choose driver</button>')+'</section>';
   const b = driverBalance(d.id);
-  return '<section class="m-card m-lines">'+
-    '<div class="m-drv"><div class="m-avatar">'+esc(mInitials(d.name))+'</div>'+
+  return '<section class="m-card m-drv-card">'+
+    '<div class="m-drv">'+mAvatar(d.name, 'm-av-l')+
       '<div class="m-row-main"><b>'+esc(d.name)+'</b><span>'+esc([d.phone, d.licence?'DL '+d.licence:''].filter(Boolean).join(' · ')||' ')+'</span></div>'+
-      (d.phone?'<button class="m-icon-btn" aria-label="Call" onclick="mCall(\''+esc(d.phone)+'\')">'+mi('phone')+'</button>':'')+'</div>'+
-    '<div class="m-line"><span>'+(b>=0?'Salary and dues to pay':'Advance given to driver')+'</span><b class="num '+(b>0?'m-neg':'')+'">'+money(Math.abs(b))+'</b></div>'+
+      (d.phone?'<button class="m-icon-btn m-call" aria-label="Call" onclick="mCall(\''+esc(d.phone)+'\')">'+mi('phone')+'</button>':'')+'</div>'+
+    '<div class="m-drv-bal"><span>'+(b>=0?'Salary and dues to pay':'Advance given to driver')+'</span><b class="num '+(b>0?'m-neg':'')+'" data-count="'+Math.abs(b)+'">'+money(Math.abs(b))+'</b></div>'+
     (hasLeft(d)?'<div class="m-hint">Left on '+fdate(d.left)+'.</div>':'')+
     '<div class="m-two">'+
-      '<button class="m-btn m-btn-blue" onclick="driverTxnForm(\''+d.id+'\')">Add Entry</button>'+
-      '<button class="m-btn m-btn-line" onclick="mOpen(\'drivers\',\''+d.id+'\')">Driver Khata</button>'+
+      '<button class="m-btn m-btn-dark" onclick="driverTxnForm(\''+d.id+'\')">'+mi('plus')+'Add Entry</button>'+
+      '<button class="m-btn m-btn-ghost-dark" onclick="mOpen(\'drivers\',\''+d.id+'\')">'+mi('book')+'Khata</button>'+
     '</div>'+
   '</section>';
-}
-function mTripMore(t){
-  const locked = tripLocked(t);
-  const pods = typeof podCount==='function' ? podCount(t.id) : 0;
-  const row = (l, v) => v ? '<div class="m-line"><span>'+l+'</span><b>'+v+'</b></div>' : '';
-  return '<section class="m-card m-lines">'+
-    '<h3 class="m-card-t">Delivery & POD</h3>'+
-    (selfFunded(t) ? '<div class="m-hint">Nothing is delivered on a self funded run.</div>' :
-      row('Delivered', t.deliveredAt?fdate(t.deliveredAt):'Not yet')+
-      row('POD received from driver', t.podReceivedAt?fdate(t.podReceivedAt):'Not yet')+
-      row('POD submitted to party', t.podSubmittedAt?fdate(t.podSubmittedAt):'Not yet')+
-      row('POD pages on file', pods?String(pods):'None')+
-      '<button class="m-btn m-btn-line" onclick="tripDetail(\''+t.id+'\',\'delivery\')">'+(locked?'View':'Update')+' delivery & POD</button>')+
-  '</section>'+
-  '<section class="m-card m-lines">'+
-    '<h3 class="m-card-t">Trip</h3>'+
-    row('Date', fdate(t.date))+
-    row('LR number', esc(t.lr))+
-    row('From', esc(t.from))+
-    row('To', esc(t.to))+
-    row('Material', esc(t.material))+
-    row('Weight', esc(t.weight))+
-    (tripCompleted(t)?row('Completed', t.completedAt?fdate(t.completedAt):'Yes'):'')+
-  '</section>'+
-  (locked?'':'<button class="m-btn m-btn-danger" onclick="delTrip(\''+t.id+'\')">'+mi('trash')+' Delete this trip</button>');
 }
 function mTripMenu(){
   const t = DB.trips.find(x=>x.id===sub.open); if(!t) return;
   const locked = tripLocked(t);
   mSheet('Trip', [
     locked?null:{icon:'pencil', label:'Edit trip', act:"tripDetail('"+t.id+"')"},
-    {icon:'print', label:'View bill (print or PDF)', act:"printTripBill('"+t.id+"')"},
-    selfFunded(t)?null:{icon:'note', label:'Delivery & POD', act:"tripDetail('"+t.id+"','delivery')"},
-    locked?null:{icon:'plus', label:'Add expense', act:"tripDetail('"+t.id+"','expenses')"},
+    {icon:'print', label:'View bill (print or PDF)', act:"printTripBill('"+t.id+"')", tone:'teal'},
+    selfFunded(t)?null:{icon:'pod', label:'Delivery & POD', act:"tripDetail('"+t.id+"','delivery')", tone:'gold'},
+    locked?null:{icon:'receipt', label:'Add expense', act:"tripDetail('"+t.id+"','expenses')", tone:'plum'},
     locked?null:{icon:'trash', label:'Delete trip', act:"delTrip('"+t.id+"')", danger:true}
   ]);
 }
@@ -13272,24 +13532,31 @@ function mTruckOpen(id){ if(truckById(id)) truckForm(id); }
 function mTrucks(){
   if(sub.tab!=='docs') sub.tab = 'fleet';
   if(sub.tab==='docs' && sub.dt) return mDocList();
-  mTitle('Trucks & Documents');
   const alerts = truckAlerts().length;
-  const head = '<nav class="m-tabs-top m-tabs-2">'+
-    '<button class="'+(sub.tab==='fleet'?'on':'')+'" onclick="sub.tab=\'fleet\';render()">Trucks</button>'+
-    '<button class="'+(sub.tab==='docs'?'on':'')+'" onclick="sub.tab=\'docs\';render()">Documents'+
-      (alerts?'<em class="m-badge">'+alerts+'</em>':'')+'</button></nav>';
-  if(sub.tab==='docs'){ $('#view').innerHTML = head+mDocsBody()+mFab('Add Document','truckDocForm()'); return; }
+  mTitle('Trucks & Documents', '', plural(DB.trucks.length,'truck')+(alerts?' · '+plural(alerts,'document')+' need attention':''));
+  const head = mTopTabs('trucks', [['fleet','Trucks'],['docs','Documents', alerts||'']], sub.tab, k=>"sub.tab='"+k+"';render()");
+  if(sub.tab==='docs'){ $('#view').innerHTML = head+mPane(mDocsBody())+mFab('Add document','truckDocForm()'); return; }
   const states = {}; DB.trucks.forEach(t=>{ states[t.id] = mTruckState(t); });
   const onTrip = DB.trucks.filter(t=>states[t.id].on).length;
   const f = sub.tf || 'all';
-  const card = (k, l, n, tone) => '<button class="m-kpi'+(f===k?' on':'')+(tone?' '+tone:'')+'" onclick="sub.tf=\''+k+'\';render()"><span>'+l+'</span><b>'+n+'</b></button>';
-  $('#view').innerHTML = head+'<div class="m-page">'+
-    '<div class="m-kpis">'+card('all','All Trucks',DB.trucks.length)+card('free','Available Trucks',DB.trucks.length-onTrip,'green')+
-      card('on','Trucks On Trip',onTrip,'blue')+'</div>'+
+  const opts = [['all','All',DB.trucks.length],['free','Available',DB.trucks.length-onTrip],['on','On trip',onTrip]];
+  const at = Math.max(0, opts.findIndex(o=>o[0]===f));
+  $('#view').innerHTML = head+mPane('<div class="m-page">'+
+    '<div class="m-seg m-seg-3" style="--at:'+at+'"><i class="m-seg-ind"></i>'+opts.map(([k,l,n])=>
+      '<button class="'+(f===k?'on':'')+'" onclick="sub.tf=\''+k+'\';mTruckSeg()"><b class="num">'+n+'</b><span>'+l+'</span></button>').join('')+'</div>'+
     (sub.tt ? '<div class="m-chips"><button class="m-chip on" onclick="delete sub.tt;render()">'+(sub.tt==='market'?'Market trucks':'Own trucks')+' ✕</button></div>' : '')+
-    mSearch('Search by Truck Number', sub.q, 'sub.q=this.value;defer(mTrucksPaint)')+
+    mSearch('Search by truck number', sub.q, 'sub.q=this.value;defer(mTrucksPaint)')+
     '<div id="mList"></div>'+
-  '</div>'+mFab('Add Truck','truckForm()','green');
+  '</div>')+mFab('Add Truck','truckForm()');
+  mTrucksPaint();
+}
+/* the highlight slides to the chosen count; only the list below is redrawn */
+function mTruckSeg(){
+  const opts = ['all','free','on'];
+  const seg = $('.m-seg-3'); if(!seg) return render();
+  seg.style.setProperty('--at', Math.max(0, opts.indexOf(sub.tf||'all')));
+  seg.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on', opts[i]===(sub.tf||'all')));
+  mAnimate();
   mTrucksPaint();
 }
 function mTrucksPaint(){
@@ -13306,19 +13573,20 @@ function mTrucksPaint(){
   if(!list.length){
     box.innerHTML = DB.trucks.length ? mEmpty('No truck matches','') :
       mEmpty('No trucks yet','Add the vehicles you run — your own, and market trucks you hire.',
-        '<button class="m-btn m-btn-blue" onclick="truckForm()">Add your first truck</button>');
+        '<button class="m-btn m-btn-dark" onclick="truckForm()">Add your first truck</button>');
     return;
   }
-  box.innerHTML = '<section class="m-card m-rows">'+list.map(({t,s})=>{
-    const where = s.on ? '<span>'+esc(mPlaceName(s.last.from))+'</span><i>→</i><span>'+esc(mPlaceName(s.last.to))+'</span>'
-      : s.last ? '<span>'+esc(mPlaceName(s.last.to||s.last.from))+'</span>' : '';
+  box.innerHTML = '<section class="m-card m-rows">'+list.map(({t,s},i)=>{
+    const where = s.on ? esc(mPlaceName(s.last.from))+' → '+esc(mPlaceName(s.last.to))
+      : s.last ? 'at '+esc(mPlaceName(s.last.to||s.last.from)) : 'no trips yet';
     const bad = (t.docs||[]).filter(d=>docStatus(d.expiry).key==='expired').length;
-    return '<div class="m-row m-truck" onclick="mTruckOpen(\''+t.id+'\')">'+
+    return '<div class="m-row m-truck" style="--i:'+i+'" onclick="mTruckOpen(\''+t.id+'\')">'+
+      '<i class="m-truck-ic '+(s.on?'on':'')+'">'+mi('truck')+'</i>'+
       '<div class="m-row-main">'+mPlate(t.number)+
         '<span class="m-tags"><em class="m-tag '+(t.type==='owned'?'own':'mkt')+'">'+(t.type==='owned'?'Own':'Market')+'</em>'+
-        (bad?'<em class="m-tag bad">'+plural(bad,'paper')+' expired</em>':'')+'</span></div>'+
-      '<div class="m-row-end"><span class="m-state"><i class="d-'+(s.on?'blue':'green')+'"></i>'+(s.on?'On Trip':'Available')+'</span>'+
-        '<span class="m-where">'+where+'</span></div>'+mi('chev','m-chev')+
+        (bad?'<em class="m-tag bad">'+plural(bad,'document')+' expired</em>':'')+
+        '<em class="m-where">'+where+'</em></span></div>'+
+      '<span class="m-state s-'+(s.on?'verm':'teal')+'"><i></i>'+(s.on?'On trip':'Available')+'</span>'+
     '</div>';
   }).join('')+'</section>';
 }
@@ -13332,36 +13600,276 @@ function mDocGroups(){
   const order = DOC_TYPES.concat(Object.keys(g).filter(k=>!DOC_TYPES.includes(k)).sort());
   return order.filter(k=>g[k]).map(k=>({k, rows:g[k]}));
 }
-function mDocsBody(){
-  const groups = mDocGroups();
-  const bad = truckAlerts();
-  const ring = (n, cls, l) => '<div class="m-ring '+(n?cls:'')+'"><i>'+n+'</i><span>'+l+'</span></div>';
-  return '<div class="m-page">'+
-    '<section class="m-card m-docs-head"><div><b>'+(bad.length?plural(bad.length,'paper')+' need attention':'All papers in order')+'</b>'+
-      '<span>'+plural(groups.reduce((s,g)=>s+g.rows.length,0),'document')+' across '+plural(DB.trucks.filter(t=>(t.docs||[]).length).length,'truck')+'</span></div>'+
-      '<button class="m-btn m-btn-blue m-btn-s" onclick="truckDocForm()">'+mi('plus')+' Add</button></section>'+
-    (groups.length ? groups.map(g=>{
-      const c = k => g.rows.filter(r=>r.st.key===k).length;
-      return '<section class="m-card m-doc" onclick="sub.dt='+esc(JSON.stringify(g.k))+';render()">'+
-        '<div><b>'+esc(g.k)+'</b><span class="m-link">View all Documents '+mi('chev')+'</span></div>'+
-        '<div class="m-rings">'+ring(c('expired'),'r-red','Expired')+ring(c('soon'),'r-amber','Expiring soon')+ring(c('active'),'r-green','All Ok')+'</div>'+
-      '</section>';
-    }).join('') : mEmpty('No documents yet','Record insurance, permits, fitness and the rest, and you are warned before any of them runs out.',
-        '<button class="m-btn m-btn-blue" onclick="truckDocForm()">Add a document</button>'))+
-  '</div>';
-}
 function mDocList(){
-  mTitle(sub.dt);
+  mTitle(sub.dt, '', 'Truck documents');
   const g = mDocGroups().find(x=>x.k===sub.dt);
   const rank = {expired:0, soon:1, active:2, none:3};
   const rows = g ? g.rows.slice().sort((a,b)=>rank[a.st.key]-rank[b.st.key] || (a.d.expiry||'').localeCompare(b.d.expiry||'')) : [];
   const chip = st => '<em class="m-tag '+({expired:'bad', soon:'warn', active:'ok', none:''}[st.key])+'">'+esc(st.label)+'</em>';
-  $('#view').innerHTML = '<div class="m-page">'+(rows.length ? '<section class="m-card m-rows">'+rows.map(r=>
-    '<div class="m-row" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">'+
+  $('#view').innerHTML = '<div class="m-page">'+(rows.length ? '<section class="m-card m-rows">'+rows.map((r,i)=>
+    '<div class="m-row" style="--i:'+i+'" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">'+
       '<div class="m-row-main">'+mPlate(r.t.number)+'<span>'+(r.d.expiry?fdate(r.d.expiry)+' · '+esc(docWhen(r.st.days)):'No expiry date')+'</span></div>'+
-      '<div class="m-row-end">'+chip(r.st)+'</div>'+mi('chev','m-chev')+
+      '<div class="m-row-end">'+chip(r.st)+'</div>'+
     '</div>').join('')+'</section>' : mEmpty('None of these on file',''))+'</div>'+
-  mFab('Add Document','truckDocForm()');
+  mFab('Add document','truckDocForm()');
+}
+
+function mHome(){
+  const s = DB.settings || {};
+  const who = s.owner || mBiz();
+  const first = String(who).split(/\s+/)[0];
+  const synced = typeof syncReady === 'function' && syncReady();
+  mBarSet('<button class="m-me" onclick="mGo(\'settings\')" aria-label="Settings">'+mAvatar(who, 'm-av-me')+
+      '<i class="m-sync'+(synced?' on':'')+'"></i></button>'+
+    '<div class="m-hello"><span>'+esc(mWeekday())+'</span><b>'+esc(mGreeting())+', '+esc(first)+'</b></div>');
+  const due = totalReceivable();
+  const owe = mKindTotal('suppliers') + mKindTotal('drivers') + mKindTotal('shops');
+  const billable = DB.trips.filter(t=>!selfFunded(t));
+  const unpaid = billable.filter(t=>tripBalance(t) > 0);
+  const podDue = billable.filter(t=>['delivered','received'].includes(tripStage(t))).length;
+  const papers = truckAlerts().length;
+  const owing = DB.parties.filter(p=>partyBalance(p.id) > 0).length;
+  const onRoad = DB.trucks.filter(t=>mTruckState(t).on).length;
+  const month = thisMonth();
+  const monthTrips = billable.filter(t=>monthKey(t.date)===month);
+  const monthFreight = monthTrips.reduce((a,t)=>a+num(t.freight),0);
+  const oldest = unpaid.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))[0];
+  const attn = [];
+  if(papers) attn.push({tone:'verm', icon:'shield', t:plural(papers,'document')+' need renewal', s:'Expired or expiring within 30 days', act:"mGo('trucks',{tab:'docs'})"});
+  if(podDue) attn.push({tone:'gold', icon:'pod', t:plural(podDue,'POD')+' pending', s:'Delivered, paperwork not yet with the party', act:"mGo('trips',{stage:'podpending'})"});
+  if(oldest && daysSince(oldest.date) > 15) attn.push({tone:'indigo', icon:'rupee', t:'Oldest unpaid: '+daysSince(oldest.date)+' days',
+    s:partyName(oldest.partyId)+' · '+money(tripBalance(oldest))+' due', act:"mOpen('trips','"+oldest.id+"')"});
+  const recent = DB.trips.slice().sort(newestFirst).slice(0,4);
+  const kpi = (label, value, note, act, cls, fmt) => '<button class="m-kpi-c" onclick="'+act+'"><span>'+label+'</span>'+
+    '<b class="num'+(cls?' '+cls:'')+'" data-count="'+value+'"'+(fmt?' data-fmt="'+fmt+'"':'')+'>'+(fmt==='plain'?value:money(value))+'</b><em>'+note+'</em></button>';
+  const link = (icon, label, act, badge) => '<button class="m-short" onclick="'+act+'">'+mi(icon)+'<span>'+esc(label)+'</span>'+
+    (badge?'<em class="m-badge">'+badge+'</em>':'')+'</button>';
+  $('#view').innerHTML =
+  '<div class="m-page m-page-home">'+
+    '<section class="m-hero">'+
+      '<div class="m-hero-top"><span>Receivable from parties</span>'+
+        '<button class="m-hero-link" onclick="mGo(\'parties\')">Party khata'+mi('chev')+'</button></div>'+
+      '<button class="m-hero-v num" onclick="mGo(\'parties\')" data-count="'+due+'">'+money(due)+'</button>'+
+      '<div class="m-hero-sub">'+(owing ? 'Across '+plural(owing,'party') : 'Nothing outstanding')+'</div>'+
+      '<div class="m-two">'+
+        '<button class="m-btn m-btn-gold" onclick="tripForm()">'+mi('plus')+'New trip</button>'+
+        '<button class="m-btn m-btn-ghost" onclick="mPickParty()">'+mi('wallet')+'Record payment</button>'+
+      '</div>'+
+    '</section>'+
+    '<section class="m-kpi-grid">'+
+      kpi('Payable', owe, 'Suppliers, drivers, shops', "mTab('m_dir')", owe>0?'m-neg':'')+
+      kpi('Freight this month', monthFreight, plural(monthTrips.length,'trip')+' in '+esc(monthName(month).split(' ')[0]), "mTab('trips')")+
+      kpi('In transit', onRoad, onRoad===1?'truck on the road':'trucks on the road', "mGo('trucks',{tab:'fleet',tf:'on'})", '', 'plain')+
+      kpi('Unpaid trips', unpaid.length, unpaid.length ? money(unpaid.reduce((a,t)=>a+tripBalance(t),0))+' due' : 'All collected', "mGo('trips',{mpay:'unpaid'})", '', 'plain')+
+    '</section>'+
+    (attn.length ? '<h2 class="m-sec-h">Needs attention</h2><section class="m-card m-rows">'+attn.map((a,i)=>
+      '<div class="m-row" style="--i:'+i+'" onclick="'+a.act+'">'+mSq(a.icon, a.tone)+
+        '<div class="m-row-main"><b>'+esc(a.t)+'</b><span>'+esc(a.s)+'</span></div>'+mi('chev','m-chev')+'</div>').join('')+'</section>' : '')+
+    (recent.length ? '<div class="m-sec-h-row"><h2 class="m-sec-h">Recent trips</h2><button class="m-link" onclick="mTab(\'trips\')">View all'+mi('chev')+'</button></div>'+
+      '<section class="m-card m-rows">'+recent.map(mTripRow).join('')+'</section>' : '')+
+    '<h2 class="m-sec-h">Shortcuts</h2>'+
+    '<section class="m-shorts">'+
+      link('rupee','Unpaid trips',"mGo('trips',{mpay:'unpaid'})", unpaid.length||'')+
+      link('bell','Reminders',"mGo('parties',{owing:1})")+
+      link('note','Party statement','mPickParty(true)')+
+      link('pod','POD pending',"mGo('trips',{stage:'podpending'})", podDue||'')+
+      link('book','Supplier khata',"mGo('suppliers')")+
+      link('wheel','Driver khata',"mGo('drivers')")+
+      link('shop','Shop khata',"mGo('shops')")+
+      link('receipt','Expenses',"mGo('expenses')")+
+      link('truck','Trucks',"mGo('trucks',{tab:'fleet'})")+
+      link('shield','Documents',"mGo('trucks',{tab:'docs'})", papers||'')+
+      link('chart','Reports & P&L',"mGo('reports')")+
+      link('trend','Insights',"mGo('insights')")+
+    '</section>'+
+  '</div>';
+}
+/* one trip as a line: the day, the route, who and which truck, the money and where it stands */
+function mTripRow(t, i){
+  const s = mTripState(t);
+  const bal = tripBalance(t);
+  const amount = selfFunded(t) ? tripExpensesOf(t.id) : num(t.freight);
+  const d = t.date ? fdate(t.date) : '';
+  return '<div class="m-row m-trow" style="--i:'+(i||0)+'" onclick="mOpen(\'trips\',\''+t.id+'\')">'+
+    '<div class="m-tdate"><b>'+esc(d.slice(0,2))+'</b><span>'+esc(d.slice(3,6))+'</span></div>'+
+    '<div class="m-row-main"><b>'+esc(mPlaceName(t.from))+' <i class="m-arrow">→</i> '+esc(mPlaceName(t.to))+'</b>'+
+      '<span>'+esc(selfFunded(t)?'Self funded':partyName(t.partyId))+' · '+esc(mPlateText(truckName(t.truckId)))+'</span></div>'+
+    '<div class="m-row-end"><b class="num">'+money(amount)+'</b>'+
+      '<span class="m-state s-'+s.tone+'">'+s.label+'</span>'+
+      (!selfFunded(t) && bal>0 && s.k!=='moving' ? '' : '')+'</div>'+
+  '</div>';
+}
+function mTripCard(t, i){ return mTripRow(t, i); }
+function mTripsPaint(){
+  const box = $('#mList'); if(!box) return;
+  const all = mTripList();
+  const list = all.slice(0, pageLimit());
+  tripNav = list.map(t=>t.id);
+  if(!all.length){
+    box.innerHTML = DB.trips.length
+      ? mEmpty('No trip matches', 'Clear the search or the filters to see every trip.',
+          '<button class="m-btn m-btn-ghost-dark" onclick="mClearTripFilters()">Clear filters</button>')
+      : mEmpty('No trips yet', 'A trip records one load: truck, party, route and freight.',
+          '<button class="m-btn m-btn-dark" onclick="tripForm()">Add your first trip</button>');
+    return;
+  }
+  const due = all.reduce((s,t)=>s+Math.max(0, tripBalance(t)), 0);
+  const freight = all.reduce((s,t)=>s+(selfFunded(t)?0:num(t.freight)), 0);
+  /* a month heading over its trips, the way a statement is read */
+  const groups = [];
+  list.forEach(t=>{
+    const k = monthKey(t.date) || '';
+    let g = groups[groups.length-1];
+    if(!g || g.k !== k){ g = {k, rows:[]}; groups.push(g); }
+    g.rows.push(t);
+  });
+  let n = 0;
+  box.innerHTML =
+    '<div class="m-sumline"><span>'+plural(all.length,'trip')+'</span><span>Freight <b class="num">'+money(freight)+'</b></span>'+
+      '<span>Due <b class="num '+(due?'m-neg':'')+'">'+money(due)+'</b></span></div>'+
+    groups.map(g=>'<section class="m-card m-rows"><div class="m-month">'+esc(g.k?monthName(g.k):'No date')+
+      '<em>'+plural(g.rows.length,'trip')+'</em></div>'+g.rows.map(t=>mTripRow(t, n++)).join('')+'</section>').join('')+
+    (all.length > list.length
+      ? '<button class="m-more" onclick="sub.limit=pageLimit()+'+PAGE+';mTripsPaint()">Show '+Math.min(PAGE, all.length-list.length)+' more</button>' : '');
+}
+
+/* ---------- one trip, read top to bottom ---------- */
+function mTrip(){
+  const t = DB.trips.find(x=>x.id===sub.open);
+  if(!t){ sub.open = null; return mTrips(); }
+  const locked = tripLocked(t);
+  const s = mTripState(t);
+  const self = selfFunded(t);
+  mTitle(t.lr ? 'LR '+t.lr : 'Trip', (locked ? '<span class="m-lock" title="Completed and locked">'+mi('lock')+'</span>'
+            : '<button class="m-outline" onclick="tripDetail(\''+t.id+'\')">'+mi('pencil')+'Edit</button>')+
+    '<button class="m-icon-btn" aria-label="More" onclick="mTripMenu()">'+mi('kebab')+'</button>', fdate(t.date));
+  const p = partyById(t.partyId);
+  const drv = t.driverId ? driverById(t.driverId) : null;
+  const bal = tripBalance(t), billed = tripFreightNet(t);
+  const got = Math.max(0, Math.min(1, billed ? (billed - Math.max(0,bal)) / billed : 0));
+  const next = locked || self ? null : mNextStep(t);
+  const msg = 'Namaste '+(p?p.name:'')+', for LR '+(t.lr||'-')+' ('+mPlaceName(t.from)+' to '+mPlaceName(t.to)+', '+
+    fdate(t.date)+', truck '+mPlateText(truckName(t.truckId))+') the balance pending is '+money(bal)+'. Kindly arrange the payment. — '+mBiz();
+  const act = (icon, label, fn, off) => '<button class="m-act"'+(off?' disabled':'')+' onclick="'+fn+'">'+mi(icon)+'<span>'+label+'</span></button>';
+  $('#view').innerHTML = '<div class="m-page m-page-trip">'+
+    '<section class="m-card m-tsum">'+
+      '<div class="m-tsum-top"><span class="m-state s-'+s.tone+'"><i></i>'+s.label+'</span>'+
+        (tripCompleted(t)?'<span class="m-tag ok">Completed</span>':'')+'</div>'+
+      mRoute(t, s)+
+      '<div class="m-tsum-facts">'+
+        '<button onclick="'+(p?"mOpen('parties','"+p.id+"')":'')+'"><span>Party</span><b>'+esc(self?'Self funded':(p?p.name:'—'))+'</b></button>'+
+        '<button onclick="mTruckOpen(\''+t.truckId+'\')"><span>Truck</span><b class="m-mono">'+esc(mPlateText(truckName(t.truckId)))+'</b></button>'+
+        '<button onclick="'+(drv?"mOpen('drivers','"+drv.id+"')":'')+'"><span>Driver</span><b>'+esc(drv?drv.name:'—')+'</b></button>'+
+      '</div>'+
+    '</section>'+
+    (self ? '' :
+    '<section class="m-card m-money3">'+
+      '<div><span>Billed</span><b class="num">'+money(billed)+'</b></div>'+
+      '<div><span>Received</span><b class="num m-pos">'+money(tripSettledTotal(t))+'</b></div>'+
+      '<div><span>'+(bal<0?'Paid over':'Balance')+'</span><b class="num '+(bal>0?'m-neg':'m-pos')+'" data-count="'+Math.abs(bal)+'">'+money(Math.abs(bal))+'</b></div>'+
+      '<div class="m-meter" style="--p:'+got.toFixed(3)+'"><i></i></div>'+
+    '</section>')+
+    (next ? '<button class="m-btn m-btn-dark m-btn-wide" onclick="mStep(\''+t.id+'\',\''+next.field+'\',\''+next.word+'\')">'+mi('check')+next.label+'</button>' : '')+
+    '<div class="m-acts">'+
+      (self ? act('receipt','Expense',"tripDetail('"+t.id+"','expenses')", locked)
+            : act('wallet','Payment',"mAddPayment('"+t.id+"')", locked || bal<=0))+
+      act('print','Bill',"printTripBill('"+t.id+"')", self)+
+      act('wa','Remind',"mWa('"+esc(p&&p.phone||'')+"',"+esc(JSON.stringify(msg))+")", self || bal<=0)+
+      act('note', t.notes?'Note ✓':'Note', "mTripNote('"+t.id+"')")+
+    '</div>'+
+    (t.notes ? '<div class="m-note">'+esc(t.notes)+'</div>' : '')+
+    (self ? '' : '<h2 class="m-sec-h">Progress</h2>'+mTimeline(t))+
+    (self ? '' : '<h2 class="m-sec-h">Billing</h2>'+mTripBilling(t))+
+    (self || !t.hire ? '' : mTripSupplier(t))+
+    '<h2 class="m-sec-h">'+(self?'Cost of this run':'Profit')+'</h2>'+mTripProfit(t)+
+    '<h2 class="m-sec-h">Driver</h2>'+mTripDriver(t)+
+    '<h2 class="m-sec-h">Details</h2>'+mTripMore(t)+
+  '</div>';
+}
+/* the stages as a list down the page, each with its day, and the next
+   one offered as a step you can take */
+function mTimeline(t){
+  const locked = tripLocked(t);
+  const st = tripStage(t);
+  const reach = {transit:0, delivered:1, received:2, submitted:3}[st];
+  const settled = num(t.freight) > 0 && tripBalance(t) <= 0;
+  const next = locked ? null : mNextStep(t);
+  const steps = [
+    ['Trip started', t.date, true],
+    ['Delivered', t.deliveredAt, reach>=1, 'deliveredAt'],
+    ['POD received from driver', t.podReceivedAt, reach>=2, 'podReceivedAt'],
+    ['POD submitted to party', t.podSubmittedAt, reach>=3, 'podSubmittedAt'],
+    ['Payment settled', '', settled]
+  ];
+  return '<section class="m-card m-tl">'+steps.map(([l, d, done, f], i)=>{
+    const isNext = next && f === next.field;
+    return '<div class="m-tl-row'+(done?' done':'')+(isNext?' next':'')+'" style="--i:'+i+'">'+
+      '<i class="m-tl-dot">'+(done?mi('check'):'')+'</i>'+
+      '<div class="m-row-main"><b>'+l+'</b><span>'+(done ? (d ? fdate(d) : (i===4 ? 'Nothing left to collect' : 'Done'))
+        : i===4 ? money(Math.max(0,tripBalance(t)))+' still to collect' : 'Pending')+'</span></div>'+
+      (isNext ? '<button class="m-btn m-btn-s m-btn-ghost-dark" onclick="mStep(\''+t.id+'\',\''+f+'\',\''+next.word+'\')">Mark</button>' : '')+
+    '</div>';
+  }).join('')+
+  '<button class="m-link m-tl-more" onclick="tripDetail(\''+t.id+'\',\'delivery\')">'+(locked?'View':'Edit')+' dates and POD pages'+mi('chev')+'</button>'+
+  '</section>';
+}
+function mTripBilling(t){
+  const locked = tripLocked(t);
+  const adv = tripAdvance(t), chg = tripCharges(t), ded = tripDeductions(t), paid = allocatedTo(t.id);
+  const bal = tripBalance(t);
+  const edit = locked ? '' : "tripDetail('"+t.id+"','details')";
+  return '<section class="m-card m-bill">'+
+    '<div class="m-line m-line-main"><span>Freight</span><b class="num">'+money(t.freight)+
+      (edit?'<button class="m-icon-btn m-icon-s" aria-label="Edit freight" onclick="'+edit+'">'+mi('pencil')+'</button>':'')+'</b></div>'+
+    mLine('Advance', adv, locked?'':'Add advance', "tripDetail('"+t.id+"','money')")+
+    mLine('Extra charges', chg, locked?'':'Add charge', edit)+
+    (ded ? mLine('Deductions', ded, '', '') : '')+
+    mLine('Payments against this trip', paid, locked||bal<=0?'':'Add payment', "mAddPayment('"+t.id+"')")+
+    '<div class="m-pending'+(bal<=0?' is-clear':'')+'"><span>'+(bal<0?'Paid over':bal===0?'Fully received':'Balance due')+'</span>'+
+      '<b class="num">'+money(Math.abs(bal))+'</b></div>'+
+  '</section>';
+}
+function mTripMore(t){
+  const locked = tripLocked(t);
+  const row = (icon, l, v) => v ? '<div class="m-kv">'+mi(icon)+'<span>'+l+'</span><b>'+v+'</b></div>' : '';
+  return '<section class="m-card m-kvs">'+
+    row('route','From', esc(t.from))+
+    row('pin','To', esc(t.to))+
+    row('note','LR number', esc(t.lr))+
+    row('receipt','Material', esc(t.material))+
+    row('truck','Weight', esc(t.weight))+
+    (tripCompleted(t)?row('lock','Completed', t.completedAt?fdate(t.completedAt):'Yes'):'')+
+  '</section>'+
+  (locked?'':'<button class="m-btn m-btn-danger" onclick="delTrip(\''+t.id+'\')">'+mi('trash')+' Delete this trip</button>');
+}
+
+/* ---------- documents, sorted by what needs doing ---------- */
+function mDocsBody(){
+  const rows = [];
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>rows.push({t, d, st:docStatus(d.expiry)})));
+  const byKey = k => rows.filter(r=>r.st.key===k).sort((a,b)=>(a.d.expiry||'').localeCompare(b.d.expiry||''));
+  const groups = [['expired','Expired'],['soon','Expiring within 30 days'],['active','Valid'],['none','No expiry date']];
+  const count = k => rows.filter(r=>r.st.key===k).length;
+  const chip = st => '<em class="m-tag '+({expired:'bad', soon:'warn', active:'ok', none:''}[st.key])+'">'+esc(st.label)+'</em>';
+  let n = 0;
+  return '<div class="m-page">'+
+    '<section class="m-card m-money3 m-doc3">'+
+      '<div><span>Expired</span><b class="num '+(count('expired')?'m-neg':'')+'">'+count('expired')+'</b></div>'+
+      '<div><span>Due soon</span><b class="num" style="color:'+(count('soon')?'var(--m-warn)':'inherit')+'">'+count('soon')+'</b></div>'+
+      '<div><span>Valid</span><b class="num m-pos">'+count('active')+'</b></div>'+
+    '</section>'+
+    (rows.length ? groups.map(([k,l])=>{
+      const list = byKey(k);
+      if(!list.length) return '';
+      return '<h2 class="m-sec-h">'+l+' <em>'+list.length+'</em></h2><section class="m-card m-rows">'+list.map(r=>
+        '<div class="m-row" style="--i:'+(n++)+'" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">'+
+          '<div class="m-row-main"><b>'+esc(r.d.header||'Document')+'</b>'+
+            '<span>'+esc(mPlateText(r.t.number))+' · '+(r.d.expiry?fdate(r.d.expiry)+' · '+esc(docWhen(r.st.days)):'no date')+'</span></div>'+
+          '<div class="m-row-end">'+chip(r.st)+'</div>'+
+        '</div>').join('')+'</section>';
+    }).join('') : mEmpty('No documents yet','Record insurance, permits, fitness and the rest, and you are warned before any of them runs out.',
+        '<button class="m-btn m-btn-dark" onclick="truckDocForm()">Add a document</button>'))+
+  '</div>';
 }
 
 /* the title a desktop screen gives itself, carried into the phone's bar */
