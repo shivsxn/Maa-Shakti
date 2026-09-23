@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#151A21">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Maa Vandana Logistics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3620,6 +3625,397 @@ tr.row-link:hover td{background:var(--bg-2)}
 .tr-sum b{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums}
 .field.exp-credit select{padding:8px 10px;font-size:13.5px;height:auto}
 
+/* ============================================================
+   PHONE
+   Its own colours, the ones a phone app in this trade wears:
+   a green status bar, white cards on a cool grey page, one blue
+   for anything you can press and a navy for the main action.
+   Nothing below reaches the desktop — every rule hangs off the
+   body.phone class, which only a phone (or the Tools switch) sets.
+   ============================================================ */
+.m-bar, .m-tabs, .m-fab { display:none; }
+.to-phone{position:fixed;right:16px;bottom:16px;z-index:90;height:44px;padding:0 18px;border-radius:22px;border:0;
+  background:#0B3FD1;color:#fff;font:600 15px var(--sans);box-shadow:0 8px 20px -6px rgba(11,63,209,.5);cursor:pointer}
+.to-phone[hidden]{display:none}
+body.phone{
+  --m-bg:#F0F1F4; --m-card:#fff; --m-line:#E3E5EA; --m-line-2:#EDEEF2;
+  --m-ink:#1B1D22; --m-ink-2:#3C4048; --m-muted:#6B7079; --m-muted-2:#9095A0;
+  --m-blue:#0B3FD1; --m-blue-2:#1747D6; --m-blue-soft:#E8EEFD; --m-navy:#283A63; --m-band:#1C2233;
+  --m-green:#00875A; --m-green-soft:#E3F4EC; --m-orange:#E8642A; --m-amber:#EE8A12; --m-red:#DA3328;
+  --m-font: Roboto, 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-width:0; background:var(--m-bg); color:var(--m-ink); font-family:var(--m-font);
+  -webkit-tap-highlight-color:transparent;
+}
+body.phone .app{display:block;min-height:100vh}
+body.phone .sidebar, body.phone .topbar{display:none}
+body.phone .main{display:block}
+body.phone .content{padding:0;max-width:none}
+body.phone:not(.m-native) .content{padding:12px 12px 90px}
+body.phone .num{font-family:var(--m-font);font-variant-numeric:tabular-nums}
+
+/* ---------- the bar at the top ---------- */
+body.phone .m-bar{
+  display:flex; align-items:center; gap:10px; position:sticky; top:0; z-index:40;
+  height:60px; padding:0 12px 0 8px; padding-top:env(safe-area-inset-top);
+  box-sizing:content-box; background:#fff; border-bottom:1px solid var(--m-line);
+}
+body.phone .m-bar-start{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+body.phone .m-bar-end{display:flex;align-items:center;gap:6px;flex:none}
+body.phone #mBarExtra{display:flex;align-items:center;gap:6px}
+body.phone .m-title{font-size:20px;font-weight:600;margin:0;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--m-ink)}
+body.phone .m-title-root{padding-left:8px}
+body.phone .m-back{border:0;background:none;width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;color:var(--m-ink);flex:none;cursor:pointer}
+body.phone .m-back:active{background:var(--m-line-2)}
+body.phone .m-avatar{width:40px;height:40px;border-radius:50%;flex:none;background:#DDE1E8;color:#6B7280;
+  display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:.02em;margin-left:6px}
+body.phone .m-avatar-s{width:38px;height:38px;font-size:13.5px;margin-left:0;background:var(--m-blue-soft);color:var(--m-blue)}
+body.phone .m-who{display:flex;flex-direction:column;min-width:0}
+body.phone .m-who b{font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-who span{font-size:12px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-outline{height:36px;padding:0 16px;border-radius:8px;border:1.5px solid var(--m-navy);
+  background:#fff;color:var(--m-navy);font:600 15px var(--m-font);cursor:pointer}
+body.phone .m-outline:active{background:var(--m-blue-soft)}
+body.phone .m-lock{color:var(--m-green);display:grid;place-items:center;width:36px;height:36px}
+body.phone .m-icon-btn{border:0;background:none;width:40px;height:40px;border-radius:50%;
+  display:grid;place-items:center;color:var(--m-ink-2);cursor:pointer;flex:none}
+body.phone .m-icon-btn:active{background:var(--m-line-2)}
+body.phone .m-icon-s{width:30px;height:30px;color:var(--m-blue);margin:-6px -8px -6px 4px}
+body.phone .m-wa{color:#1FA855}
+body.phone .mi{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* the bell, moved in from the desktop bar, rings only on the home screen */
+body.phone #bellBtn{display:none}
+body.phone.m-home #bellBtn{display:grid;place-items:center;width:40px;height:40px;border:0;background:none;
+  color:var(--m-navy);position:relative;border-radius:50%}
+body.phone.m-home #bellBtn .ic{width:24px;height:24px;fill:var(--m-navy);stroke:var(--m-navy)}
+body.phone #pageActions{display:flex;gap:6px;overflow-x:auto;max-width:52vw}
+body.phone #pageActions:empty{display:none}
+body.phone #pageActions .btn{height:36px;padding:0 11px;font-size:13px;white-space:nowrap}
+
+/* ---------- the tabs at the foot ---------- */
+body.phone.m-root .m-tabs{
+  display:flex; position:fixed; left:0; right:0; bottom:0; z-index:40; background:#fff;
+  border-top:1px solid var(--m-line); padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+}
+body.phone .m-tab{flex:1;border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 4px;border-radius:12px;color:var(--m-muted-2);font:500 14px var(--m-font);cursor:pointer}
+body.phone .m-tab .mi{width:26px;height:26px}
+body.phone .m-tab.on{background:var(--m-blue-soft);color:var(--m-blue);font-weight:600}
+body.phone .m-tab.on .mi{fill:var(--m-blue);stroke:var(--m-blue)}
+body.phone.m-root .content{padding-bottom:84px}
+
+/* ---------- pages and cards ---------- */
+body.phone .m-page{padding:12px 12px 100px;display:flex;flex-direction:column;gap:12px}
+body.phone .m-card{background:var(--m-card);border:1px solid var(--m-line);border-radius:12px;
+  box-shadow:0 1px 2px rgba(20,24,32,.04)}
+body.phone .m-card-t{margin:0 0 4px;font-size:15px;font-weight:600}
+body.phone .m-hint{font-size:13px;color:var(--m-muted);line-height:1.45;padding:4px 0}
+body.phone .m-pos{color:var(--m-green)}
+body.phone .m-neg{color:var(--m-red)}
+body.phone .m-blue{color:var(--m-blue)}
+body.phone .m-count{font-size:13px;color:var(--m-muted);padding:0 4px}
+body.phone .m-foot-note{text-align:center;font-size:12px;color:var(--m-muted-2);padding:6px}
+body.phone .m-empty{text-align:center;padding:36px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}
+body.phone .m-empty-t{font-size:16px;font-weight:600}
+body.phone .m-empty-s{font-size:13.5px;color:var(--m-muted);max-width:300px;line-height:1.45}
+
+/* buttons */
+body.phone .m-btn{height:46px;padding:0 16px;border-radius:8px;font:600 16px var(--m-font);letter-spacing:.02em;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1.5px solid transparent}
+body.phone .m-btn .mi{width:19px;height:19px}
+body.phone .m-btn-blue{background:var(--m-blue);color:#fff}
+body.phone .m-btn-blue:active{background:#0932A8}
+body.phone .m-btn-line{background:#fff;border-color:var(--m-blue);color:var(--m-blue)}
+body.phone .m-btn-green-line{background:#fff;border-color:var(--m-green);color:var(--m-green)}
+body.phone .m-btn-green-line[disabled]{border-color:var(--m-line);color:var(--m-muted-2);cursor:default}
+body.phone .m-btn-danger{background:#fff;border-color:#F1C4C0;color:var(--m-red);width:100%}
+body.phone .m-btn-s{height:38px;font-size:14.5px;padding:0 14px}
+body.phone .m-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+body.phone .m-link{border:0;background:none;padding:0;color:var(--m-blue-2);font:500 15px var(--m-font);cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px}
+body.phone .m-link .mi{width:16px;height:16px;stroke-width:2.4}
+body.phone .m-link-icon .mi{width:20px;height:20px}
+body.phone .m-fab{
+  display:inline-flex; position:fixed; left:50%; transform:translateX(-50%); bottom:calc(20px + env(safe-area-inset-bottom));
+  z-index:35; align-items:center; gap:10px; height:54px; padding:0 30px; border-radius:28px; border:0;
+  background:var(--m-blue); color:#fff; font:600 17px var(--m-font); letter-spacing:.06em; text-transform:uppercase;
+  box-shadow:0 8px 20px -6px rgba(11,63,209,.5); cursor:pointer; white-space:nowrap;
+}
+body.phone .m-fab-green{background:var(--m-green);box-shadow:0 8px 20px -6px rgba(0,135,90,.5)}
+body.phone .m-fab .mi{width:22px;height:22px;stroke-width:2.4}
+body.phone.m-root .m-fab{bottom:calc(92px + env(safe-area-inset-bottom))}
+body.phone .m-more{border:0;background:#fff;border:1px solid var(--m-line);border-radius:10px;height:46px;
+  font:600 15px var(--m-font);color:var(--m-blue);cursor:pointer}
+
+/* search and chips */
+body.phone .m-search{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--m-line);
+  border-radius:10px;height:50px;padding:0 14px;flex:1;min-width:0}
+body.phone .m-search .mi{color:var(--m-ink-2);width:24px;height:24px}
+body.phone .m-search input{border:0;outline:0;background:none;font:400 17px var(--m-font);flex:1;min-width:0;color:var(--m-ink);
+  padding:0;height:100%;box-shadow:none}
+body.phone .m-search input::placeholder{color:var(--m-muted-2)}
+body.phone .m-search-row{display:flex;gap:10px}
+body.phone .m-filter{flex:none;display:flex;align-items:center;gap:8px;height:50px;padding:0 16px;background:#fff;
+  border:1px solid var(--m-line);border-radius:10px;font:600 16px var(--m-font);letter-spacing:.06em;color:var(--m-ink-2);cursor:pointer}
+body.phone .m-filter.on{border-color:var(--m-blue);color:var(--m-blue);background:var(--m-blue-soft)}
+body.phone .m-chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+body.phone .m-chip{flex:none;height:36px;padding:0 14px;border-radius:18px;border:1px solid var(--m-line);background:#fff;
+  font:500 14px var(--m-font);color:var(--m-ink-2);cursor:pointer}
+body.phone .m-chip em{font-style:normal;color:var(--m-muted-2);margin-left:2px}
+body.phone .m-chip.on{background:var(--m-blue-soft);border-color:var(--m-blue);color:var(--m-blue)}
+body.phone .m-chip.on em{color:var(--m-blue)}
+body.phone .m-badge{font-style:normal;background:var(--m-red);color:#fff;border-radius:10px;min-width:20px;height:20px;
+  padding:0 6px;font:700 11.5px/20px var(--m-font);text-align:center;display:inline-block}
+
+/* ---------- home ---------- */
+body.phone .m-hero{padding:18px 16px 16px}
+body.phone .m-hero-l{font-size:17px;color:var(--m-navy);font-weight:500}
+body.phone .m-hero-v{border:0;background:none;padding:0;margin:6px 0 16px;font:500 34px var(--m-font);color:var(--m-ink);
+  letter-spacing:-.01em;cursor:pointer;display:block}
+body.phone .m-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+body.phone .m-quick button{border:1px solid var(--m-line);background:#fff;border-radius:10px;padding:14px 4px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 2px 6px -3px rgba(20,24,32,.12);
+  font:500 14.5px var(--m-font);color:var(--m-ink);cursor:pointer}
+body.phone .m-quick i{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff}
+body.phone .m-quick i .mi{width:24px;height:24px}
+body.phone .q-navy{background:#3E5596}
+body.phone .q-green{background:#2EAF55}
+body.phone .q-orange{background:#EE8527}
+body.phone .m-add{width:100%;height:52px;border:0;border-radius:8px;background:var(--m-navy);color:#fff;
+  font:600 19px var(--m-font);letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer;
+  box-shadow:0 4px 10px -4px rgba(40,58,99,.5)}
+body.phone .m-add .mi{width:24px;height:24px;stroke-width:2.2}
+body.phone .m-alert{display:flex;align-items:center;gap:12px;border:1px solid #F5C9C4;background:#FDF1EF;color:#9B271D;
+  border-radius:12px;padding:12px 14px;font:400 14.5px var(--m-font);text-align:left;cursor:pointer}
+body.phone .m-alert span{flex:1}
+body.phone .m-sec{overflow:hidden}
+body.phone .m-sec-t{font-size:19px;font-weight:600;margin:0;padding:16px 16px 4px}
+body.phone .m-cells{display:grid;grid-template-columns:repeat(4,1fr);padding:4px 4px 12px}
+body.phone .m-cell{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:10px 2px;font:400 14.5px/1.3 var(--m-font);color:var(--m-ink);cursor:pointer;position:relative;text-align:center}
+body.phone .m-cell:active{background:var(--m-line-2);border-radius:10px}
+body.phone .m-cell .m-badge{position:absolute;top:4px;right:calc(50% - 30px)}
+body.phone .mg{width:46px;height:46px}
+body.phone .m-sec-more{width:100%;border:0;border-top:1px solid var(--m-line);background:#EEF0F4;height:44px;
+  font:500 15px var(--m-font);color:var(--m-navy);cursor:pointer}
+
+/* ---------- lists of rows ---------- */
+body.phone .m-rows{overflow:hidden}
+body.phone .m-row{display:flex;align-items:center;gap:12px;padding:14px 14px;border-bottom:1px solid var(--m-line-2);cursor:pointer}
+body.phone .m-row:last-child{border-bottom:0}
+body.phone .m-row:active{background:#F7F8FA}
+body.phone .m-row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+body.phone .m-row-main b{font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-row-main>span{font-size:13px;color:var(--m-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-row-end{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none;text-align:right}
+body.phone .m-row-end b{font-size:16px;font-weight:600}
+body.phone .m-row-end>span{font-size:12px;color:var(--m-muted)}
+body.phone .m-chev{color:#A5A9B2;width:18px;height:18px}
+body.phone .m-entry .m-row-main b{white-space:normal;font-size:15px}
+body.phone .m-total{display:flex;align-items:center;justify-content:space-between;padding:16px}
+body.phone .m-total span{font-size:15px;color:var(--m-muted)}
+body.phone .m-total b{font-size:22px;font-weight:600}
+body.phone .m-bal{padding:18px 16px 16px;display:flex;flex-direction:column;gap:4px}
+body.phone .m-bal-l{font-size:15px;color:var(--m-muted)}
+body.phone .m-bal-v{font-size:32px;font-weight:500}
+body.phone .m-bal-s{font-size:13px;color:var(--m-muted);margin-bottom:12px}
+body.phone .m-list{overflow:hidden}
+body.phone .m-tool{display:flex;align-items:center;gap:14px;width:100%;border:0;border-bottom:1px solid var(--m-line-2);
+  background:none;padding:12px 14px;text-align:left;cursor:pointer;color:var(--m-ink)}
+body.phone .m-tool:last-child{border-bottom:0}
+body.phone .m-tool span{flex:1;display:flex;flex-direction:column;gap:2px}
+body.phone .m-tool b{font:500 16px var(--m-font)}
+body.phone .m-tool em{font-style:normal;font-size:13px;color:var(--m-muted)}
+body.phone .m-tool .mi{color:#A5A9B2;width:18px}
+body.phone .m-tool .mg{width:40px;height:40px}
+
+/* ---------- trips ---------- */
+body.phone .m-trip{padding:16px 16px 14px;cursor:pointer}
+body.phone .m-trip:active{background:#FAFBFC}
+body.phone .m-trip-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+body.phone .m-trip-party{font-size:14.5px;color:var(--m-muted);margin-bottom:4px}
+body.phone .m-plate{font-size:18px;font-weight:500;letter-spacing:.01em;color:var(--m-ink);white-space:nowrap}
+body.phone .m-plate b{font-weight:500;color:var(--m-blue-2)}
+body.phone .m-pill{display:inline-flex;align-items:center;gap:4px;background:#EEF0F3;border-radius:18px;padding:7px 12px 7px 16px;
+  font-size:17px;font-weight:500;white-space:nowrap}
+body.phone .m-pill .mi{width:14px;height:14px;stroke-width:2.2;color:var(--m-muted)}
+body.phone .m-route{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin:14px 0 12px}
+body.phone .m-route b{display:block;font-size:17px;font-weight:500}
+body.phone .m-route span{display:block;font-size:14.5px;color:var(--m-muted);margin-top:6px}
+body.phone .m-route-b{text-align:right}
+body.phone .m-route-mid{display:flex;align-items:center;gap:6px;color:#8C919B}
+body.phone .m-route-mid i{flex:1;height:1px;background:#C9CCD3}
+body.phone .m-route-mid .mi{width:32px;height:32px;stroke-width:1.4}
+body.phone .m-trip-foot{display:flex;justify-content:space-between;align-items:center;gap:10px}
+body.phone .m-state{display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:500;white-space:nowrap}
+body.phone .m-state i{width:9px;height:9px;border-radius:50%;display:inline-block}
+body.phone .d-blue{background:#2E7CF6}
+body.phone .d-green{background:var(--m-green)}
+body.phone .d-amber{background:var(--m-amber)}
+body.phone .d-grey{background:#A5A9B2}
+body.phone .m-lr{font-size:15px;color:var(--m-ink-2);font-weight:500}
+
+/* ---------- one trip ---------- */
+body.phone .m-trip-band{background:var(--m-band);padding:12px 12px}
+body.phone .m-trip-id{background:#fff;border-radius:10px;display:flex;justify-content:space-between;gap:10px;padding:0 6px}
+body.phone .m-trip-id button{border:0;background:none;display:flex;align-items:center;gap:10px;padding:16px 8px;min-width:0;
+  font:400 18px var(--m-font);color:var(--m-blue-2);cursor:pointer}
+body.phone .m-trip-id button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-trip-id .mi{color:var(--m-ink);width:22px;height:22px}
+body.phone .m-tabs-top{display:flex;background:#fff;border-bottom:1px solid var(--m-line);position:sticky;top:calc(61px + env(safe-area-inset-top));z-index:30}
+body.phone .m-tabs-top button{flex:1;border:0;background:none;height:54px;font:400 18px var(--m-font);color:#9095A0;
+  position:relative;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+body.phone .m-tabs-top button.on{color:var(--m-blue)}
+body.phone .m-tabs-top button.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:4px;
+  background:var(--m-blue);border-radius:4px 4px 0 0}
+body.phone .m-page-trip{padding-top:12px}
+body.phone .m-party{padding:16px 16px 14px}
+body.phone .m-party-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+body.phone .m-party-name{border:0;background:none;padding:0;display:flex;align-items:center;gap:10px;min-width:0;
+  font:500 18px var(--m-font);color:var(--m-blue-2);cursor:pointer;text-align:left}
+body.phone .m-party-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.phone .m-party-name .mi{color:var(--m-ink);fill:var(--m-ink)}
+body.phone .m-party .m-route b{font-size:19px}
+body.phone .m-lr-mid{text-align:center;font-size:16px;font-weight:500;margin:-6px 0 6px}
+body.phone .m-steps{display:grid;grid-template-columns:repeat(5,1fr);margin:14px -8px 16px;position:relative}
+body.phone .m-step{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;position:relative}
+body.phone .m-step::before{content:'';position:absolute;top:9px;left:-50%;right:50%;height:2px;background:#D5D8DE}
+body.phone .m-step:first-child::before{display:none}
+body.phone .m-step.done::before{background:var(--m-green)}
+body.phone .m-step i{width:20px;height:20px;border-radius:50%;background:#C9CCD3;position:relative;z-index:1;display:grid;place-items:center}
+body.phone .m-step.done i{background:var(--m-green);color:#fff}
+body.phone .m-step i .mi{width:13px;height:13px;stroke-width:3}
+body.phone .m-step span{font-size:13px;line-height:1.2;color:var(--m-muted)}
+body.phone .m-step.done span{color:var(--m-ink);font-weight:500}
+body.phone .m-step em{font-style:normal;font-size:11px;color:var(--m-muted-2);margin-top:-4px}
+body.phone .m-lines{display:flex;flex-direction:column;gap:14px;padding:16px}
+body.phone .m-party .m-lines{padding:20px 0 0}
+body.phone .m-line{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;font-size:16px}
+body.phone .m-line>div{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+body.phone .m-line b{font-weight:400;display:flex;align-items:center;text-align:right}
+body.phone .m-line-main{font-weight:500}
+body.phone .m-line-main b{font-weight:500}
+body.phone .m-pending{display:flex;justify-content:space-between;align-items:center;border-top:2px dashed #C9CCD3;
+  margin-top:18px;padding-top:16px;font-size:20px;font-weight:600}
+body.phone .m-pending b{color:var(--m-blue);font-weight:600}
+body.phone .m-party-foot{display:flex;justify-content:space-between;align-items:center;margin-top:14px;min-height:44px}
+body.phone .m-note{margin-top:10px;padding:10px 12px;background:#F6F7F9;border-radius:8px;font-size:14px;color:var(--m-ink-2);white-space:pre-wrap}
+body.phone .m-sup .m-link{align-self:flex-start}
+body.phone .m-profit{padding:18px 16px 0;overflow:hidden}
+body.phone .m-pl-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0}
+body.phone .m-pl-head{font-size:17px;font-weight:500;padding-top:10px}
+body.phone .m-pl-sub{font-size:15.5px;padding-left:16px;color:var(--m-ink-2)}
+body.phone .m-pl-box{background:#EEF0F3;border-radius:14px;margin:4px 0 10px 14px;padding:10px 16px;display:flex;flex-direction:column;gap:12px;font-size:14.5px}
+body.phone .m-pl-box div{display:flex;justify-content:space-between}
+body.phone .m-pl-add{margin:10px 0 16px 16px}
+body.phone .m-pl-total{display:flex;justify-content:space-between;align-items:center;border-top:2px dashed #C9CCD3;
+  margin:6px -16px 0;padding:18px 16px 20px;font-size:22px;font-weight:700}
+body.phone .m-drv{display:flex;align-items:center;gap:12px}
+body.phone .m-drv .m-avatar{margin-left:0}
+
+/* ---------- trucks and papers ---------- */
+body.phone .m-tabs-2{top:calc(61px + env(safe-area-inset-top))}
+body.phone .m-tabs-2 .m-badge{margin-left:4px}
+body.phone .m-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+body.phone .m-kpi{border:1px solid var(--m-line);background:#fff;border-radius:6px;padding:10px 12px;text-align:left;
+  display:flex;flex-direction:column;gap:6px;cursor:pointer;font-family:var(--m-font)}
+body.phone .m-kpi span{font-size:14px;color:var(--m-muted)}
+body.phone .m-kpi b{font-size:19px;font-weight:500}
+body.phone .m-kpi.green span{color:var(--m-green)}
+body.phone .m-kpi.blue span{color:var(--m-blue-2)}
+body.phone .m-kpi.on{border:1.5px solid var(--m-blue);background:var(--m-blue-soft)}
+body.phone .m-truck{gap:8px}
+body.phone .m-tags{display:flex;gap:6px;flex-wrap:wrap}
+body.phone .m-tag{font-style:normal;display:inline-block;padding:3px 10px;border-radius:4px;font-size:13.5px;font-weight:500;color:#fff;background:#8C919B}
+body.phone .m-tag.own{background:#1650E0}
+body.phone .m-tag.mkt{background:var(--m-orange)}
+body.phone .m-tag.bad{background:var(--m-red)}
+body.phone .m-tag.warn{background:var(--m-amber)}
+body.phone .m-tag.ok{background:var(--m-green)}
+body.phone .m-where{display:flex;gap:8px;font-size:14px;color:var(--m-muted)}
+body.phone .m-where i{font-style:normal;color:#A5A9B2}
+body.phone .m-docs-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
+body.phone .m-docs-head div{display:flex;flex-direction:column;gap:4px}
+body.phone .m-docs-head b{font-size:17px;font-weight:600}
+body.phone .m-docs-head span{font-size:13.5px;color:var(--m-muted)}
+body.phone .m-doc{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px;cursor:pointer}
+body.phone .m-doc>div:first-child{display:flex;flex-direction:column;gap:10px;min-width:0}
+body.phone .m-doc>div:first-child b{font-size:18px;font-weight:500}
+body.phone .m-rings{display:flex;gap:8px;flex:none}
+body.phone .m-ring{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:50px;color:#9095A0}
+body.phone .m-ring i{font-style:normal;width:34px;height:34px;border-radius:50%;border:1.5px solid currentColor;
+  display:grid;place-items:center;font-size:13px;color:var(--m-ink)}
+body.phone .m-ring span{font-size:12px;white-space:nowrap}
+body.phone .m-ring.r-red{color:var(--m-red)}
+body.phone .m-ring.r-amber{color:var(--m-amber)}
+body.phone .m-ring.r-green{color:var(--m-green)}
+
+/* ---------- the forms, as full screens ---------- */
+body.phone .overlay{backdrop-filter:none;-webkit-backdrop-filter:none}
+body.phone .modal{left:0;border-left:0;box-shadow:none;animation:mUp .22s cubic-bezier(.2,.8,.2,1);font-family:var(--m-font)}
+@keyframes mUp{from{opacity:.4;transform:translateY(24px)}to{opacity:1;transform:none}}
+body.phone .modal-head{padding:12px 8px 12px 16px;border-radius:0;min-height:60px}
+body.phone .modal-title{font-size:18px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+body.phone .modal .x{width:44px;height:44px;font-size:28px}
+body.phone .modal-body{padding:14px 14px 20px;max-width:none!important}
+body.phone .modal-full .modal-body{padding:12px 12px 20px}
+body.phone .modal-foot{padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-radius:0}
+body.phone .modal-foot .btn{flex:1;height:48px;font-size:15.5px;justify-content:center}
+body.phone .modal .form-grid,
+body.phone .modal .form-grid.three,
+body.phone .modal .form-grid.four{grid-template-columns:1fr;gap:12px}
+body.phone .modal .form-grid .full{max-width:none}
+body.phone .modal input:not([type=checkbox]):not([type=radio]),
+body.phone .modal select, body.phone .modal textarea{font-size:16px;min-height:46px}
+body.phone .modal .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+body.phone .modal .tabs .tab{flex:none;white-space:nowrap}
+body.phone .modal-ask{position:absolute;left:16px;right:16px;top:50%;bottom:auto;margin:0;width:auto;max-width:none;
+  transform:translateY(-50%);border-radius:16px;animation:none}
+body.phone .modal-sheet{top:auto;max-height:88vh;border-radius:18px 18px 0 0;animation:mSheet .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes mSheet{from{transform:translateY(40%)}to{transform:none}}
+body.phone .modal-sheet .modal-head{border-radius:18px 18px 0 0}
+body.phone .m-menu{display:flex;flex-direction:column;margin:-6px -14px}
+body.phone .m-menu-row{display:flex;align-items:center;gap:14px;border:0;background:none;padding:14px 18px;text-align:left;
+  font:400 16px var(--m-font);color:var(--m-ink);cursor:pointer}
+body.phone .m-menu-row:active{background:var(--m-line-2)}
+body.phone .m-menu-row span{flex:1}
+body.phone .m-menu-row em{font-style:normal;color:var(--m-muted);font-size:14px}
+body.phone .m-menu-row.danger{color:var(--m-red)}
+body.phone .modal .m-btn{width:100%}
+
+/* ---------- desktop screens shown on a phone ----------
+   Reports, the driver account and the rest keep their own layout;
+   they are only made to fit: one column of cards, filters that
+   wrap, and wide tables that slide sideways instead of squeezing. */
+body.phone:not(.m-native) .grid.g2, body.phone:not(.m-native) .grid.g3,
+body.phone:not(.m-native) .grid.g4, body.phone:not(.m-native) .grid.g5{grid-template-columns:1fr 1fr}
+body.phone:not(.m-native) .filter-row{flex-wrap:wrap}
+body.phone:not(.m-native) .filter-row > *{flex:1 1 44%;min-width:0;max-width:none}
+body.phone:not(.m-native) .filter-row .search{flex-basis:100%}
+body.phone:not(.m-native) .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+body.phone:not(.m-native) .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+body.phone:not(.m-native) .tabs .tab{flex:none;white-space:nowrap}
+body.phone:not(.m-native) .card{max-width:100%}
+body.phone:not(.m-native) .tbl-wrap table{min-width:760px}
+body.phone .m-row-main>.m-plate{font-size:18px;color:var(--m-ink);overflow:visible}
+body.phone .m-page>.m-search{flex:none}
+body.phone .m-kpi span{font-size:13px;line-height:1.25}
+body.phone .m-doc>div:first-child{flex:1}
+body.phone .m-doc .m-link{font-size:14px;white-space:nowrap}
+body.phone .m-rings{gap:4px}
+body.phone .m-ring{min-width:46px}
+body.phone .m-ring span{font-size:11px}
+body.phone .modal-foot .btn-primary{background:var(--m-blue);border-color:var(--m-blue);color:#fff}
+/* a line of the advance or of the expenses, stacked to fit */
+body.phone .exp-row .exp-what{flex:1 1 100%}
+body.phone .exp-row .exp-amt{flex:1 1 40%}
+body.phone .exp-row .exp-mode{flex:1 1 40%}
+body.phone .exp-row .exp-shop{flex:1 1 100%}
+body.phone .exp-more{grid-template-columns:1fr;max-width:none}
+body.phone .exp-more input{height:40px;font-size:15px}
+body.phone .exp-entry input, body.phone .exp-entry select{min-width:0}
+
 </style>
 </head>
 <body>
@@ -3635,9 +4031,10 @@ tr.row-link:hover td{background:var(--bg-2)}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.55 &middot; 10 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.56 &middot; 23 Sep 2026</div>
   </aside>
   <div class="main">
+    <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
     <header class="topbar">
       <div>
         <h1 class="page-title" id="pageTitle">Dashboard</h1>
@@ -3653,6 +4050,8 @@ tr.row-link:hover td{background:var(--bg-2)}
   </div>
 </div>
 
+<nav class="m-tabs" id="mTabs" aria-label="Main"></nav>
+<button class="to-phone" id="toPhone" hidden onclick="setLayout('auto')">Phone layout</button>
 <div class="gate" id="authGate" hidden></div>
 <div id="modalRoot"></div>
 <div id="toast"></div>
@@ -3687,6 +4086,7 @@ function save(){
   try{ localStorage.setItem(KEY, JSON.stringify(DB)); }
   catch(e){ toast('Could not save. Your device storage may be full.'); }
   if(typeof syncReady==='function' && syncReady()) syncPush(false);
+  if(typeof mAfterSave==='function') mAfterSave();
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 
@@ -4551,6 +4951,7 @@ function keepSub(r, state){
   SUBS[r] = held;
 }
 function go(r){
+  if(onPhone()) mRemember();      /* so the back button can return here */
   keepSub(route, sub);
   route = r;
   sub = Object.assign({}, SUBS[r] || {});
@@ -4571,6 +4972,15 @@ function moreMenu(){
 
 function render(){
   closeDatePicker(); comboClose();
+  /* a phone draws its own screen where it has one */
+  if(onPhone() && mRender()){
+    paintBell();
+    clampDates();
+    const v = $('#view');
+    v.classList.remove('view-in'); void v.offsetWidth; v.classList.add('view-in');
+    animateCounts();
+    return;
+  }
   const p = PAGES.find(x=>x.id===route) || PAGES[0];
   $('#pageTitle').textContent = p.label;
   $('#pageSub').textContent = p.sub;
@@ -4672,6 +5082,7 @@ function restoreModal(vals){
 function modalSize(wide){
   if(wide === 'ask') return 'ask';
   if(wide === 'full') return 'full';
+  if(wide === 'sheet') return onPhone() ? 'sheet' : 'md';
   if(wide === 'xl' || wide === true || wide === 'lg') return 'lg';
   return 'md';
 }
@@ -6559,6 +6970,7 @@ function ledgerRows(pid){
 }
 
 function renderLedger(pid){
+  if(onPhone()){ render(); return; }
   const p = partyById(pid);
   if(!p){ sub={}; return viewParties(); }
   const all = ledgerRows(pid);
@@ -12012,6 +12424,960 @@ function copyRules(){
 }
 
 /* ============================================================
+   PHONE
+   On a phone the same records get a phone's screens: a home
+   page of tiles, lists of cards, a trip read top to bottom, and
+   a back arrow that goes back. Nothing here keeps numbers of its
+   own — every figure is asked of the same functions the desktop
+   screens use, and every change goes through the same forms, so
+   the two can never tell a different story. A screen with no
+   phone version of its own (reports, the driver account, the
+   supplier ledger) is shown as the desktop one, fitted to width.
+   ============================================================ */
+const PHONE_MQ = window.matchMedia('(max-width: 760px), (pointer: coarse) and (max-height: 520px) and (max-width: 1000px)');
+function layoutPref(){ try{ return localStorage.getItem('mvl_layout') || 'auto'; }catch(e){ return 'auto'; } }
+function isPhone(){
+  const p = layoutPref();
+  if(p === 'phone') return true;
+  if(p === 'desktop') return false;
+  return PHONE_MQ.matches;
+}
+function onPhone(){ return document.body.classList.contains('phone'); }
+
+/* The bell and the page's own buttons are single elements that half the
+   app writes into by id. Rather than keep two of each, the one element
+   moves: into the phone's bar on a phone, back to the top bar otherwise. */
+function applyLayout(){
+  const ph = isPhone();
+  document.body.classList.toggle('phone', ph);
+  const end = $('#mBarEnd'), top = $('.topbar-right');
+  const bell = $('#bellBtn'), acts = $('#pageActions');
+  if(ph){
+    if(end && bell && bell.parentNode !== end){ end.appendChild(acts); end.appendChild(bell); }
+    if(!mArmed) mArm();
+  } else {
+    if(top && bell && bell.parentNode !== top){ top.insertBefore(bell, top.firstChild); top.appendChild(acts); }
+    if(String(route).startsWith('m_')) route = 'dashboard';
+  }
+  /* a phone switched to the computer layout keeps a way back */
+  const tp = $('#toPhone');
+  if(tp) tp.hidden = ph || layoutPref() !== 'desktop' || !PHONE_MQ.matches;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', ph ? '#00875A'
+    : (getComputedStyle(document.documentElement).getPropertyValue('--side').trim() || '#131720'));
+}
+function setLayout(k){
+  try{ localStorage.setItem('mvl_layout', k); }catch(e){}
+  closeModal(); applyLayout(); render();
+  toast(k === 'desktop' ? 'Computer layout on' : 'Phone layout on');
+}
+PHONE_MQ.addEventListener && PHONE_MQ.addEventListener('change', ()=>{
+  if(layoutPref() !== 'auto') return;
+  applyLayout(); render();
+});
+
+/* ---------- going back ----------
+   One spare history entry sits on top of the page. Android's back
+   button pops it; we do the going-back ourselves and put it back. At
+   the home screen with nothing open it is left off, so the next press
+   leaves the app the way every other app does. */
+let mHist = [];
+let mArmed = false;
+function mArm(){
+  if(mArmed) return;
+  try{ history.pushState({mvl:1}, ''); mArmed = true; }catch(e){}
+}
+window.addEventListener('popstate', ()=>{
+  if(!onPhone()) return;
+  mArmed = false;
+  if(mBack()) mArm();
+  else toast('Press back again to close');
+});
+function mRemember(){
+  mHist.push({route, sub:Object.assign({}, sub), y:window.scrollY});
+  if(mHist.length > 40) mHist.shift();
+}
+function mBack(){
+  const ov = document.querySelector('#modalRoot .overlay');
+  if(ov){ closeModalAsk(); return true; }
+  if(typeof dpEl !== 'undefined' && dpEl){ closeDatePicker(); return true; }
+  if(mHist.length){
+    const p = mHist.pop();
+    keepSub(route, sub);
+    route = p.route; sub = p.sub;
+    render();
+    window.scrollTo(0, p.y || 0);
+    return true;
+  }
+  if(route !== 'dashboard'){ keepSub(route, sub); route = 'dashboard'; sub = Object.assign({}, SUBS.dashboard || {}); render(); window.scrollTo(0,0); return true; }
+  return false;
+}
+/* a pushed screen with its own starting state, remembered for back */
+function mGo(r, preset){
+  if(onPhone()) mRemember();
+  keepSub(route, sub);
+  route = r;
+  sub = Object.assign({}, SUBS[r] || {}, preset || {});
+  window.scrollTo(0,0); closeModal(); render();
+}
+function mOpen(r, id, extra){ mGo(r, Object.assign({open:id}, extra || {})); }
+/* the three tabs at the foot are roots: leaving one forgets the trail */
+function mTab(r){
+  mHist = r === 'dashboard' ? [] : [{route:'dashboard', sub:{}, y:0}];
+  keepSub(route, sub);
+  route = r; sub = Object.assign({}, SUBS[r] || {});
+  window.scrollTo(0,0); closeModal(); render();
+}
+
+/* ---------- icons ---------- */
+const MI = {
+  back:'<path d="M20 12H5"/><path d="M11 5l-7 7 7 7"/>',
+  bell:'<path d="M18 15v-4a6 6 0 10-12 0v4l-1.6 2.4h15.2z"/><path d="M10 20a2 2 0 004 0"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  filter:'<path d="M4 5h16l-6.2 7.4V19l-3.6-1.8v-4.8z"/>',
+  arrow:'<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/><path d="M13 8.5l3.5 3.5-3.5 3.5"/>',
+  chev:'<path d="M9 5l7 7-7 7"/>',
+  kebab:'<circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/>',
+  pencil:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  truck:'<path d="M2 7h11v9H2z"/><path d="M13 10h4.5L21 13.5V16h-8"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+  wheel:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2"/><path d="M3.8 10.5c2.6-.9 5.3-1.3 8.2-1.3s5.6.4 8.2 1.3"/><path d="M10.4 13.6L7 19.4M13.6 13.6l3.4 5.8"/>',
+  user:'<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0115 0"/>',
+  phone:'<path d="M6.6 3.5l3 3.3-1.8 2.5a12 12 0 006.9 6.9l2.5-1.8 3.3 3-1.6 2.6C12 20 4 12 4 5.1z"/>',
+  wa:'<path d="M4 20l1.2-4A8 8 0 1112 20a8 8 0 01-4-1.1z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1.1-1 .9a4.6 4.6 0 01-2.7-2.7l.9-1-1.1-2z"/>',
+  note:'<path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5"/><path d="M8 13h8M8 17h5"/>',
+  home:'<path d="M4 4h12a3 3 0 013 3v13H7a3 3 0 01-3-3z"/><path d="M4 17a3 3 0 013-3h12"/>',
+  tools:'<path d="M14.5 5.5a4 4 0 00-5 5L4 16l4 4 5.5-5.5a4 4 0 005-5l-2.4 2.4-2.6-.6-.6-2.6z"/>',
+  dir:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3 19a6 6 0 0112 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.5 14.2A5 5 0 0121 19"/>',
+  check:'<path d="M5 12.5l4.2 4.2L19 7"/>',
+  trash:'<path d="M4 6.5h16M9.5 6.5V4.5h5v2M6.5 6.5l.9 13h9.2l.9-13"/>',
+  print:'<path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><path d="M7 14h10v7H7z"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>'
+};
+function mi(k, cls){ return '<svg class="mi'+(cls?' '+cls:'')+'" viewBox="0 0 24 24" aria-hidden="true">'+(MI[k]||'')+'</svg>'; }
+
+/* The tiles' pictures: two tones of blue with one accent, drawn to sit
+   on white the way the rest of a phone's apps do. */
+const MG_A = '#C8D8FA', MG_B = '#7FA3EE', MG_C = '#3160D8';
+const MG = {
+  unpaid:'<circle cx="15" cy="17" r="6" fill="'+MG_A+'"/><circle cx="15" cy="17" r="2.4" fill="'+MG_C+'"/><path d="M15 23l0 7" stroke="'+MG_C+'" stroke-width="2.4"/><rect x="24" y="8" width="16" height="22" rx="3" fill="'+MG_B+'"/><text x="32" y="23" font-size="12" font-weight="700" text-anchor="middle" fill="#fff">₹</text><path d="M14 38c6 0 6-6 14-6s8 5 14 5" stroke="'+MG_C+'" stroke-width="2.2" fill="none" stroke-dasharray="3 3"/><circle cx="34" cy="38" r="4" fill="'+MG_C+'"/>',
+  invoice:'<rect x="10" y="6" width="24" height="32" rx="3" fill="'+MG_A+'"/><path d="M15 14h14M15 20h14M15 26h8" stroke="'+MG_B+'" stroke-width="2.4"/><circle cx="33" cy="34" r="8" fill="'+MG_C+'"/><text x="33" y="38.5" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">₹</text>',
+  remind:'<path d="M14 30V21a10 10 0 0120 0v9l3 4H11z" fill="'+MG_B+'"/><circle cx="24" cy="38" r="3" fill="'+MG_C+'"/><circle cx="34" cy="14" r="7" fill="'+MG_C+'"/><text x="34" y="18" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">₹</text>',
+  payin:'<rect x="6" y="14" width="30" height="20" rx="3" fill="'+MG_A+'"/><rect x="6" y="19" width="30" height="4" fill="'+MG_B+'"/><circle cx="34" cy="32" r="8" fill="'+MG_C+'"/><path d="M34 28v8M30 32l4 4 4-4" stroke="#fff" stroke-width="2" fill="none"/>',
+  supkhata:'<rect x="18" y="6" width="20" height="28" rx="3" fill="'+MG_A+'"/><rect x="22" y="11" width="12" height="5" rx="1" fill="'+MG_B+'"/><circle cx="16" cy="28" r="5" fill="'+MG_C+'"/><path d="M8 40a8 8 0 0116 0z" fill="'+MG_C+'"/>',
+  supreport:'<rect x="14" y="8" width="26" height="24" rx="3" fill="'+MG_A+'"/><path d="M19 14h16M19 19h16" stroke="'+MG_B+'" stroke-width="2"/><path d="M22 28l5-4 4 3 5-5" stroke="'+MG_C+'" stroke-width="2" fill="none"/><path d="M15 34a8 8 0 1 1-8 8h8z" fill="'+MG_C+'"/>',
+  pod:'<rect x="10" y="6" width="22" height="30" rx="3" fill="'+MG_A+'"/><rect x="15" y="11" width="12" height="9" rx="1.5" fill="none" stroke="'+MG_B+'" stroke-width="2"/><path d="M17.5 15.5l2 2 4-4" stroke="'+MG_C+'" stroke-width="2" fill="none"/><path d="M15 25h12M15 30h8" stroke="'+MG_B+'" stroke-width="2"/><circle cx="33" cy="35" r="7" fill="'+MG_C+'"/><path d="M33 31v4l3 2" stroke="#fff" stroke-width="2" fill="none"/>',
+  driver:'<rect x="18" y="6" width="18" height="24" rx="2" fill="'+MG_B+'"/><rect x="12" y="12" width="18" height="22" rx="2" fill="'+MG_A+'"/><circle cx="17" cy="28" r="5" fill="'+MG_C+'"/><path d="M8 40c1-6 17-6 18 0" fill="'+MG_C+'"/><path d="M24 36c4-4 10-4 14-1" stroke="'+MG_C+'" stroke-width="2.4" fill="none"/>',
+  shop:'<path d="M8 22l14-8 14 8v16H8z" fill="'+MG_A+'"/><path d="M14 26h16v10H14z" fill="#fff"/><path d="M16 29h12M16 33h8" stroke="'+MG_B+'" stroke-width="2"/><path d="M6 14l10-8 4 4-10 8z" fill="'+MG_C+'"/><rect x="31" y="27" width="9" height="12" rx="1.5" fill="'+MG_C+'"/>',
+  expense:'<rect x="12" y="6" width="22" height="30" rx="3" fill="'+MG_A+'"/><path d="M17 13h12M17 18h12M17 23h7" stroke="'+MG_B+'" stroke-width="2"/><path d="M12 36l4-3 4 3 4-3 4 3" stroke="'+MG_B+'" stroke-width="2" fill="none"/><circle cx="34" cy="34" r="7" fill="'+MG_C+'"/><text x="34" y="38" font-size="10" font-weight="700" text-anchor="middle" fill="#fff">₹</text>',
+  trucks:'<rect x="5" y="12" width="24" height="18" rx="3" fill="'+MG_A+'"/><path d="M29 17h6l6 6v7H29z" fill="'+MG_B+'"/><circle cx="13" cy="32" r="4.5" fill="'+MG_C+'"/><circle cx="34" cy="32" r="4.5" fill="'+MG_C+'"/>',
+  docs:'<rect x="10" y="6" width="24" height="32" rx="3" fill="'+MG_A+'"/><path d="M15 14h14M15 20h14M15 26h9" stroke="'+MG_B+'" stroke-width="2.4"/><circle cx="33" cy="34" r="7" fill="'+MG_C+'"/><path d="M29.5 34l2.4 2.4 4.4-4.6" stroke="#fff" stroke-width="2" fill="none"/>',
+  pnl:'<rect x="8" y="24" width="7" height="14" rx="1.5" fill="'+MG_B+'"/><rect x="19" y="14" width="7" height="24" rx="1.5" fill="'+MG_A+'"/><rect x="30" y="8" width="7" height="30" rx="1.5" fill="'+MG_C+'"/>',
+  insight:'<rect x="6" y="8" width="34" height="28" rx="3" fill="'+MG_A+'"/><path d="M11 29l7-8 6 5 9-11" stroke="'+MG_C+'" stroke-width="2.6" fill="none"/><circle cx="33" cy="15" r="2.6" fill="'+MG_C+'"/>',
+  party:'<circle cx="18" cy="16" r="7" fill="'+MG_B+'"/><path d="M6 38a12 12 0 0124 0z" fill="'+MG_A+'"/><circle cx="33" cy="30" r="8" fill="'+MG_C+'"/><path d="M33 26v8M29 30h8" stroke="#fff" stroke-width="2.2"/>',
+  market:'<rect x="5" y="12" width="24" height="18" rx="3" fill="#F6C9A6"/><path d="M29 17h6l6 6v7H29z" fill="#EE9A5A"/><circle cx="13" cy="32" r="4.5" fill="#D4661F"/><circle cx="34" cy="32" r="4.5" fill="#D4661F"/>',
+  settings:'<circle cx="24" cy="24" r="14" fill="'+MG_A+'"/><circle cx="24" cy="24" r="6" fill="'+MG_C+'"/><path d="M24 6v6M24 36v6M6 24h6M36 24h6M11 11l4 4M33 33l4 4M37 11l-4 4M15 33l-4 4" stroke="'+MG_B+'" stroke-width="3"/>',
+  desktop:'<rect x="6" y="8" width="36" height="24" rx="3" fill="'+MG_A+'"/><rect x="10" y="12" width="28" height="16" rx="1.5" fill="#fff"/><path d="M18 38h12M24 32v6" stroke="'+MG_C+'" stroke-width="3"/>',
+  csv:'<rect x="10" y="6" width="24" height="32" rx="3" fill="'+MG_A+'"/><path d="M15 14h14M15 20h14M15 26h14" stroke="'+MG_B+'" stroke-width="2"/><circle cx="33" cy="34" r="7" fill="'+MG_C+'"/><path d="M33 30v7M30 34l3 3 3-3" stroke="#fff" stroke-width="2" fill="none"/>'
+};
+function mg(k){ return '<svg class="mg" viewBox="0 0 48 48" aria-hidden="true">'+(MG[k]||'')+'</svg>'; }
+
+/* ---------- small pieces ---------- */
+function mInitials(s){
+  const w = String(s||'').trim().split(/\s+/).filter(Boolean);
+  return ((w[0]||'?')[0] + (w.length>1 ? w[w.length-1][0] : '')).toUpperCase();
+}
+/* UP75 AT 9415 reads as UP 75 AT 9415 with the last four in blue — the
+   digits people actually say when they talk about a truck */
+function mPlate(n){
+  const s = String(n||'').trim();
+  const m = s.replace(/\s+/g,'').match(/^([A-Z]{2})(\d{1,2})([A-Z]{0,3})(\d{1,4})$/);
+  if(!m) return '<span class="m-plate">'+esc(s||'—')+'</span>';
+  return '<span class="m-plate">'+m[1]+' '+m[2]+(m[3]?' '+m[3]:'')+' <b>'+m[4]+'</b></span>';
+}
+function mPlateText(n){
+  const m = String(n||'').replace(/\s+/g,'').match(/^([A-Z]{2})(\d{1,2})([A-Z]{0,3})(\d{1,4})$/);
+  return m ? m[1]+' '+m[2]+(m[3]?' '+m[3]:'')+' '+m[4] : String(n||'');
+}
+function mPlaceName(v){ return splitPlace(v).name || '—'; }
+function mWa(phone, text){
+  let d = String(phone||'').replace(/\D/g,'');
+  if(d.length === 10) d = '91'+d;
+  window.open('https://wa.me/'+d+'?text='+encodeURIComponent(text), '_blank');
+}
+function mCall(phone){ if(phone) location.href = 'tel:'+String(phone).replace(/[^\d+]/g,''); }
+function mBarSet(start, extra){
+  $('#mBarStart').innerHTML = start;
+  $('#mBarExtra').innerHTML = extra || '';
+}
+function mTitle(title, extra){
+  mBarSet('<button class="m-back" onclick="mBack()" aria-label="Back">'+mi('back')+'</button>'+
+    '<h1 class="m-title" id="mFallTitle">'+esc(title)+'</h1>', extra);
+}
+function mFab(label, action, tone){
+  return '<button class="m-fab'+(tone?' m-fab-'+tone:'')+'" onclick="'+action+'">'+mi('plus')+'<span>'+esc(label)+'</span></button>';
+}
+function mEmpty(title, text, btn){
+  return '<div class="m-empty"><div class="m-empty-t">'+esc(title)+'</div>'+
+    (text?'<div class="m-empty-s">'+esc(text)+'</div>':'')+(btn||'')+'</div>';
+}
+function mSearch(ph, value, oninput){
+  return '<label class="m-search">'+mi('search')+
+    '<input type="search" autocomplete="off" placeholder="'+esc(ph)+'" value="'+esc(value||'')+'" oninput="'+oninput+'"></label>';
+}
+/* a list of choices as a sheet rising from the foot of the screen */
+function mSheet(title, items){
+  openModal({title, wide:'sheet', body:'<div class="m-menu">'+items.filter(Boolean).map(i=>
+    '<button class="m-menu-row'+(i.danger?' danger':'')+'" onclick="closeModal();'+i.act+'">'+
+      (i.icon?mi(i.icon):'')+'<span>'+esc(i.label)+'</span>'+
+      (i.note?'<em>'+esc(i.note)+'</em>':'')+'</button>').join('')+'</div>'});
+}
+
+/* ---------- the screens a phone has of its own ---------- */
+function mScreen(){
+  if(route === 'dashboard') return mHome;
+  if(route === 'm_tools')   return mTools;
+  if(route === 'm_dir')     return mDirectory;
+  if(route === 'trips')     return sub.open ? mTrip : mTrips;
+  if(route === 'trucks')    return mTrucks;
+  if(route === 'parties')   return sub.open ? mLedger : ()=>mContacts('parties');
+  if(route === 'suppliers' && !sub.open) return ()=>mContacts('suppliers');
+  if(route === 'drivers'   && !sub.open) return ()=>mContacts('drivers');
+  if(route === 'shops'     && !sub.open) return ()=>mContacts('shops');
+  return null;
+}
+const M_ROOTS = ['dashboard','m_tools','m_dir'];
+function mTabsPaint(){
+  const tabs = [['dashboard','Khata','home'],['m_tools','Tools','tools'],['m_dir','Directory','dir']];
+  $('#mTabs').innerHTML = tabs.map(([k,l,i])=>
+    '<button class="m-tab'+(route===k?' on':'')+'" onclick="mTab(\''+k+'\')">'+mi(i)+'<span>'+l+'</span></button>').join('');
+  document.body.classList.toggle('m-root', M_ROOTS.includes(route));
+}
+/* true when the phone drew the screen; false leaves it to the desktop view */
+function mRender(){
+  const fn = mScreen();
+  document.body.classList.toggle('m-home', route === 'dashboard');
+  document.body.classList.toggle('m-native', !!fn);
+  mTabsPaint();
+  $('#pageActions').innerHTML = '';
+  if(!fn){
+    const p = PAGES.find(x=>x.id===route) || PAGES[0];
+    mTitle(p.label);
+    return false;
+  }
+  fn();
+  return true;
+}
+/* A form saved from a phone screen may repaint whatever desktop view it
+   was written for. Once the save has finished, the phone screen is drawn
+   again over it — before the browser paints, so nothing flickers. */
+let mRepaintDue = false;
+function mAfterSave(){
+  if(!onPhone() || mRepaintDue) return;
+  mRepaintDue = true;
+  queueMicrotask(()=>{
+    mRepaintDue = false;
+    if(!onPhone() || !mScreen()) return;
+    const y = window.scrollY;
+    render();
+    window.scrollTo(0, y);
+  });
+}
+
+/* ---------- Khata: the home screen ---------- */
+function mFoldOpen(k){ try{ return localStorage.getItem('mvl_mfold_'+k) === '1'; }catch(e){ return false; } }
+function mFold(k){
+  try{ localStorage.setItem('mvl_mfold_'+k, mFoldOpen(k) ? '0' : '1'); }catch(e){}
+  render();
+}
+function mGrid(k, title, items, more){
+  const open = mFoldOpen(k);
+  const cell = i => '<button class="m-cell" onclick="'+i.act+'">'+mg(i.g)+
+    '<span>'+esc(i.label)+'</span>'+(i.badge?'<em class="m-badge">'+i.badge+'</em>':'')+'</button>';
+  return '<section class="m-card m-sec">'+
+    '<h2 class="m-sec-t">'+esc(title)+'</h2>'+
+    '<div class="m-cells">'+items.map(cell).join('')+(open?more.map(cell).join(''):'')+'</div>'+
+    (more.length?'<button class="m-sec-more" onclick="mFold(\''+k+'\')">'+(open?'View Less':'View More')+'</button>':'')+
+  '</section>';
+}
+function mHome(){
+  const s = DB.settings || {};
+  const biz = s.business || 'Maa Vandana Logistics';
+  const who = s.owner || biz;
+  mBarSet('<div class="m-avatar">'+esc(mInitials(who))+'</div>'+
+    '<div class="m-who"><b>'+esc(who)+'</b>'+(s.owner?'<span>'+esc(biz)+'</span>':'')+'</div>',
+    '<button class="m-outline" onclick="mGo(\'settings\')">Backup</button>');
+  const due = totalReceivable();
+  const unpaid = DB.trips.filter(t=>!selfFunded(t) && tripBalance(t) > 0).length;
+  const podDue = DB.trips.filter(t=>!selfFunded(t) && ['delivered','received'].includes(tripStage(t))).length;
+  const papers = truckAlerts().length;
+  const owing = DB.parties.filter(p=>partyBalance(p.id) > 0).length;
+  $('#view').innerHTML =
+  '<div class="m-page">'+
+    '<section class="m-card m-hero">'+
+      '<div class="m-hero-l">Total Party Balance</div>'+
+      '<button class="m-hero-v num" onclick="mGo(\'parties\')" data-count="'+due+'">'+money(due)+'</button>'+
+      '<div class="m-quick">'+
+        '<button onclick="mGo(\'trips\')"><i class="q-navy">'+mi('note')+'</i><span>My Trips</span></button>'+
+        '<button onclick="mGo(\'parties\')"><i class="q-green">'+mi('home')+'</i><span>Party Khata</span></button>'+
+        '<button onclick="mGo(\'reports\')"><i class="q-orange">'+mi('print')+'</i><span>Balance Report</span></button>'+
+      '</div>'+
+      '<button class="m-add" onclick="tripForm()">'+mi('plus')+'<span>Add Trip</span></button>'+
+    '</section>'+
+    (papers ? '<button class="m-alert" onclick="mGo(\'trucks\',{tab:\'docs\'})">'+mi('bell')+
+      '<span><b>'+plural(papers,'truck paper')+'</b> expired or expiring soon</span>'+mi('chev')+'</button>' : '')+
+    mGrid('party','Party',[
+      {g:'unpaid', label:'Unpaid Trips', act:"mGo('trips',{mpay:'unpaid'})", badge:unpaid||''},
+      {g:'payin', label:'Payment Received', act:'mPickParty()'},
+      {g:'remind', label:'Collection Reminders', act:"mGo('parties',{owing:1})", badge:owing||''}
+    ],[
+      {g:'party', label:'Add Party', act:'partyForm()'},
+      {g:'invoice', label:'Party Statement', act:'mPickParty(true)'}
+    ])+
+    mGrid('sup','Truck Supplier',[
+      {g:'supkhata', label:'Supplier Khata', act:"mGo('suppliers')"},
+      {g:'market', label:'Market Trucks', act:"mGo('trucks',{tab:'fleet',tt:'market'})"},
+      {g:'pod', label:'POD due Trips', act:"mGo('trips',{stage:'podpending'})", badge:podDue||''}
+    ],[
+      {g:'supreport', label:'Supplier Reports', act:"mGo('reports')"}
+    ])+
+    mGrid('more','Driver, Expenses & More',[
+      {g:'driver', label:'Driver Khata', act:"mGo('drivers')"},
+      {g:'shop', label:'Shop Khata', act:"mGo('shops')"},
+      {g:'expense', label:'My Expenses', act:"mGo('expenses')"},
+      {g:'trucks', label:'My Trucks', act:"mGo('trucks',{tab:'fleet'})"}
+    ],[
+      {g:'docs', label:'Truck Documents', act:"mGo('trucks',{tab:'docs'})", badge:papers||''},
+      {g:'pod', label:'Deliveries', act:"mGo('pod')"},
+      {g:'pnl', label:'Reports & P&L', act:"mGo('reports')"},
+      {g:'insight', label:'Insights', act:"mGo('insights')"}
+    ])+
+  '</div>';
+}
+function mPickParty(statement){
+  if(!DB.parties.length){ partyForm(); return; }
+  const bal = allBalances();
+  mSheet(statement ? 'Statement for which party?' : 'Payment from which party?',
+    DB.parties.slice().sort((a,b)=>(bal[b.id]||0)-(bal[a.id]||0)).map(p=>({
+      label:p.name, note: bal[p.id] ? money(bal[p.id]) : 'Nil',
+      act: statement ? "mOpen('parties','"+p.id+"')" : "ledgerForm('"+p.id+"')"
+    })));
+}
+
+/* ---------- Tools ---------- */
+function mTools(){
+  mBarSet('<h1 class="m-title m-title-root">Tools</h1>');
+  const cell = (g, label, act, note) => '<button class="m-tool" onclick="'+act+'">'+mg(g)+
+    '<span><b>'+esc(label)+'</b>'+(note?'<em>'+esc(note)+'</em>':'')+'</span>'+mi('chev')+'</button>';
+  $('#view').innerHTML = '<div class="m-page">'+
+    '<section class="m-card m-list">'+
+      cell('pnl','Reports & P&L',"mGo('reports')",'Profit, dues and performance')+
+      cell('insight','Insights',"mGo('insights')",'How the business is doing')+
+      cell('pod','Deliveries & POD',"mGo('pod')",'Delivery and proof of delivery')+
+      cell('expense','Expenses',"mGo('expenses')",'Money going out')+
+      cell('docs','Truck Documents',"mGo('trucks',{tab:'docs'})",'Insurance, permits, fitness')+
+    '</section>'+
+    '<section class="m-card m-list">'+
+      cell('settings','Settings & Backup',"mGo('settings')",'Business details, sync, backup')+
+      cell('csv','Export trips',"exportCSV('trips')",'A spreadsheet of every trip')+
+      cell('desktop','Computer layout',"setLayout('desktop')",'The full desktop screens on this phone')+
+    '</section>'+
+    '<div class="m-foot-note">'+esc(($('#syncFoot')||{}).textContent||'')+'</div>'+
+  '</div>';
+}
+
+/* ---------- Directory and the khata lists ---------- */
+const M_KINDS = {
+  parties:{label:'Parties', title:'Party Khata', add:'partyForm()', addLabel:'Add Party',
+    rows:()=>DB.parties, bal:()=>allBalances(), sub:p=>[p.city, p.phone].filter(Boolean).join(' · '),
+    pos:'To collect', neg:'Advance held', open:id=>"mOpen('parties','"+id+"')"},
+  suppliers:{label:'Suppliers', title:'Supplier Khata', add:'supplierForm()', addLabel:'Add Supplier',
+    rows:()=>DB.suppliers||[], bal:()=>allSupplierBalances(), sub:s=>[s.person, s.city, s.phone].filter(Boolean).join(' · '),
+    pos:'To pay', neg:'Paid ahead', open:id=>"mOpen('suppliers','"+id+"')"},
+  drivers:{label:'Drivers', title:'Driver Khata', add:'driverForm()', addLabel:'Add Driver',
+    rows:()=>DB.drivers, bal:()=>{ const m={}; DB.drivers.forEach(d=>{ m[d.id]=driverBalance(d.id); }); return m; },
+    sub:d=>[d.phone, hasLeft(d) ? 'Left '+fdate(d.left) : ''].filter(Boolean).join(' · '),
+    pos:'To pay', neg:'Advance given', open:id=>"mOpen('drivers','"+id+"')"},
+  shops:{label:'Shops', title:'Shop Khata', add:'shopForm()', addLabel:'Add Shop',
+    rows:()=>DB.shops||[], bal:()=>allShopBalances(), sub:s=>[s.person, s.phone].filter(Boolean).join(' · '),
+    pos:'To pay', neg:'Paid ahead', open:id=>"mOpen('shops','"+id+"')"}
+};
+function mDirectory(){
+  if(!M_KINDS[sub.kind]) sub.kind = 'parties';
+  mBarSet('<h1 class="m-title m-title-root">Directory</h1>');
+  $('#view').innerHTML = '<div class="m-page">'+
+    '<div class="m-chips">'+Object.keys(M_KINDS).map(k=>
+      '<button class="m-chip'+(sub.kind===k?' on':'')+'" onclick="sub.kind=\''+k+'\';sub.q=\'\';render()">'+
+        M_KINDS[k].label+' <em>'+M_KINDS[k].rows().length+'</em></button>').join('')+'</div>'+
+    mSearch('Search '+M_KINDS[sub.kind].label.toLowerCase(), sub.q, 'sub.q=this.value;defer(mContactsPaint)')+
+    '<div id="mList"></div>'+
+  '</div>'+mFab(M_KINDS[sub.kind].addLabel, M_KINDS[sub.kind].add);
+  mContactsPaint();
+}
+function mContacts(kind){
+  const K = M_KINDS[kind];
+  sub.kind = kind;
+  mTitle(sub.owing ? 'Collection Reminders' : K.title);
+  const bal = K.bal();
+  const total = K.rows().reduce((s,x)=>s+Math.max(0, bal[x.id]||0), 0);
+  $('#view').innerHTML = '<div class="m-page">'+
+    '<section class="m-card m-total"><span>'+(kind==='parties'?'Total to collect':'Total to pay')+'</span>'+
+      '<b class="num '+(kind==='parties'?'m-pos':'m-neg')+'">'+money(total)+'</b></section>'+
+    mSearch('Search '+K.label.toLowerCase(), sub.q, 'sub.q=this.value;defer(mContactsPaint)')+
+    '<div id="mList"></div>'+
+  '</div>'+mFab(K.addLabel, K.add);
+  mContactsPaint();
+}
+function mContactsPaint(){
+  const box = $('#mList'); if(!box) return;
+  const kind = sub.kind || 'parties';
+  const K = M_KINDS[kind];
+  const bal = K.bal();
+  const q = (sub.q||'').toLowerCase().trim();
+  let rows = K.rows().slice();
+  if(q) rows = rows.filter(x=>((x.name||'')+' '+K.sub(x)).toLowerCase().includes(q));
+  if(sub.owing) rows = rows.filter(x=>(bal[x.id]||0) > 0);
+  rows.sort((a,b)=>Math.abs(bal[b.id]||0)-Math.abs(bal[a.id]||0) || (a.name||'').localeCompare(b.name||''));
+  if(!rows.length){
+    box.innerHTML = mEmpty(q ? 'Nobody matches that' : sub.owing ? 'Nobody owes you anything' : 'No '+K.label.toLowerCase()+' yet',
+      q ? 'Try a shorter search.' : '', q||sub.owing ? '' : '<button class="m-btn m-btn-blue" onclick="'+K.add+'">'+esc(K.addLabel)+'</button>');
+    return;
+  }
+  const biz = (DB.settings||{}).business || 'Maa Vandana Logistics';
+  box.innerHTML = '<section class="m-card m-rows">'+rows.map(x=>{
+    const b = bal[x.id] || 0;
+    const remind = kind==='parties' && b > 0;
+    const msg = 'Namaste '+(x.name||'')+', your balance with '+biz+' is '+money(b)+'. Kindly arrange the payment. Thank you.';
+    return '<div class="m-row" onclick="'+K.open(x.id)+'">'+
+      '<div class="m-avatar m-avatar-s">'+esc(mInitials(x.name))+'</div>'+
+      '<div class="m-row-main"><b>'+esc(x.name||'—')+'</b><span>'+esc(K.sub(x)||' ')+'</span></div>'+
+      '<div class="m-row-end"><b class="num '+(b>0?(kind==='parties'?'m-pos':'m-neg'):'')+'">'+(b?money(Math.abs(b)):'Nil')+'</b>'+
+        '<span>'+(b>0?K.pos:b<0?K.neg:'Settled')+'</span></div>'+
+      (remind ? '<button class="m-icon-btn m-wa" aria-label="Remind on WhatsApp" onclick="event.stopPropagation();mWa(\''+esc(x.phone||'')+'\','+esc(JSON.stringify(msg))+')">'+mi('wa')+'</button>'
+        : x.phone ? '<button class="m-icon-btn" aria-label="Call" onclick="event.stopPropagation();mCall(\''+esc(x.phone)+'\')">'+mi('phone')+'</button>' : '')+
+    '</div>';
+  }).join('')+'</section>';
+}
+
+/* ---------- a party's khata ---------- */
+function mLedger(){
+  const p = partyById(sub.open);
+  if(!p){ sub.open = null; return mContacts('parties'); }
+  mTitle(p.name, (p.phone?'<button class="m-icon-btn" aria-label="Call" onclick="mCall(\''+esc(p.phone)+'\')">'+mi('phone')+'</button>':'')+
+    '<button class="m-icon-btn" aria-label="More" onclick="mLedgerMenu()">'+mi('kebab')+'</button>');
+  const rows = ledgerRows(p.id);
+  const bal = partyBalance(p.id);
+  const biz = (DB.settings||{}).business || 'Maa Vandana Logistics';
+  const msg = 'Namaste '+p.name+', your balance with '+biz+' is '+money(bal)+'. Kindly arrange the payment. Thank you.';
+  const trips = DB.trips.filter(t=>t.partyId===p.id);
+  $('#view').innerHTML = '<div class="m-page">'+
+    '<section class="m-card m-bal">'+
+      '<div class="m-bal-l">'+(bal>=0?'Balance to collect':'Advance held')+'</div>'+
+      '<div class="m-bal-v num '+(bal>0?'m-pos':'')+'">'+money(Math.abs(bal))+'</div>'+
+      '<div class="m-bal-s">'+plural(trips.length,'trip')+' · '+plural(rows.filter(r=>r.kind==='entry').length,'entry')+'</div>'+
+      '<div class="m-two">'+
+        '<button class="m-btn m-btn-blue" onclick="ledgerForm(\''+p.id+'\')">'+mi('plus')+' Add Entry</button>'+
+        (bal>0 ? '<button class="m-btn m-btn-line" onclick="mWa(\''+esc(p.phone||'')+'\','+esc(JSON.stringify(msg))+')">'+mi('wa')+' Remind</button>'
+               : '<button class="m-btn m-btn-line" onclick="printPartyStatement(\''+p.id+'\')">'+mi('print')+' Statement</button>')+
+      '</div>'+
+    '</section>'+
+    (rows.length ? '<section class="m-card m-rows">'+rows.slice().reverse().map(r=>{
+      const act = r.kind==='trip' ? "mOpen('trips','"+r.tripId+"')"
+        : r.kind==='entry' ? "ledgerForm('"+p.id+"','"+r.entryId+"')" : '';
+      return '<div class="m-row m-entry"'+(act?' onclick="'+act+'"':'')+'>'+
+        '<div class="m-row-main"><b>'+esc(r.label)+'</b><span>'+[r.date?fdate(r.date):'', r.ref].filter(Boolean).map(esc).join(' · ')+'</span></div>'+
+        '<div class="m-row-end">'+(r.debit
+          ? '<b class="num m-neg">+'+money(r.debit)+'</b>'
+          : '<b class="num m-pos">−'+money(r.credit).replace('−','')+'</b>')+
+          '<span>Bal '+money(r.running)+'</span></div>'+
+      '</div>';
+    }).join('')+'</section>'
+    : mEmpty('Nothing on this khata yet','Trips for this party and the payments they make appear here.'))+
+  '</div>'+mFab('Add Trip', "tripFormFor('"+p.id+"')");
+}
+function mLedgerMenu(){
+  const id = sub.open;
+  mSheet('Party', [
+    {icon:'pencil', label:'Edit party', act:"partyForm('"+id+"')"},
+    {icon:'print', label:'Statement (print or PDF)', act:"printPartyStatement('"+id+"')"},
+    {icon:'trash', label:'Delete party', act:"delParty('"+id+"')", danger:true}
+  ]);
+}
+/* a new trip that already knows its party */
+function tripFormFor(pid){
+  tripForm();
+  const hid = document.getElementById('f_party');
+  if(hid && tripDraft && !tripDraft.id){
+    tripDraft.partyId = pid;
+    if(typeof repaintTripPane === 'function' && repaintTripPane()){ formMark(); }
+  }
+}
+
+/* ---------- trips ---------- */
+function mTripFilters(){
+  return ['party','truck','mpay','stage','dFrom','dTo'].filter(k=>sub[k]).length;
+}
+function mTrips(){
+  mTitle(sub.mpay==='unpaid' ? 'Unpaid Trips' : sub.stage==='podpending' ? 'POD due Trips' : 'Trips');
+  const n = mTripFilters();
+  $('#view').innerHTML = '<div class="m-page">'+
+    '<div class="m-search-row">'+
+      mSearch('Search for Trips', sub.q, 'sub.q=this.value;sub.limit=0;defer(mTripsPaint)')+
+      '<button class="m-filter'+(n?' on':'')+'" onclick="mTripFilterSheet()">'+mi('filter')+'<span>Filters'+(n?' ('+n+')':'')+'</span></button>'+
+    '</div>'+
+    '<div id="mList"></div>'+
+  '</div>'+mFab('Add Trip','tripForm()','green');
+  mTripsPaint();
+}
+function mTripList(){
+  const q = (sub.q||'').toLowerCase().trim();
+  let list = DB.trips.slice().sort(newestFirst);
+  if(sub.party==='__self') list = list.filter(selfFunded);
+  else if(sub.party) list = list.filter(t=>t.partyId===sub.party);
+  if(sub.truck) list = list.filter(t=>t.truckId===sub.truck);
+  if(sub.mpay==='unpaid') list = list.filter(t=>!selfFunded(t) && tripBalance(t) > 0);
+  else if(sub.mpay) list = list.filter(t=>tripStatus(t)===sub.mpay);
+  if(sub.stage==='podpending') list = list.filter(t=>!selfFunded(t) && ['delivered','received'].includes(tripStage(t)));
+  else if(sub.stage) list = list.filter(t=>!selfFunded(t) && tripStage(t)===sub.stage);
+  if(sub.dFrom) list = list.filter(t=>t.date>=sub.dFrom);
+  if(sub.dTo)   list = list.filter(t=>t.date<=sub.dTo);
+  if(q) list = list.filter(t=>[partyName(t.partyId), truckName(t.truckId), driverName(t.driverId),
+    t.lr, t.from, t.to, t.material].join(' ').toLowerCase().includes(q));
+  return list;
+}
+/* the words a trip's status line uses, in the order it moves through them */
+function mTripState(t){
+  if(selfFunded(t)) return {label:'Self funded run', dot:'grey'};
+  if(tripCompleted(t)) return {label:'Trip Settled', dot:'green'};
+  const st = tripStage(t);
+  if(st==='submitted') return {label:'POD Submitted', dot:'green'};
+  if(st==='received')  return {label:'POD Received', dot:'amber'};
+  if(st==='delivered') return {label:'Trip Completed', dot:'blue'};
+  return {label:'Trip Started', dot:'blue'};
+}
+function mTripsPaint(){
+  const box = $('#mList'); if(!box) return;
+  const all = mTripList();
+  const list = all.slice(0, pageLimit());
+  tripNav = list.map(t=>t.id);
+  if(!all.length){
+    box.innerHTML = DB.trips.length
+      ? mEmpty('No trip matches', 'Clear the search or the filters to see every trip.',
+          '<button class="m-btn m-btn-line" onclick="mClearTripFilters()">Clear filters</button>')
+      : mEmpty('No trips yet', 'A trip records one load: truck, party, route and freight.',
+          '<button class="m-btn m-btn-blue" onclick="tripForm()">Add your first trip</button>');
+    return;
+  }
+  const due = all.reduce((s,t)=>s+Math.max(0, tripBalance(t)), 0);
+  box.innerHTML =
+    '<div class="m-count">'+plural(all.length,'trip')+(due?' · '+money(due)+' to collect':'')+'</div>'+
+    list.map(t=>{
+      const s = mTripState(t);
+      const amount = selfFunded(t) ? tripExpensesOf(t.id) : num(t.freight);
+      return '<article class="m-card m-trip" onclick="mOpen(\'trips\',\''+t.id+'\')">'+
+        '<div class="m-trip-top"><div><div class="m-trip-party">'+esc(selfFunded(t)?'Self funded':partyName(t.partyId))+'</div>'+
+          mPlate(truckName(t.truckId))+'</div>'+
+          '<span class="m-pill num">'+money(amount)+mi('chev')+'</span></div>'+
+        mRoute(t)+
+        '<div class="m-trip-foot"><span class="m-state"><i class="d-'+s.dot+'"></i>'+s.label+'</span>'+
+          (t.lr?'<span class="m-lr">#'+esc(t.lr)+'</span>':'')+'</div>'+
+      '</article>';
+    }).join('')+
+    (all.length > list.length
+      ? '<button class="m-more" onclick="sub.limit=pageLimit()+'+PAGE+';mTripsPaint()">Show '+Math.min(PAGE, all.length-list.length)+' more</button>' : '');
+}
+function mRoute(t){
+  return '<div class="m-route">'+
+    '<div class="m-route-a"><b>'+esc(mPlaceName(t.from))+'</b><span>'+fdate(t.date)+'</span></div>'+
+    '<div class="m-route-mid"><i></i>'+mi('arrow')+'<i></i></div>'+
+    '<div class="m-route-b"><b>'+esc(mPlaceName(t.to))+'</b><span>'+(t.deliveredAt?fdate(t.deliveredAt):'--')+'</span></div>'+
+  '</div>';
+}
+function mClearTripFilters(){
+  ['party','truck','mpay','stage','dFrom','dTo','q'].forEach(k=>delete sub[k]);
+  sub.limit = 0; closeModal(); render();
+}
+function mTripFilterSheet(){
+  const opt = (v, l, cur) => '<option value="'+esc(v)+'"'+(v===(cur||'')?' selected':'')+'>'+esc(l)+'</option>';
+  openModal({
+    title:'Filters', wide:'sheet', okText:'Apply',
+    body:'<div class="form-grid">'+
+      '<div class="field full"><label for="mf_party">Party</label><select id="mf_party">'+opt('','All parties',sub.party)+
+        DB.parties.map(p=>opt(p.id, p.name, sub.party)).join('')+
+        (DB.trips.some(selfFunded)?opt('__self','Self funded runs',sub.party):'')+'</select></div>'+
+      '<div class="field full"><label for="mf_truck">Truck</label><select id="mf_truck">'+opt('','All trucks',sub.truck)+
+        DB.trucks.map(t=>opt(t.id, t.number, sub.truck)).join('')+'</select></div>'+
+      '<div class="field full"><label for="mf_pay">Payment</label><select id="mf_pay">'+
+        [['','Any payment'],['unpaid','Unpaid (anything due)'],['pending','Pending'],['partial','Part paid'],['paid','Paid']]
+          .map(([v,l])=>opt(v,l,sub.mpay)).join('')+'</select></div>'+
+      '<div class="field full"><label for="mf_stage">Trip status</label><select id="mf_stage">'+
+        [['','Any status'],['transit','Trip started (in transit)'],['delivered','Delivered'],['received','POD received'],
+         ['submitted','POD submitted'],['podpending','POD due']].map(([v,l])=>opt(v,l,sub.stage)).join('')+'</select></div>'+
+      fText('mf_from','From date', sub.dFrom||'', 'date')+
+      fText('mf_to','To date', sub.dTo||'', 'date')+
+      '<div class="field full"><button type="button" class="m-btn m-btn-line" onclick="mClearTripFilters()">Clear all filters</button></div>'+
+    '</div>',
+    onOk(){
+      sub.party = val('mf_party'); sub.truck = val('mf_truck'); sub.mpay = val('mf_pay');
+      sub.stage = val('mf_stage'); sub.dFrom = val('mf_from'); sub.dTo = val('mf_to'); sub.limit = 0;
+      closeModal(); render();
+    }
+  });
+}
+
+/* ---------- one trip, read on a phone ---------- */
+function mTrip(){
+  const t = DB.trips.find(x=>x.id===sub.open);
+  if(!t){ sub.open = null; return mTrips(); }
+  const locked = tripLocked(t);
+  mTitle('Trip Details',
+    (locked ? '<span class="m-lock">'+mi('lock')+'</span>'
+            : '<button class="m-outline" onclick="tripDetail(\''+t.id+'\')">Edit</button>')+
+    '<button class="m-icon-btn" aria-label="More" onclick="mTripMenu()">'+mi('kebab')+'</button>');
+  const drv = t.driverId ? driverById(t.driverId) : null;
+  const tabs = selfFunded(t) ? [['cost','Cost'],['driver','Driver'],['more','More']]
+                             : [['party','Party'],['profit','Profit'],['driver','Driver'],['more','More']];
+  if(!tabs.some(x=>x[0]===sub.tt)) sub.tt = tabs[0][0];
+  $('#view').innerHTML =
+  '<div class="m-trip-band"><div class="m-trip-id">'+
+    '<button onclick="mTruckOpen(\''+t.truckId+'\')">'+mi('truck')+'<span>'+esc(mPlateText(truckName(t.truckId)))+'</span></button>'+
+    '<button onclick="'+(drv?"mOpen('drivers','"+drv.id+"')":"tripDetail('"+t.id+"')")+'">'+mi('wheel')+'<span>'+esc(drv?drv.name:'No driver')+'</span></button>'+
+  '</div></div>'+
+  '<nav class="m-tabs-top">'+tabs.map(([k,l])=>
+    '<button class="'+(sub.tt===k?'on':'')+'" onclick="sub.tt=\''+k+'\';mTrip()">'+l+'</button>').join('')+'</nav>'+
+  '<div class="m-page m-page-trip">'+({party:mTripParty, profit:mTripProfit, cost:mTripProfit,
+    driver:mTripDriver, more:mTripMore}[sub.tt])(t)+'</div>';
+}
+/* the five steps a billed trip moves through, the last one reached by money */
+function mSteps(t){
+  const st = tripStage(t);
+  const reach = {transit:0, delivered:1, received:2, submitted:3}[st];
+  const settled = num(t.freight) > 0 && tripBalance(t) <= 0;
+  const steps = [['Started',null],['Delivered','deliveredAt'],['POD Received','podReceivedAt'],['POD Submitted','podSubmittedAt'],['Settled',null]];
+  return '<div class="m-steps">'+steps.map(([l,f],i)=>{
+    const done = i===0 || (i<4 ? i<=reach : settled);
+    const when = f && t[f] ? fdate(t[f]).slice(0,6) : '';
+    return '<div class="m-step'+(done?' done':'')+'"><i>'+(done?mi('check'):'')+'</i><span>'+l+'</span>'+
+      (when?'<em>'+when+'</em>':'')+'</div>';
+  }).join('')+'</div>';
+}
+function mNextStep(t){
+  const st = tripStage(t);
+  if(st==='transit')   return {label:'Complete Trip', field:'deliveredAt'};
+  if(st==='delivered') return {label:'POD Received', field:'podReceivedAt'};
+  if(st==='received')  return {label:'POD Submitted', field:'podSubmittedAt'};
+  return null;
+}
+function mStep(id, field, label){
+  const t = DB.trips.find(x=>x.id===id); if(!t || lockedStop(t)) return;
+  confirmAsk('Mark this trip as '+label.replace('Complete Trip','delivered').toLowerCase()+' today, '+fdate(today())+'? '+
+    'You can change the date later from Edit → Delivery & POD.', ()=>{ setStage(id, field, today()); toast('Updated'); });
+}
+function mLine(label, amount, add, act, tone){
+  return '<div class="m-line"><div><span>'+label+'</span>'+
+      (add && act ? '<button class="m-link" onclick="'+act+'">'+add+'</button>' : '')+'</div>'+
+    '<b class="num'+(tone?' '+tone:'')+'">'+money(amount)+'</b></div>';
+}
+function mTripParty(t){
+  const p = partyById(t.partyId);
+  const locked = tripLocked(t);
+  const next = locked ? null : mNextStep(t);
+  const adv = tripAdvance(t), chg = tripCharges(t), ded = tripDeductions(t), paid = allocatedTo(t.id);
+  const bal = tripBalance(t);
+  const biz = (DB.settings||{}).business || 'Maa Vandana Logistics';
+  const msg = 'Namaste '+(p?p.name:'')+', for LR '+(t.lr||'-')+' ('+mPlaceName(t.from)+' to '+mPlaceName(t.to)+', '+
+    fdate(t.date)+', truck '+truckName(t.truckId)+') the balance pending is '+money(bal)+'. Kindly arrange the payment. — '+biz;
+  const edit = locked ? '' : "tripDetail('"+t.id+"','details')";
+  return '<section class="m-card m-party">'+
+    '<div class="m-party-top"><button class="m-party-name" onclick="'+(p?"mOpen('parties','"+p.id+"')":'')+'">'+mi('user')+
+      '<span>'+esc(p?p.name:'—')+'</span></button><span class="m-pill num">'+money(t.freight)+'</span></div>'+
+    mRoute(t)+
+    (t.lr?'<div class="m-lr-mid">#'+esc(t.lr)+'</div>':'')+
+    mSteps(t)+
+    '<div class="m-two">'+
+      (next ? '<button class="m-btn m-btn-green-line" onclick="mStep(\''+t.id+'\',\''+next.field+'\',\''+next.label+'\')">'+next.label+'</button>'
+            : bal>0 && !locked ? '<button class="m-btn m-btn-green-line" onclick="mAddPayment(\''+t.id+'\')">Add Payment</button>'
+            : '<button class="m-btn m-btn-green-line" disabled>'+(tripCompleted(t)?'Completed':'Settled')+'</button>')+
+      '<button class="m-btn m-btn-blue" onclick="printTripBill(\''+t.id+'\')">View Bill</button>'+
+    '</div>'+
+    '<div class="m-lines">'+
+      '<div class="m-line m-line-main"><span>Freight Amount</span><b class="num">'+money(t.freight)+
+        (edit?'<button class="m-icon-btn m-icon-s" aria-label="Edit freight" onclick="'+edit+'">'+mi('pencil')+'</button>':'')+'</b></div>'+
+      mLine('(−) Advance', adv, locked?'':'Add Advance', "tripDetail('"+t.id+"','money')")+
+      mLine('(+) Charges', chg, locked?'':'Add Charges', edit)+
+      (ded ? mLine('(−) Deductions', ded, '', '') : '')+
+      mLine('(−) Payments', paid, locked||bal<=0?'':'Add Payment', "mAddPayment('"+t.id+"')")+
+    '</div>'+
+    '<div class="m-pending"><span>'+(bal<0?'Paid over':'Pending Balance')+'</span><b class="num">'+money(Math.abs(bal))+'</b></div>'+
+    '<div class="m-party-foot">'+
+      '<button class="m-link m-link-icon" onclick="mTripNote(\''+t.id+'\')">'+mi(t.notes?'note':'plus')+(t.notes?'Note':'Note')+'</button>'+
+      (bal>0 ? '<button class="m-btn m-btn-line m-btn-s" onclick="mWa(\''+esc(p&&p.phone||'')+'\','+esc(JSON.stringify(msg))+')">Request Money</button>' : '')+
+    '</div>'+
+    (t.notes ? '<div class="m-note">'+esc(t.notes)+'</div>' : '')+
+  '</section>'+
+  (selfFunded(t)||!t.hire ? '' : mTripSupplier(t));
+}
+function mTripSupplier(t){
+  const sid = tripSupplier(t);
+  const due = typeof tripSupplierBalance==='function' ? tripSupplierBalance(t) : num(t.hire) - num(t.hireAdvance);
+  return '<section class="m-card m-lines m-sup">'+
+    '<div class="m-line m-line-main"><span>Market truck hire'+(sid?' · '+esc(supplierName(sid)):'')+'</span><b class="num">'+money(t.hire)+'</b></div>'+
+    (num(t.hireAdvance)?mLine('(−) Paid at loading', num(t.hireAdvance)):'')+
+    '<div class="m-line"><span>Still to pay the supplier</span><b class="num '+(due>0?'m-neg':'')+'">'+money(Math.max(0,due))+'</b></div>'+
+    (sid?'<button class="m-link" onclick="mOpen(\'suppliers\',\''+sid+'\')">Open supplier khata</button>':'')+
+  '</section>';
+}
+function mTripProfit(t){
+  const exps = (DB.expenses||[]).filter(e=>e.tripId===t.id);
+  const byCat = {};
+  exps.forEach(e=>{ const k = e.category || 'Other'; byCat[k] = (byCat[k]||0) + num(e.amount); });
+  const expTotal = exps.reduce((s,e)=>s+num(e.amount), 0);
+  const hire = num(t.hire);
+  const revenue = selfFunded(t) ? 0 : tripFreightNet(t);
+  const profit = revenue - hire - expTotal;
+  const locked = tripLocked(t);
+  return '<section class="m-card m-profit">'+
+    (selfFunded(t) ? '<div class="m-hint">A self funded run has no party and no freight — only what it cost to move.</div>' :
+    '<div class="m-pl-row m-pl-head"><span>(+) Revenue</span><b class="num m-blue">'+money(revenue)+'</b></div>'+
+    '<div class="m-pl-row m-pl-sub"><span>'+esc(partyName(t.partyId))+'</span><b class="num">'+money(revenue)+'</b></div>'+
+    '<div class="m-pl-box">'+
+      '<div><span>Freight Amount</span><b class="num">'+money(t.freight)+'</b></div>'+
+      '<div><span>Charges</span><b class="num">'+money(tripCharges(t))+'</b></div>'+
+      '<div><span>Deductions</span><b class="num">'+money(tripDeductions(t))+'</b></div>'+
+    '</div>')+
+    '<div class="m-pl-row m-pl-head"><span>(−) Expenses</span><b class="num">'+money(expTotal+hire)+'</b></div>'+
+    (hire ? '<div class="m-pl-row m-pl-sub"><span>Truck hire</span><b class="num">'+money(hire)+'</b></div>' : '')+
+    Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]).map(k=>
+      '<div class="m-pl-row m-pl-sub"><span>'+esc(k)+'</span><b class="num">'+money(byCat[k])+'</b></div>').join('')+
+    (locked?'':'<button class="m-link m-pl-add" onclick="tripDetail(\''+t.id+'\',\'expenses\')">Add Expense</button>')+
+    '<div class="m-pl-total"><span>'+(selfFunded(t)?'Cost of this run':'Profit')+'</span>'+
+      '<b class="num '+(selfFunded(t)?'':profit>=0?'m-pos':'m-neg')+'">'+money(selfFunded(t)?expTotal:profit)+'</b></div>'+
+  '</section>';
+}
+function mTripDriver(t){
+  const d = t.driverId ? driverById(t.driverId) : null;
+  if(!d) return '<section class="m-card">'+mEmpty('No driver on this trip','Pick the driver from Edit → Trip details.',
+    tripLocked(t)?'':'<button class="m-btn m-btn-line" onclick="tripDetail(\''+t.id+'\',\'details\')">Choose driver</button>')+'</section>';
+  const b = driverBalance(d.id);
+  return '<section class="m-card m-lines">'+
+    '<div class="m-drv"><div class="m-avatar">'+esc(mInitials(d.name))+'</div>'+
+      '<div class="m-row-main"><b>'+esc(d.name)+'</b><span>'+esc([d.phone, d.licence?'DL '+d.licence:''].filter(Boolean).join(' · ')||' ')+'</span></div>'+
+      (d.phone?'<button class="m-icon-btn" aria-label="Call" onclick="mCall(\''+esc(d.phone)+'\')">'+mi('phone')+'</button>':'')+'</div>'+
+    '<div class="m-line"><span>'+(b>=0?'Salary and dues to pay':'Advance given to driver')+'</span><b class="num '+(b>0?'m-neg':'')+'">'+money(Math.abs(b))+'</b></div>'+
+    (hasLeft(d)?'<div class="m-hint">Left on '+fdate(d.left)+'.</div>':'')+
+    '<div class="m-two">'+
+      '<button class="m-btn m-btn-blue" onclick="driverTxnForm(\''+d.id+'\')">Add Entry</button>'+
+      '<button class="m-btn m-btn-line" onclick="mOpen(\'drivers\',\''+d.id+'\')">Driver Khata</button>'+
+    '</div>'+
+  '</section>';
+}
+function mTripMore(t){
+  const locked = tripLocked(t);
+  const pods = typeof podCount==='function' ? podCount(t.id) : 0;
+  const row = (l, v) => v ? '<div class="m-line"><span>'+l+'</span><b>'+v+'</b></div>' : '';
+  return '<section class="m-card m-lines">'+
+    '<h3 class="m-card-t">Delivery & POD</h3>'+
+    (selfFunded(t) ? '<div class="m-hint">Nothing is delivered on a self funded run.</div>' :
+      row('Delivered', t.deliveredAt?fdate(t.deliveredAt):'Not yet')+
+      row('POD received from driver', t.podReceivedAt?fdate(t.podReceivedAt):'Not yet')+
+      row('POD submitted to party', t.podSubmittedAt?fdate(t.podSubmittedAt):'Not yet')+
+      row('POD pages on file', pods?String(pods):'None')+
+      '<button class="m-btn m-btn-line" onclick="tripDetail(\''+t.id+'\',\'delivery\')">'+(locked?'View':'Update')+' delivery & POD</button>')+
+  '</section>'+
+  '<section class="m-card m-lines">'+
+    '<h3 class="m-card-t">Trip</h3>'+
+    row('Date', fdate(t.date))+
+    row('LR number', esc(t.lr))+
+    row('From', esc(t.from))+
+    row('To', esc(t.to))+
+    row('Material', esc(t.material))+
+    row('Weight', esc(t.weight))+
+    (tripCompleted(t)?row('Completed', t.completedAt?fdate(t.completedAt):'Yes'):'')+
+  '</section>'+
+  (locked?'':'<button class="m-btn m-btn-danger" onclick="delTrip(\''+t.id+'\')">'+mi('trash')+' Delete this trip</button>');
+}
+function mTripMenu(){
+  const t = DB.trips.find(x=>x.id===sub.open); if(!t) return;
+  const locked = tripLocked(t);
+  mSheet('Trip', [
+    locked?null:{icon:'pencil', label:'Edit trip', act:"tripDetail('"+t.id+"')"},
+    {icon:'print', label:'View bill (print or PDF)', act:"printTripBill('"+t.id+"')"},
+    selfFunded(t)?null:{icon:'note', label:'Delivery & POD', act:"tripDetail('"+t.id+"','delivery')"},
+    locked?null:{icon:'plus', label:'Add expense', act:"tripDetail('"+t.id+"','expenses')"},
+    locked?null:{icon:'trash', label:'Delete trip', act:"delTrip('"+t.id+"')", danger:true}
+  ]);
+}
+function mTripNote(id){
+  const t = DB.trips.find(x=>x.id===id); if(!t) return;
+  if(tripLocked(t)){ if(t.notes) toast(t.notes); else lockedStop(t); return; }
+  openModal({title:'Note', wide:'sheet', okText:'Save note',
+    body:'<div class="form-grid">'+fArea('m_note','Note for this trip', t.notes||'')+'</div>',
+    onOk(){ t.notes = val('m_note'); save(); closeModal(); toast('Note saved'); }});
+}
+/* a payment from the party, already pointed at this trip */
+function mAddPayment(id){
+  const t = DB.trips.find(x=>x.id===id); if(!t || !t.partyId) return;
+  const bal = Math.max(0, tripBalance(t));
+  ledgerForm(t.partyId);
+  const box = document.getElementById('l_allocate');
+  if(!box || !bal) return;
+  allocDraft = {}; allocDraft[id] = bal;
+  box.checked = true;
+  const ab = document.getElementById('allocBox');
+  if(ab){ ab.hidden = false; ab.innerHTML = allocOpen(t.partyId, null); }
+  const amt = document.getElementById('l_amount'); if(amt) amt.value = bal;
+  if(typeof recalcAlloc === 'function') recalcAlloc();
+  formMark();
+}
+/* the trip written out as a bill the party can be sent */
+function printTripBill(id){
+  const t = DB.trips.find(x=>x.id===id); if(!t) return;
+  const p = partyById(t.partyId);
+  const rows = [['Freight — '+esc(t.from||'?')+' to '+esc(t.to||'?'), money(t.freight)]];
+  tripLines(t).forEach(x=>{ if(num(x.amount)) rows.push([esc(x.label||(x.type==='charge'?'Extra charge':'Deduction'))+
+    (x.type==='charge'?' (charge)':' (deduction)'), (x.type==='charge'?'':'− ')+money(x.amount)]); });
+  const adv = advanceLines(t).filter(a=>num(a.amount));
+  adv.forEach(a=>rows.push([esc(a.cat||'Advance Amount')+(a.date?' · '+fdate(a.date):''), '− '+money(a.amount)]));
+  const paid = allocatedTo(t.id);
+  if(paid) rows.push(['Payments received against this trip', '− '+money(paid)]);
+  const bal = tripBalance(t);
+  printDoc(
+    printHead('Freight bill', t.lr ? 'LR '+t.lr : fdate(t.date), [
+      ['Party', esc(p?p.name:'—')],
+      p && p.city ? ['City', esc(p.city)] : null,
+      ['Date', fdate(t.date)],
+      ['Truck', esc(truckName(t.truckId))],
+      ['Route', esc((t.from||'?')+' → '+(t.to||'?'))],
+      t.material ? ['Material', esc(t.material)] : null,
+      t.weight ? ['Weight', esc(t.weight)] : null
+    ])+
+    printTable([{label:'Particulars'},{label:'Amount', right:true, w:'24%'}], rows)+
+    printSummary([
+      ['Amount billed', money(tripFreightNet(t))],
+      ['Received', money(tripSettledTotal(t))],
+      [bal>=0?'Balance due':'Paid over', money(Math.abs(bal)), true]
+    ])+
+    printSign('Please pay the balance due against this LR.'),
+    fileStem('bill', (t.lr?'LR '+t.lr:'trip')+' '+(p?p.name:''))
+  );
+}
+
+/* ---------- trucks and their papers ---------- */
+function mTruckState(t){
+  const last = DB.trips.filter(x=>x.truckId===t.id).sort(newestFirst)[0];
+  const on = !!last && !selfFunded(last) && tripStage(last)==='transit';
+  return {on, last};
+}
+function mTruckOpen(id){ if(truckById(id)) truckForm(id); }
+function mTrucks(){
+  if(sub.tab!=='docs') sub.tab = 'fleet';
+  if(sub.tab==='docs' && sub.dt) return mDocList();
+  mTitle('Trucks & Documents');
+  const alerts = truckAlerts().length;
+  const head = '<nav class="m-tabs-top m-tabs-2">'+
+    '<button class="'+(sub.tab==='fleet'?'on':'')+'" onclick="sub.tab=\'fleet\';render()">Trucks</button>'+
+    '<button class="'+(sub.tab==='docs'?'on':'')+'" onclick="sub.tab=\'docs\';render()">Documents'+
+      (alerts?'<em class="m-badge">'+alerts+'</em>':'')+'</button></nav>';
+  if(sub.tab==='docs'){ $('#view').innerHTML = head+mDocsBody()+mFab('Add Document','truckDocForm()'); return; }
+  const states = {}; DB.trucks.forEach(t=>{ states[t.id] = mTruckState(t); });
+  const onTrip = DB.trucks.filter(t=>states[t.id].on).length;
+  const f = sub.tf || 'all';
+  const card = (k, l, n, tone) => '<button class="m-kpi'+(f===k?' on':'')+(tone?' '+tone:'')+'" onclick="sub.tf=\''+k+'\';render()"><span>'+l+'</span><b>'+n+'</b></button>';
+  $('#view').innerHTML = head+'<div class="m-page">'+
+    '<div class="m-kpis">'+card('all','All Trucks',DB.trucks.length)+card('free','Available Trucks',DB.trucks.length-onTrip,'green')+
+      card('on','Trucks On Trip',onTrip,'blue')+'</div>'+
+    (sub.tt ? '<div class="m-chips"><button class="m-chip on" onclick="delete sub.tt;render()">'+(sub.tt==='market'?'Market trucks':'Own trucks')+' ✕</button></div>' : '')+
+    mSearch('Search by Truck Number', sub.q, 'sub.q=this.value;defer(mTrucksPaint)')+
+    '<div id="mList"></div>'+
+  '</div>'+mFab('Add Truck','truckForm()','green');
+  mTrucksPaint();
+}
+function mTrucksPaint(){
+  const box = $('#mList'); if(!box) return;
+  const q = (sub.q||'').toLowerCase().replace(/\s+/g,'');
+  const f = sub.tf || 'all';
+  let list = DB.trucks.slice().map(t=>({t, s:mTruckState(t)}));
+  if(f==='on') list = list.filter(x=>x.s.on);
+  if(f==='free') list = list.filter(x=>!x.s.on);
+  if(sub.tt==='market') list = list.filter(x=>x.t.type!=='owned');
+  if(sub.tt==='owned') list = list.filter(x=>x.t.type==='owned');
+  if(q) list = list.filter(x=>((x.t.number||'')+(x.t.model||'')+(x.t.owner||'')).toLowerCase().replace(/\s+/g,'').includes(q));
+  list.sort((a,b)=>(b.s.on-a.s.on) || (a.t.type==='owned'?0:1)-(b.t.type==='owned'?0:1) || (a.t.number||'').localeCompare(b.t.number||''));
+  if(!list.length){
+    box.innerHTML = DB.trucks.length ? mEmpty('No truck matches','') :
+      mEmpty('No trucks yet','Add the vehicles you run — your own, and market trucks you hire.',
+        '<button class="m-btn m-btn-blue" onclick="truckForm()">Add your first truck</button>');
+    return;
+  }
+  box.innerHTML = '<section class="m-card m-rows">'+list.map(({t,s})=>{
+    const where = s.on ? '<span>'+esc(mPlaceName(s.last.from))+'</span><i>→</i><span>'+esc(mPlaceName(s.last.to))+'</span>'
+      : s.last ? '<span>'+esc(mPlaceName(s.last.to||s.last.from))+'</span>' : '';
+    const bad = (t.docs||[]).filter(d=>docStatus(d.expiry).key==='expired').length;
+    return '<div class="m-row m-truck" onclick="mTruckOpen(\''+t.id+'\')">'+
+      '<div class="m-row-main">'+mPlate(t.number)+
+        '<span class="m-tags"><em class="m-tag '+(t.type==='owned'?'own':'mkt')+'">'+(t.type==='owned'?'Own':'Market')+'</em>'+
+        (bad?'<em class="m-tag bad">'+plural(bad,'paper')+' expired</em>':'')+'</span></div>'+
+      '<div class="m-row-end"><span class="m-state"><i class="d-'+(s.on?'blue':'green')+'"></i>'+(s.on?'On Trip':'Available')+'</span>'+
+        '<span class="m-where">'+where+'</span></div>'+mi('chev','m-chev')+
+    '</div>';
+  }).join('')+'</section>';
+}
+/* one card per kind of paper, counting how the fleet stands on it */
+function mDocGroups(){
+  const g = {};
+  DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>{
+    const k = d.header || 'Other';
+    (g[k] = g[k] || []).push({t, d, st:docStatus(d.expiry)});
+  }));
+  const order = DOC_TYPES.concat(Object.keys(g).filter(k=>!DOC_TYPES.includes(k)).sort());
+  return order.filter(k=>g[k]).map(k=>({k, rows:g[k]}));
+}
+function mDocsBody(){
+  const groups = mDocGroups();
+  const bad = truckAlerts();
+  const ring = (n, cls, l) => '<div class="m-ring '+(n?cls:'')+'"><i>'+n+'</i><span>'+l+'</span></div>';
+  return '<div class="m-page">'+
+    '<section class="m-card m-docs-head"><div><b>'+(bad.length?plural(bad.length,'paper')+' need attention':'All papers in order')+'</b>'+
+      '<span>'+plural(groups.reduce((s,g)=>s+g.rows.length,0),'document')+' across '+plural(DB.trucks.filter(t=>(t.docs||[]).length).length,'truck')+'</span></div>'+
+      '<button class="m-btn m-btn-blue m-btn-s" onclick="truckDocForm()">'+mi('plus')+' Add</button></section>'+
+    (groups.length ? groups.map(g=>{
+      const c = k => g.rows.filter(r=>r.st.key===k).length;
+      return '<section class="m-card m-doc" onclick="sub.dt='+esc(JSON.stringify(g.k))+';render()">'+
+        '<div><b>'+esc(g.k)+'</b><span class="m-link">View all Documents '+mi('chev')+'</span></div>'+
+        '<div class="m-rings">'+ring(c('expired'),'r-red','Expired')+ring(c('soon'),'r-amber','Expiring soon')+ring(c('active'),'r-green','All Ok')+'</div>'+
+      '</section>';
+    }).join('') : mEmpty('No documents yet','Record insurance, permits, fitness and the rest, and you are warned before any of them runs out.',
+        '<button class="m-btn m-btn-blue" onclick="truckDocForm()">Add a document</button>'))+
+  '</div>';
+}
+function mDocList(){
+  mTitle(sub.dt);
+  const g = mDocGroups().find(x=>x.k===sub.dt);
+  const rank = {expired:0, soon:1, active:2, none:3};
+  const rows = g ? g.rows.slice().sort((a,b)=>rank[a.st.key]-rank[b.st.key] || (a.d.expiry||'').localeCompare(b.d.expiry||'')) : [];
+  const chip = st => '<em class="m-tag '+({expired:'bad', soon:'warn', active:'ok', none:''}[st.key])+'">'+esc(st.label)+'</em>';
+  $('#view').innerHTML = '<div class="m-page">'+(rows.length ? '<section class="m-card m-rows">'+rows.map(r=>
+    '<div class="m-row" onclick="truckDocForm(\''+r.t.id+'\',\''+r.d.id+'\')">'+
+      '<div class="m-row-main">'+mPlate(r.t.number)+'<span>'+(r.d.expiry?fdate(r.d.expiry)+' · '+esc(docWhen(r.st.days)):'No expiry date')+'</span></div>'+
+      '<div class="m-row-end">'+chip(r.st)+'</div>'+mi('chev','m-chev')+
+    '</div>').join('')+'</section>' : mEmpty('None of these on file',''))+'</div>'+
+  mFab('Add Document','truckDocForm()');
+}
+
+/* the title a desktop screen gives itself, carried into the phone's bar */
+new MutationObserver(()=>{
+  if(!onPhone() || document.body.classList.contains('m-native')) return;
+  const el = $('#mFallTitle'); if(el) el.textContent = $('#pageTitle').textContent;
+}).observe($('#pageTitle'), {childList:true, characterData:true, subtree:true});
+
+new MutationObserver(()=>{
+  if(!onPhone()) return;
+  document.querySelectorAll('#pageActions .btn').forEach(b=>{
+    if(/^\s*\u2190/.test(b.textContent)) b.hidden = true;
+  });
+}).observe($('#pageActions'), {childList:true, subtree:true});
+
+/* ============================================================
    START
    ============================================================ */
 reindex();
@@ -12029,12 +13395,18 @@ if(!DB.seeded && DB.trips.length===0 && !FB.cfg){ seed(); save(); }
 if(!DB.seeded){ DB.seeded = true; try{ localStorage.setItem(KEY, JSON.stringify(DB)); }catch(e){} }
 applyTheme(currentTheme());
 applyBrand();
+applyLayout();
 render();
 startAuth();
 buildDocTypeList();
 setTimeout(pruneOriginals, 3000);
 
 window.addEventListener('online', ()=>{ if(syncReady()) syncPush(true); });
+/* Installable on a phone's home screen. The worker only ever serves a
+   copy when the network cannot, so an update is seen on the next open. */
+if('serviceWorker' in navigator && location.protocol === 'https:'){
+  window.addEventListener('load', ()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
 </script>
 </body>
 </html>
