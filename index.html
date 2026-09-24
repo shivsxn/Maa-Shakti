@@ -4299,10 +4299,10 @@ body.phone .m-tsum{padding:14px}
 body.phone .m-tsum-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 body.phone .m-tsum .m-route{margin:14px 0 14px}
 body.phone .m-tsum .m-route b{font-size:18px;font-weight:700}
-body.phone .m-tsum-facts{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:1px;background:var(--m-line-2);border:1px solid var(--m-line-2);border-radius:8px;overflow:hidden}
+body.phone .m-tsum-facts{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr);gap:1px;background:var(--m-line-2);border:1px solid var(--m-line-2);border-radius:8px;overflow:hidden}
 body.phone .m-tsum-facts button{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:0;background:#fff;padding:9px 10px;text-align:left;cursor:pointer;min-width:0}
 body.phone .m-tsum-facts span{font-size:11px;color:var(--m-muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
-body.phone .m-tsum-facts b{font-size:13px;font-weight:600;color:var(--m-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+body.phone .m-tsum-facts b{font-size:13px;font-weight:600;color:var(--m-ink);line-height:1.3;overflow-wrap:anywhere;max-width:100%}
 body.phone .m-tsum-facts .m-mono{font-family:var(--m-mono);font-weight:500;font-size:12.5px}
 body.phone .m-money3{display:grid;grid-template-columns:repeat(3,1fr);padding:14px 14px 12px;gap:6px 8px}
 body.phone .m-money3>div{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -4311,6 +4311,19 @@ body.phone .m-money3 b{font-size:17px;font-weight:700;letter-spacing:-.02em}
 body.phone .m-money3 .m-meter{grid-column:1 / -1;margin-top:6px}
 body.phone .m-doc3 b{font-size:22px}
 body.phone .m-btn-wide{width:100%;height:48px;font-size:15px}
+body.phone .m-sects{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.phone .m-sect{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px;text-align:left;cursor:pointer;min-width:0;
+  background:#fff;border:1px solid var(--m-line);border-radius:12px;position:relative;overflow:hidden;transition:background .15s}
+body.phone .m-sect:active{background:#F8FAFC}
+body.phone .m-sect-h{display:flex;align-items:center;gap:8px;width:100%;min-width:0}
+body.phone .m-sect-h .mi{width:18px;height:18px;color:var(--m-acc)}
+body.phone .m-sect-h b{flex:1;min-width:0;font:600 14px/1.25 var(--m-font);color:var(--m-ink)}
+body.phone .m-sect-h .m-chev{width:15px;height:15px;color:#CBD5E1}
+body.phone .m-sect-v{font-style:normal;font:600 12.5px var(--m-font);color:var(--m-muted);padding:3px 8px;border-radius:6px;background:var(--m-sunk);
+  max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.phone .m-sect-v.v-acc{background:var(--m-acc-soft);color:var(--m-acc)}
+body.phone .m-sect-v.v-warn{background:var(--m-warn-soft);color:var(--m-warn)}
+body.phone .m-sect-v.v-pos{background:var(--m-pos-soft);color:var(--m-pos)}
 body.phone .m-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 body.phone .m-act{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 4px;border-radius:10px;cursor:pointer;position:relative;overflow:hidden;
   background:#fff;border:1px solid var(--m-line);font:500 12px var(--m-font);color:var(--m-ink);transition:background .15s}
@@ -4351,7 +4364,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.60 &middot; 24 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.61 &middot; 24 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -13812,6 +13825,18 @@ function mTrip(){
   const msg = 'Namaste '+(p?p.name:'')+', for LR '+(t.lr||'-')+' ('+mPlaceName(t.from)+' to '+mPlaceName(t.to)+', '+
     fdate(t.date)+', truck '+mPlateText(truckName(t.truckId))+') the balance pending is '+money(bal)+'. Kindly arrange the payment. — '+mBiz();
   const act = (icon, label, fn, off) => '<button class="m-act"'+(off?' disabled':'')+' onclick="'+fn+'">'+mi(icon)+'<span>'+label+'</span></button>';
+  /* the trip form's own four sections, one tap away from the trip itself */
+  const stage = stageInfo(tripStage(t));
+  const exp = tripExpensesOf(t.id), adv = tripAdvance(t);
+  const sec = (tab, icon, label, value, tone) => '<button class="m-sect" onclick="tripDetail(\''+t.id+'\',\''+tab+'\')">'+
+    '<span class="m-sect-h">'+mi(icon)+'<b>'+label+'</b>'+mi('chev','m-chev')+'</span>'+
+    '<em class="m-sect-v'+(tone?' '+tone:'')+'">'+value+'</em></button>';
+  const sections = '<section class="m-sects">'+
+    sec('details', 'note', 'Details', esc([t.lr?'LR '+t.lr:'', t.material].filter(Boolean).join(' · ') || 'Route, truck, driver'))+
+    (self ? '' : sec('money', 'wallet', 'Advance', adv ? money(adv) : 'None given', adv ? 'v-acc' : ''))+
+    sec('expenses', 'receipt', 'Expenses', exp ? money(exp) : 'Nothing booked', exp ? 'v-warn' : '')+
+    (self ? '' : sec('delivery', 'pod', 'Delivery & POD', esc(stage.label), {transit:'v-acc', delivered:'', received:'v-warn', submitted:'v-pos'}[tripStage(t)]))+
+  '</section>';
   $('#view').innerHTML = '<div class="m-page m-page-trip">'+
     '<section class="m-card m-tsum">'+
       '<div class="m-tsum-top"><span class="m-state s-'+s.tone+'"><i></i>'+s.label+'</span>'+
@@ -13830,6 +13855,7 @@ function mTrip(){
       '<div><span>'+(bal<0?'Paid over':'Balance')+'</span><b class="num '+(bal>0?'m-neg':'m-pos')+'" data-count="'+Math.abs(bal)+'">'+money(Math.abs(bal))+'</b></div>'+
       '<div class="m-meter" style="--p:'+got.toFixed(3)+'"><i></i></div>'+
     '</section>')+
+    sections+
     (next ? '<button class="m-btn m-btn-dark m-btn-wide" onclick="mStep(\''+t.id+'\',\''+next.field+'\',\''+next.word+'\')">'+mi('check')+next.label+'</button>' : '')+
     '<div class="m-acts">'+
       (self ? act('receipt','Expense',"tripDetail('"+t.id+"','expenses')", locked)
