@@ -2820,6 +2820,18 @@ tbody tr:last-child td {
 .line-add{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 0 auto}
 .line-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .line-head .adv-head{margin-bottom:0}
+/* ---------- party bill: choosing the trips ---------- */
+.bill-pick-head{display:flex;align-items:center;gap:8px;margin:2px 0 8px;font-size:12.5px;color:var(--muted)}
+.bill-pick-head span{margin-right:auto}
+.bill-trips{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;max-height:340px;overflow-y:auto;background:var(--card)}
+.bill-trip{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.bill-trip:last-child{border-bottom:0}
+.bill-trip input{width:18px;height:18px;flex:none;margin:0}
+.bill-trip-what{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.bill-trip-what b{font-size:13.5px;font-weight:600;color:var(--ink)}
+.bill-trip-what em{font-style:normal;font-size:12px;color:var(--muted)}
+.bill-trip-bal{flex:none;font-size:13px;font-weight:600;text-align:right}
+.bill-trips .hint{padding:12px}
 /* ---------- printed documents ---------- */
 #printRoot{display:none}
 @media print{
@@ -2858,6 +2870,10 @@ tbody tr:last-child td {
   .pr-summary b{font-family:var(--mono);font-variant-numeric:tabular-nums}
   .pr-summary .strong{font-size:11.5pt;font-weight:700;border-top:.5pt solid #999;margin-top:4px;padding-top:6px}
   .pr-note{font-size:8.5pt;color:#555;margin:14px 0 0}
+  .pr-account{margin-top:16px}
+  .pr-step{color:#444}
+  .pr-account-h{font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#333;margin-bottom:4px}
+  .pr-pay{margin-top:14px;padding:8px 10px;border:.5pt solid #999;font-size:9.5pt;break-inside:avoid}
   .pr-sign{display:flex;justify-content:space-between;gap:40px;margin-top:34px;break-inside:avoid}
   .pr-sign > div{width:45%;font-size:9pt;color:#444}
   .pr-sign .r{text-align:right}
@@ -3764,6 +3780,10 @@ body.phone .m-btn-done{background:var(--m-pos-soft);color:var(--m-pos);cursor:de
 body.phone .m-btn-danger{background:#fff;border-color:#FDA29B;color:var(--m-neg);width:100%}
 body.phone .m-btn-s{height:38px;font-size:13.5px;padding:0 12px;border-radius:8px}
 body.phone .m-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+body.phone .m-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+body.phone .m-three .m-btn{padding:0 6px;font-size:13px;gap:5px}
+body.phone .bill-trips{max-height:none}
+body.phone .bill-pick-head .btn{height:32px}
 body.phone .m-link{border:0;background:none;padding:0;color:var(--m-acc);font:600 13.5px var(--m-font);cursor:pointer;
   display:inline-flex;align-items:center;gap:4px}
 body.phone .m-link .mi{width:15px;height:15px;stroke-width:2.2}
@@ -4364,7 +4384,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.61 &middot; 24 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.62 &middot; 24 Sep 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -7345,6 +7365,7 @@ function renderLedger(pid){
       '<div class="stat-value">'+money(Math.abs(bal))+'</div></div>'+
   '</div>'+
   '<div class="toolbar">'+ledgerViewPicker(again)+
+    '<button class="btn btn-sm btn-primary" onclick="partyBillForm(\''+pid+'\')">Party bill</button>'+
     '<button class="btn btn-sm" onclick="printPartyStatement(\''+pid+'\')">Print statement</button>'+
     '<button class="btn btn-sm" onclick="exportLedger(\''+pid+'\')">Export CSV</button>'+
     '<button class="btn btn-sm btn-danger" style="margin-left:auto" onclick="delParty(\''+pid+'\')">Delete party</button></div>'+
@@ -9721,6 +9742,8 @@ function viewSettings(){
       fText('s_phone','Phone', s.phone,'tel')+
       fText('s_gst','GST number', s.gst)+
       fArea('s_address','Address', s.address)+
+      fArea('s_payinfo','Payment details printed on bills', s.payInfo||'')+
+      '<div class="field full"><span class="hint">Optional. Bank name, account number, IFSC or UPI ID \u2014 printed at the foot of every party bill so the party knows where to pay.</span></div>'+
     '</div>'+
     '<div style="margin-top:14px"><button class="btn btn-primary" onclick="saveSettings()">Save details</button></div>'+
   '</div>'+
@@ -9931,7 +9954,7 @@ function saveSettings(){
   /* merged, not replaced — the lock switch lives here too */
   DB.settings = Object.assign({}, DB.settings, {
     business:val('s_business')||'Maa Vandana Logistics', owner:val('s_owner'),
-    phone:val('s_phone'), gst:val('s_gst'), address:val('s_address')});
+    phone:val('s_phone'), gst:val('s_gst'), address:val('s_address'), payInfo:val('s_payinfo')});
   save(); applyBrand(); toast('Details saved');
 }
 function setSalaryAuto(on){
@@ -10196,6 +10219,184 @@ function printPartyStatement(pid){
     printSign('Debit increases what is owed. Credit reduces it. Please confirm the closing balance.'+
       (view.k ? ' This statement lists '+view.short+'; the summary and the closing balance are for the whole account.' : '')),
     fileStem('ledger', p.name)
+  );
+}
+
+/* ---------- party bill ----------
+   A bill made from a party's trips, for them to check against their own
+   books: each trip with what it was billed, what has come in against it
+   and what is still due, then the account as a whole, so that any
+   difference between the two is explained on the page rather than in an
+   argument. Nothing is stored except the running bill number — the bill
+   is always drawn fresh from the trips, so it can never disagree with
+   the ledger. */
+function billFy(d){
+  const t = d || today();
+  const y = +t.slice(5,7) >= 4 ? +t.slice(0,4) : +t.slice(0,4) - 1;
+  return y+'-'+String(y+1).slice(2);
+}
+function billPrefix(){
+  const w = String((DB.settings||{}).business || 'Maa Vandana Logistics').split(/\s+/).filter(Boolean);
+  return w.map(x=>x[0]).join('').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4) || 'BILL';
+}
+/* the next number in this financial year; it starts again at 1 each April */
+function nextBillNo(){
+  const fy = billFy();
+  const seq = (DB.settings||{}).billSeq || {};
+  const n = seq.fy === fy ? (num(seq.n) + 1) : 1;
+  return billPrefix()+'/'+fy+'/'+String(n).padStart(3,'0');
+}
+function takeBillNo(no){
+  if(no !== nextBillNo()) return;          /* a number typed by hand does not move the count */
+  const fy = billFy();
+  const seq = (DB.settings||{}).billSeq || {};
+  DB.settings = Object.assign({}, DB.settings, {billSeq:{fy, n: seq.fy === fy ? num(seq.n) + 1 : 1}});
+  save();
+}
+function billTrips(pid){
+  return DB.trips.filter(t=>t.partyId===pid && !selfFunded(t))
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||'') || String(a.id).localeCompare(String(b.id)));
+}
+let billPicked = null;
+function partyBillForm(pid){
+  const p = partyById(pid); if(!p) return;
+  if(!billTrips(pid).length){ toast('This party has no trips to bill yet'); return; }
+  billPicked = null;
+  openModal({
+    title:'Party bill — '+p.name, wide:true, okText:'Create bill',
+    body:'<div class="form-grid">'+
+      fText('b_no','Bill number', nextBillNo())+
+      fText('b_date','Bill date', today(), 'date')+
+      fSeg('b_scope','Trips to include',[
+        {v:'due', t:'Only trips with balance due'},
+        {v:'all', t:'All trips in the period'}], 'due')+
+      fText('b_from','From date', '', 'date')+
+      fText('b_to','To date', '', 'date')+
+      '<div class="field full"><label>Trips on this bill</label>'+
+        '<div class="bill-pick-head"><span id="billCount"></span>'+
+          '<button type="button" class="btn btn-sm" onclick="billPickAll(true)">Select all</button>'+
+          '<button type="button" class="btn btn-sm" onclick="billPickAll(false)">Clear</button></div>'+
+        '<div class="bill-trips" id="billTrips"></div></div>'+
+      fArea('b_note','Note printed on the bill', 'Please check these trips against your records and confirm the balance due.')+
+    '</div>',
+    onOk(){
+      const ids = [...document.querySelectorAll('#billTrips input[type=checkbox]:checked')].map(x=>x.value);
+      if(!ids.length){ toast('Tick at least one trip for the bill'); return; }
+      const meta = {no:val('b_no'), date:val('b_date')||today(), note:val('b_note'),
+        from:val('b_from'), to:val('b_to')};
+      takeBillNo(meta.no);
+      closeModal();
+      printPartyBill(pid, ids, meta);
+    }
+  });
+  /* the list follows the choices above it as they are made */
+  ['b_from','b_to'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('change', ()=>billTripsPaint(pid)); });
+  document.querySelectorAll('input[name="b_scope"]').forEach(el=>el.addEventListener('change', ()=>billTripsPaint(pid)));
+  billTripsPaint(pid);
+  formMark();
+}
+function billTripsPaint(pid){
+  const box = document.getElementById('billTrips'); if(!box) return;
+  const scope = checked('b_scope') || 'due', from = val('b_from'), to = val('b_to');
+  let list = billTrips(pid);
+  if(from) list = list.filter(t=>t.date >= from);
+  if(to)   list = list.filter(t=>t.date <= to);
+  if(scope === 'due') list = list.filter(t=>tripBalance(t) > 0);
+  box.innerHTML = list.length ? list.map(t=>{
+    const bal = tripBalance(t);
+    return '<label class="bill-trip">'+
+      '<input type="checkbox" value="'+t.id+'" checked onchange="billCountPaint()">'+
+      '<span class="bill-trip-what"><b>'+esc(fdate(t.date))+' · '+esc(t.from||'?')+' → '+esc(t.to||'?')+'</b>'+
+        '<em>'+[t.lr?'LR '+esc(t.lr):'', esc(truckName(t.truckId)), 'freight '+money(tripFreightNet(t))].filter(Boolean).join(' · ')+'</em></span>'+
+      '<span class="bill-trip-bal num'+(bal>0?' money-neg':'')+'">'+(bal>0?money(bal)+' due':bal<0?money(-bal)+' over':'settled')+'</span>'+
+    '</label>';
+  }).join('') : '<div class="hint">No trip matches. '+(scope==='due'
+      ? 'Every trip in this period is settled — choose “All trips in the period” to bill them anyway.'
+      : 'Widen the dates.')+'</div>';
+  billCountPaint();
+}
+function billPickAll(on){
+  document.querySelectorAll('#billTrips input[type=checkbox]').forEach(x=>{ x.checked = on; });
+  billCountPaint();
+}
+function billCountPaint(){
+  const all = [...document.querySelectorAll('#billTrips input[type=checkbox]')];
+  const on = all.filter(x=>x.checked);
+  const due = on.reduce((s,x)=>{ const t = DB.trips.find(y=>y.id===x.value); return s + (t ? tripBalance(t) : 0); }, 0);
+  const el = document.getElementById('billCount');
+  if(el) el.textContent = on.length+' of '+plural(all.length,'trip')+' ticked'+(on.length ? ' · '+money(due)+' due' : '');
+}
+function printPartyBill(pid, ids, meta){
+  const p = partyById(pid); if(!p) return;
+  meta = meta || {};
+  const trips = billTrips(pid).filter(t=>ids.includes(t.id));
+  let billed = 0, got = 0, due = 0;
+  const rows = trips.map((t,i)=>{
+    const net = tripFreightNet(t), rec = tripSettledTotal(t), bal = tripBalance(t);
+    billed += net; got += rec; due += bal;
+    const chg = tripCharges(t), ded = tripDeductions(t);
+    const adv = tripAdvance(t), paid = allocatedTo(t.id);
+    return [
+      String(i+1),
+      fdate(t.date),
+      (t.lr ? esc(t.lr) : '—')+'<span class="pr-ref">'+esc(truckName(t.truckId))+'</span>',
+      esc((t.from||'?')+' → '+(t.to||'?'))+(t.material||t.weight
+        ? '<span class="pr-ref">'+esc([t.material, t.weight ? t.weight+' t' : ''].filter(Boolean).join(' · '))+'</span>' : ''),
+      money(net)+(chg||ded ? '<span class="pr-ref">'+esc([money(t.freight)+' freight', chg?'+ '+money(chg):'', ded?'− '+money(ded):''].filter(Boolean).join(' '))+'</span>' : ''),
+      rec ? money(rec)+'<span class="pr-ref">'+esc([adv?'adv '+money(adv):'', paid?'paid '+money(paid):''].filter(Boolean).join(' · '))+'</span>' : '',
+      bal > 0 ? money(bal) : bal < 0 ? money(-bal)+' over' : 'Nil'
+    ];
+  });
+  /* the account as a whole, so the balance on these trips can be squared
+     with the balance the party is actually carrying */
+  const account = partyBalance(pid);
+  const opening = num(p.opening);
+  const charges = DB.ledger.filter(l=>l.partyId===pid && l.type==='debit').reduce((s,l)=>s+num(l.amount),0);
+  const loose = DB.ledger.filter(l=>l.partyId===pid && l.type==='credit').reduce((s,l)=>
+    s + num(l.amount) - (l.alloc||[]).reduce((a,x)=>a+num(x.amount),0), 0);
+  const others = billTrips(pid).filter(t=>!ids.includes(t.id)).reduce((s,t)=>s+tripBalance(t),0);
+  /* from the balance on this bill to the balance on the account, one
+     item at a time: the account is exactly these trips, plus the opening
+     balance, plus the party's other trips and charges, less any payment
+     that was never set against a trip */
+  const steps = [
+    ['Opening balance', opening],
+    ['Due on trips not on this bill', others],
+    ['Other charges on the account', charges],
+    ['Payments received without being set against a trip', -loose]
+  ].filter(x=>Math.round(x[1]));
+  const sign = v => (v < 0 ? '\u2212 ' : '+ ')+money(Math.abs(v));
+  const period = meta.from || meta.to ? (meta.from?fdate(meta.from):'first trip')+' to '+(meta.to?fdate(meta.to):'date') : '';
+  const pay = String((DB.settings||{}).payInfo || '').trim();
+  printDoc(
+    printHead('Freight bill', meta.no ? 'No. '+meta.no : '', [
+      ['Bill to', esc(p.name)],
+      p.city ? ['City', esc(p.city)] : null,
+      p.gst ? ['GST', esc(p.gst)] : null,
+      p.phone ? ['Phone', esc(p.phone)] : null,
+      ['Bill date', fdate(meta.date || today())],
+      period ? ['Period', esc(period)] : null,
+      ['Trips', String(trips.length)]
+    ])+
+    printTable(
+      [{label:'#', w:'4%'},{label:'Date', w:'12%'},{label:'LR / Truck', w:'15%'},{label:'Route'},
+       {label:'Freight', right:true, w:'14%'},{label:'Received', right:true, w:'14%'},{label:'Balance', right:true, w:'13%'}],
+      rows,
+      ['','','','Total', money(billed), money(got), money(due)]
+    )+
+    printSummary([
+      ['Freight on these trips', money(billed)],
+      ['Received against them (advances and payments)', money(got)],
+      [due>=0?'Balance due on these trips':'Paid over on these trips', money(Math.abs(due)), true]
+    ])+
+    '<section class="pr-summary pr-account"><div class="pr-account-h">Account position as on '+fdate(meta.date || today())+'</div>'+
+      (steps.length ? '<div><span>Balance due on these trips</span><b>'+money(due)+'</b></div>'+
+        steps.map(([l,v])=>'<div class="pr-step"><span>'+esc(l)+'</span><b>'+sign(v)+'</b></div>').join('') : '')+
+      '<div class="strong"><span>'+(account>=0?'Total balance due on the account':'Advance held on the account')+'</span><b>'+money(Math.abs(account))+'</b></div>'+
+    '</section>'+
+    (pay ? '<section class="pr-pay"><div class="pr-account-h">Payment details</div><div>'+esc(pay).replace(/\n/g,'<br>')+'</div></section>' : '')+
+    printSign(meta.note || '').replace('computer generated statement','computer generated bill'),
+    fileStem('bill', p.name+(meta.no?' '+meta.no.replace(/\//g,'-'):''))
   );
 }
 
@@ -13172,10 +13373,11 @@ function mCell(icon, tone, label, act, badge){
 function mPickParty(statement){
   if(!DB.parties.length){ partyForm(); return; }
   const bal = allBalances();
-  mSheet(statement ? 'Statement for which party?' : 'Payment from which party?',
+  const bill = statement === 'bill';
+  mSheet(bill ? 'Bill which party?' : statement ? 'Statement for which party?' : 'Payment from which party?',
     DB.parties.slice().sort((a,b)=>(bal[b.id]||0)-(bal[a.id]||0)).map(p=>({
       label:p.name, note: bal[p.id] ? money(bal[p.id]) : 'Nil', icon:'user', tone:mHue(p.name),
-      act: statement ? "mOpen('parties','"+p.id+"')" : "ledgerForm('"+p.id+"')"
+      act: bill ? "partyBillForm('"+p.id+"')" : statement ? "mOpen('parties','"+p.id+"')" : "ledgerForm('"+p.id+"')"
     })));
 }
 
@@ -13313,8 +13515,9 @@ function mLedger(){
       '<div class="m-hero-v num" data-count="'+Math.abs(bal)+'">'+money(Math.abs(bal))+'</div>'+
       '<div class="m-hero-sub">'+plural(trips.length,'trip')+' · '+plural(rows.filter(r=>r.kind==='entry').length,'payment')+
         (p.phone?' · '+esc(p.phone):'')+'</div>'+
-      '<div class="m-two">'+
+      '<div class="m-three">'+
         '<button class="m-btn m-btn-gold" onclick="ledgerForm(\''+p.id+'\')">'+mi('plus')+' Add Entry</button>'+
+        '<button class="m-btn m-btn-ghost" onclick="partyBillForm(\''+p.id+'\')">'+mi('receipt')+' Party bill</button>'+
         (bal>0 ? '<button class="m-btn m-btn-ghost" onclick="mWa(\''+esc(p.phone||'')+'\','+esc(JSON.stringify(msg))+')">'+mi('wa')+' Remind</button>'
                : '<button class="m-btn m-btn-ghost" onclick="printPartyStatement(\''+p.id+'\')">'+mi('print')+' Statement</button>')+
       '</div>'+
@@ -13327,6 +13530,7 @@ function mLedgerMenu(){
   const id = sub.open;
   mSheet('Party', [
     {icon:'pencil', label:'Edit party', act:"partyForm('"+id+"')"},
+    {icon:'receipt', label:'Party bill (print or PDF)', act:"partyBillForm('"+id+"')"},
     {icon:'print', label:'Statement (print or PDF)', act:"printPartyStatement('"+id+"')", tone:'teal'},
     {icon:'trash', label:'Delete party', act:"delParty('"+id+"')", danger:true}
   ]);
@@ -13745,6 +13949,7 @@ function mHome(){
     '<section class="m-shorts">'+
       link('rupee','Unpaid trips',"mGo('trips',{mpay:'unpaid'})", unpaid.length||'')+
       link('bell','Reminders',"mGo('parties',{owing:1})")+
+      link('receipt','Party bill',"mPickParty('bill')")+
       link('note','Party statement','mPickParty(true)')+
       link('pod','POD pending',"mGo('trips',{stage:'podpending'})", podDue||'')+
       link('book','Supplier khata',"mGo('suppliers')")+
