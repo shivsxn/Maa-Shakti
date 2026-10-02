@@ -4485,7 +4485,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.64 &middot; 29 Sep 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.65 &middot; 2 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -8446,18 +8446,107 @@ function toggleShopField(){
 }
 /* "+ Add a new shop" without losing what has been typed so far */
 
-function delExpense(id){
-  const e = DB.expenses.find(x=>x.id===id);
-  const where = e && e.tripId ? ' It is booked to the trip '+tripLabel(e.tripId)+', and goes from there too.'
-              : e && e.docId  ? ' It was recorded on a truck document, and the cost is cleared from it.' : '';
-  confirmAsk('Delete this expense?'+where, ()=>{
-    if(e && e.docId){
-      (DB.trucks||[]).forEach(t=>(t.docs||[]).forEach(d=>{ if(d.id===e.docId) d.expense = 0; }));
+/* ------------------------------------------------------------
+   DELETING AN EXPENSE
+   An expense is often the visible half of something else — a line on a
+   trip, a purchase on a shop's credit, the premium paid on a truck's
+   insurance. Deleting it from the Expenses tab undoes it wherever it
+   came from, and the question asked first says exactly what will change
+   there, so nothing moves without being seen.
+   - A trip's line and a shop's credit are read from the expense itself,
+     so they go with it; the trip and the shop are told.
+   - A document's cost is cleared from the term it belongs to. If that
+     term began with a renewal, the renewal can be undone with it: the
+     expiry goes back to what it was before.
+   - Bills and photos attached to it go too, rather than lingering.
+   ------------------------------------------------------------ */
+function expenseSource(e){
+  const src = {trip:null, shop:null, doc:null, truck:null, term:'', prev:null, files:0};
+  if(!e) return src;
+  if(e.tripId) src.trip = DB.trips.find(t=>t.id===e.tripId) || null;
+  if(e.mode==='Credit' && e.shopId) src.shop = shopById(e.shopId) || null;
+  if(e.docId){
+    (DB.trucks||[]).forEach(t=>(t.docs||[]).forEach(d=>{ if(d.id===e.docId){ src.doc = d; src.truck = t; } }));
+    const d = src.doc;
+    if(d){
+      const hist = d.history || [];
+      const old = hist.findIndex(h=>h.expenseId===e.id);
+      const cur = docExpense(d.id);
+      if(old >= 0){ src.term = 'past'; src.prev = hist[old]; }
+      else if(cur && cur.id===e.id){ src.term = hist.length ? 'renewal' : 'current'; src.prev = hist[hist.length-1] || null; }
+      else src.term = 'past';
     }
-    DB.expenses = DB.expenses.filter(x=>x.id!==id);
-    if(e && e.tripId && tripDraft && tripDraft.id===e.tripId) loadTripExpenses(e.tripId);
-    save(); render(); toast('Expense deleted');
-  }, true);
+  }
+  src.files = attachCount(expKey(e.id));
+  return src;
+}
+function delExpense(id){
+  const e = DB.expenses.find(x=>x.id===id); if(!e) return;
+  const src = expenseSource(e);
+  /* a completed trip is locked; its expenses are part of what was settled */
+  if(src.trip && lockedStop(src.trip)) return;
+  const amt = money(e.amount);
+  const lines = [];
+  if(src.trip) lines.push('It is booked to the trip <b>'+esc(tripLabel(src.trip.id))+'</b>. It comes off that trip’s expenses, '+
+    'so the trip’s profit goes up by '+amt+'.');
+  if(src.shop) lines.push('It was bought on credit from <b>'+esc(src.shop.name)+'</b>. It comes off that shop’s khata, so you owe it '+amt+' less.');
+  const docName = src.doc ? esc(src.doc.header||'Document')+' for '+esc(src.truck ? src.truck.number : 'a truck') : '';
+  if(src.doc && src.term==='current') lines.push('It is the cost of <b>'+docName+'</b>. The cost is cleared from that document; its dates stay as they are.');
+  if(src.doc && src.term==='past') lines.push('It is the cost of an earlier term of <b>'+docName+'</b>'+
+    (src.prev && src.prev.expiry ? ' (to '+fdate(src.prev.expiry)+')' : '')+'. It is cleared from that document’s history; the current term is not touched.');
+  if(e.docId && !src.doc) lines.push('It was recorded on a truck document that no longer exists.');
+  if(src.files) lines.push(plural(src.files,'attached bill')+' '+(src.files===1?'is':'are')+' deleted with it.');
+  const renewal = src.doc && src.term==='renewal';
+  const choice = renewal ? fSeg('xd_undo','What happens to the renewal',[
+      {v:'undo', t:'Undo the renewal too — expiry back to '+(src.prev && src.prev.expiry ? fdate(src.prev.expiry) : 'before')},
+      {v:'keep', t:'Keep the renewal, remove only its cost'}], 'undo') : '';
+  openModal({
+    wide:'ask', title:'Delete this expense?', okText:'Delete expense', okClass:'btn btn-danger',
+    body:'<p style="margin:0 0 10px;font-size:14.5px"><b>'+esc(e.category||'Expense')+'</b> · '+amt+' · '+fdate(e.date)+'</p>'+
+      (renewal ? '<p style="margin:0 0 10px;font-size:13.5px;color:var(--ink-2)">It is the cost of renewing <b>'+docName+'</b>'+
+        (src.doc.expiry?' to '+fdate(src.doc.expiry):'')+'.</p>' : '')+
+      lines.map(l=>'<p style="margin:0 0 8px;font-size:13.5px;color:var(--ink-2)">'+l+'</p>').join('')+
+      (choice ? '<div class="form-grid" style="margin-top:6px">'+choice+'</div>' : ''),
+    onOk(){
+      const undo = renewal && (checked('xd_undo') || 'undo') === 'undo';
+      const said = rollBackExpense(e, src, undo);
+      closeModal(); render();
+      toast(said);
+    }
+  });
+}
+/* the deletion itself, and whatever it has to put back where it came from */
+function rollBackExpense(e, src, undoRenewal){
+  let said = 'Expense deleted';
+  const d = src.doc;
+  if(d){
+    if(src.term==='past'){
+      (d.history||[]).forEach(h=>{ if(h.expenseId===e.id){ h.expense = 0; h.expenseId = ''; } });
+      said = 'Expense deleted · cleared from the earlier '+(d.header||'document')+' term';
+    } else if(src.term==='renewal' && undoRenewal && (d.history||[]).length){
+      /* the term before the renewal comes back exactly as it was filed */
+      const h = d.history.pop();
+      d.expiry = h.expiry || '';
+      d.expense = num(h.expense);
+      d.expenseDate = h.expenseDate || '';
+      d.expenseId = h.expenseId || '';
+      said = 'Expense deleted · renewal undone, '+(d.header||'document')+' expires '+(d.expiry?fdate(d.expiry):'with no date');
+    } else {
+      d.expense = 0;
+      d.expenseId = '';
+      said = 'Expense deleted · cost cleared from '+(d.header||'the document');
+    }
+  }
+  DB.expenses = DB.expenses.filter(x=>x.id!==e.id);
+  dropAttach(expKey(e.id));
+  if(src.trip){
+    if(tripDraft && tripDraft.id===src.trip.id) loadTripExpenses(src.trip.id);
+    stampCompletion(src.trip);
+    said = 'Expense deleted · removed from the trip';
+  }
+  if(src.shop) said += ' · '+src.shop.name+'’s khata updated';
+  save();
+  return said;
 }
 
 /* short, readable name for a trip, used wherever an expense points at one */
