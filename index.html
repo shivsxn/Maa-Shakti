@@ -4490,7 +4490,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.68 &middot; 3 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.69 &middot; 3 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -6052,7 +6052,7 @@ function viewTrips(){
         [['pending','Pending'],['partial','Part paid'],['paid','Paid']].map(([v,l])=>
           '<option value="'+v+'"'+(v===(sub.status||'')?' selected':'')+'>'+l+'</option>').join('')+'</select>'+
       '<button class="btn btn-sm" id="advToggle" onclick="toggleAdv()">More filters</button>'+
-      '<button class="btn btn-sm" style="margin-left:auto" onclick="exportCSV(\'trips\')">Export CSV</button>'+
+      '<button class="btn btn-sm" style="margin-left:auto" onclick="exportCSV(\'trips\',true)">Export CSV</button>'+
     '</div>'+
     '<div class="filter-row adv" id="advFilters"'+(sub.adv?'':' hidden')+'>'+
       '<div class="fpair"><label for="t_from_d">Trips from</label>'+
@@ -6093,8 +6093,9 @@ function clearTripFilters(){
 }
 
 /* Only this part is rebuilt while you type, so the search box keeps your cursor */
-function renderTripList(){
-  const box = $('#listBox'); if(!box) return;
+/* The trips the filters leave, newest first. The list on screen and its
+   Export CSV both read this, so the file holds exactly what you see. */
+function tripListFiltered(){
   const lr = (sub.lr||'').toLowerCase().trim();
   const og = (sub.origin||'').toLowerCase().trim();
   const de = (sub.dest||'').toLowerCase().trim();
@@ -6120,6 +6121,11 @@ function renderTripList(){
   if(lr) list = list.filter(t=>(t.lr||'').toLowerCase().includes(lr));
   if(og) list = list.filter(t=>(t.from||'').toLowerCase().includes(og));
   if(de) list = list.filter(t=>(t.to||'').toLowerCase().includes(de));
+  return list;
+}
+function renderTripList(){
+  const box = $('#listBox'); if(!box) return;
+  let list = tripListFiltered();
   const tot = list.reduce((s,t)=>s+num(t.freight),0);
   const totHire = list.reduce((s,t)=>s+num(t.hire),0);
   const totDue = list.reduce((s,t)=>s+Math.max(0, tripBalance(t)),0);
@@ -7287,14 +7293,13 @@ function viewParties(){
     '<select onchange="sub.due=this.value;renderPartyList()"><option value="">All parties</option>'+
       '<option value="due"'+(sub.due==='due'?' selected':'')+'>With dues only</option>'+
       '<option value="adv"'+(sub.due==='adv'?' selected':'')+'>Holding an advance</option></select>'+
-    '<button class="btn btn-sm" onclick="exportCSV(\'parties\')">Export CSV</button>'+
+    '<button class="btn btn-sm" onclick="exportCSV(\'parties\',true)">Export CSV</button>'+
   '</div><div id="listBox"></div>';
   renderPartyList();
 }
 
 /* Only this part is rebuilt while you type, so the search box keeps your cursor */
-function renderPartyList(){
-  const box = $('#listBox'); if(!box) return;
+function partyListFiltered(){
   const q = (sub.q||'').toLowerCase().trim();
   const bal = allBalances();
   const tripCount = {};
@@ -7305,6 +7310,11 @@ function renderPartyList(){
   if(sub.due==='due') list = list.filter(p=>p.bal>0);
   else if(sub.due==='adv') list = list.filter(p=>p.bal<0);
   list.sort((a,b)=>b.bal-a.bal);
+  return list;
+}
+function renderPartyList(){
+  const box = $('#listBox'); if(!box) return;
+  let list = partyListFiltered();
   const full = list.length;
   list = list.slice(0, pageLimit());
 
@@ -8325,18 +8335,22 @@ function viewExpenses(){
       allCategories().map(c=>'<option value="'+esc(c)+'"'+(c===(sub.cat||'')?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>'+
     '<select onchange="sub.truck=this.value;sub.limit=0;renderExpenseList()"><option value="">All trucks</option>'+
       DB.trucks.map(t=>'<option value="'+t.id+'"'+(t.id===(sub.truck||'')?' selected':'')+'>'+esc(t.number)+'</option>').join('')+'</select>'+
-    '<button class="btn btn-sm" onclick="exportCSV(\'expenses\')">Export CSV</button>'+
+    '<button class="btn btn-sm" onclick="exportCSV(\'expenses\',true)">Export CSV</button>'+
   '</div><div id="listBox"></div>';
   renderExpenseList();
 }
 
-function renderExpenseList(){
-  const box = $('#listBox'); if(!box) return;
+function expenseListFiltered(){
   const fm = sub.month||'', fc = sub.cat||'', ft = sub.truck||'';
   let list = DB.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date));
   if(fm) list = list.filter(e=>monthKey(e.date)===fm);
   if(fc) list = list.filter(e=>e.category===fc);
   if(ft) list = list.filter(e=>e.truckId===ft);
+  return list;
+}
+function renderExpenseList(){
+  const box = $('#listBox'); if(!box) return;
+  let list = expenseListFiltered();
   const total = list.reduce((s,e)=>s+num(e.amount),0);
   const byCat = {}; list.forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
   const top = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,3);
@@ -10888,46 +10902,66 @@ function printReport(){
    a saved PDF lands beside the CSV of the same record instead of
    whatever the browser tab happened to be called.
    ------------------------------------------------------------ */
-const nameSlug = v => String(v||'').replace(/[^a-z0-9]+/gi,'-').toLowerCase();
+const nameSlug = v => String(v||'').replace(/[^a-z0-9]+/gi,'-').toLowerCase().replace(/^-+|-+$/g,'');
 function fileStem(kind, who){
   return [kind, who ? nameSlug(who) : '', today()].filter(Boolean).join('-');
 }
 
 function csvCell(v){ const s = String(v==null?'':v); return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; }
-function download(name, rows){
+function download(name, rows, note){
   const csv = rows.map(r=>r.map(csvCell).join(',')).join('\n');
   const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = name; a.click(); URL.revokeObjectURL(a.href);
-  toast('CSV downloaded');
+  toast(note ? 'CSV downloaded \u2014 '+note : 'CSV downloaded');
 }
-function exportCSV(what){
+/* From a list's own button the file follows that list's filters; from
+   Tools (no second argument) it is everything. The file name says which
+   party, truck or month it was cut to, so two exports are not confused. */
+function exportScope(kind, n, total, tag){
+  if(!n){ toast('Nothing to export \u2014 no '+kind+' match the filters'); return null; }
+  return {stem: fileStem(kind, tag), note: n<total ? n+' of '+total+' '+kind+', as filtered' : 'All '+n+' '+kind};
+}
+function exportCSV(what, filtered){
   if(what==='trips'){
-    download(fileStem('trips')+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
+    const phoneList = filtered && document.body.classList.contains('phone') && typeof mTripList==='function' && route==='trips';
+    const src = filtered ? (phoneList ? mTripList() : tripListFiltered()) : DB.trips;
+    const tag = !filtered ? '' : sub.party==='__self' ? 'self funded' : sub.party ? partyName(sub.party)
+      : sub.truck ? truckName(sub.truck) : (src.length<DB.trips.length ? 'filtered' : '');
+    const sc = exportScope('trips', src.length, DB.trips.length, tag); if(!sc) return;
+    download(sc.stem+'.csv', [['Date','LR','From','To','Party','Truck','Driver','Material','Weight','Freight',
       'Advance cash','Fuel litres','Fuel rate','Fuel amount','Total advance',
       'Advance date','Charges','Deductions','Billed to party','Balance pending','Hire','Self funded','Status',
       'Delivery stage','Delivered on','POD received','POD submitted',
       'Supplier','Hire advance','Hire balance','Notes']]
-      .concat(DB.trips.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
+      .concat(src.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>
         [t.date,t.lr,t.from,t.to,partyName(t.partyId),truckName(t.truckId),t.driverId?driverName(t.driverId):'',
          t.material,t.weight,num(t.freight),num(t.advCash),t.fuelQty||'',t.fuelRate||'',num(t.fuelAmt),
          num(t.advance),advDateOf(t),tripCharges(t),tripDeductions(t),tripFreightNet(t),tripBalance(t),
          num(t.hire),selfFunded(t)?'Yes':'',tripStatus(t),
          selfFunded(t)?'':stageInfo(tripStage(t)).label,
          t.deliveredAt||'',t.podReceivedAt||'',t.podSubmittedAt||'',
-         tripSupplier(t)?supplierName(tripSupplier(t)):'',num(t.hireAdvance),tripSupplierBalance(t),t.notes])));
+         tripSupplier(t)?supplierName(tripSupplier(t)):'',num(t.hireAdvance),tripSupplierBalance(t),t.notes])), sc.note);
   }
   if(what==='parties'){
     const bal = allBalances();
     const tc = {}; DB.trips.forEach(t=>{ tc[t.partyId]=(tc[t.partyId]||0)+1; });
-    download(fileStem('parties')+'.csv', [['Party','Phone','City','GST','Opening','Trips','Balance']]
-      .concat(DB.parties.map(p=>[p.name,p.phone,p.city,p.gst,num(p.opening),tc[p.id]||0,bal[p.id]||0])));
+    const src = filtered ? partyListFiltered() : DB.parties;
+    const sc = exportScope('parties', src.length, DB.parties.length,
+      filtered && src.length<DB.parties.length ? (sub.due==='due' ? 'with dues' : sub.due==='adv' ? 'holding advance' : 'filtered') : '');
+    if(!sc) return;
+    download(sc.stem+'.csv', [['Party','Phone','City','GST','Opening','Trips','Balance']]
+      .concat(src.map(p=>[p.name,p.phone,p.city,p.gst,num(p.opening),tc[p.id]||0,bal[p.id]||0])), sc.note);
   }
   if(what==='expenses'){
-    download(fileStem('expenses')+'.csv', [['Date','Category','Amount','Truck','Paid to','Mode','Details','Trip','On document']]
-      .concat(DB.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
+    const src = filtered ? expenseListFiltered() : DB.expenses;
+    const tag = !filtered ? '' : [sub.month ? monthName(sub.month) : '', sub.cat || '', sub.truck ? truckName(sub.truck) : '']
+      .filter(Boolean).join(' ');
+    const sc = exportScope('expenses', src.length, DB.expenses.length, tag); if(!sc) return;
+    download(sc.stem+'.csv', [['Date','Category','Amount','Truck','Paid to','Mode','Details','Trip','On document']]
+      .concat(src.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
         [e.date,e.category,num(e.amount),e.truckId?truckName(e.truckId):'',e.paidTo,e.mode,e.note,
-         e.tripId?tripLabel(e.tripId):'', e.docId?'Yes':''])));
+         e.tripId?tripLabel(e.tripId):'', e.docId?'Yes':''])), sc.note);
   }
 }
 function exportLedger(pid){
@@ -13867,7 +13901,7 @@ function mTripFilters(){
 function mTrips(){
   const title = sub.mpay==='unpaid' ? 'Unpaid Trips' : sub.stage==='podpending' ? 'POD due Trips' : 'Trips';
   if(title === 'Trips') mRootTitle('Trips', 'Every load you have moved',
-    '<button class="m-icon-btn" aria-label="Export" onclick="exportCSV(\'trips\')">'+mi('download')+'</button>');
+    '<button class="m-icon-btn" aria-label="Export" onclick="exportCSV(\'trips\',true)">'+mi('download')+'</button>');
   else mTitle(title, '', 'Filtered');
   const n = mTripFilters();
   $('#view').innerHTML = '<div class="m-page">'+
