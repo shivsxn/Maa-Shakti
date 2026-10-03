@@ -4490,7 +4490,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.67 &middot; 3 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.68 &middot; 3 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -8407,7 +8407,7 @@ function renderExpenseList(){
         '<td data-label="Truck" class="num">'+esc(e.truckId?truckName(e.truckId):'\u2014')+'</td>'+
         '<td data-label="Amount" class="t-r num t-strong">'+money(e.amount)+'</td>'+
         '<td><div class="row-actions">'+
-          '<button class="btn btn-sm" onclick="event.stopPropagation();expenseForm(\''+e.id+'\')">Edit</button>'+
+          '<button class="btn btn-sm" title="'+expenseSourceHint(e)+'" onclick="event.stopPropagation();openExpenseSource(\''+e.id+'\')">Edit</button>'+
           '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();delExpense(\''+e.id+'\')">Delete</button>'+
         '</div></td></tr>').join('')+
       '</tbody><tfoot><tr><th colspan="4">Total of '+full+' entries</th><th class="t-r num" style="font-size:14px;color:var(--ink)">'+money(total)+'</th><th></th></tr></tfoot>'+
