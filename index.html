@@ -2921,6 +2921,9 @@ tbody tr:last-child td {
 .line-add{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 0 auto}
 .line-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .line-head .adv-head{margin-bottom:0}
+/* ---------- a truck's RC ---------- */
+.rc-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.rc-box .clip-row{margin:0}
 /* ---------- party bill: choosing the trips ---------- */
 .bill-pick-head{display:flex;align-items:center;gap:8px;margin:2px 0 8px;font-size:12.5px;color:var(--muted)}
 .bill-pick-head span{margin-right:auto}
@@ -4485,7 +4488,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.65 &middot; 2 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.66 &middot; 3 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -7895,6 +7898,7 @@ function renderTruckList(){
   if(sub.type) stats = stats.filter(t=>t.type===sub.type);
   if(q) stats = stats.filter(t=>
     ((t.number||'')+' '+(t.model||'')+' '+(t.owner||'')+' '+(t.ownerPhone||'')+' '+
+     (t.engineNo||'')+' '+(t.chassisNo||'')+' '+
      (t.driverId?driverName(t.driverId):'')).toLowerCase().includes(q));
 
   const papers = [];
@@ -8015,9 +8019,25 @@ function assignHistoryField(t){
   '</div>';
 }
 /* the period follows the payment date until it is set by hand */
+/* A truck's RC is kept as attachments filed under the truck itself. A new
+   truck is given its id the moment the form opens, so the RC can be
+   attached before the first save. */
+let truckFormId = '';
+function rcKey(truckId){ return truckId ? 'rc:'+truckId : ''; }
+function paintRcBox(){
+  const box = document.getElementById('rcBox'); if(!box) return;
+  const key = rcKey(truckFormId);
+  const n = attachCount(key);
+  box.innerHTML = attachChips(key, false)+
+    '<button type="button" class="btn btn-sm" onclick="document.getElementById(\'rcFile\').click()">'+
+      (n ? '+ Add another page' : '+ Attach RC')+'</button>'+
+    '<input type="file" id="rcFile" multiple accept="image/*,.pdf,application/pdf" style="display:none" '+
+      'onchange="attachAdd(\''+key+'\',this,paintRcBox)">';
+}
 function truckForm(id, onSaved, preset){
   const t = id ? truckById(id) : null;
   const nest = typeof onSaved === 'function';
+  truckFormId = t ? t.id : uid();
   pendingTruckDocs = JSON.parse(JSON.stringify((t && t.docs) || []));
   (nest ? stackForm : openModal)({
     title: t?'Edit truck':'New truck', okText: t?'Save changes':'Save truck',
@@ -8026,6 +8046,8 @@ function truckForm(id, onSaved, preset){
       fText('t_number','Vehicle number', t?t.number:formatPlate(preset||''),'text','placeholder="UP83 AT 2470" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="this.value=formatPlate(this.value)"')+
       fText('t_model','Make & model', t?t.model:'','text','placeholder="Tata 3118, 14 wheeler"')+
       fText('t_capacity','Capacity (tonnes)', t?t.capacity:'','number','step="0.1" min="0"')+
+      fText('t_engine','Engine number', t?(t.engineNo||''):'','text','placeholder="As on the RC" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"')+
+      fText('t_chassis','Chassis number', t?(t.chassisNo||''):'','text','placeholder="As on the RC" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"')+
       qSelect('t_driver','Regular driver', 'driver', t?t.driverId:'')+
       fText('t_driverFrom','Driver assigned from',
         (t && openAssignment(t.id) && openAssignment(t.id).from) || today(), 'date')+
@@ -8034,6 +8056,10 @@ function truckForm(id, onSaved, preset){
       fText('t_owner','Owner name (if not a saved supplier)', t?t.owner:'','text','placeholder="For market trucks"')+
       fText('t_ownerPhone','Owner phone', t?t.ownerPhone:'','tel')+
       fArea('t_notes','Notes', t?t.notes:'')+
+      '<div class="field full"><label>RC (registration certificate)</label>'+
+        '<div id="rcBox" class="rc-box"></div>'+
+        '<span class="hint">A photo or PDF of the RC \u2014 front and back, up to '+ATTACH_MAX+' pages. Tap a page to open it.</span>'+
+      '</div>'+
       '<div class="field full"><label>Documents and expiry dates</label>'+
         '<div id="truckDocs"></div>'+
         '<button type="button" class="btn btn-sm" onclick="addDocRow()">+ Add a document</button>'+
@@ -8064,8 +8090,10 @@ function truckForm(id, onSaved, preset){
       }
       const docs = pendingTruckDocs.filter(d=>d.header && d.expiry);
       const dropped = ((t && t.docs) || []).filter(old=>!docs.some(d=>d.id===old.id));
-      const rec = {id:t?t.id:uid(), type:checked('t_type')||'owned', number:val('t_number'),
-        model:val('t_model'), capacity:val('t_capacity'), driverId:val('t_driver'), owner:val('t_owner'),
+      const rec = {id:truckFormId, type:checked('t_type')||'owned', number:val('t_number'),
+        model:val('t_model'), capacity:val('t_capacity'),
+        engineNo:val('t_engine').toUpperCase(), chassisNo:val('t_chassis').toUpperCase(),
+        driverId:val('t_driver'), owner:val('t_owner'),
         ownerPhone:val('t_ownerPhone'), supplierId:val('t_supplier'), notes:val('t_notes'), docs:docs};
       rec.number = formatPlate(rec.number);
       if(t) DB.trucks[DB.trucks.findIndex(x=>x.id===t.id)] = rec; else DB.trucks.push(rec);
@@ -8079,6 +8107,8 @@ function truckForm(id, onSaved, preset){
       closeModal(); render(); toast(t?'Truck updated':'Truck saved');
     }
   });
+  paintRcBox();
+  formMark();                      /* the RC box is part of how the form opened */
 }
 function delTruck(id){
   const n = DB.trips.filter(t=>t.truckId===id).length;
@@ -8087,11 +8117,14 @@ function delTruck(id){
   const docs = (t && t.docs) || [];
   const docCost = docs.reduce((s,d)=>s+docExpenseHistory(d.id).reduce((n2,e)=>n2+num(e.amount),0), 0);
   const booked = (DB.expenses||[]).filter(e=>e.truckId===id && !e.docId).length;
+  const rc = attachCount(rcKey(id));
   confirmAsk('Delete this truck?'+
+    (rc ? ' Its RC ('+plural(rc,'page')+') is deleted with it.' : '')+
     (docs.length ? ' Its '+plural(docs.length,'document')+
       (docCost?' and the '+money(docCost)+' recorded on them':'')+' go too.' : '')+
     (booked ? ' '+plural(booked,'expense')+' booked to it will stay in Expenses, no longer tied to a vehicle.' : ''), ()=>{
     docs.forEach(d=>dropDocExpense(d.id));
+    dropAttach(rcKey(id));
     DB.trucks = DB.trucks.filter(x=>x.id!==id);
     /* the seats it held, and every remaining pointer at a vehicle that has gone */
     DB.assign = (DB.assign||[]).filter(a=>a.truckId!==id);
@@ -10039,15 +10072,16 @@ function dataIssues(){
   DB.trucks.forEach(t=>(t.docs||[]).forEach(d=>docIds.add(d.id)));
   const tripIds = new Set(DB.trips.map(t=>t.id));
   const expIds  = new Set((DB.expenses||[]).map(e=>e.id));
+  const truckIds = new Set(DB.trucks.map(t=>t.id));
   const out = [];
   const add = (key, label, items, fix) => { if(items.length) out.push({key, label, items, fix}); };
 
   /* a bill still filed against an advance or an expense line that is gone */
   const strayAttach = Object.keys(DB.attach||{}).filter(k=>{
     const [kind, id] = [k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':')+1)];
-    return kind==='adv' ? !tripIds.has(id) : kind==='exp' ? !expIds.has(id) : true;
+    return kind==='adv' ? !tripIds.has(id) : kind==='exp' ? !expIds.has(id) : kind==='rc' ? !truckIds.has(id) : true;
   }).map(k=>({id:k}));
-  add('attachGone', 'attachments kept for a trip or expense that has been deleted',
+  add('attachGone', 'attachments kept for a trip, expense or truck that has been deleted',
       strayAttach, items=>items.forEach(x=>{
         (DB.attach[x.id]||[]).forEach(a=>dropOriginal(a.origKey));
         delete DB.attach[x.id];
@@ -11277,7 +11311,10 @@ function attachButton(key, id, label){
     '<input type="file" id="'+id+'" multiple accept="image/*,.pdf,application/pdf" style="display:none" '+
       'onchange="attachAdd(\''+(key||'')+'\',this,refreshAttachHost)">';
 }
-function refreshAttachHost(){ if(typeof repaintTripPane==='function') repaintTripPane(); }
+function refreshAttachHost(){
+  if(document.getElementById('rcBox')) paintRcBox();
+  if(typeof repaintTripPane==='function') repaintTripPane();
+}
 
 const ICON_CLIP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 01-7-7l8.6-8.6a3.3 3.3 0 014.7 4.7l-8.6 8.6a1.7 1.7 0 01-2.4-2.4l8-8"/></svg>';
 const ICON_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
@@ -14078,7 +14115,7 @@ function mTrucksPaint(){
   if(f==='free') list = list.filter(x=>!x.s.on);
   if(sub.tt==='market') list = list.filter(x=>x.t.type!=='owned');
   if(sub.tt==='owned') list = list.filter(x=>x.t.type==='owned');
-  if(q) list = list.filter(x=>((x.t.number||'')+(x.t.model||'')+(x.t.owner||'')).toLowerCase().replace(/\s+/g,'').includes(q));
+  if(q) list = list.filter(x=>((x.t.number||'')+(x.t.model||'')+(x.t.owner||'')+(x.t.engineNo||'')+(x.t.chassisNo||'')).toLowerCase().replace(/\s+/g,'').includes(q));
   list.sort((a,b)=>(b.s.on-a.s.on) || (a.t.type==='owned'?0:1)-(b.t.type==='owned'?0:1) || (a.t.number||'').localeCompare(b.t.number||''));
   if(!list.length){
     box.innerHTML = DB.trucks.length ? mEmpty('No truck matches','') :
