@@ -2922,6 +2922,8 @@ tbody tr:last-child td {
 .line-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .line-head .adv-head{margin-bottom:0}
 /* ---------- a truck's RC ---------- */
+@keyframes srcHit{0%,35%{box-shadow:0 0 0 2px var(--accent,#3557F0);background:rgba(53,87,240,.08)}100%{box-shadow:0 0 0 0 transparent;background:transparent}}
+.src-hit{animation:srcHit 2.2s ease-out;border-radius:10px}
 .rc-box{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .rc-box .clip-row{margin:0}
 /* ---------- party bill: choosing the trips ---------- */
@@ -4488,7 +4490,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.66 &middot; 3 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.67 &middot; 3 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -8387,7 +8389,10 @@ function renderExpenseList(){
     : '<div class="card"><div class="tbl-wrap"><table>'+
       '<thead><tr><th>Date</th><th>Category</th><th>Details</th><th>Truck</th><th class="t-r">Amount</th><th></th></tr></thead><tbody>'+
       list.map(e=>
-        '<tr><td data-label="Date" style="white-space:nowrap">'+fdate(e.date)+'</td>'+
+        '<tr tabindex="0" style="cursor:pointer" title="'+expenseSourceHint(e)+'" '+
+          'onclick="openExpenseSource(\''+e.id+'\')" '+
+          'onkeydown="if(event.target===this&&(event.key===\'Enter\'||event.key===\' \')){event.preventDefault();openExpenseSource(\''+e.id+'\')}">'+
+        '<td data-label="Date" style="white-space:nowrap">'+fdate(e.date)+'</td>'+
         '<td data-label="Category"><span class="chip chip-grey">'+esc(e.category)+'</span>'+
           (e.mode==='Credit'?'<div class="t-sub"><span class="chip chip-amber">On credit</span></div>':'')+'</td>'+
         '<td data-label="Details">'+esc(e.note||'\u2014')+
@@ -8402,8 +8407,8 @@ function renderExpenseList(){
         '<td data-label="Truck" class="num">'+esc(e.truckId?truckName(e.truckId):'\u2014')+'</td>'+
         '<td data-label="Amount" class="t-r num t-strong">'+money(e.amount)+'</td>'+
         '<td><div class="row-actions">'+
-          '<button class="btn btn-sm" onclick="expenseForm(\''+e.id+'\')">Edit</button>'+
-          '<button class="btn btn-sm btn-danger" onclick="delExpense(\''+e.id+'\')">Delete</button>'+
+          '<button class="btn btn-sm" onclick="event.stopPropagation();expenseForm(\''+e.id+'\')">Edit</button>'+
+          '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();delExpense(\''+e.id+'\')">Delete</button>'+
         '</div></td></tr>').join('')+
       '</tbody><tfoot><tr><th colspan="4">Total of '+full+' entries</th><th class="t-r num" style="font-size:14px;color:var(--ink)">'+money(total)+'</th><th></th></tr></tfoot>'+
       '</table></div>'+moreBar(list.length, full, 'renderExpenseList')+'</div>');
@@ -8512,6 +8517,48 @@ function expenseSource(e){
   }
   src.files = attachCount(expKey(e.id));
   return src;
+}
+/* ------------------------------------------------------------
+   OPENING AN EXPENSE WHERE IT WAS WRITTEN
+   A line in Expenses is often a copy of something kept elsewhere:
+   a cost booked on a trip, or what a truck paper cost. Correcting
+   it there keeps the two in step, so a click on the row goes to
+   that place rather than to a bare amount box.
+   - On a trip: the trip opens on its Expenses section, with the
+     line picked out.
+   - A truck document's current term: that document's form.
+   - An earlier term of a document: the document form only edits
+     the term in force, so this one is corrected as an expense.
+   - Anything else was entered here, so here is where it is edited.
+   ------------------------------------------------------------ */
+function expenseSourceHint(e){
+  const src = expenseSource(e);
+  if(src.trip) return 'Open the trip this was booked on';
+  if(src.doc && src.term!=='past') return 'Open the '+esc(src.doc.header||'document')+' it was paid for';
+  return 'Open this expense';
+}
+function openExpenseSource(id){
+  const e = DB.expenses.find(x=>x.id===id); if(!e) return;
+  const src = expenseSource(e);
+  if(src.trip){
+    tripDetail(src.trip.id, 'expenses');
+    const i = tripExpDraft.findIndex(x=>x.id===e.id);
+    if(i >= 0) setTimeout(()=>{
+      const row = document.getElementById('txrow'+i);
+      if(!row) return;
+      row.scrollIntoView({block:'center', behavior:'smooth'});
+      row.classList.remove('src-hit'); void row.offsetWidth; row.classList.add('src-hit');
+    }, 120);
+    return;
+  }
+  if(src.doc && src.truck){
+    if(src.term!=='past'){ truckDocForm(src.truck.id, src.doc.id); return; }
+    expenseForm(e.id);
+    toast('This was paid for an earlier term of '+(src.doc.header||'the document')+
+      ' \u2014 correct it here so the current term is left alone.');
+    return;
+  }
+  expenseForm(e.id);
 }
 function delExpense(id){
   const e = DB.expenses.find(x=>x.id===id); if(!e) return;
