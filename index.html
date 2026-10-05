@@ -4475,6 +4475,207 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
 @media (prefers-reduced-motion: reduce){
   body.phone *, body.phone *::before, body.phone *::after{animation:none!important;transition:none!important}
 }
+/* ============================================================
+   DASHBOARD AND INSIGHTS — the control-room layout
+   ============================================================ */
+:root, [data-theme="daylight"], [data-theme="midnight"]{
+  --map-bg:#F3F6FA; --map-grid:#E4EAF2; --map-glow:rgba(255,255,255,.85); --map-state:#A9B6C7; --map-town:#B7C2D1;
+}
+[data-theme="carbon"]{
+  --map-bg:#0F151E; --map-grid:#18212D; --map-glow:rgba(100,147,245,.06); --map-state:#3A4859; --map-town:#435163;
+}
+.t-blue{--tint:var(--c1)} .t-amber{--tint:var(--c2)} .t-teal{--tint:var(--c3)}
+.t-red{--tint:var(--c4)} .t-violet{--tint:var(--c5)} .t-green{--tint:var(--c6)}
+
+.db-date{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:10px;
+  font-size:12.5px;font-weight:600;color:var(--ink-2);background:var(--card);border:1px solid var(--line)}
+.db-date svg{width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round}
+
+/* strips */
+.db-strip-wrap{margin:0 0 16px}
+.db-strip-h{display:flex;align-items:baseline;gap:10px;margin:2px 2px 9px}
+.db-strip-h span{font-size:13.5px;font-weight:700;letter-spacing:-.005em;color:var(--ink)}
+.db-strip-h em{font-style:normal;font-size:12px;color:var(--muted-2)}
+.db-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));background:var(--card);
+  border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 2px rgba(17,24,39,.04),0 10px 26px -18px rgba(17,24,39,.18);overflow:hidden}
+.db-cell{position:relative;padding:15px 16px 13px;min-width:0;display:flex;flex-direction:column;gap:11px;
+  transition:background var(--t-fast)}
+.db-cell + .db-cell::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:1px;background:var(--line)}
+.db-link{cursor:pointer}
+.db-link:hover{background:var(--card-2)}
+.db-link:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.db-cell-top{display:flex;align-items:center;gap:11px;min-width:0}
+.db-ic{flex:none;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  color:var(--tint);background:color-mix(in srgb,var(--tint) 12%,transparent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tint) 16%,transparent)}
+.db-ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.db-ic.sm{width:32px;height:32px;border-radius:9px}
+.db-ic.sm svg{width:16px;height:16px}
+.db-cell-txt{min-width:0}
+.db-val{font-size:21px;font-weight:700;letter-spacing:-.03em;color:var(--ink);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-val-long{font-size:17.5px;letter-spacing:-.04em}
+.db-lab{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-cell-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;min-height:32px;margin-top:auto}
+.db-cell-note{min-width:0;display:flex;flex-direction:column;gap:2px;font-size:11.5px}
+.db-note{color:var(--muted-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-delta{font-weight:700;white-space:nowrap}
+.db-delta em{font-style:normal;font-weight:500;color:var(--muted-2)}
+.db-delta.up{color:var(--green)} .db-delta.down{color:var(--red)} .db-delta.flat{color:var(--muted-2);font-weight:500}
+.db-spark{flex:none;width:76px;height:32px;overflow:visible}
+.db-spark-line{stroke-dasharray:200;stroke-dashoffset:200;animation:dbDraw .9s .15s cubic-bezier(.3,.7,.3,1) forwards}
+@keyframes dbDraw{to{stroke-dashoffset:0}}
+.db-foot-col{flex-direction:column;align-items:stretch;justify-content:flex-end;gap:7px}
+.db-foot-col .db-split{width:100%!important;margin-bottom:0}
+.db-split{flex:none;width:76px;height:7px;border-radius:99px;display:flex;gap:2px;overflow:hidden;background:var(--line-soft);margin-bottom:6px}
+.db-split i{display:block;height:100%;border-radius:99px;min-width:4px;transform-origin:left;animation:dbGrow .7s .2s cubic-bezier(.3,.7,.3,1) both}
+.db-split-empty{opacity:.7}
+@keyframes dbGrow{from{transform:scaleX(0)}}
+
+/* cards */
+.db-main{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:16px;align-items:start;margin-bottom:16px}
+.db-main-b,.db-main-c{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+.db-side{display:grid;gap:16px;min-width:0}
+.db-card{border-radius:14px;overflow:hidden;min-width:0;box-shadow:0 1px 2px rgba(17,24,39,.04),0 10px 26px -20px rgba(17,24,39,.2)}
+.db-card-head{display:flex;align-items:flex-start;gap:12px;padding:15px 18px 12px}
+.db-card-head > div:first-child{min-width:0;flex:1}
+.db-card-t{font-size:14.5px;font-weight:700;letter-spacing:-.01em;margin:0;color:var(--ink)}
+.db-card-s{font-size:12px;color:var(--muted);margin-top:3px}
+.db-more{flex:none;border:0;background:none;color:var(--accent);font:inherit;font-size:12.5px;font-weight:650;
+  padding:4px 2px;cursor:pointer;white-space:nowrap}
+.db-more span{display:inline-block;transition:transform var(--t-fast)}
+.db-more:hover span{transform:translateX(3px)}
+.db-chart{padding:0 18px 16px}
+.db-routes{margin-bottom:0}
+.db-routes .tbl-wrap{border-top:1px solid var(--line-soft)}
+
+/* segmented filter */
+.db-seg{flex:none;display:inline-flex;padding:3px;border-radius:10px;background:var(--bg-2);border:1px solid var(--line)}
+.db-seg button{border:0;background:none;font:inherit;font-size:12px;font-weight:600;color:var(--muted);
+  padding:5px 10px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.db-seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(17,24,39,.12)}
+
+/* the map */
+.db-map-card .db-card-head{padding-bottom:12px}
+.db-map{position:relative;margin:0 14px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.db-map-none{min-height:260px;background:var(--map-bg)}
+.lane-map{display:block;width:100%;height:auto}
+.lm-bg{fill:var(--map-bg)}
+.lm-grid{stroke:var(--map-grid);stroke-width:1}
+.lm-glow-0{stop-color:var(--map-glow)} .lm-glow-1{stop-color:var(--map-glow);stop-opacity:0}
+.lm-state{font:600 10.5px var(--sans);letter-spacing:.16em;fill:var(--map-state);opacity:.75}
+.lm-town{fill:var(--map-town)}
+.lm-town-t{font:500 10px var(--sans);fill:var(--map-state)}
+.lm-ahead{fill:none;stroke-linecap:round;stroke-dasharray:3 6;opacity:.5}
+.lm-done{fill:none;stroke-linecap:round;animation:lmDraw 1.1s cubic-bezier(.3,.7,.3,1) both}
+@keyframes lmDraw{from{stroke-dashoffset:calc(var(--p) * 1px)}}
+.lm-start{fill:var(--card);stroke:var(--ink-2);stroke-width:2}
+.lm-end{stroke:var(--card);stroke-width:2.5}
+.lm-name{font:650 11px var(--sans);fill:var(--ink-2);paint-order:stroke;stroke:var(--map-bg);stroke-width:3px;stroke-linejoin:round}
+.lm-mark{animation:lmPop .45s cubic-bezier(.2,.9,.3,1.3) both;transform-box:fill-box}
+.lm-go{cursor:pointer}
+.lm-go:hover .lm-tag{stroke:var(--accent)}
+.lm-go:focus{outline:none}
+.lm-go:focus-visible .lm-tag{stroke:var(--accent);stroke-width:2}
+@keyframes lmPop{from{opacity:0;transform:translateY(6px)}}
+.lm-chip{filter:drop-shadow(0 3px 5px rgba(17,24,39,.25))}
+.lm-lead{fill:none;stroke-width:1.2;opacity:.55;stroke-dasharray:2 2}
+.lm-glyph path,.lm-glyph circle{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.lm-pulse{opacity:.35;transform-box:fill-box;transform-origin:center;animation:lmPulse 2.2s ease-out infinite}
+@keyframes lmPulse{0%{transform:scale(.7);opacity:.45}100%{transform:scale(2.1);opacity:0}}
+.lm-tag{fill:var(--card);stroke:var(--line);stroke-width:1;filter:drop-shadow(0 4px 8px rgba(17,24,39,.12))}
+.lm-tag-1{font:700 11px var(--mono);fill:var(--ink);letter-spacing:.02em}
+.lm-tag-2{font:600 9.5px var(--sans)}
+.db-map.is-faded .lane-map{opacity:.55;filter:saturate(.4)}
+.db-map-msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  text-align:center;padding:20px;pointer-events:none}
+.db-map-msg b{font-size:14px;color:var(--ink);background:var(--card);padding:8px 14px;border-radius:10px;border:1px solid var(--line);box-shadow:0 8px 20px -12px rgba(17,24,39,.3)}
+.db-map-msg span{font-size:12px;color:var(--muted);margin-top:4px}
+.db-legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:12px 18px 15px;font-size:12px;color:var(--ink-2)}
+.db-legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:0}
+.db-legend b{margin-left:3px;color:var(--ink)}
+.db-legend-note{margin-left:auto;color:var(--muted-2);font-size:11.5px}
+.db-lost{padding:0 18px 14px;margin-top:-6px}
+
+/* recent trips */
+.db-tbl-wrap{padding:0 8px 8px;overflow-x:auto}
+.db-tbl{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.db-tbl th{font-size:10.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);
+  text-align:left;padding:8px 10px;border-bottom:1px solid var(--line-soft);background:none}
+.db-tbl td{padding:10px 8px;border-bottom:1px solid var(--line-soft);color:var(--ink-2);overflow:hidden}
+.db-tbl th{padding-left:8px;padding-right:8px}
+.db-tbl tr:last-child td{border-bottom:0}
+.db-tbl tbody tr{cursor:pointer;transition:background var(--t-fast)}
+.db-tbl tbody tr:hover{background:var(--card-2)}
+.db-lr{font-weight:700;color:var(--ink)!important;white-space:nowrap;text-overflow:ellipsis}
+.db-ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-when{color:var(--muted-2);font-size:11.5px;white-space:nowrap}
+.db-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;white-space:nowrap;
+  color:color-mix(in srgb,var(--pc) 82%,var(--ink));padding:3px 9px 3px 8px;border-radius:99px;
+  background:color-mix(in srgb,var(--pc) 11%,transparent)}
+.db-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pc)}
+
+/* drivers */
+.db-people{padding:0 10px 10px}
+.db-person{display:flex;align-items:center;gap:11px;padding:9px 8px;border-radius:10px;cursor:pointer;transition:background var(--t-fast)}
+.db-person:hover{background:var(--card-2)}
+.db-av{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;
+  color:var(--av);background:color-mix(in srgb,var(--av) 14%,transparent)}
+.db-person-t{min-width:0;flex:1}
+.db-person-n{font-size:13px;font-weight:650;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-person-s{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.db-person-r{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+
+/* needs attention */
+.db-attn{padding:0 10px 10px;display:grid;gap:2px}
+.db-attn-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;font:inherit;
+  padding:10px 8px;border-radius:10px;cursor:pointer;transition:background var(--t-fast)}
+.db-attn-row:hover{background:var(--card-2)}
+.db-attn-t{min-width:0;flex:1;display:flex;flex-direction:column;gap:2px}
+.db-attn-t b{font-size:13px;color:var(--ink)}
+.db-attn-t em{font-style:normal;font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-attn-go{flex:none;font-size:12px;font-weight:650;color:var(--accent)}
+
+@media (max-width:1320px){
+  .db-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .db-cell:nth-child(3n+1)::before{display:none}
+  .db-cell:nth-child(n+4){border-top:1px solid var(--line)}
+}
+@media (max-width:1100px){
+  .db-main,.db-main-b,.db-main-c{grid-template-columns:minmax(0,1fr)}
+  .db-side{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+  .db-side{grid-template-columns:minmax(0,1fr)}
+  .db-legend-note{margin-left:0;flex-basis:100%}
+}
+body.phone .db-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.phone .m-db{margin:12px 0 4px}
+body.phone .m-db .db-strip-wrap{margin:0}
+body.phone .m-db .db-strip{border-radius:16px}
+body.phone .m-mapcard{padding:10px 0 2px;overflow:hidden}
+body.phone .m-mapcard .db-map{margin:0 10px}
+body.phone .m-mapcard .db-legend{padding:10px 14px 12px}
+body.phone .db-cell::before{display:none!important}
+body.phone .db-cell{border-top:1px solid var(--line)}
+body.phone .db-cell:nth-child(-n+2){border-top:0}
+body.phone .db-cell:nth-child(2n){border-left:1px solid var(--line)}
+body.phone .db-cell{padding:13px 12px 11px;gap:9px}
+body.phone .db-ic{width:32px;height:32px;border-radius:9px}
+body.phone .db-ic svg{width:16px;height:16px}
+body.phone .db-val{font-size:17px}
+body.phone .db-val-long{font-size:14.5px;letter-spacing:-.03em}
+body.phone .db-cell-foot{flex-direction:column;align-items:flex-start;gap:6px}
+body.phone .db-spark{width:100%;height:26px}
+body.phone .db-split{width:100%}
+body.phone .db-main,body.phone .db-main-b,body.phone .db-main-c{grid-template-columns:minmax(0,1fr)}
+body.phone .db-side{grid-template-columns:minmax(0,1fr)}
+body.phone .db-card-head{flex-wrap:wrap}
+body.phone .db-map{margin:0 10px}
+body.phone .db-legend-note{margin-left:0;flex-basis:100%}
+@media (prefers-reduced-motion:reduce){
+  .db-spark-line,.lm-done,.lm-mark,.db-split i{animation:none!important;stroke-dashoffset:0}
+  .lm-pulse{display:none}
+}
 </style>
 </head>
 <body>
@@ -4490,7 +4691,7 @@ body.phone.m-go .m-tl-row{animation:mRise .3s var(--m-ease) both;animation-delay
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.69 &middot; 3 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.70 &middot; 5 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -5695,157 +5896,642 @@ function dashboardMonth(){
   return keys.length ? keys[keys.length-1] : now;
 }
 
+/* ============================================================
+   WHERE A TOWN IS
+   Enough of a map to draw lanes on: the big freight towns by their
+   own position, and every other town by its state, nudged a little
+   so two towns in one state do not sit on the same dot. No country
+   outline is drawn — the dots and the lanes are the picture, and
+   a hand-drawn border would be wrong somewhere that matters.
+   ============================================================ */
+const GEO_STATE = {
+  'Andhra Pradesh':[15.9,79.7], 'Arunachal Pradesh':[28.2,94.7], 'Assam':[26.2,92.9], 'Bihar':[25.9,85.6],
+  'Chhattisgarh':[21.3,81.9], 'Goa':[15.4,74.0], 'Gujarat':[22.4,71.6], 'Haryana':[29.1,76.1],
+  'Himachal Pradesh':[31.9,77.2], 'Jharkhand':[23.6,85.3], 'Karnataka':[14.9,75.9], 'Kerala':[10.4,76.4],
+  'Madhya Pradesh':[23.5,78.2], 'Maharashtra':[19.5,75.7], 'Manipur':[24.7,93.9], 'Meghalaya':[25.5,91.4],
+  'Mizoram':[23.2,92.8], 'Nagaland':[26.1,94.5], 'Odisha':[20.5,84.4], 'Punjab':[30.9,75.4],
+  'Rajasthan':[26.6,73.8], 'Sikkim':[27.5,88.5], 'Tamil Nadu':[11.1,78.4], 'Telangana':[17.9,79.0],
+  'Tripura':[23.8,91.6], 'Uttar Pradesh':[26.9,80.9], 'Uttarakhand':[30.1,79.2], 'West Bengal':[23.4,87.8],
+  'Delhi':[28.65,77.15], 'Jammu and Kashmir':[33.5,75.0], 'Ladakh':[34.2,77.6], 'Chandigarh':[30.73,76.78],
+  'Puducherry':[11.94,79.81], 'Andaman and Nicobar Islands':[11.7,92.7], 'Lakshadweep':[10.6,72.6],
+  'Dadra and Nagar Haveli and Daman and Diu':[20.3,73.0]
+};
+/* name: [lat, lon, state]. Bigger towns first: when the map has room
+   for only a few background labels, these are the ones it keeps. */
+const GEO_CITY = (()=>{
+  const rows = [
+    ['Delhi',28.61,77.21,'Delhi'],['New Delhi',28.61,77.21,'Delhi'],['Mumbai',19.08,72.88,'Maharashtra'],
+    ['Kolkata',22.57,88.36,'West Bengal'],['Chennai',13.08,80.27,'Tamil Nadu'],['Bengaluru',12.97,77.59,'Karnataka'],
+    ['Hyderabad',17.39,78.49,'Telangana'],['Ahmedabad',23.02,72.57,'Gujarat'],['Pune',18.52,73.86,'Maharashtra'],
+    ['Jaipur',26.91,75.79,'Rajasthan'],['Lucknow',26.85,80.95,'Uttar Pradesh'],['Kanpur',26.45,80.33,'Uttar Pradesh'],
+    ['Nagpur',21.15,79.09,'Maharashtra'],['Indore',22.72,75.86,'Madhya Pradesh'],['Bhopal',23.26,77.41,'Madhya Pradesh'],
+    ['Surat',21.17,72.83,'Gujarat'],['Patna',25.59,85.14,'Bihar'],['Ludhiana',30.90,75.86,'Punjab'],
+    ['Chandigarh',30.73,76.78,'Chandigarh'],['Guwahati',26.14,91.74,'Assam'],['Raipur',21.25,81.63,'Chhattisgarh'],
+    ['Ranchi',23.34,85.31,'Jharkhand'],['Bhubaneswar',20.30,85.82,'Odisha'],['Visakhapatnam',17.69,83.22,'Andhra Pradesh'],
+    ['Vijayawada',16.51,80.65,'Andhra Pradesh'],['Coimbatore',11.02,76.96,'Tamil Nadu'],['Kochi',9.98,76.28,'Kerala'],
+    ['Vadodara',22.31,73.18,'Gujarat'],['Rajkot',22.30,70.80,'Gujarat'],['Agra',27.18,78.01,'Uttar Pradesh'],
+    ['Varanasi',25.32,82.97,'Uttar Pradesh'],['Jodhpur',26.24,73.02,'Rajasthan'],['Udaipur',24.59,73.71,'Rajasthan'],
+    ['Kota',25.18,75.83,'Rajasthan'],['Gwalior',26.22,78.18,'Madhya Pradesh'],['Jabalpur',23.18,79.99,'Madhya Pradesh'],
+    ['Nashik',20.00,73.79,'Maharashtra'],['Amritsar',31.63,74.87,'Punjab'],['Dehradun',30.32,78.03,'Uttarakhand'],
+    ['Jammu',32.73,74.86,'Jammu and Kashmir'],['Srinagar',34.08,74.80,'Jammu and Kashmir'],['Madurai',9.93,78.12,'Tamil Nadu'],
+    ['Thiruvananthapuram',8.52,76.94,'Kerala'],['Mangaluru',12.91,74.86,'Karnataka'],['Hubballi',15.36,75.12,'Karnataka'],
+    ['Gurugram',28.46,77.03,'Haryana'],['Faridabad',28.41,77.32,'Haryana'],['Noida',28.54,77.39,'Uttar Pradesh'],
+    ['Gautam Buddh Nagar',28.54,77.39,'Uttar Pradesh'],['Ghaziabad',28.67,77.45,'Uttar Pradesh'],['Sonipat',28.99,77.02,'Haryana'],
+    ['Panipat',29.39,76.97,'Haryana'],['Karnal',29.69,76.99,'Haryana'],['Ambala',30.38,76.78,'Haryana'],
+    ['Rohtak',28.90,76.61,'Haryana'],['Hisar',29.15,75.72,'Haryana'],['Rewari',28.20,76.62,'Haryana'],
+    ['Bahadurgarh',28.69,76.92,'Haryana'],['Jhajjar',28.61,76.66,'Haryana'],['Bhiwadi',28.21,76.86,'Rajasthan'],
+    ['Alwar',27.55,76.60,'Rajasthan'],['Ajmer',26.45,74.64,'Rajasthan'],['Bikaner',28.02,73.31,'Rajasthan'],
+    ['Bhilwara',25.35,74.63,'Rajasthan'],['Sikar',27.61,75.14,'Rajasthan'],['Jalandhar',31.33,75.58,'Punjab'],
+    ['Patiala',30.34,76.39,'Punjab'],['Bathinda',30.21,74.95,'Punjab'],['Mohali',30.70,76.72,'Punjab'],
+    ['Haridwar',29.95,78.16,'Uttarakhand'],['Rudrapur',28.98,79.40,'Uttarakhand'],['Udham Singh Nagar',28.98,79.40,'Uttarakhand'],
+    ['Haldwani',29.22,79.51,'Uttarakhand'],['Shimla',31.10,77.17,'Himachal Pradesh'],['Baddi',30.96,76.79,'Himachal Pradesh'],
+    ['Kanpur Nagar',26.45,80.33,'Uttar Pradesh'],['Mathura',27.49,77.67,'Uttar Pradesh'],['Aligarh',27.88,78.08,'Uttar Pradesh'],
+    ['Meerut',28.98,77.71,'Uttar Pradesh'],['Bareilly',28.37,79.43,'Uttar Pradesh'],['Moradabad',28.84,78.77,'Uttar Pradesh'],
+    ['Saharanpur',29.96,77.55,'Uttar Pradesh'],['Prayagraj',25.44,81.85,'Uttar Pradesh'],['Gorakhpur',26.76,83.37,'Uttar Pradesh'],
+    ['Jhansi',25.45,78.57,'Uttar Pradesh'],['Ayodhya',26.80,82.20,'Uttar Pradesh'],['Muzaffarnagar',29.47,77.70,'Uttar Pradesh'],
+    ['Firozabad',27.15,78.40,'Uttar Pradesh'],['Gaya',24.79,85.00,'Bihar'],['Muzaffarpur',26.12,85.39,'Bihar'],
+    ['Bhagalpur',25.24,86.98,'Bihar'],['Jamshedpur',22.80,86.20,'Jharkhand'],['East Singhbhum',22.80,86.20,'Jharkhand'],
+    ['Dhanbad',23.80,86.43,'Jharkhand'],['Bokaro',23.67,86.15,'Jharkhand'],['Howrah',22.59,88.31,'West Bengal'],
+    ['Asansol',23.68,86.98,'West Bengal'],['Durgapur',23.52,87.31,'West Bengal'],['Siliguri',26.73,88.40,'West Bengal'],
+    ['Haldia',22.06,88.07,'West Bengal'],['Khordha',20.30,85.82,'Odisha'],['Cuttack',20.46,85.88,'Odisha'],
+    ['Rourkela',22.26,84.85,'Odisha'],['Sundargarh',22.12,84.03,'Odisha'],['Sambalpur',21.47,83.97,'Odisha'],
+    ['Angul',20.84,85.10,'Odisha'],['Jharsuguda',21.86,84.01,'Odisha'],['Paradip',20.26,86.67,'Odisha'],
+    ['Kamrup Metropolitan',26.14,91.74,'Assam'],['Durg',21.19,81.28,'Chhattisgarh'],['Bhilai',21.21,81.38,'Chhattisgarh'],
+    ['Bilaspur',22.08,82.14,'Chhattisgarh'],['Korba',22.35,82.68,'Chhattisgarh'],['Raigarh',21.90,83.40,'Chhattisgarh'],
+    ['Ujjain',23.18,75.78,'Madhya Pradesh'],['Sagar',23.84,78.74,'Madhya Pradesh'],['Dewas',22.97,76.05,'Madhya Pradesh'],
+    ['Dhar',22.60,75.30,'Madhya Pradesh'],['Pithampur',22.61,75.68,'Madhya Pradesh'],['Satna',24.60,80.83,'Madhya Pradesh'],
+    ['Rewa',24.53,81.30,'Madhya Pradesh'],['Katni',23.83,80.39,'Madhya Pradesh'],['Singrauli',24.20,82.67,'Madhya Pradesh'],
+    ['Bhavnagar',21.76,72.15,'Gujarat'],['Jamnagar',22.47,70.06,'Gujarat'],['Gandhinagar',23.22,72.65,'Gujarat'],
+    ['Kutch',23.25,69.67,'Gujarat'],['Gandhidham',23.08,70.13,'Gujarat'],['Mundra',22.84,69.72,'Gujarat'],
+    ['Ankleshwar',21.63,73.00,'Gujarat'],['Bharuch',21.70,72.98,'Gujarat'],['Valsad',20.61,72.93,'Gujarat'],
+    ['Vapi',20.37,72.90,'Gujarat'],['Morbi',22.82,70.84,'Gujarat'],['Mehsana',23.59,72.37,'Gujarat'],
+    ['Mumbai Suburban',19.12,72.85,'Maharashtra'],['Thane',19.22,72.98,'Maharashtra'],['Raigad',18.52,73.18,'Maharashtra'],
+    ['Palghar',19.70,72.77,'Maharashtra'],['Aurangabad',19.88,75.34,'Maharashtra'],['Chhatrapati Sambhajinagar',19.88,75.34,'Maharashtra'],
+    ['Solapur',17.66,75.91,'Maharashtra'],['Kolhapur',16.70,74.24,'Maharashtra'],['Amravati',20.93,77.75,'Maharashtra'],
+    ['Akola',20.70,77.00,'Maharashtra'],['Jalgaon',21.00,75.56,'Maharashtra'],['Ahmednagar',19.09,74.74,'Maharashtra'],
+    ['Chandrapur',19.96,79.30,'Maharashtra'],['Latur',18.40,76.57,'Maharashtra'],['Nanded',19.15,77.31,'Maharashtra'],
+    ['North Goa',15.50,73.83,'Goa'],['South Goa',15.27,73.96,'Goa'],['Panaji',15.50,73.83,'Goa'],
+    ['Bengaluru Urban',12.97,77.59,'Karnataka'],['Mysuru',12.30,76.64,'Karnataka'],['Dharwad',15.46,75.01,'Karnataka'],
+    ['Dakshina Kannada',12.91,74.86,'Karnataka'],['Belagavi',15.85,74.50,'Karnataka'],['Ballari',15.14,76.92,'Karnataka'],
+    ['Kalaburagi',17.33,76.83,'Karnataka'],['Tumakuru',13.34,77.10,'Karnataka'],['Rangareddy',17.25,78.30,'Telangana'],
+    ['Medchal-Malkajgiri',17.63,78.48,'Telangana'],['Warangal',17.97,79.59,'Telangana'],['Karimnagar',18.44,79.13,'Telangana'],
+    ['Nizamabad',18.67,78.10,'Telangana'],['NTR',16.51,80.65,'Andhra Pradesh'],['Guntur',16.31,80.44,'Andhra Pradesh'],
+    ['Nellore',14.44,79.99,'Andhra Pradesh'],['Tirupati',13.63,79.42,'Andhra Pradesh'],['Kurnool',15.83,78.04,'Andhra Pradesh'],
+    ['Kakinada',16.99,82.25,'Andhra Pradesh'],['Ananthapuramu',14.68,77.60,'Andhra Pradesh'],
+    ['Tiruchirappalli',10.79,78.70,'Tamil Nadu'],['Salem',11.66,78.15,'Tamil Nadu'],['Tiruppur',11.11,77.34,'Tamil Nadu'],
+    ['Erode',11.34,77.72,'Tamil Nadu'],['Krishnagiri',12.52,78.21,'Tamil Nadu'],['Hosur',12.74,77.83,'Tamil Nadu'],
+    ['Thoothukudi',8.76,78.13,'Tamil Nadu'],['Vellore',12.92,79.13,'Tamil Nadu'],['Kanchipuram',12.83,79.70,'Tamil Nadu'],
+    ['Chengalpattu',12.69,79.98,'Tamil Nadu'],['Tiruvallur',13.14,79.91,'Tamil Nadu'],['Ernakulam',9.98,76.28,'Kerala'],
+    ['Kozhikode',11.26,75.78,'Kerala'],['Thrissur',10.53,76.21,'Kerala'],['Kollam',8.89,76.61,'Kerala'],
+    ['Palakkad',10.79,76.65,'Kerala'],['Puducherry',11.94,79.81,'Puducherry'],['Silvassa',20.27,73.01,'Dadra and Nagar Haveli and Daman and Diu'],
+    ['Daman',20.40,72.83,'Dadra and Nagar Haveli and Daman and Diu']
+  ];
+  const map = {};
+  rows.forEach((r,i)=>{ const k = r[0].toLowerCase(); if(!map[k]) map[k] = {name:r[0], lat:r[1], lon:r[2], state:r[3], rank:i}; });
+  return map;
+})();
+function geoHash(s){ let h = 2166136261; for(const c of String(s)){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h>>>0; }
+const geoMemo = {};
+function geoOf(place){
+  const raw = String(place||'').trim();
+  if(!raw) return null;
+  if(raw in geoMemo) return geoMemo[raw];
+  const sp = splitPlace(raw);
+  const name = sp.name, key = name.toLowerCase();
+  let region = sp.region;
+  if(!region && typeof PLACES !== 'undefined'){
+    const hit = PLACES.find(p=>splitPlace(p).name.toLowerCase()===key);
+    if(hit) region = splitPlace(hit).region;
+  }
+  const c = GEO_CITY[key];
+  let out = null;
+  if(c && (!region || region===c.state)) out = {lat:c.lat, lon:c.lon, name, region:c.state, exact:true};
+  else if(GEO_STATE[region]){
+    const h = geoHash(key), a = (h % 360) * Math.PI / 180, r = 0.35 + ((h >>> 9) % 60) / 100;
+    const s = GEO_STATE[region];
+    out = {lat:s[0] + Math.sin(a)*r, lon:s[1] + Math.cos(a)*r, name, region, exact:false};
+  }
+  geoMemo[raw] = out;
+  return out;
+}
+
+/* ------------------------------------------------------------
+   THE LANE MAP
+   lanes: [{id, from, to, color, p, plate, sub, width, label, go, title}]
+   p is how far along the marker sits (0..1); null draws no marker.
+   Everything is placed by geoOf; a lane whose ends cannot be placed
+   is handed back so the caller can say so instead of hiding it.
+   ------------------------------------------------------------ */
+let laneSeq = 0;
+function laneMap(lanes, opts={}){
+  const W = opts.width || 800, H = opts.height || 400, PAD = W < 600 ? 30 : 46;
+  const placed = [], lost = [];
+  lanes.forEach(l=>{
+    const a = geoOf(l.from), b = geoOf(l.to);
+    if(a && b) placed.push(Object.assign({a, b}, l)); else lost.push(l);
+  });
+  const uid = 'lm'+(++laneSeq);
+  if(!placed.length) return {html:'', lost, placed:0};
+
+  /* the frame: every end in view, never tighter than a few degrees, so
+     a single lane does not stretch corner to corner */
+  let la0 = Infinity, la1 = -Infinity, lo0 = Infinity, lo1 = -Infinity;
+  placed.forEach(l=>[l.a,l.b].forEach(g=>{
+    la0 = Math.min(la0,g.lat); la1 = Math.max(la1,g.lat); lo0 = Math.min(lo0,g.lon); lo1 = Math.max(lo1,g.lon);
+  }));
+  const MIN = opts.minSpan || 4.5;
+  if(la1-la0 < MIN){ const c=(la0+la1)/2; la0=c-MIN/2; la1=c+MIN/2; }
+  if(lo1-lo0 < MIN){ const c=(lo0+lo1)/2; lo0=c-MIN/2; lo1=c+MIN/2; }
+  const k = Math.cos((la0+la1)/2*Math.PI/180);
+  const sx = (W-PAD*2)/((lo1-lo0)*k), sy = (H-PAD*2)/(la1-la0), s = Math.min(sx, sy);
+  const cx = (lo0+lo1)/2, cy = (la0+la1)/2;
+  const X = lon => W/2 + (lon-cx)*k*s, Y = lat => H/2 - (lat-cy)*s;
+  const inView = (x,y,m=0) => x>m && x<W-m && y>m && y<H-m;
+  const f = v => v.toFixed(1);
+
+  /* lanes, offset when two run between the same pair of towns */
+  const pairN = {};
+  const ends = {};
+  const drawn = placed.map((l,i)=>{
+    const ax = X(l.a.lon), ay = Y(l.a.lat), bx = X(l.b.lon), by = Y(l.b.lat);
+    const key = [l.a.name,l.b.name].sort().join('|');
+    const n = pairN[key] = (pairN[key]||0)+1;
+    const dx = bx-ax, dy = by-ay, len = Math.hypot(dx,dy) || 1;
+    const bend = (0.16 + (n-1)*0.1) * (n%2 ? 1 : -1);
+    const qx = (ax+bx)/2 - dy/len*len*bend, qy = (ay+by)/2 + dx/len*len*bend;
+    const at = t => [(1-t)*(1-t)*ax + 2*(1-t)*t*qx + t*t*bx, (1-t)*(1-t)*ay + 2*(1-t)*t*qy + t*t*by];
+    ends[l.a.name] = ends[l.a.name] || {x:ax, y:ay, g:l.a, n:0}; ends[l.a.name].n++;
+    ends[l.b.name] = ends[l.b.name] || {x:bx, y:by, g:l.b, n:0}; ends[l.b.name].n++;
+    return Object.assign({ax, ay, bx, by, qx, qy, at, len, i}, l);
+  });
+
+  /* the ground: a soft grid, the states as faint words, and the bigger
+     towns as small grey dots, the way a road atlas shows them */
+  const taken = Object.values(ends).map(e=>[e.x,e.y]);
+  const endPts = taken.slice();
+  const near = (x,y,d) => taken.some(([tx,ty])=>Math.hypot(tx-x,ty-y) < d);
+  const nearEnd = (x,y,d) => endPts.some(([tx,ty])=>Math.hypot(tx-x,ty-y) < d);
+  let ground = '';
+  let towns = 0;
+  Object.values(GEO_CITY).sort((a,b)=>a.rank-b.rank).forEach(c=>{
+    if(towns >= (opts.towns||18)) return;
+    const x = X(c.lon), y = Y(c.lat);
+    if(!inView(x,y,24) || near(x,y,26)) return;
+    taken.push([x,y]); towns++;
+    ground += '<circle class="lm-town" cx="'+f(x)+'" cy="'+f(y)+'" r="2.2"/>'+
+      '<text class="lm-town-t" x="'+f(x+5)+'" y="'+f(y+3.5)+'">'+esc(c.name)+'</text>';
+  });
+  Object.entries(GEO_STATE).forEach(([st,[lat,lon]])=>{
+    const x = X(lon), y = Y(lat);
+    if(!inView(x,y,30) || nearEnd(x,y,40) || near(x,y,18)) return;
+    ground += '<text class="lm-state" x="'+f(x)+'" y="'+f(y)+'" text-anchor="middle">'+esc(st.toUpperCase())+'</text>';
+  });
+
+  let paths = '';
+  drawn.forEach(d=>{
+    const dpath = 'M'+f(d.ax)+' '+f(d.ay)+' Q'+f(d.qx)+' '+f(d.qy)+' '+f(d.bx)+' '+f(d.by);
+    const w = d.width || 2.4, col = d.color || 'var(--accent)';
+    const p = d.p==null ? 1 : Math.max(0, Math.min(1, d.p));
+    paths += '<path class="lm-ahead" d="'+dpath+'" stroke="'+col+'" stroke-width="'+w+'"/>';
+    if(p > 0) paths += '<path class="lm-done" d="'+dpath+'" pathLength="100" stroke="'+col+'" stroke-width="'+w+'" '+
+      'stroke-dasharray="'+f(p*100)+' 200" style="--p:'+f(p*100)+';animation-delay:'+(d.i*0.07).toFixed(2)+'s"/>';
+  });
+
+  /* town ends: hollow where a load starts, solid where it is going */
+  let dots = '';
+  const isEnd = {};
+  drawn.forEach(d=>{ isEnd[d.b.name] = d.color || 'var(--accent)'; });
+  Object.values(ends).forEach(e=>{
+    const col = isEnd[e.g.name];
+    dots += col
+      ? '<circle cx="'+f(e.x)+'" cy="'+f(e.y)+'" r="5" fill="'+col+'" class="lm-end"/>'
+      : '<circle cx="'+f(e.x)+'" cy="'+f(e.y)+'" r="4.2" class="lm-start"/>';
+  });
+  /* Where every marker sits is settled first, so the town names and
+     the tags can be kept off them as well as off one another. */
+  const boxes = [];
+  const hit = (x,y,w,h) => boxes.reduce((n,b)=>{
+    const ox = Math.min(x+w, b.x+b.w) - Math.max(x, b.x), oy = Math.min(y+h, b.y+b.h) - Math.max(y, b.y);
+    return n + (ox>0 && oy>0 ? ox*oy : 0);
+  }, 0) + (x<2 || y<2 || x+w>W-2 || y+h>H-2 ? 1e6 : 0);
+  const marked = drawn.filter(d=>d.p!=null || d.label).map(d=>{
+    const [mx,my] = d.p==null ? d.at(0.5) : d.at(Math.max(0, Math.min(1, d.p)));
+    if(d.p!=null) boxes.push({x:mx-12, y:my-12, w:24, h:24});
+    return {d, mx, my};
+  });
+  let names = '';
+  Object.values(ends).forEach(e=>{
+    const t = e.g.name, w = t.length*6.3+2, h = 12;
+    const spots = [[e.x+8, e.y-h-2], [e.x+8, e.y+3], [e.x-8-w, e.y-h-2], [e.x-8-w, e.y+3],
+      [e.x+15, e.y-h/2], [e.x-15-w, e.y-h/2], [e.x-w/2, e.y-h-14], [e.x-w/2, e.y+14]];
+    const sp = spots.find(([x,y])=>hit(x,y,w,h)===0);
+    if(!sp) return;                      /* crowded: the tooltip still names it */
+    boxes.push({x:sp[0], y:sp[1], w, h});
+    names += '<text class="lm-name" x="'+f(sp[0])+'" y="'+f(sp[1]+10)+'">'+esc(t)+'</text>';
+  });
+
+  /* markers and their tags, each tag tied to its marker by a hairline */
+  let marks = '';
+  marked.forEach(({d, mx, my})=>{
+    const col = d.color || 'var(--accent)';
+    const go = d.go ? ' onclick="'+esc(d.go)+'" role="button" tabindex="0" onkeydown="if(event.key===\'Enter\'){this.dispatchEvent(new MouseEvent(\'click\'))}"' : '';
+    const l1 = d.plate || d.label || '', l2 = d.sub || '';
+    const tw = Math.max(l1.length*6.7, l2.length*5.6) + 18, th = l2 ? 32 : 20;
+    const r = d.p!=null ? 16 : 8;
+    const spots = [];
+    [0, 1, 2, 3].forEach(k=>{
+      const up = my - th - r - k*(th+6), dn = my + r + k*(th+6);
+      spots.push([mx+r, up], [mx-r-tw, up], [mx+r, dn], [mx-r-tw, dn], [mx-tw/2, up], [mx-tw/2, dn]);
+    });
+    let best = spots[0], bestN = Infinity;
+    for(const sp of spots){ const n = hit(sp[0], sp[1], tw, th); if(n < bestN){ best = sp; bestN = n; if(n===0) break; } }
+    const [tx,ty] = best;
+    boxes.push({x:tx, y:ty, w:tw, h:th});
+    const lx = Math.max(tx, Math.min(tx+tw, mx)), ly = ty > my ? ty : ty+th;
+    marks += '<g class="lm-mark'+(d.go?' lm-go':'')+'"'+go+' style="animation-delay:'+(0.25+d.i*0.07).toFixed(2)+'s">'+
+      (d.title ? '<title>'+esc(d.title)+'</title>' : '')+
+      '<path class="lm-lead" d="M'+f(mx)+' '+f(my)+'L'+f(lx)+' '+f(ly)+'" stroke="'+col+'"/>'+
+      (d.p!=null ?
+        (d.pulse ? '<circle class="lm-pulse" cx="'+f(mx)+'" cy="'+f(my)+'" r="11" fill="'+col+'"/>' : '')+
+        '<rect x="'+f(mx-11)+'" y="'+f(my-11)+'" width="22" height="22" rx="6.5" fill="'+col+'" class="lm-chip"/>'+
+        '<g transform="translate('+f(mx-7.2)+' '+f(my-7.2)+') scale(.6)" class="lm-glyph">'+ICONS.trucks+'</g>'
+        : '<circle cx="'+f(mx)+'" cy="'+f(my)+'" r="3.5" fill="'+col+'"/>')+
+      '<rect x="'+f(tx)+'" y="'+f(ty)+'" width="'+f(tw)+'" height="'+th+'" rx="7" class="lm-tag"/>'+
+      '<text x="'+f(tx+9)+'" y="'+f(ty+(l2?14:13.5))+'" class="lm-tag-1">'+esc(l1)+'</text>'+
+      (l2 ? '<text x="'+f(tx+9)+'" y="'+f(ty+26)+'" class="lm-tag-2" fill="'+col+'">'+esc(l2)+'</text>' : '')+
+    '</g>';
+  });
+
+  const html = '<svg class="lane-map" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(opts.aria||'Map of lanes')+'">'+
+    '<defs><pattern id="'+uid+'g" width="32" height="32" patternUnits="userSpaceOnUse">'+
+      '<path d="M32 0H0V32" fill="none" class="lm-grid"/></pattern>'+
+      '<radialGradient id="'+uid+'r" cx="50%" cy="45%" r="70%"><stop offset="0" class="lm-glow-0"/><stop offset="1" class="lm-glow-1"/></radialGradient></defs>'+
+    '<rect width="'+W+'" height="'+H+'" class="lm-bg"/>'+
+    '<rect width="'+W+'" height="'+H+'" fill="url(#'+uid+'g)"/>'+
+    '<rect width="'+W+'" height="'+H+'" fill="url(#'+uid+'r)"/>'+
+    ground + paths + dots + names + marks +
+  '</svg>';
+  return {html, lost, placed:placed.length};
+}
+
+/* ============================================================
+   DASHBOARD
+   A control room rather than a report: a greeting and the day,
+   two strips of figures that each carry their own trend, the
+   fleet as it stands on a map, and beside it what moved last and
+   who is driving. The analysis follows underneath.
+   ============================================================ */
+let dbSparkSeq = 0;
+/* a small area line for a strip cell; flat when there is no history */
+function dbSpark(values, color){
+  const W = 92, H = 32, vals = values.map(v=>num(v));
+  if(vals.length < 2 || vals.every(v=>v===0)) return '<svg class="db-spark" viewBox="0 0 '+W+' '+H+'" aria-hidden="true">'+
+    '<path d="M2 '+(H-4)+'H'+(W-2)+'" stroke="'+color+'" stroke-width="1.6" stroke-dasharray="2 4" opacity=".45" fill="none"/></svg>';
+  const max = Math.max(...vals), min = Math.min(0, ...vals), span = (max-min) || 1;
+  const step = (W-4)/(vals.length-1);
+  const pts = vals.map((v,i)=>[2+i*step, 3+(H-7)*(1-(v-min)/span)]);
+  const line = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const id = 'dbs'+(++dbSparkSeq);
+  const last = pts[pts.length-1];
+  return '<svg class="db-spark" viewBox="0 0 '+W+' '+H+'" aria-hidden="true">'+
+    '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity=".22"/>'+
+      '<stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
+    '<path d="'+line+' L'+last[0].toFixed(1)+' '+H+' L2 '+H+'Z" fill="url(#'+id+')"/>'+
+    '<path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="db-spark-line"/>'+
+    '<circle cx="'+last[0].toFixed(1)+'" cy="'+last[1].toFixed(1)+'" r="2.4" fill="'+color+'"/></svg>';
+}
+/* a share bar for figures that have no history but do have parts */
+function dbSplit(parts){
+  const tot = parts.reduce((s,p)=>s+Math.max(0,num(p.value)),0);
+  if(!tot) return '<div class="db-split db-split-empty"></div>';
+  return '<div class="db-split" title="'+esc(parts.filter(p=>num(p.value)>0).map(p=>p.label+': '+(p.text||p.value)).join(' · '))+'">'+
+    parts.filter(p=>num(p.value)>0).map(p=>
+      '<i style="flex:'+num(p.value)+';background:'+p.color+'"></i>').join('')+'</div>';
+}
+function dbDelta(pct, invert, against){
+  if(pct==null || !isFinite(pct)) return '<span class="db-delta flat">'+(against?'Nothing in '+esc(against):'\u2014')+'</span>';
+  const r = Math.round(pct);
+  if(r===0) return '<span class="db-delta flat">— same as '+esc(against||'before')+'</span>';
+  const good = (r>0) !== !!invert;
+  return '<span class="db-delta '+(good?'up':'down')+'">'+(r>0?'↑':'↓')+' '+Math.abs(r)+'%'+
+    '<em> vs '+esc(against||'before')+'</em></span>';
+}
+/* one cell of a strip */
+function dbCell(c){
+  const fmt = c.fmt || 'money';
+  const go = c.go ? ' onclick="'+esc(c.go).replace(/&quot;/g,'&#34;')+'" role="button" tabindex="0"'+
+    ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();this.click()}"' : '';
+  return '<div class="db-cell'+(c.go?' db-link':'')+'"'+go+'>'+
+    '<div class="db-cell-top">'+
+      '<span class="db-ic t-'+(c.tint||'blue')+'"><svg viewBox="0 0 24 24">'+ICONS[c.icon||'reports']+'</svg></span>'+
+      '<div class="db-cell-txt">'+
+        '<div class="db-val num'+(fmtBy(fmt, num(c.value)).length > 9 ? ' db-val-long' : '')+(c.tone==='neg'?' money-neg':c.tone==='pos'?' money-pos':'')+'" data-count="'+num(c.value)+'" data-fmt="'+fmt+'">'+
+          fmtBy(fmt, num(c.value))+'</div>'+
+        '<div class="db-lab">'+esc(c.label)+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="db-cell-foot'+(c.split?' db-foot-col':'')+'">'+
+      '<div class="db-cell-note">'+(c.delta!==undefined ? c.delta : '')+
+        (c.note ? '<span class="db-note" title="'+esc(c.note)+'">'+esc(c.note)+'</span>' : '')+'</div>'+
+      (c.spark ? dbSpark(c.spark, c.color || 'var(--accent)') : c.split ? dbSplit(c.split) : '')+
+    '</div>'+
+  '</div>';
+}
+function dbStrip(title, note, cells){
+  return '<div class="db-strip-wrap">'+
+    (title ? '<div class="db-strip-h"><span>'+esc(title)+'</span>'+(note?'<em>'+note+'</em>':'')+'</div>' : '')+
+    '<div class="db-strip rise">'+cells.filter(Boolean).map(dbCell).join('')+'</div></div>';
+}
+function dbCard(title, sub, action, body, cls){
+  return '<div class="card db-card'+(cls?' '+cls:'')+'">'+
+    '<div class="db-card-head"><div><h3 class="db-card-t">'+esc(title)+'</h3>'+
+      (sub?'<div class="db-card-s">'+sub+'</div>':'')+'</div>'+(action||'')+'</div>'+
+    body+'</div>';
+}
+function dbMore(label, go){ return '<button class="db-more" onclick="'+go+'">'+esc(label)+' <span>→</span></button>'; }
+function dbGreeting(){
+  const h = istClock().getUTCHours();
+  const part = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  const who = String(DB.settings.owner||'').trim().split(/\s+/)[0];
+  return part + (who ? ', '+who : '');
+}
+function dbToday(){
+  const d = istClock(), D = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return D[d.getUTCDay()]+', '+fdate(today());
+}
+/* the month's figures, month by month, for the strip trends */
+function dbMonthly(keys){
+  const rows = seriesFor(keys);
+  const at = {}; rows.forEach((r,i)=>{ at[r.key] = i; r.delivered = 0; r.collected = 0; r.advance = 0; });
+  DB.trips.forEach(t=>{
+    const dk = monthKey(t.deliveredAt||''); if(dk in at) rows[at[dk]].delivered++;
+    const ak = monthKey(advDateOf(t)); if(ak in at) rows[at[ak]].advance += tripAdvance(t);
+    if(ak in at && t.partyId) rows[at[ak]].collected += tripAdvance(t);
+  });
+  (DB.ledger||[]).forEach(l=>{
+    if(l.type==='debit' || !l.partyId) return;
+    const k = monthKey(l.date); if(k in at) rows[at[k]].collected += num(l.amount);
+  });
+  return rows;
+}
+const DB_TONE = {transit:'var(--c1)', delivered:'var(--c2)', received:'var(--c5)', submitted:'var(--c6)', done:'var(--muted-2)'};
+const DB_TONE_LABEL = {transit:'In transit', delivered:'Delivered · POD awaited', received:'POD with you', submitted:'Completed'};
+
 function viewDashboard(){
   const m = dashboardMonth();
   const isNow = m === thisMonth();
-  const label = isNow ? 'this month' : monthName(m).toLowerCase();
-  const back = monthsBetween(m, thisMonth()).length;   // 1 when m is the current month
-  const series = seriesFor(monthsBetween(monthsBack(6)[0] < m ? monthsBack(6)[0] : m, m).slice(-6));
-  const cur = series[series.length-1] || {freight:0,cost:0,profit:0,trips:0};
-  const prev = series[series.length-2] || {freight:0,cost:0,profit:0,trips:0};
+  const label = isNow ? 'this month' : monthName(m);
+  const keys = monthsBetween(monthsBack(6)[0] < m ? monthsBack(6)[0] : m, m).slice(-6);
+  const rows = dbMonthly(keys);
+  const cur = rows[rows.length-1] || {}, prev = rows.length>1 ? rows[rows.length-2] : null;
+  const prevName = prev ? monthLabel(prev.key) : 'last month';
+  const col = k => rows.map(r=>r[k]||0);
+  const dlt = (k, inv) => dbDelta(prev ? pctChange(cur[k]||0, prev[k]||0) : null, inv, prevName);
+
   const bmap = allBalances();
   const recv = Object.values(bmap).reduce((s,b)=>s+Math.max(0,b),0);
   const dues = DB.parties.map(x=>({name:x.name, id:x.id, bal:bmap[x.id]||0}))
-                 .filter(x=>x.bal>0).sort((a,b)=>b.bal-a.bal).slice(0,5);
-  const recent = DB.trips.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+                 .filter(x=>x.bal>0).sort((a,b)=>b.bal-a.bal);
   const p = pnl(m+'-01', m+'-31');
   const byCat = Object.entries(p.byCat).sort((a,b)=>b[1]-a[1]);
   const costItems = (p.hire? [{label:'Market truck hire', value:p.hire}]:[])
-
     .concat(byCat.slice(0,5).map(([c,v])=>({label:c, value:v})))
     .concat(p.driverSalary?  [{label:'Driver salary', value:p.driverSalary}]:[])
     .concat(p.driverAdvance? [{label:'Driver advances', value:p.driverAdvance}]:[])
     .concat(p.driverOther?   [{label:'Other driver pay', value:p.driverOther}]:[]);
 
-  /* what needs a decision today, in one line each */
-  const attention = [];
-  if(alertCount()) attention.push({tone:'red', label:plural(alertCount(),'reminder')+' need attention',
-    action:'notifications()', cta:'Open'});
-  const podHeld = lockedByPod();
-  if(podHeld) attention.push({tone:'amber', label:money(podHeld)+' waiting on paperwork',
-    action:"go('pod')", cta:'Deliveries'});
-  if(recv) attention.push({tone:'amber', label:money(recv)+' to collect from '+plural(dues.length,'party'),
-    action:"go('parties')", cta:'Ledgers'});
-  const owed = totalSupplierPayable()+totalShopPayable()+totalDriverPayable();
-  if(owed) attention.push({tone:'grey', label:money(owed)+' owed out to suppliers, shops and drivers',
-    action:"go('suppliers')", cta:'Suppliers'});
-
-  /* The operational half of the business, which the dashboard had never
-     shown at all — it opened on money and left you to guess how many
-     lorries were actually out. */
   const monthTrips = DB.trips.filter(t=>monthKey(t.date)===m);
-  const running    = DB.trips.filter(t=>!t.podSubmittedAt);
+  const running    = DB.trips.filter(t=>!t.podSubmittedAt && !selfFunded(t));
   const onRoad     = running.filter(t=>tripStage(t)==='transit');
-  const awaitingPod= running.filter(t=>t.deliveredAt && !t.podSubmittedAt);
-  const doneMonth  = monthTrips.filter(t=>tripCompleted(t));
+  const podWait    = running.filter(t=>t.deliveredAt);
+  const podHeld    = lockedByPod();
   const advMonth   = monthTrips.reduce((s,t)=>s+tripAdvance(t),0);
   const brokerage  = monthTrips.reduce((s,t)=>s+num(t.brokerage),0);
-  const unpaidCnt  = DB.trips.filter(t=>tripBalance(t)>0).length;
+  const ownTrucks  = DB.trucks.filter(t=>t.type!=='market');
+  const outIds     = new Set(running.filter(t=>tripStage(t)==='transit').map(t=>t.truckId));
+  const ownOut     = ownTrucks.filter(t=>outIds.has(t.id)).length;
+  const marketOut  = DB.trucks.filter(t=>t.type==='market' && outIds.has(t.id)).length;
+  const drvBusy    = new Set(onRoad.map(t=>t.driverId).filter(Boolean));
+  const supOwed = totalSupplierPayable(), shopOwed = totalShopPayable(), drvOwed = totalDriverPayable();
+  const owed = supOwed + shopOwed + drvOwed;
 
-  $('#pageSub').textContent = monthName(m)+' · '+plural(p.tripCount,'trip')+
-    (isNow ? ' so far' : ' · your most recent activity');
+  /* how old the money still out is, by the date of the trip it is on */
+  const age = {a:0,b:0,c:0};
+  DB.trips.forEach(t=>{ const b = tripBalance(t); if(b<=0) return; const d = daysSince(t.date)||0;
+    if(d<=30) age.a += b; else if(d<=60) age.b += b; else age.c += b; });
+
+  $('#pageTitle').textContent = dbGreeting();
+  $('#pageSub').textContent = 'Here’s your transport business '+(isNow?'today':'for '+monthName(m));
   $('#pageActions').innerHTML =
-    '<button class="btn" onclick="go(\'insights\')"><span>Insights</span></button>'+
+    '<span class="db-date"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>'+esc(dbToday())+'</span>'+
+    '<button class="btn" onclick="dbExport()"><span>Export report</span></button>'+
     '<button class="btn btn-amber" onclick="tripForm()">+ <span>New trip</span></button>';
 
+  const ops = dbStrip('Operations', esc(monthName(m))+' · and the fleet right now', [
+    {label:'Trips '+(isNow?'this month':'in '+monthLabel(m)), value:monthTrips.length, fmt:'plain', icon:'trips', tint:'blue',
+     color:'var(--c1)', spark:col('trips'), delta:dlt('trips'), go:"go('trips')"},
+    {label:'Delivered', value:cur.delivered||0, fmt:'plain', icon:'pod', tint:'green',
+     color:'var(--c6)', spark:col('delivered'), delta:dlt('delivered'), go:"go('pod')"},
+    {label:'On the road', value:onRoad.length, fmt:'plain', icon:'trucks', tint:'amber',
+     note: onRoad.length ? 'Loaded and moving' : 'Nothing moving now',
+     split:[{label:'In transit', value:onRoad.length, color:'var(--c1)'},
+            {label:'POD awaited', value:podWait.filter(t=>tripStage(t)==='delivered').length, color:'var(--c2)'},
+            {label:'POD with you', value:podWait.filter(t=>tripStage(t)==='received').length, color:'var(--c5)'}],
+     go:"go('trips');sub.stage='transit';render()"},
+    {label:'POD pending', value:podWait.length, fmt:'plain', icon:'reports', tint:'red',
+     tone: podWait.length?'neg':'', note: podHeld ? money(podHeld)+' held by paperwork' : 'No money held',
+     split:[{label:'Awaited from driver', value:podWait.filter(t=>tripStage(t)==='delivered').length, color:'var(--c2)'},
+            {label:'With you, to submit', value:podWait.filter(t=>tripStage(t)==='received').length, color:'var(--c5)'}],
+     go:"go('pod')"},
+    {label:'Drivers on duty', value:drvBusy.size, fmt:'plain', icon:'drivers', tint:'teal',
+     note: 'of '+plural(DB.drivers.length,'driver'),
+     split:[{label:'On a trip', value:drvBusy.size, color:'var(--c3)'},
+            {label:'Free', value:Math.max(0, DB.drivers.length-drvBusy.size), color:'var(--line-strong)'}],
+     go:"go('drivers')"},
+    {label:'Own trucks out', value:ownOut, fmt:'plain', icon:'trucks', tint:'violet',
+     note: 'of '+ownTrucks.length+(marketOut?' · '+marketOut+' market hired':''),
+     split:[{label:'Out', value:ownOut, color:'var(--c5)'},
+            {label:'In the yard', value:Math.max(0, ownTrucks.length-ownOut), color:'var(--line-strong)'}],
+     go:"go('trucks')"}
+  ]);
+
+  const money6 = dbStrip('The money', esc(monthName(m)), [
+    {label:'Freight billed', value:p.freight, icon:'reports', tint:'blue', color:'var(--c1)',
+     spark:col('freight'), delta:dlt('freight'), go:"go('reports')"},
+    {label:'Collected', value:cur.collected||0, icon:'expenses', tint:'green', color:'var(--c6)',
+     spark:col('collected'), delta:dlt('collected'), go:"go('parties')"},
+    {label:'Outstanding', value:recv, icon:'parties', tint:'red', tone: recv>0?'neg':'pos',
+     note: recv>0 ? 'From '+plural(dues.length,'party') : 'Every party settled',
+     split:[{label:'Up to 30 days', value:age.a, text:money(age.a), color:'var(--c6)'},
+            {label:'31 to 60 days', value:age.b, text:money(age.b), color:'var(--c2)'},
+            {label:'Over 60 days', value:age.c, text:money(age.c), color:'var(--c4)'}],
+     go:"go('parties');sub.due='due';render()"},
+    {label:'Advance given', value:advMonth, icon:'expenses', tint:'amber', color:'var(--c2)',
+     spark:col('advance'), note: p.freight ? Math.round(advMonth/p.freight*100)+'% of freight' : 'None given',
+     go:"go('trips')"},
+    {label:'Owed out', value:owed, icon:'shops', tint:'violet', note:'Suppliers, shops, drivers',
+     split:[{label:'Suppliers', value:supOwed, text:money(supOwed), color:'var(--c5)'},
+            {label:'Shops', value:shopOwed, text:money(shopOwed), color:'var(--c7)'},
+            {label:'Drivers', value:drvOwed, text:money(drvOwed), color:'var(--c3)'}],
+     go:"go('suppliers')"},
+    {label: p.profit<0 ? 'Loss '+label : 'Profit '+label, value:Math.abs(p.profit), icon:'insights',
+     tint: p.profit<0?'red':'teal', tone: p.profit>=0?'pos':'neg', color: p.profit<0?'var(--c4)':'var(--c3)',
+     spark:col('profit'), delta:dlt('profit'),
+     note: p.freight ? Math.round(p.profit/p.freight*100)+'% of freight'+(brokerage?' · '+money(brokerage)+' brokerage':'') : '',
+     go:"go('insights')"}
+  ]);
+
+  /* what moved last */
+  const recent = DB.trips.slice().sort(newestFirst).slice(0,6);
+  const recentBody = recent.length
+    ? '<div class="db-tbl-wrap"><table class="db-tbl"><colgroup><col style="width:76px"><col><col style="width:24%"><col style="width:122px"><col style="width:52px"></colgroup><thead><tr><th>LR</th><th>Party</th><th>Going to</th><th>Status</th><th class="t-r">Date</th></tr></thead><tbody>'+
+      recent.map(t=>{
+        const st = selfFunded(t) ? null : tripStage(t);
+        return '<tr onclick="tripDetail(\''+t.id+'\')" tabindex="0" onkeydown="if(event.key===\'Enter\')tripDetail(\''+t.id+'\')">'+
+          '<td data-label="LR" class="num db-lr">'+esc(t.lr||'—')+'</td>'+
+          '<td data-label="Party" class="db-ell">'+esc(selfFunded(t)?'Self funded':partyName(t.partyId))+'</td>'+
+          '<td data-label="Going to" class="db-ell">'+esc(splitPlace(t.to).name||'—')+'</td>'+
+          '<td data-label="Status">'+(st ? '<span class="db-pill" style="--pc:'+DB_TONE[st]+'">'+esc(stageInfo(st).label)+'</span>'
+            : '<span class="db-pill" style="--pc:var(--muted-2)">Empty run</span>')+'</td>'+
+          '<td data-label="Date" class="t-r db-when">'+esc(fdate(t.date).slice(0,6))+'</td></tr>';
+      }).join('')+'</tbody></table></div>'
+    : '<div class="empty" style="padding:26px 12px"><div class="empty-text">No trips yet.</div>'+
+      '<button class="btn btn-amber" onclick="tripForm()">+ New trip</button></div>';
+
+  /* who is driving what */
+  const drivers = DB.drivers.map(d=>{
+    const mine = DB.trips.filter(t=>t.driverId===d.id).sort(newestFirst);
+    const live = mine.find(t=>!t.podSubmittedAt && !selfFunded(t) && tripStage(t)==='transit')
+              || mine.find(t=>!t.podSubmittedAt && tripStage(t)==='transit');
+    const last = mine[0];
+    return {d, live, last, rank: live ? 0 : last ? 1 : 2};
+  }).sort((a,b)=>a.rank-b.rank || (b.last?b.last.date:'').localeCompare(a.last?a.last.date:'')).slice(0,6);
+  const drvBody = drivers.length
+    ? '<div class="db-people">'+drivers.map(x=>{
+        const t = x.live || x.last;
+        const ini = x.d.name.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const hue = geoHash(x.d.name) % 6 + 1;
+        const days = x.live ? daysSince(x.live.date) : null;
+        return '<div class="db-person" onclick="openDriver(\''+x.d.id+'\')">'+
+          '<span class="db-av" style="--av:var(--c'+hue+')">'+esc(ini)+'</span>'+
+          '<div class="db-person-t"><div class="db-person-n">'+esc(x.d.name)+'</div>'+
+            '<div class="db-person-s">'+(t ? esc(truckName(t.truckId))+' · '+esc(splitPlace(t.from).name||'?')+' → '+esc(splitPlace(t.to).name||'?')
+              : 'No trip recorded yet')+'</div></div>'+
+          '<div class="db-person-r">'+(x.live
+            ? '<span class="db-pill" style="--pc:var(--c1)">On the road</span><div class="db-when">'+(days>0 ? plural(days,'day') : days<0 ? 'From '+esc(fdate(x.live.date).slice(0,6)) : 'Since today')+'</div>'
+            : '<span class="db-pill" style="--pc:var(--muted-2)">Free</span><div class="db-when">'+(x.last?'Last '+esc(fdate(x.last.date).slice(0,6)):'—')+'</div>')+
+          '</div></div>';
+      }).join('')+'</div>'
+    : '<div class="empty" style="padding:22px 12px"><div class="empty-text">No drivers on your books yet.</div>'+
+      '<button class="btn" onclick="go(\'drivers\')">Add a driver</button></div>';
+
+  /* what needs a decision */
+  const attention = [];
+  if(alertCount()) attention.push({tint:'red', icon:'settings', label:plural(alertCount(),'reminder')+' need attention',
+    note:'Papers, PODs and payments that are due', action:'notifications()', cta:'Open'});
+  if(podHeld) attention.push({tint:'amber', icon:'pod', label:money(podHeld)+' waiting on paperwork',
+    note:'Delivered, but the POD has not reached the party', action:"go('pod')", cta:'Deliveries'});
+  if(recv) attention.push({tint:'blue', icon:'parties', label:money(recv)+' to collect',
+    note:'From '+plural(dues.length,'party')+(dues[0]?' · largest '+dues[0].name:''), action:"go('parties')", cta:'Ledgers'});
+  if(owed) attention.push({tint:'violet', icon:'shops', label:money(owed)+' owed out',
+    note:'Suppliers, shops and drivers', action:"go('suppliers')", cta:'Suppliers'});
+  const attnBody = attention.length
+    ? '<div class="db-attn">'+attention.map(a=>
+        '<button class="db-attn-row" onclick="'+a.action+'"><span class="db-ic sm t-'+a.tint+'"><svg viewBox="0 0 24 24">'+ICONS[a.icon]+'</svg></span>'+
+          '<span class="db-attn-t"><b>'+esc(a.label)+'</b><em>'+esc(a.note)+'</em></span><span class="db-attn-go">'+esc(a.cta)+' →</span></button>').join('')+'</div>'
+    : '<div class="empty" style="padding:26px 10px"><div class="empty-text">Nothing needs you right now.</div></div>';
+
   $('#view').innerHTML =
-  '<div class="hero">'+
-    '<div class="hero-main">'+
-      '<div class="hero-label">Outstanding from parties</div>'+
-      '<div class="hero-value num" data-count="'+recv+'" data-fmt="money">'+money(0)+'</div>'+
-      '<div class="hero-note">'+(dues.length
-        ? 'Largest is '+esc(dues[0].name)+' at '+money(dues[0].bal)
-        : 'Every party is settled up')+'</div>'+
-      (attention.length? '<div class="hero-actions">'+attention.slice(0,3).map(x=>
-        '<button class="hero-chip '+x.tone+'" onclick="'+x.action+'">'+
-          '<span class="dot"></span>'+esc(x.label)+
-          '<span class="go">'+esc(x.cta)+' →</span></button>').join('')+'</div>':'')+
+  ops + money6 +
+  '<div class="db-main">'+
+    dbCard('Fleet on the road', 'Every trip still out, drawn from where it loaded to where it is going',
+      '<div class="db-seg" id="dbMapSeg">'+
+        [['','All'],['transit','In transit'],['pod','POD awaited']].map(([k,l])=>
+          '<button class="'+((sub.mapf||'')===k?'on':'')+'" onclick="sub.mapf=\''+k+'\';dbMapPaint()">'+l+'</button>').join('')+
+      '</div>',
+      '<div id="dbMap"></div>', 'db-map-card')+
+    '<div class="db-side">'+
+      dbCard('Recent trips', 'The last loads entered', dbMore('View all', "go('trips')"), recentBody)+
+      dbCard('Driver activity', 'Who is out, and with what', dbMore('Drivers', "go('drivers')"), drvBody)+
     '</div>'+
   '</div>'+
 
-  sec('On the road', 'Right now, across the whole book')+
-  summary([
-    {label:'Trips running', value:running.length, fmt:'plain', icon:'trips',
-     go:"go('trips')", note: onRoad.length+' in transit \u00b7 '+awaitingPod.length+' awaiting POD'},
-    {label:'Completed '+label, value:doneMonth.length, fmt:'plain', icon:'pod',
-     go:"go('pod')", tone: doneMonth.length?'pos':'',
-     note: plural(monthTrips.length,'trip')+' started '+label},
-    {label:'Fleet', value:DB.trucks.length, fmt:'plain', icon:'trucks',
-     go:"go('trucks')",
-     note: DB.drivers.length+' drivers \u00b7 '+DB.parties.length+' parties'},
-    {label:'Waiting on paperwork', value:podHeld, icon:'reports',
-     go:"go('pod')", tone: podHeld?'neg':'pos',
-     note: podHeld ? 'Cannot be chased until the POD is in' : 'No paperwork holding money'}
-  ])+
-
-  sec('The money', monthName(m))+
-  summary([
-    {label:'Freight billed', value:p.freight, icon:'reports', go:"go('reports')",
-     note: trendNote(pctChange(cur.freight, prev.freight))+
-           plural(p.tripCount,'trip')+(p.tripCount?' \u00b7 '+money(p.freight/p.tripCount)+' each':'')},
-    {label:'Advance given', value:advMonth, icon:'expenses', go:"go('trips')",
-     note: p.freight ? Math.round(advMonth/p.freight*100)+'% of freight billed' : 'None given'},
-    {label:'Outstanding', value:recv, icon:'parties', go:"go('parties')",
-     tone: recv>0?'neg':'pos',
-     note: recv>0 ? 'From '+plural(dues.length,'party')+' \u00b7 '+unpaidCnt+' trips unpaid' : 'Every party settled'},
-    {label:'Owed out', value:owed, icon:'shops', go:"go('suppliers')",
-     note:'Suppliers, shops and drivers'},
-    (brokerage ? {label:'Brokerage', value:brokerage, icon:'suppliers',
-     note:'Paid on '+label+'\u2019s loads'} : null),
-    {label: p.profit<0?'Loss '+label:'Profit '+label, value:Math.abs(p.profit),
-     icon:'insights', go:"go('insights')", tone: p.profit>=0?'pos':'neg',
-     note: trendNote(pctChange(cur.profit, prev.profit))+
-           (p.freight ? Math.round(p.profit/p.freight*100)+'% of freight' : 'Nothing billed yet')}
-  ], brokerage ? 'g3' : 'g4')+
-
-  sec('How it is trending', 'Last six months', '<button class="btn btn-sm" onclick="go(\'insights\')">Open insights</button>')+
-  '<div class="g-wide">'+
-    '<div class="card chart-card">'+
-      '<h3 class="chart-title">Freight against costs</h3>'+
-      '<div class="chart-sub">Last six months</div>'+
-      lineChart(series, [
-        {key:'freight', label:'Freight earned', color:'var(--c2)', fill:true},
-        {key:'cost',    label:'Costs',          color:'var(--c1)', dash:true}
-      ])+
-    '</div>'+
-    '<div class="card chart-card">'+
-      '<h3 class="chart-title">Where the money went</h3>'+
-      '<div class="chart-sub">'+monthName(m)+'</div>'+
-      (costItems.length? donutChart(costItems,'costs')
-        : '<div class="empty" style="padding:30px 10px"><div class="empty-text">No costs recorded in '+
-          esc(monthName(m))+'.</div></div>')+
-    '</div>'+
+  '<div class="db-main db-main-b">'+
+    dbCard('Freight against costs', 'Last six months', dbMore('Insights', "go('insights')"),
+      '<div class="db-chart">'+lineChart(seriesFor(keys), [
+        {key:'freight', label:'Freight earned', color:'var(--c1)', fill:true},
+        {key:'cost',    label:'Costs',          color:'var(--c2)', dash:true}
+      ])+'</div>')+
+    dbCard('Where the money went', esc(monthName(m)), '',
+      '<div class="db-chart">'+(costItems.length? donutChart(costItems,'costs',true)
+        : '<div class="empty" style="padding:30px 10px"><div class="empty-text">No costs recorded in '+esc(monthName(m))+'.</div></div>')+'</div>')+
   '</div>'+
 
-  '<div class="g-wide" style="margin-top:14px">'+
-    '<div class="card">'+
-      '<div class="card-head"><h3 class="card-title">Latest trips</h3>'+
-        '<button class="btn btn-sm" onclick="go(\'trips\')">See all</button></div>'+
-      (recent.length ? '<div class="tbl-wrap"><table><tbody>'+recent.map(t=>
-        '<tr onclick="tripDetail(\''+t.id+'\')" style="cursor:pointer">'+
-          '<td><div class="t-strong">'+esc(t.from||'—')+' → '+esc(t.to||'—')+'</div>'+
-            '<div class="t-sub">'+fdate(t.date)+' · '+esc(truckName(t.truckId))+' · '+esc(partyName(t.partyId))+'</div></td>'+
-          '<td class="t-r"><div class="num t-strong">'+money(t.freight)+'</div>'+
-            '<div class="t-sub">'+statusChip(tripStatus(t))+'</div></td>'+
-        '</tr>').join('')+'</tbody></table></div>'
-        : '<div class="empty"><div class="empty-text">No trips recorded yet. Add your first load to get started.</div>'+
-          '<button class="btn btn-amber" onclick="tripForm()">+ New trip</button></div>')+
-    '</div>'+
-    '<div class="card chart-card">'+
-      '<div style="display:flex;align-items:center;margin-bottom:14px">'+
-        '<div><h3 class="chart-title">Top pending dues</h3><div class="chart-sub" style="margin:0">Largest balances first</div></div>'+
-        '<button class="btn btn-sm" style="margin-left:auto" onclick="go(\'parties\')">Open ledger</button></div>'+
-      (dues.length ? barList(dues.map(d=>({label:d.name, value:d.bal, color:'var(--red)'})))
-        : '<div class="empty" style="padding:26px 10px"><div class="empty-text">Nothing pending. Every party is settled up.</div></div>')+
-    '</div>'+
+  '<div class="db-main db-main-c">'+
+    dbCard('Needs attention', 'What is waiting on a decision', '', attnBody)+
+    dbCard('Top pending dues', 'Largest balances first', dbMore('Ledger', "go('parties')"),
+      '<div class="db-chart">'+(dues.length ? barList(dues.slice(0,5).map(d=>({label:d.name, value:d.bal, color:'var(--c4)', go:"partyLedger('"+d.id+"')"})))
+        : '<div class="empty" style="padding:26px 10px"><div class="empty-text">Nothing pending. Every party is settled up.</div></div>')+'</div>')+
   '</div>';
+  dbMapPaint();
+}
+
+/* the map on its own, so the filter above it does not rebuild the page */
+function dbMapPaint(){
+  const box = document.getElementById('dbMap'); if(!box) return;
+  const seg = document.getElementById('dbMapSeg');
+  if(seg) seg.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on', ['','transit','pod'][i]===(sub.mapf||'')));
+  const f = sub.mapf || '';
+  const live = DB.trips.filter(t=>!t.podSubmittedAt && !selfFunded(t));
+  let list = live.filter(t=> !f ? true : f==='transit' ? tripStage(t)==='transit' : tripStage(t)!=='transit');
+  const counts = {transit:0, delivered:0, received:0};
+  live.forEach(t=>{ counts[tripStage(t)] = (counts[tripStage(t)]||0)+1; });
+  let faded = false;
+  if(!list.length){
+    list = DB.trips.filter(t=>!selfFunded(t)).sort(newestFirst).slice(0,8);
+    faded = true;
+  }
+  const lanes = list.map(t=>{
+    const st = faded ? 'done' : tripStage(t);
+    const days = daysSince(t.date)||0;
+    return {id:t.id, from:t.from, to:t.to, color:DB_TONE[st]||DB_TONE.transit,
+      p: faded ? null : st==='transit' ? 0.55 : 1, pulse: st==='transit',
+      plate: faded ? '' : truckName(t.truckId),
+      sub: faded ? '' : st==='transit' ? (days<0 ? 'Loads '+fdate(t.date).slice(0,6) : 'In transit · day '+(days+1)) : st==='delivered' ? 'Delivered · POD awaited' : 'POD with you',
+      go: onPhone() ? "mOpen('trips','"+t.id+"')" : "tripDetail('"+t.id+"')",
+      title:(t.lr?'LR '+t.lr+' · ':'')+truckName(t.truckId)+' · '+(t.from||'?')+' → '+(t.to||'?')+' · '+partyName(t.partyId)};
+  });
+  const map = laneMap(lanes, onPhone() ? {width:420, height:400, towns:10, aria:'Map of trips on the road'}
+    : {height:410, aria:'Map of trips on the road'});
+  const legend = '<div class="db-legend">'+
+    [['transit','In transit'],['delivered','POD awaited'],['received','POD with you']].map(([k,l])=>
+      '<span><i style="background:'+DB_TONE[k]+'"></i>'+l+' <b class="num">'+(counts[k]||0)+'</b></span>').join('')+
+    '<span class="db-legend-note">Towns placed approximately; a town the map does not know sits in its state.</span></div>';
+  box.innerHTML =
+    (map.html
+      ? '<div class="db-map'+(faded?' is-faded':'')+'">'+map.html+
+          (faded ? '<div class="db-map-msg"><b>No truck on the road right now</b><span>These are the lanes of your last few trips.</span></div>' : '')+
+        '</div>'
+      : '<div class="db-map db-map-none"><div class="db-map-msg"><b>'+(DB.trips.length?'No lane to draw':'No trips yet')+'</b>'+
+          '<span>'+(DB.trips.length?'The loading and delivery towns on these trips are not ones the map knows.':'Add a trip and it shows up here, from where it loads to where it is going.')+'</span></div></div>')+
+    legend+
+    (map.lost.length ? '<div class="hint db-lost">Not on the map: '+map.lost.slice(0,4).map(l=>esc((l.from||'?')+' → '+(l.to||'?'))).join(', ')+
+      (map.lost.length>4?' and '+(map.lost.length-4)+' more':'')+'.</div>' : '');
+}
+/* the month on paper, through the statement Insights already prints */
+function dbExport(){
+  const m = dashboardMonth();
+  const keep = sub;
+  sub = Object.assign({}, sub, {from:m+'-01', to:m+'-31', range:''});
+  try{ printInsights(); } finally { sub = keep; }
 }
 
 /* the arrow the hero used to carry, as a few characters a card can hold */
 function trendNote(pct){
   if(pct==null || !isFinite(pct) || Math.round(pct)===0) return '';
-  return (pct>0?'\u25b2 ':'\u25bc ')+Math.abs(Math.round(pct))+'% on last month \u00b7 ';
+  return (pct>0?'▲ ':'▼ ')+Math.abs(Math.round(pct))+'% on last month · ';
 }
+
 function heroStat(label, value, trend, invert, note, fmt, tone){
   const dir = trend==null || !isFinite(trend) ? '' :
     '<span class="trend '+((trend>=0)!==!!invert?'trend-up':'trend-down')+'">'+
@@ -5862,6 +6548,9 @@ function heroStat(label, value, trend, invert, note, fmt, tone){
 
 /* ============================================================
    INSIGHTS — the numbers behind the numbers
+   The same language as the dashboard: a strip of figures that each
+   show their own month-by-month line, then the trend, then where
+   the work runs and who it comes from.
    ============================================================ */
 function viewInsights(){
   defaultRange('6m');
@@ -5909,57 +6598,89 @@ function viewInsights(){
   win.forEach(t=>{
     const k = (t.from||'?')+' → '+(t.to||'?');
     const cost = num(t.hire) + (expOnTrip[t.id]||0);
-    const r = routes[k] = routes[k] || {label:k, n:0, freight:0, cost:0, net:0};
+    const r = routes[k] = routes[k] || {label:k, from:t.from, to:t.to, n:0, freight:0, cost:0, net:0};
     r.n++; r.freight += num(t.freight); r.cost += cost; r.net += num(t.freight) - cost;
   });
-  const routeRows = Object.values(routes).sort((a,b)=>b.net-a.net).slice(0,6);
+  const routeAll  = Object.values(routes).sort((a,b)=>b.net-a.net);
+  const routeRows = routeAll.slice(0,6);
 
   const partyMix = DB.parties.map(p=>({label:p.name,
     value: win.filter(t=>t.partyId===p.id).reduce((s,t)=>s+num(t.freight),0)}))
     .filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,6);
 
+  /* each figure month by month, for the line under it */
+  const perMonth = series.map(r=>({
+    freight:r.freight, profit:r.profit, trips:r.trips,
+    margin: r.freight ? r.profit/r.freight*100 : 0,
+    perTrip: r.trips ? r.freight/r.trips : 0,
+    costTrip: r.trips ? r.cost/r.trips : 0
+  }));
+  const colm = k => perMonth.map(r=>r[k]);
+  const last2 = k => perMonth.length>1 ? pctChange(perMonth[perMonth.length-1][k], perMonth[perMonth.length-2][k]) : null;
+  const lastName = series.length>1 ? monthLabel(series[series.length-2].key) : '';
+
   $('#pageSub').textContent = rangeCaption();
   $('#pageActions').innerHTML = '<button class="btn" onclick="printInsights()">Print statement</button>';
 
+  /* the lanes, thicker for the ones run most, coloured by what they left */
+  const maxN = Math.max(1, ...routeAll.map(r=>r.n));
+  const laneData = routeAll.slice(0,14).map((r,i)=>({
+    id:'r'+i, from:r.from, to:r.to, p:null,
+    color: r.net < 0 ? 'var(--c4)' : r.net/r.n >= (inWindow.tripCount ? inWindow.profit/inWindow.tripCount : 0) ? 'var(--c6)' : 'var(--c1)',
+    width: 1.6 + 4.4*(r.n/maxN),
+    label: i < 5 ? splitPlace(r.from).name+' → '+splitPlace(r.to).name : '',
+    sub: i < 5 ? plural(r.n,'trip')+' · '+money(r.net) : '',
+    title: r.label+' · '+plural(r.n,'trip')+' · profit '+money(r.net)
+  }));
+  const lanes = laneMap(laneData, onPhone() ? {width:420, height:400, towns:8, aria:'Map of the lanes you run'}
+    : {height:380, towns:14, aria:'Map of the lanes you run'});
+
   $('#view').innerHTML =
   rangeBar('insights')+
-  '<div class="grid g4 rise">'+
-    kpi('Freight per trip', winPerTrip, {note:plural(inWindow.tripCount,'trip')+' in this period'})+
-    kpi('Cost per trip', winCostTrip, {note:'Hire, expenses, driver pay'})+
-    kpi('Net margin', winMargin, {fmt:'pct', tone:winMargin>=0?'pos':'neg', note:'Profit as share of freight'})+
-    kpi('Collection rate', collRate, {fmt:'pct', note:money(outstanding)+' outstanding, all time'})+
+  dbStrip('', '', [
+    {label:'Freight in period', value:inWindow.freight, icon:'reports', tint:'blue', color:'var(--c1)',
+     spark:colm('freight'), delta:dbDelta(last2('freight'), false, lastName)},
+    {label: inWindow.profit<0?'Loss in period':'Profit in period', value:Math.abs(inWindow.profit), icon:'insights',
+     tint: inWindow.profit<0?'red':'teal', tone: inWindow.profit>=0?'pos':'neg', color:'var(--c3)',
+     spark:colm('profit'), delta:dbDelta(last2('profit'), false, lastName)},
+    {label:'Net margin', value:winMargin, fmt:'pct', icon:'insights', tint:'green', tone: winMargin>=0?'pos':'neg',
+     color:'var(--c6)', spark:colm('margin'), note:'Profit as share of freight'},
+    {label:'Freight per trip', value:winPerTrip, icon:'trips', tint:'amber', color:'var(--c2)',
+     spark:colm('perTrip'), note:plural(inWindow.tripCount,'trip')+' in this period'},
+    {label:'Cost per trip', value:winCostTrip, icon:'expenses', tint:'violet', color:'var(--c5)',
+     spark:colm('costTrip'), delta:dbDelta(last2('costTrip'), true, lastName)},
+    {label:'Collection rate', value:collRate, fmt:'pct', icon:'parties', tint:'red',
+     note: money(outstanding)+' still out, all time',
+     split:[{label:'Collected', value:Math.max(0,collected), text:money(collected), color:'var(--c6)'},
+            {label:'Outstanding', value:outstanding, text:money(outstanding), color:'var(--c4)'}]}
+  ])+
+
+  '<div class="db-main db-main-b">'+
+    dbCard('Profit trend', 'Month by month across '+esc(rangeCaption()), '',
+      '<div class="db-chart">'+lineChart(series, [
+        {key:'freight', label:'Freight', color:'var(--c1)', fill:true},
+        {key:'cost',    label:'Costs',   color:'var(--c2)', dash:true},
+        {key:'profit',  label:'Profit',  color:'var(--c6)'}
+      ], {height:230})+'</div>')+
+    dbCard('Who your work comes from', 'Share of freight by party', '',
+      '<div class="db-chart">'+(partyMix.length? donutChart(partyMix,'freight',true)
+        : '<div class="empty" style="padding:26px 10px"><div class="empty-text">No freight recorded in this period.</div></div>')+'</div>')+
   '</div>'+
 
-  '<div class="card chart-card" style="margin-top:14px">'+
-    '<h3 class="chart-title">Profit trend</h3>'+
-    '<div class="chart-sub">Month by month across '+rangeCaption()+'</div>'+
-    lineChart(series, [
-      {key:'freight', label:'Freight', color:'var(--c2)', fill:true},
-      {key:'cost',    label:'Costs',   color:'var(--c1)', dash:true},
-      {key:'profit',  label:'Profit',  color:'var(--c6)'}
-    ], {height:210})+
+  '<div class="db-main">'+
+    dbCard('Lanes you run', 'Thicker for the lanes you run most · green earns above your average, red lost money', '',
+      lanes.html
+        ? '<div class="db-map">'+lanes.html+'</div>'+
+          (lanes.lost.length ? '<div class="hint db-lost">Not on the map: '+lanes.lost.slice(0,4).map(l=>esc((l.from||'?')+' → '+(l.to||'?'))).join(', ')+'.</div>' : '')
+        : '<div class="db-map db-map-none"><div class="db-map-msg"><b>No lane in this period</b><span>Pick a longer range, or record a few trips.</span></div></div>',
+      'db-map-card')+
+    dbCard('Which truck earns most', 'Freight minus hire and expenses booked to it', '',
+      '<div class="db-chart">'+(perTruck.length? barList(perTruck.map(t=>({label:t.label, value:t.value,
+        color:t.value>=0?'var(--c1)':'var(--c4)', note:plural(t.trips,'trip')+' · '+money(t.freight)+' freight'})))
+        : '<div class="empty" style="padding:26px 10px"><div class="empty-text">No truck activity in this period.</div></div>')+'</div>')+
   '</div>'+
 
-  '<div class="g-wide" style="margin-top:14px">'+
-    '<div class="card chart-card">'+
-      '<h3 class="chart-title">Which truck earns most</h3>'+
-      '<div class="chart-sub">Freight minus hire and expenses booked to it</div>'+
-      (perTruck.length? barList(perTruck.map(t=>({label:t.label, value:t.value,
-        color:t.value>=0?'var(--c1)':'var(--red)', note:plural(t.trips,'trip')+' · '+money(t.freight)+' freight'})))
-        : '<div class="empty" style="padding:26px 10px"><div class="empty-text">No truck activity in this period.</div></div>')+
-    '</div>'+
-    '<div class="card chart-card">'+
-      '<h3 class="chart-title">Who your work comes from</h3>'+
-      '<div class="chart-sub">Share of freight by party</div>'+
-      (partyMix.length? donutChart(partyMix,'freight')
-        : '<div class="empty" style="padding:26px 10px"><div class="empty-text">No freight recorded in this period.</div></div>')+
-    '</div>'+
-  '</div>'+
-
-  '<div class="card" style="margin-top:14px">'+
-    '<div class="card-head"><div><h3 class="card-title">Best routes</h3>'+
-      '<div class="chart-sub" style="margin:2px 0 0">Freight less the hire paid and every expense '+
-      'booked to those trips. Ranked by what is left.</div></div></div>'+
+  dbCard('Best routes', 'Freight less the hire paid and every expense booked to those trips. Ranked by what is left.', '',
     (routeRows.length? '<div class="tbl-wrap"><table>'+
       '<thead><tr><th>Route</th><th class="t-r">Trips</th><th class="t-r">Freight</th>'+
       '<th class="t-r">Hire &amp; expenses</th><th class="t-r">Profit</th>'+
@@ -5967,16 +6688,16 @@ function viewInsights(){
       routeRows.map(r=>'<tr><td data-label="Route" class="t-strong">'+esc(r.label)+'</td>'+
         '<td data-label="Trips" class="t-r num">'+r.n+'</td>'+
         '<td data-label="Freight" class="t-r num">'+money(r.freight)+'</td>'+
-        '<td data-label="Hire &amp; expenses" class="t-r num">'+(r.cost?'\u2212 '+money(r.cost):'\u2014')+'</td>'+
+        '<td data-label="Hire &amp; expenses" class="t-r num">'+(r.cost?'− '+money(r.cost):'—')+'</td>'+
         '<td data-label="Profit" class="t-r num"><b class="'+(r.net>=0?'money-pos':'money-neg')+'">'+
           money(r.net)+'</b></td>'+
         '<td data-label="Per trip" class="t-r num">'+money(r.net/r.n)+'</td></tr>').join('')+
       '</tbody></table>'+
       '<div class="hint" style="padding:9px 15px 12px">An expense recorded against a truck but not '+
       'against a trip cannot be traced to a route, so it is not counted here. Driver wages are not '+
-      'either \u2014 they belong to a truck over a period, not to one load.</div></div>'
-      : '<div class="empty"><div class="empty-text">Record a few trips and your strongest routes will show up here.</div></div>')+
-  '</div>'+
+      'either — they belong to a truck over a period, not to one load.</div></div>'
+      : '<div class="empty"><div class="empty-text">Record a few trips and your strongest routes will show up here.</div></div>'),
+    'db-routes')+
 
   (oldestDays>0? '<div class="note" style="margin-top:14px">Your oldest unpaid trip has been outstanding for <b>'+
     oldestDays+' days</b>. '+money(outstanding)+' is sitting with parties right now.</div>':'');
@@ -14268,6 +14989,9 @@ function mHome(){
   if(oldest && daysSince(oldest.date) > 15) attn.push({tone:'indigo', icon:'rupee', t:'Oldest unpaid: '+daysSince(oldest.date)+' days',
     s:partyName(oldest.partyId)+' · '+money(tripBalance(oldest))+' due', act:"mOpen('trips','"+oldest.id+"')"});
   const recent = DB.trips.slice().sort(newestFirst).slice(0,4);
+  const mrows = dbMonthly(monthsBack(6));
+  const mcur = mrows[mrows.length-1] || {}, mprev = mrows[mrows.length-2];
+  const mdlt = k => dbDelta(mprev ? pctChange(mcur[k]||0, mprev[k]||0) : null, false, mprev ? monthLabel(mprev.key) : 'last month');
   const kpi = (label, value, note, act, cls, fmt) => '<button class="m-kpi-c" onclick="'+act+'"><span>'+label+'</span>'+
     '<b class="num'+(cls?' '+cls:'')+'" data-count="'+value+'"'+(fmt?' data-fmt="'+fmt+'"':'')+'>'+(fmt==='plain'?value:money(value))+'</b><em>'+note+'</em></button>';
   const link = (icon, label, act, badge) => '<button class="m-short" onclick="'+act+'">'+mi(icon)+'<span>'+esc(label)+'</span>'+
@@ -14284,15 +15008,29 @@ function mHome(){
         '<button class="m-btn m-btn-ghost" onclick="mPickParty()">'+mi('wallet')+'Record payment</button>'+
       '</div>'+
     '</section>'+
-    '<section class="m-kpi-grid">'+
-      kpi('Payable', owe, 'Suppliers, drivers, shops', "mTab('m_dir')", owe>0?'m-neg':'')+
-      kpi('Freight this month', monthFreight, plural(monthTrips.length,'trip')+' in '+esc(monthName(month).split(' ')[0]), "mTab('trips')")+
-      kpi('In transit', onRoad, onRoad===1?'truck on the road':'trucks on the road', "mGo('trucks',{tab:'fleet',tf:'on'})", '', 'plain')+
-      kpi('Unpaid trips', unpaid.length, unpaid.length ? money(unpaid.reduce((a,t)=>a+tripBalance(t),0))+' due' : 'All collected', "mGo('trips',{mpay:'unpaid'})", '', 'plain')+
-    '</section>'+
+    '<section class="m-db">'+dbStrip('', '', [
+      {label:'Freight this month', value:monthFreight, icon:'reports', tint:'blue', color:'var(--c1)',
+       spark:mrows.map(r=>r.freight), delta:mdlt('freight'), go:"mTab('trips')"},
+      {label:'Collected this month', value:mcur.collected||0, icon:'expenses', tint:'green', color:'var(--c6)',
+       spark:mrows.map(r=>r.collected), delta:mdlt('collected'), go:"mGo('parties')"},
+      {label:'Trips this month', value:monthTrips.length, fmt:'plain', icon:'trips', tint:'amber', color:'var(--c2)',
+       spark:mrows.map(r=>r.trips), delta:mdlt('trips'), go:"mTab('trips')"},
+      {label:'In transit', value:onRoad, fmt:'plain', icon:'trucks', tint:'violet',
+       note: onRoad===1 ? 'truck on the road' : 'trucks on the road',
+       split:[{label:'On the road', value:onRoad, color:'var(--c5)'},{label:'In the yard', value:Math.max(0, DB.trucks.length-onRoad), color:'var(--line-strong)'}],
+       go:"mGo('trucks',{tab:'fleet',tf:'on'})"},
+      {label:'Unpaid trips', value:unpaid.length, fmt:'plain', icon:'parties', tint:'red', tone: unpaid.length?'neg':'',
+       note: unpaid.length ? money(unpaid.reduce((a,t)=>a+tripBalance(t),0))+' due' : 'All collected', go:"mGo('trips',{mpay:'unpaid'})"},
+      {label:'Payable', value:owe, icon:'shops', tint:'teal', tone: owe>0?'neg':'', note:'Suppliers, drivers, shops',
+       split:[{label:'Suppliers', value:mKindTotal('suppliers'), color:'var(--c5)'},{label:'Drivers', value:mKindTotal('drivers'), color:'var(--c3)'},
+              {label:'Shops', value:mKindTotal('shops'), color:'var(--c7)'}],
+       go:"mTab('m_dir')"}
+    ])+'</section>'+
     (attn.length ? '<h2 class="m-sec-h">Needs attention</h2><section class="m-card m-rows">'+attn.map((a,i)=>
       '<div class="m-row" style="--i:'+i+'" onclick="'+a.act+'">'+mSq(a.icon, a.tone)+
         '<div class="m-row-main"><b>'+esc(a.t)+'</b><span>'+esc(a.s)+'</span></div>'+mi('chev','m-chev')+'</div>').join('')+'</section>' : '')+
+    (DB.trips.length ? '<div class="m-sec-h-row"><h2 class="m-sec-h">Fleet on the road</h2><button class="m-link" onclick="mGo(\'trucks\',{tab:\'fleet\',tf:\'on\'})">Trucks'+mi('chev')+'</button></div>'+
+      '<section class="m-card m-mapcard"><div id="dbMap"></div></section>' : '')+
     (recent.length ? '<div class="m-sec-h-row"><h2 class="m-sec-h">Recent trips</h2><button class="m-link" onclick="mTab(\'trips\')">View all'+mi('chev')+'</button></div>'+
       '<section class="m-card m-rows">'+recent.map(mTripRow).join('')+'</section>' : '')+
     '<h2 class="m-sec-h">Shortcuts</h2>'+
@@ -14312,6 +15050,7 @@ function mHome(){
       link('trend','Insights',"mGo('insights')")+
     '</section>'+
   '</div>';
+  dbMapPaint();
 }
 /* one trip as a line: the day, the route, who and which truck, the money and where it stands */
 function mTripRow(t, i){
