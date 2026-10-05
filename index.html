@@ -4676,6 +4676,36 @@ body.phone .db-legend-note{margin-left:0;flex-basis:100%}
   .db-spark-line,.lm-done,.lm-mark,.db-split i{animation:none!important;stroke-dashoffset:0}
   .lm-pulse{display:none}
 }
+
+/* the real map */
+.db-map-live{background:var(--map-bg)}
+.db-lmap{position:relative;z-index:0;isolation:isolate;width:100%;background:var(--map-bg);font-family:var(--sans)}
+.db-lmap .leaflet-control-attribution{font-size:10px;background:color-mix(in srgb,var(--card) 82%,transparent);color:var(--muted)}
+.db-lmap .leaflet-control-attribution a{color:var(--muted)}
+.db-lmap .leaflet-bar a{background:var(--card);color:var(--ink);border-color:var(--line)}
+.db-lmap .leaflet-bar{border:1px solid var(--line)!important;box-shadow:0 4px 12px -6px rgba(17,24,39,.3)!important;border-radius:9px!important;overflow:hidden}
+.db-lmap .leaflet-tile-pane{filter:saturate(.55) contrast(.96)}
+[data-theme="carbon"] .db-lmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.82) contrast(.92) saturate(.4)}
+.lm-ltruck{background:none;border:0}
+.lm-ltruck span{position:absolute;inset:0;border-radius:8px;display:grid;place-items:center;
+  box-shadow:0 0 0 2px #fff,0 4px 10px rgba(17,24,39,.35);cursor:pointer}
+.lm-ltruck svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.lm-ltruck i{position:absolute;inset:0;border-radius:50%;opacity:0}
+.lm-ltruck.is-moving i{animation:lmPulse 2.2s ease-out infinite}
+.leaflet-tooltip.lm-ltip{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:9px;
+  padding:5px 9px 6px;box-shadow:0 6px 16px -8px rgba(17,24,39,.4);font-family:var(--sans);line-height:1.25;white-space:nowrap}
+.leaflet-tooltip.lm-ltip b{display:block;font:700 11.5px var(--mono);letter-spacing:.02em}
+.leaflet-tooltip.lm-ltip span{display:block;font-size:10.5px;font-weight:600;margin-top:1px}
+.leaflet-tooltip.lm-ltip-s{font-size:11.5px;font-weight:600;padding:4px 8px}
+.leaflet-tooltip-top.lm-ltip::before{border-top-color:var(--card)}
+.leaflet-tooltip-right.lm-ltip::before{border-right-color:var(--card)}
+.db-map-live .db-map-msg{z-index:500}
+.leaflet-tooltip.lm-hide{visibility:hidden}
+.db-count{flex:none;display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:650;color:var(--ink-2);
+  padding:5px 11px;border-radius:99px;background:var(--bg-2);border:1px solid var(--line)}
+.db-count i{width:7px;height:7px;border-radius:50%;background:var(--c1);box-shadow:0 0 0 3px color-mix(in srgb,var(--c1) 22%,transparent)}
+.db-legend-link{border:0;background:none;font:inherit;font-size:12px;font-weight:650;color:var(--accent);cursor:pointer;padding:0}
+@media (prefers-reduced-motion:reduce){ .lm-ltruck.is-moving i{animation:none} }
 </style>
 </head>
 <body>
@@ -4691,7 +4721,7 @@ body.phone .db-legend-note{margin-left:0;flex-basis:100%}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.70 &middot; 5 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.71 &middot; 5 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -6004,8 +6034,16 @@ function geoOf(place){
     if(hit) region = splitPlace(hit).region;
   }
   const c = GEO_CITY[key];
+  const found = geoCache()[raw];
+  const nearTown = !GEO_STATE[region] && region ? GEO_CITY[region.toLowerCase()] : null;
   let out = null;
-  if(c && (!region || region===c.state)) out = {lat:c.lat, lon:c.lon, name, region:c.state, exact:true};
+  if(c && (!region || region===c.state || nearTown===c)) out = {lat:c.lat, lon:c.lon, name, region:c.state, exact:true};
+  else if(found && found.lat != null) out = {lat:found.lat, lon:found.lon, name, region, exact:true};
+  else if(nearTown){
+    /* "Jainpur (Kanpur)": the bracket names the town it is near */
+    const h = geoHash(key), a = (h % 360) * Math.PI / 180, r = 0.08 + ((h >>> 9) % 20) / 100;
+    out = {lat:nearTown.lat + Math.sin(a)*r, lon:nearTown.lon + Math.cos(a)*r, name, region:nearTown.state, exact:false};
+  }
   else if(GEO_STATE[region]){
     const h = geoHash(key), a = (h % 360) * Math.PI / 180, r = 0.35 + ((h >>> 9) % 60) / 100;
     const s = GEO_STATE[region];
@@ -6172,6 +6210,209 @@ function laneMap(lanes, opts={}){
     ground + paths + dots + names + marks +
   '</svg>';
   return {html, lost, placed:placed.length};
+}
+
+/* ============================================================
+   THE MAP OF INDIA
+   The lanes over a real map: OpenStreetMap's tiles drawn through
+   Leaflet, both fetched the first time a map is shown. With no
+   connection, or if either cannot be reached, the drawn map is
+   used instead, so the screen never waits on the network.
+
+   Towns the built-in list does not know are looked up once from
+   the place written on the trip, through OpenStreetMap's search,
+   one at a time as its rules ask, and remembered on this device.
+   ============================================================ */
+const LEAFLET_SRC = [
+  ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css'],
+  ['https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css']
+];
+let leafletWait = null;
+function ensureLeaflet(){
+  if(window.L && L.map) return Promise.resolve(window.L);
+  if(leafletWait) return leafletWait;
+  if(navigator.onLine === false) return Promise.reject(new Error('offline'));
+  const load = ([js, css]) => new Promise((ok, no)=>{
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = css; document.head.appendChild(l);
+    const s = document.createElement('script'); s.src = js; s.async = true;
+    const t = setTimeout(()=>{ s.remove(); l.remove(); no(new Error('timeout')); }, 10000);
+    s.onload = ()=>{ clearTimeout(t); (window.L && L.map) ? ok(window.L) : no(new Error('empty')); };
+    s.onerror = ()=>{ clearTimeout(t); s.remove(); l.remove(); no(new Error('blocked')); };
+    document.head.appendChild(s);
+  });
+  leafletWait = load(LEAFLET_SRC[0]).catch(()=>load(LEAFLET_SRC[1]))
+    .catch(e=>{ leafletWait = null; throw e; });
+  return leafletWait;
+}
+
+/* places found by the search, kept on this device */
+const GEO_KEY = 'mvl_geo_v1';
+let geoStore = null;
+function geoCache(){
+  if(!geoStore){ try{ geoStore = JSON.parse(localStorage.getItem(GEO_KEY)||'{}') || {}; }catch(e){ geoStore = {}; } }
+  return geoStore;
+}
+function geoRemember(place, v){
+  geoCache()[place] = v;
+  try{ localStorage.setItem(GEO_KEY, JSON.stringify(geoStore)); }catch(e){}
+  delete geoMemo[place];
+}
+const geoQueue = [], geoWaiters = new Set(), geoFailed = new Set();
+let geoBusy = false, geoNow = '';
+/* asks for the places not yet known; `done` runs once the queue empties */
+function geoLookup(places, done){
+  const cache = geoCache(), now = Date.now();
+  let n = 0;
+  places.forEach(p=>{
+    p = String(p||'').trim();
+    if(!p || geoFailed.has(p) || p === geoNow) return;
+    const c = cache[p];
+    if(c && (c.lat!=null || now - (c.miss||0) < 7*864e5)) return;   /* found, or not found this week */
+    if(!geoQueue.includes(p)) geoQueue.push(p);
+    n++;
+  });
+  if(n && done) geoWaiters.add(done);
+  geoPump();
+  return n;
+}
+function geoPump(){
+  if(geoBusy || !geoQueue.length || navigator.onLine === false) return;
+  geoBusy = true;
+  const place = geoNow = geoQueue.shift();
+  const sp = splitPlace(place);
+  const q = [sp.name, sp.region, 'India'].filter(Boolean).join(', ');
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=in&q='+encodeURIComponent(q),
+      {headers:{'Accept-Language':'en'}})
+    .then(r=>r.ok ? r.json() : Promise.reject(new Error(String(r.status))))
+    .then(rows=>{
+      const r = rows && rows[0];
+      const lat = r ? parseFloat(r.lat) : NaN, lon = r ? parseFloat(r.lon) : NaN;
+      /* anything outside India's frame is a wrong match, not a place */
+      geoRemember(place, isFinite(lat) && lat>5 && lat<38 && lon>66 && lon<99 ? {lat, lon} : {miss:Date.now()});
+    })
+    .catch(()=>{ geoFailed.add(place); })          /* the network, not the place: try again next session */
+    .finally(()=>{
+      geoBusy = false; geoNow = '';
+      if(!geoQueue.length){
+        const w = [...geoWaiters]; geoWaiters.clear();
+        w.forEach(f=>{ try{ f(); }catch(e){} });
+      } else setTimeout(geoPump, 1100);
+    });
+}
+
+/* a gentle curve from A to B, as map points, bowed the same way the drawn map bows */
+function laneCurve(a, b, bend, steps){
+  const k = Math.cos((a.lat+b.lat)/2*Math.PI/180);
+  const ax = a.lon*k, ay = a.lat, bx = b.lon*k, by = b.lat;
+  const dx = bx-ax, dy = by-ay;
+  const qx = (ax+bx)/2 - dy*bend, qy = (ay+by)/2 + dx*bend;
+  const out = [];
+  for(let i=0;i<=steps;i++){
+    const t = i/steps;
+    const x = (1-t)*(1-t)*ax + 2*(1-t)*t*qx + t*t*bx, y = (1-t)*(1-t)*ay + 2*(1-t)*t*qy + t*t*by;
+    out.push([y, x/k]);
+  }
+  return out;
+}
+const liveMaps = {};
+function liveLaneMap(el, key, lanes, opts){
+  if(liveMaps[key]){ try{ liveMaps[key].remove(); }catch(e){} delete liveMaps[key]; }
+  const touch = window.matchMedia && matchMedia('(pointer:coarse)').matches;
+  const map = L.map(el, {zoomControl:true, scrollWheelZoom:false, dragging:!touch, tap:false, touchZoom:true,
+    zoomSnap:0.25, minZoom:3, maxZoom:16, maxBounds:[[0,58],[42,104]], maxBoundsViscosity:0.9});
+  liveMaps[key] = map;
+  map.attributionControl.setPrefix(false);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:16,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'}).addTo(map);
+
+  const bounds = [], pairN = {}, fire = go => ()=>{ try{ (new Function(go))(); }catch(e){} };
+  const tags = opts.tags == null ? 10 : opts.tags;
+  let tagged = 0;
+  lanes.forEach(l=>{
+    const a = geoOf(l.from), b = geoOf(l.to);
+    if(!a || !b) return;
+    bounds.push([a.lat,a.lon], [b.lat,b.lon]);
+    const key2 = [a.name,b.name].sort().join('|');
+    const n = pairN[key2] = (pairN[key2]||0)+1;
+    const curve = laneCurve(a, b, (0.16 + (n-1)*0.1) * (n%2 ? 1 : -1), 40);
+    const col = l.color || 'var(--accent)', w = l.width || 3;
+    const p = l.p == null ? 1 : Math.max(0, Math.min(1, l.p));
+    const cut = Math.round(p*40);
+    const tip = l.title ? esc(l.title) : '';
+    if(cut < 40) L.polyline(curve.slice(cut), {color:col, weight:w, opacity:.55, dashArray:'4 7', lineCap:'round', interactive:false}).addTo(map);
+    if(cut > 0){
+      const line = L.polyline(curve.slice(0, cut+1), {color:col, weight:w, opacity:.95, lineCap:'round', className:'lm-lline'}).addTo(map);
+      if(tip) line.bindTooltip(tip, {sticky:true, className:'lm-ltip lm-ltip-s'});
+    }
+    L.circleMarker([a.lat,a.lon], {radius:5, weight:2.2, color:'#1F2937', fillColor:'#FFFFFF', fillOpacity:1})
+      .bindTooltip(esc(a.name), {direction:'right', offset:[6,0], className:'lm-ltip lm-ltip-s'}).addTo(map);
+    L.circleMarker([b.lat,b.lon], {radius:5.5, weight:2.5, color:'#FFFFFF', fillColor:col, fillOpacity:1})
+      .bindTooltip(esc(b.name), {direction:'right', offset:[6,0], className:'lm-ltip lm-ltip-s'}).addTo(map);
+    const at = curve[Math.min(40, Math.max(0, l.p == null ? 20 : cut))];
+    const head = esc(l.plate || l.label || ''), tail = esc(l.sub || '');
+    const html = '<b>'+head+'</b>'+(tail ? '<span style="color:'+col+'">'+tail+'</span>' : '');
+    const permanent = !!head && tagged < tags;
+    if(permanent) tagged++;
+    if(l.p != null){
+      const m = L.marker(at, {icon:L.divIcon({className:'lm-ltruck'+(l.pulse?' is-moving':''),
+        html:'<i style="background:'+col+'"></i><span style="background:'+col+'"><svg viewBox="0 0 24 24">'+ICONS.trucks+'</svg></span>',
+        iconSize:[26,26], iconAnchor:[13,13]}), keyboard:true, title:l.title||''}).addTo(map);
+      if(head) m.bindTooltip(html, {permanent, direction:'top', offset:[0,-15], className:'lm-ltip'+(permanent?' lm-perm':''), opacity:1});
+      if(head && permanent){
+        m.on('mouseover', ()=>{ const t = m.getTooltip() && m.getTooltip().getElement(); if(t){ t.classList.remove('lm-hide'); t.style.zIndex = 900; } });
+        m.on('mouseout', ()=>{ const t = m.getTooltip() && m.getTooltip().getElement(); if(t) t.style.zIndex = ''; lmDeclutter(map); });
+      }
+      if(l.go) m.on('click', fire(l.go));
+    } else if(head){
+      L.circleMarker(at, {radius:3.5, weight:0, fillColor:col, fillOpacity:1})
+        .bindTooltip(html, {permanent, direction:'top', offset:[0,-6], className:'lm-ltip'+(permanent?' lm-perm':''), opacity:1}).addTo(map);
+    }
+  });
+  if(bounds.length) map.fitBounds(bounds, {padding:[44,44], maxZoom:opts.maxZoom || 8});
+  else map.setView([22.6, 79.4], touch ? 3.75 : 4.25);
+  setTimeout(()=>{ try{ map.invalidateSize(); lmDeclutter(map); }catch(e){} }, 80);
+  map.on('zoomend moveend', ()=>lmDeclutter(map));
+  return map;
+}
+/* labels that would sit on one another: the first keeps its place, the
+   rest wait for a hover or a closer zoom */
+function lmDeclutter(map){
+  const box = map.getContainer();
+  const kept = [];
+  box.querySelectorAll('.leaflet-tooltip.lm-perm').forEach(t=>{
+    t.classList.remove('lm-hide');
+    const r = t.getBoundingClientRect();
+    if(kept.some(k=>r.left < k.right+2 && r.right > k.left-2 && r.top < k.bottom+2 && r.bottom > k.top-2)) t.classList.add('lm-hide');
+    else kept.push(r);
+  });
+}
+
+/* One place a lane map is painted: on the real map when it can be, on
+   the drawn one when it cannot, and again once missing towns are found. */
+function paintLaneHost(hostId, lanes, opts, extra){
+  extra = extra || {};
+  const host = document.getElementById(hostId); if(!host) return;
+  const again = ()=>{ if(document.getElementById(hostId) === host && document.body.contains(host)) paintLaneHost(hostId, lanes, opts, extra); };
+  const ask = [];
+  lanes.forEach(l=>[l.from, l.to].forEach(p=>{ const g = geoOf(p); if(p && (!g || !g.exact)) ask.push(p); }));
+  const finding = geoLookup(ask, again);
+  const lost = lanes.filter(l=>!geoOf(l.from) || !geoOf(l.to));
+  const msg = extra.empty ? '<div class="db-map-msg"><b>'+esc(extra.empty)+'</b>'+(extra.emptySub?'<span>'+esc(extra.emptySub)+'</span>':'')+'</div>' : '';
+  const note = finding
+    ? '<div class="hint db-lost">Finding '+plural(finding,'town')+' on the map…</div>'
+    : lost.length ? '<div class="hint db-lost">Not on the map: '+lost.slice(0,4).map(l=>esc((l.from||'?')+' → '+(l.to||'?'))).join(', ')+
+        (lost.length>4?' and '+(lost.length-4)+' more':'')+'. Write the town and its state, as “Kanpur (Uttar Pradesh)”, and it will be found.</div>' : '';
+  const h = onPhone() ? (opts.phoneHeight || 340) : (opts.height || 420);
+  if(window.L && L.map){
+    host.innerHTML = '<div class="db-map db-map-live"><div class="db-lmap" style="height:'+h+'px"></div>'+msg+'</div>'+note;
+    try{ liveLaneMap(host.querySelector('.db-lmap'), hostId, lanes, opts); return; }
+    catch(e){ /* fall through to the drawn map */ }
+  }
+  const svg = laneMap(lanes, onPhone() ? Object.assign({}, opts, {width:420, height:400}) : opts);
+  host.innerHTML = (svg.html
+      ? '<div class="db-map">'+svg.html+msg+'</div>'
+      : '<div class="db-map db-map-none">'+(msg || '<div class="db-map-msg"><b>No lane to draw</b><span>The towns on these trips are not ones the map knows yet.</span></div>')+'</div>')+note;
+  ensureLeaflet().then(again, ()=>{});
 }
 
 /* ============================================================
@@ -6444,11 +6685,8 @@ function viewDashboard(){
   $('#view').innerHTML =
   ops + money6 +
   '<div class="db-main">'+
-    dbCard('Fleet on the road', 'Every trip still out, drawn from where it loaded to where it is going',
-      '<div class="db-seg" id="dbMapSeg">'+
-        [['','All'],['transit','In transit'],['pod','POD awaited']].map(([k,l])=>
-          '<button class="'+((sub.mapf||'')===k?'on':'')+'" onclick="sub.mapf=\''+k+'\';dbMapPaint()">'+l+'</button>').join('')+
-      '</div>',
+    dbCard('Fleet on the road', 'Trucks in transit, from where they loaded to where they are going',
+      '<span class="db-count"><i></i>'+plural(onRoad.length,'truck')+' in transit</span>',
       '<div id="dbMap"></div>', 'db-map-card')+
     '<div class="db-side">'+
       dbCard('Recent trips', 'The last loads entered', dbMore('View all', "go('trips')"), recentBody)+
@@ -6476,47 +6714,28 @@ function viewDashboard(){
   dbMapPaint();
 }
 
-/* the map on its own, so the filter above it does not rebuild the page */
+/* the map on its own: trucks in transit, nothing else */
 function dbMapPaint(){
   const box = document.getElementById('dbMap'); if(!box) return;
-  const seg = document.getElementById('dbMapSeg');
-  if(seg) seg.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on', ['','transit','pod'][i]===(sub.mapf||'')));
-  const f = sub.mapf || '';
-  const live = DB.trips.filter(t=>!t.podSubmittedAt && !selfFunded(t));
-  let list = live.filter(t=> !f ? true : f==='transit' ? tripStage(t)==='transit' : tripStage(t)!=='transit');
-  const counts = {transit:0, delivered:0, received:0};
-  live.forEach(t=>{ counts[tripStage(t)] = (counts[tripStage(t)]||0)+1; });
-  let faded = false;
-  if(!list.length){
-    list = DB.trips.filter(t=>!selfFunded(t)).sort(newestFirst).slice(0,8);
-    faded = true;
-  }
-  const lanes = list.map(t=>{
-    const st = faded ? 'done' : tripStage(t);
+  const open = DB.trips.filter(t=>!t.podSubmittedAt && !selfFunded(t));
+  const moving = open.filter(t=>tripStage(t)==='transit').sort(newestFirst);
+  const waiting = open.length - moving.length;
+  const lanes = moving.map(t=>{
     const days = daysSince(t.date)||0;
-    return {id:t.id, from:t.from, to:t.to, color:DB_TONE[st]||DB_TONE.transit,
-      p: faded ? null : st==='transit' ? 0.55 : 1, pulse: st==='transit',
-      plate: faded ? '' : truckName(t.truckId),
-      sub: faded ? '' : st==='transit' ? (days<0 ? 'Loads '+fdate(t.date).slice(0,6) : 'In transit · day '+(days+1)) : st==='delivered' ? 'Delivered · POD awaited' : 'POD with you',
+    return {id:t.id, from:t.from, to:t.to, color:DB_TONE.transit, p:0.55, pulse:true,
+      plate: truckName(t.truckId),
+      sub: days<0 ? 'Loads '+fdate(t.date).slice(0,6) : 'In transit \u00b7 day '+(days+1),
       go: onPhone() ? "mOpen('trips','"+t.id+"')" : "tripDetail('"+t.id+"')",
-      title:(t.lr?'LR '+t.lr+' · ':'')+truckName(t.truckId)+' · '+(t.from||'?')+' → '+(t.to||'?')+' · '+partyName(t.partyId)};
+      title:(t.lr?'LR '+t.lr+' \u00b7 ':'')+truckName(t.truckId)+' \u00b7 '+(t.from||'?')+' \u2192 '+(t.to||'?')+' \u00b7 '+partyName(t.partyId)};
   });
-  const map = laneMap(lanes, onPhone() ? {width:420, height:400, towns:10, aria:'Map of trips on the road'}
-    : {height:410, aria:'Map of trips on the road'});
-  const legend = '<div class="db-legend">'+
-    [['transit','In transit'],['delivered','POD awaited'],['received','POD with you']].map(([k,l])=>
-      '<span><i style="background:'+DB_TONE[k]+'"></i>'+l+' <b class="num">'+(counts[k]||0)+'</b></span>').join('')+
-    '<span class="db-legend-note">Towns placed approximately; a town the map does not know sits in its state.</span></div>';
-  box.innerHTML =
-    (map.html
-      ? '<div class="db-map'+(faded?' is-faded':'')+'">'+map.html+
-          (faded ? '<div class="db-map-msg"><b>No truck on the road right now</b><span>These are the lanes of your last few trips.</span></div>' : '')+
-        '</div>'
-      : '<div class="db-map db-map-none"><div class="db-map-msg"><b>'+(DB.trips.length?'No lane to draw':'No trips yet')+'</b>'+
-          '<span>'+(DB.trips.length?'The loading and delivery towns on these trips are not ones the map knows.':'Add a trip and it shows up here, from where it loads to where it is going.')+'</span></div></div>')+
-    legend+
-    (map.lost.length ? '<div class="hint db-lost">Not on the map: '+map.lost.slice(0,4).map(l=>esc((l.from||'?')+' → '+(l.to||'?'))).join(', ')+
-      (map.lost.length>4?' and '+(map.lost.length-4)+' more':'')+'.</div>' : '');
+  const podGo = onPhone() ? "mGo('trips',{stage:'podpending'})" : "go('pod')";
+  box.innerHTML = '<div id="dbMapHost"></div>'+
+    '<div class="db-legend"><span><i style="background:'+DB_TONE.transit+'"></i>In transit <b class="num">'+moving.length+'</b></span>'+
+      (waiting ? '<button class="db-legend-link" onclick="'+podGo+'">'+plural(waiting,'delivered trip')+' waiting on POD \u2192</button>' : '')+
+      '<span class="db-legend-note">Map \u00a9 OpenStreetMap contributors. Tap a truck to open its trip.</span></div>';
+  paintLaneHost('dbMapHost', lanes, {height:420, phoneHeight:340, aria:'Map of trucks in transit', tags:onPhone()?6:10},
+    moving.length ? {} : {empty:'No truck in transit right now',
+      emptySub: waiting ? 'Delivered trips waiting on their POD are under Deliveries.' : 'A trip shows here from the day it loads until it is delivered.'});
 }
 /* the month on paper, through the statement Insights already prints */
 function dbExport(){
@@ -6632,8 +6851,6 @@ function viewInsights(){
     sub: i < 5 ? plural(r.n,'trip')+' · '+money(r.net) : '',
     title: r.label+' · '+plural(r.n,'trip')+' · profit '+money(r.net)
   }));
-  const lanes = laneMap(laneData, onPhone() ? {width:420, height:400, towns:8, aria:'Map of the lanes you run'}
-    : {height:380, towns:14, aria:'Map of the lanes you run'});
 
   $('#view').innerHTML =
   rangeBar('insights')+
@@ -6669,10 +6886,7 @@ function viewInsights(){
 
   '<div class="db-main">'+
     dbCard('Lanes you run', 'Thicker for the lanes you run most · green earns above your average, red lost money', '',
-      lanes.html
-        ? '<div class="db-map">'+lanes.html+'</div>'+
-          (lanes.lost.length ? '<div class="hint db-lost">Not on the map: '+lanes.lost.slice(0,4).map(l=>esc((l.from||'?')+' → '+(l.to||'?'))).join(', ')+'.</div>' : '')
-        : '<div class="db-map db-map-none"><div class="db-map-msg"><b>No lane in this period</b><span>Pick a longer range, or record a few trips.</span></div></div>',
+      '<div id="insLanes"></div><div class="db-legend"><span class="db-legend-note" style="margin-left:0">Map \u00a9 OpenStreetMap contributors. Hover or tap a lane for its trips and profit.</span></div>',
       'db-map-card')+
     dbCard('Which truck earns most', 'Freight minus hire and expenses booked to it', '',
       '<div class="db-chart">'+(perTruck.length? barList(perTruck.map(t=>({label:t.label, value:t.value,
@@ -6701,6 +6915,8 @@ function viewInsights(){
 
   (oldestDays>0? '<div class="note" style="margin-top:14px">Your oldest unpaid trip has been outstanding for <b>'+
     oldestDays+' days</b>. '+money(outstanding)+' is sitting with parties right now.</div>':'');
+  paintLaneHost('insLanes', laneData, {height:400, phoneHeight:340, towns:14, tags:onPhone()?3:5, maxZoom:7, aria:'Map of the lanes you run'},
+    laneData.length ? {} : {empty:'No lane in this period', emptySub:'Pick a longer range, or record a few trips.'});
 }
 
 /* "Kanpur Nagar (Uttar Pradesh)" is one string in the record but two
