@@ -4706,6 +4706,10 @@ body.phone .db-legend-note{margin-left:0;flex-basis:100%}
 .db-count i{width:7px;height:7px;border-radius:50%;background:var(--c1);box-shadow:0 0 0 3px color-mix(in srgb,var(--c1) 22%,transparent)}
 .db-legend-link{border:0;background:none;font:inherit;font-size:12px;font-weight:650;color:var(--accent);cursor:pointer;padding:0}
 @media (prefers-reduced-motion:reduce){ .lm-ltruck.is-moving i{animation:none} }
+
+.note-warn{background:var(--red-soft);border-color:var(--red-line);color:var(--ink-2)}
+.note-warn b{color:var(--red)}
+body.phone .m-hint-bad{color:var(--red,#B42318);background:color-mix(in srgb,var(--red,#B42318) 8%,transparent);border-radius:10px;padding:9px 11px}
 </style>
 </head>
 <body>
@@ -4721,7 +4725,7 @@ body.phone .db-legend-note{margin-left:0;flex-basis:100%}
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.71 &middot; 5 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.72 &middot; 6 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -5568,13 +5572,58 @@ function closeDriverSeats(did, last){
 }
 
 // Profit & loss for a date range
+/* ------------------------------------------------------------
+   MARKET TRUCKS
+   A hired truck costs its hire and nothing more. Cash handed to its
+   driver or diesel filled on the road is part of that hire, so it is
+   never a cost of its own: the profit on a market truck is the
+   freight less the hire.
+   What is spent on one should never pass the hire, and where it does
+   the app says so, without stopping anything from being saved.
+   ------------------------------------------------------------ */
+function isMarketTruck(id){ const t = id ? truckById(id) : null; return !!(t && t.type==='market'); }
+function expenseTruckId(e){
+  if(e.truckId) return e.truckId;
+  const t = e.tripId ? DB.trips.find(x=>x.id===e.tripId) : null;
+  return t ? t.truckId : '';
+}
+function towardHire(e){ return isMarketTruck(expenseTruckId(e)); }
+/* trips, and trucks over all their trips, where more went out than the hire */
+function marketOverspends(){
+  const market = new Set(DB.trucks.filter(t=>t.type==='market').map(t=>t.id));
+  if(!market.size) return [];
+  const tripIds = new Set(DB.trips.map(t=>t.id));
+  const onTrip = {}, loose = {};
+  (DB.expenses||[]).forEach(e=>{
+    const tid = expenseTruckId(e);
+    if(!market.has(tid)) return;
+    if(e.tripId && tripIds.has(e.tripId)) onTrip[e.tripId] = (onTrip[e.tripId]||0) + num(e.amount);
+    else loose[tid] = (loose[tid]||0) + num(e.amount);
+  });
+  const out = [];
+  DB.trips.forEach(t=>{
+    const spent = onTrip[t.id] || 0;
+    if(market.has(t.truckId) && spent > num(t.hire)) out.push({kind:'trip', trip:t, truckId:t.truckId, hire:num(t.hire), spent});
+  });
+  Object.keys(loose).forEach(tid=>{
+    const ts = DB.trips.filter(t=>t.truckId===tid);
+    const hire = ts.reduce((a,t)=>a+num(t.hire),0);
+    const spent = loose[tid] + ts.reduce((a,t)=>a+(onTrip[t.id]||0),0);
+    if(spent > hire) out.push({kind:'truck', truckId:tid, hire, spent});
+  });
+  return out;
+}
 function pnl(from, to){
   const inR = d => (!from || d>=from) && (!to || d<=to);
   const trips = DB.trips.filter(t=>inR(t.date));
   const freightBase = trips.reduce((s,t)=>s+num(t.freight),0);
   const hire    = trips.reduce((s,t)=>s+num(t.hire),0);
   const byCat = {};
-  DB.expenses.filter(e=>inR(e.date)).forEach(e=>{ byCat[e.category]=(byCat[e.category]||0)+num(e.amount); });
+  let marketSpend = 0;
+  DB.expenses.filter(e=>inR(e.date)).forEach(e=>{
+    if(towardHire(e)){ marketSpend += num(e.amount); return; }     /* part of the hire, already counted */
+    byCat[e.category]=(byCat[e.category]||0)+num(e.amount);
+  });
   const expense = Object.values(byCat).reduce((a,b)=>a+b,0);
   const dp = driverPayBreak('', from, to);
   const driverPaid = dp.paid;      /* unchanged: the same total as before */
@@ -5596,7 +5645,7 @@ function pnl(from, to){
 
   const freight = freightBase + charges - deductions;
   return {trips, tripCount:trips.length, freight, freightBase, charges, deductions,
-    hire, byCat, expense, driverPaid,
+    hire, byCat, expense, marketSpend, driverPaid,
     driverSalary:dp.salary, driverAdvance:dp.advance, driverOther:dp.other, costs,
     profit:freight-costs, advances, receipts, adjusted, collected, actual:collected-costs};
 }
@@ -6801,7 +6850,7 @@ function viewInsights(){
     const exp = DB.expenses.filter(e=>e.truckId===tr.id && e.date>=from && e.date<=to)
       .reduce((s,e)=>s+num(e.amount),0);
     const sal = truckDriverPay(tr.id, from, to);
-    return {label:tr.number, trips:ts.length, value:freight-hire-exp-sal, freight};
+    return {label:tr.number, trips:ts.length, value:freight-hire-(tr.type==='market'?0:exp)-sal, freight};
   }).filter(x=>x.trips||x.value).sort((a,b)=>b.value-a.value);
 
   /* A route is only as good as what it leaves behind. Ranking on freight
@@ -6811,7 +6860,7 @@ function viewInsights(){
      book every time the range changes. */
   const expOnTrip = {};
   (DB.expenses||[]).forEach(e=>{
-    if(e.tripId) expOnTrip[e.tripId] = (expOnTrip[e.tripId]||0) + num(e.amount);
+    if(e.tripId && !towardHire(e)) expOnTrip[e.tripId] = (expOnTrip[e.tripId]||0) + num(e.amount);
   });
   const routes = {};
   win.forEach(t=>{
@@ -7564,7 +7613,21 @@ function recalcTripExpenses(){
   if(out) out.textContent = money(tripExpenseTotal());
   const adv = document.getElementById('f_expAdvEcho');
   if(adv && tripDraft) adv.textContent = money(tripAdvance(tripDraft));
+  paintHireCheck();
   paintTripTotals();
+}
+/* on a hired truck the expenses are paid out of the hire: say so, and say when they pass it */
+function paintHireCheck(){
+  const box = document.getElementById('f_expHire'); if(!box || !tripDraft) return;
+  const tk = (document.getElementById('f_truck')||{}).value || tripDraft.truckId;
+  if(!isMarketTruck(tk) || selfFunded(tripDraft)){ box.innerHTML = ''; return; }
+  const hireIn = document.getElementById('f_hire2') || document.getElementById('f_hire');
+  const hire = hireIn ? num(hireIn.value) : num(tripDraft.hire), exp = tripExpenseTotal();
+  box.innerHTML = exp > hire
+    ? '<div class="note note-warn" style="margin-top:10px"><b>'+money(exp)+' spent is more than the hire of '+money(hire)+'.</b> '+
+      'On a market truck these are part of the hire and should not pass it. Check the amounts, or the hire on the Advance tab.</div>'
+    : '<div class="hint" style="margin-top:8px">A market truck: these are part of its hire of '+money(hire)+
+      ', so they are not taken off your profit a second time.</div>';
 }
 /* the draft becomes real Expenses records the moment the trip is saved */
 function syncTripExpenses(tripId, truckId){
@@ -7850,6 +7913,7 @@ function tripExpensePane(t, existing){
         '<span class="num adv-total-value" id="f_expAdvEcho">'+money(tripAdvance(t))+'</span></div>'+
       '<div class="adv-total adv-balance"><span>Total expense money</span>'+
         '<span class="num adv-total-value" id="f_expTotal">₹0</span></div>'+
+      '<div id="f_expHire"></div>'+
     '</div>'+
     (existing ? '<div style="margin-top:14px"><button class="btn" data-keep onclick="closeModal();go(\'expenses\')">'+
       'Open the Expenses tab</button></div>' : '');
@@ -8841,7 +8905,7 @@ function renderTruckList(){
     const hire = trips.reduce((s,x)=>s+num(x.hire),0);
     const exp = DB.expenses.filter(e=>e.truckId===t.id).reduce((s,e)=>s+num(e.amount),0);
     const sal = truckDriverPay(t.id);
-    return {...t, tripCount:trips.length, freight, hire, exp, sal, net:freight-hire-exp-sal};
+    return {...t, tripCount:trips.length, freight, hire, exp, sal, net:freight-hire-(t.type==='market'?0:exp)-sal};
   });
   const fleetAll = stats.slice();
   if(sub.type) stats = stats.filter(t=>t.type===sub.type);
@@ -9353,6 +9417,7 @@ function renderExpenseList(){
               : '<div class="t-sub"><span class="chip chip-red">Trip deleted</span></div>'
             : '')+
           (e.docId?'<div class="t-sub"><span class="chip chip-grey">Document</span></div>':'')+
+          (towardHire(e)?'<div class="t-sub"><span class="chip chip-amber" title="Paid on a market truck: part of its hire, not a separate cost">Toward hire</span></div>':'')+
           (e.mode==='Credit'&&e.shopId?'<div class="t-sub">'+esc(shopName(e.shopId))+'</div>'
             :e.paidTo?'<div class="t-sub">Paid to '+esc(e.paidTo)+'</div>':'')+'</td>'+
         '<td data-label="Truck" class="num">'+esc(e.truckId?truckName(e.truckId):'\u2014')+'</td>'+
@@ -10603,6 +10668,8 @@ function viewReports(){
     (function(){
       const costLines = [
         p.hire? pl('Hire paid to market trucks', p.hire):'',
+        p.marketSpend? '<div class="hint" style="margin:-2px 0 8px">'+money(p.marketSpend)+' spent on market trucks \u2014 cash to their drivers, diesel \u2014 '+
+          'is paid toward that hire, so it is not counted a second time.</div>' : '',
         exps.map(([c,v])=>pl(c, v)).join(''),
         p.driverSalary?  pl('Driver salary paid', p.driverSalary):'',
         p.driverAdvance? pl('Driver advances paid', p.driverAdvance):'',
@@ -10689,7 +10756,8 @@ function viewReports(){
       const hire = trips.reduce((s,x)=>s+num(x.hire),0);
       const exp = DB.expenses.filter(e=>e.truckId===t.id && inR(e.date)).reduce((s,e)=>s+num(e.amount),0);
       const sal = truckDriverPay(t.id, sub.from, sub.to);
-      return {t, n:trips.length, freight, hire, exp, sal, net:freight-hire-exp-sal};
+      const mk = t.type==='market';
+      return {t, n:trips.length, freight, hire, exp, sal, mk, over: mk && exp > hire, net:freight-hire-(mk?0:exp)-sal};
     }).filter(r=>r.n||r.exp||r.sal).sort((a,b)=>b.net-a.net);
     body = rows.length? '<div class="card chart-card" style="margin-bottom:16px">'+
       '<h3 class="chart-title">Net earnings by truck</h3>'+
@@ -10705,7 +10773,8 @@ function viewReports(){
         '<td><span class="t-strong num">'+esc(r.t.number)+'</span> '+
         (r.t.type==='market'?'<span class="chip chip-grey">Market</span>':'')+'</td>'+
         '<td class="t-r num">'+r.n+'</td><td class="t-r num">'+money(r.freight)+'</td>'+
-        '<td class="t-r num">'+(r.hire?money(r.hire):'—')+'</td><td class="t-r num">'+money(r.exp)+'</td>'+
+        '<td class="t-r num">'+(r.hire?money(r.hire):'—')+'</td><td class="t-r num'+(r.over?' money-neg':'')+'">'+money(r.exp)+
+          (r.mk && r.exp ? '<div class="t-sub">'+(r.over?'<span class="chip chip-red">More than hire</span>':'toward hire')+'</div>' : '')+'</td>'+
         '<td class="t-r num">'+(r.sal?money(r.sal):'—')+'</td>'+
         '<td class="t-r num '+(r.net>=0?'money-pos':'money-neg')+'">'+money(r.net)+'</td></tr>').join('')+
       '</tbody></table></div></div>'
@@ -10727,6 +10796,7 @@ function viewReports(){
           display:money(v)+' · '+Math.round(v/tot*100)+'%'})))+
         '<div class="divide"></div><div class="pl-line pl-total"><span>Total expenses</span>'+
         '<span class="num">'+money(tot)+'</span></div>'+
+        (p.marketSpend ? '<div class="hint" style="margin-top:8px">Not included: '+money(p.marketSpend)+' spent on market trucks, which is paid toward their hire.</div>' : '')+
       '</div>'+
     '</div>'
       : empty('No expenses in this period','Change the date range, or record expenses to see the split.','');
@@ -10754,7 +10824,9 @@ function truckBreakdown(truckId, from, to){
   const hire    = trips.reduce((n,t)=>n+num(t.hire),0);
   const spend   = spends.reduce((n,e)=>n+num(e.amount),0);
   const wage    = wages.reduce((n,w)=>n+w.shown,0);
-  return {trips, spends, wages, freight, hire, spend, wage, net: freight-hire-spend-wage};
+  const market  = isMarketTruck(truckId);
+  return {trips, spends, wages, freight, hire, spend, wage, market, over: market && spend > hire,
+    net: freight - hire - (market ? 0 : spend) - wage};
 }
 function truckReport(truckId){
   const t = truckById(truckId);
@@ -10773,13 +10845,26 @@ function truckReport(truckId){
         (t.driverId?' \u00b7 '+esc(driverName(t.driverId)):'')+'</span>'+
       '<span style="margin-left:auto">'+fdate(from)+' to '+fdate(to)+'</span>'+
     '</div>'+
-    '<div class="tr-sum">'+
+    (b.market
+      ? '<div class="tr-sum">'+
+          cell('Freight earned', b.freight)+
+          cell('Hire', -b.hire)+
+          cell('Paid toward hire', b.spend, b.over?'money-neg':'')+
+          (b.wage ? cell('Driver wages', -b.wage) : '')+
+          cell(b.net>=0?'Profit':'Loss', Math.abs(b.net), b.net>=0?'money-pos':'money-neg')+
+        '</div>'+
+        (b.over
+          ? '<div class="note note-warn" style="margin-top:12px"><b>'+money(b.spend)+' spent is more than the hire of '+money(b.hire)+'.</b> '+
+            'What is spent on a hired truck is part of its hire and should not pass it. Check the expenses below, or the hire on the trips.</div>'
+          : '<div class="hint" style="margin-top:10px">A market truck\u2019s profit is its freight less the hire. What is spent on it \u2014 cash to its driver, diesel \u2014 '+
+            'is part of that hire, so it is not taken off a second time.</div>')
+      : '<div class="tr-sum">'+
       cell('Freight earned', b.freight)+
       cell('Hire paid', -b.hire)+
       cell('Expenses booked', -b.spend)+
       cell('Driver wages', -b.wage)+
       cell(b.net>=0?'Net earned':'Net loss', Math.abs(b.net), b.net>=0?'money-pos':'money-neg')+
-    '</div>'+
+    '</div>')+
 
     '<div class="sec-title" style="margin-top:20px">Trips \u2014 what it earned</div>'+
     (b.trips.length
@@ -10801,7 +10886,7 @@ function truckReport(truckId){
         '</table></div></div>'
       : none('was moved'))+
 
-    '<div class="sec-title" style="margin-top:20px">Expenses booked to this truck</div>'+
+    '<div class="sec-title" style="margin-top:20px">'+(b.market?'Paid toward the hire':'Expenses booked to this truck')+'</div>'+
     (b.spends.length
       ? '<div class="card"><div class="tbl-wrap"><table>'+
         '<thead><tr><th>Date</th><th>Category</th><th>Details</th><th>Mode</th>'+
@@ -11737,7 +11822,7 @@ function printInsights(){
     const ts = trips.filter(t=>t.truckId===tr.id);
     const freight = ts.reduce((s,t)=>s+tripFreightNet(t),0);
     const hire = ts.reduce((s,t)=>s+num(t.hire),0);
-    const exp = DB.expenses.filter(e=>e.truckId===tr.id && inR(e.date)).reduce((s,e)=>s+num(e.amount),0);
+    const exp = tr.type==='market' ? 0 : DB.expenses.filter(e=>e.truckId===tr.id && inR(e.date)).reduce((s,e)=>s+num(e.amount),0);
     return {tr, n:ts.length, freight, net:freight-hire-exp};
   }).filter(r=>r.n||r.net).sort((a,b)=>b.net-a.net)
     .map(r=>[esc(r.tr.number), String(r.n), money(r.freight), money(r.net)]);
@@ -12785,7 +12870,7 @@ function truckAlerts(){
   }));
   return out.sort((a,b)=>(a.st.days||0)-(b.st.days||0));
 }
-function alertCount(){ return truckAlerts().length + podAlerts().length; }
+function alertCount(){ return truckAlerts().length + podAlerts().length + marketOverspends().length; }
 function urgency(st){
   if(st.key==='expired') return 'Document expired';
   if(st.days<=1)  return 'Final reminder';
@@ -12800,11 +12885,22 @@ function paintBell(){
   b.className = 'bell'+(n?' has':'');
   b.innerHTML = '<svg class="ic" viewBox="0 0 24 24"><path d="M18 15v-4a6 6 0 10-12 0v4l-1.6 2.4h15.2z"/>'+
     '<path d="M10 20a2 2 0 004 0"/></svg>'+(n?'<span class="bell-badge">'+(n>9?'9+':n)+'</span>':'');
-  b.title = n ? plural(n,'document')+' need attention' : 'No document alerts';
+  b.title = n ? plural(n,'alert')+' need attention' : 'Nothing needs attention';
 }
 function notifications(){
   const list = truckAlerts();
   const pods = podAlerts();
+  const over = marketOverspends();
+  const overBlock = over.length
+    ? '<div class="sec-title" style="margin-top:'+(list.length||pods.length?'18px':'0')+'">Market trucks: spent more than the hire</div>'+
+      '<div class="notif-list">'+over.map(a=>
+        '<button class="notif" onclick="closeModal();'+(a.kind==='trip' ? "tripDetail('"+a.trip.id+"','expenses')" : "truckReport('"+a.truckId+"')")+'">'+
+          '<span class="notif-dot bad"></span>'+
+          '<span class="notif-body">'+
+            '<span class="notif-title">'+esc(truckName(a.truckId))+(a.kind==='trip' ? ' \u2014 '+esc(a.trip.lr ? 'LR '+a.trip.lr : (a.trip.from||'?')+' \u2192 '+(a.trip.to||'?')) : ' \u2014 all trips')+'</span>'+
+            '<span class="notif-sub">'+money(a.spent)+' spent against a hire of '+money(a.hire)+' \u00b7 '+money(a.spent-a.hire)+' over</span>'+
+          '</span></button>').join('')+'</div>'
+    : '';
   const podBlock = pods.length
     ? '<div class="sec-title" style="margin-top:'+(list.length?'18px':'0')+'">Paperwork pending</div>'+
       '<div class="notif-list">'+pods.map(a=>
@@ -12819,7 +12915,7 @@ function notifications(){
     : '';
   openModal({
     title:'Notifications', wide:true,
-    body: (list.length||pods.length)
+    body: (list.length||pods.length||over.length)
       ? (list.length? '<div class="sec-title" style="margin-top:0">Truck documents</div>':'')+
         '<div class="notif-list">'+list.map(a=>
           '<button class="notif" onclick="closeModal();openTruckDocs(\''+a.truckId+'\')">'+
@@ -12828,7 +12924,7 @@ function notifications(){
               '<span class="notif-title">'+esc(a.header)+' for '+esc(a.truck)+'</span>'+
               '<span class="notif-sub">'+esc(urgency(a.st))+' \u00b7 '+esc(docWhen(a.st.days))+
                 ' \u00b7 '+fdate(a.expiry)+'</span>'+
-            '</span></button>').join('')+'</div>'+ podBlock +
+            '</span></button>').join('')+'</div>'+ podBlock + overBlock +
         '<div class="hint" style="margin-top:12px">Tap an alert to open the page where you can update it.</div>'
       : '<div class="empty" style="padding:30px 10px"><div class="empty-title">Nothing needs attention</div>'+
         '<div class="empty-text">Truck papers are valid, and no delivery is waiting on paperwork.</div></div>'
@@ -14973,7 +15069,9 @@ function mTripProfit(t){
   const hire = num(t.hire);
   const self = selfFunded(t);
   const revenue = self ? 0 : tripFreightNet(t);
-  const cost = expTotal + hire;
+  const market = isMarketTruck(t.truckId) && !self;
+  const over = market && expTotal > hire;
+  const cost = (market ? 0 : expTotal) + hire;
   const profit = revenue - cost;
   const locked = tripLocked(t);
   const keep = revenue > 0 ? Math.max(0, Math.min(1, profit / revenue)) : 0;
@@ -14995,10 +15093,16 @@ function mTripProfit(t){
       '<div><span>Charges</span><b class="num">'+money(tripCharges(t))+'</b></div>'+
       '<div><span>Deductions</span><b class="num">'+money(tripDeductions(t))+'</b></div>'+
     '</div>')+
-    '<div class="m-pl-row m-pl-head"><span>(−) Expenses</span><b class="num m-neg">'+money(cost)+'</b></div>'+
+    (market
+      ? '<div class="m-pl-row m-pl-head"><span>(−) Truck hire</span><b class="num m-neg">'+money(hire)+'</b></div>'+
+        (expTotal ? '<div class="m-pl-row"><span>Paid toward the hire</span><b class="num'+(over?' m-neg':'')+'">'+money(expTotal)+'</b></div>'+
+          Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]).map((k,i)=>bar(k, byCat[k], ['gold','indigo','plum','teal'][i%4])).join('') : '')+
+        (over ? '<div class="m-hint m-hint-bad">'+money(expTotal)+' spent is more than the hire of '+money(hire)+'. What is spent on a hired truck is part of its hire \u2014 check the entries or the hire.</div>'
+              : '<div class="m-hint">A market truck\u2019s profit is the freight less the hire. What is spent on it is part of the hire, so it is not taken off again.</div>')
+      : '<div class="m-pl-row m-pl-head"><span>(−) Expenses</span><b class="num m-neg">'+money(cost)+'</b></div>'+
     (hire ? bar('Truck hire', hire, 'verm') : '')+
     Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]).map((k,i)=>bar(k, byCat[k], ['gold','indigo','plum','teal'][i%4])).join('')+
-    (!cost ? '<div class="m-hint">Nothing spent on this trip yet.</div>' : '')+
+    (!cost ? '<div class="m-hint">Nothing spent on this trip yet.</div>' : ''))+
     (locked?'':'<button class="m-link m-pl-add" onclick="tripDetail(\''+t.id+'\',\'expenses\')">'+mi('plus')+'Add expense</button>')+
     '<div class="m-pl-total"><span>'+(self?'Cost of this run':'Profit')+'</span>'+
       '<b class="num '+(self?'':profit>=0?'m-pos':'m-neg')+'">'+money(self?expTotal:profit)+'</b></div>'+
