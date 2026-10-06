@@ -4710,6 +4710,40 @@ body.phone .db-legend-note{margin-left:0;flex-basis:100%}
 .note-warn{background:var(--red-soft);border-color:var(--red-line);color:var(--ink-2)}
 .note-warn b{color:var(--red)}
 body.phone .m-hint-bad{color:var(--red,#B42318);background:color-mix(in srgb,var(--red,#B42318) 8%,transparent);border-radius:10px;padding:9px 11px}
+
+/* EMI */
+.emi-list{padding:4px 8px 8px}
+.emi-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:10px 8px;border-radius:10px;cursor:pointer;transition:background var(--t-fast)}
+.emi-row + .emi-row{border-top:1px solid var(--line-soft)}
+.emi-row:hover{background:var(--card-2)}
+.emi-date{width:44px;text-align:center;border-radius:10px;background:var(--bg-2);padding:5px 0;line-height:1.1}
+.emi-date b{display:block;font-size:16px;color:var(--ink)}
+.emi-date span{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.emi-overdue .emi-date{background:var(--red-soft)} .emi-overdue .emi-date b{color:var(--red)}
+.emi-soon .emi-date{background:var(--amber-soft)} .emi-soon .emi-date b{color:var(--amber)}
+.emi-main{min-width:0;display:flex;flex-direction:column;gap:2px}
+.emi-main b{font-size:13.5px;color:var(--ink)}
+.emi-main span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emi-end{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.emi-end b{font-size:13.5px}
+.emi-prog{width:110px;height:6px;border-radius:99px;background:var(--line-soft);overflow:hidden}
+.emi-prog i{display:block;height:100%;background:var(--c6);border-radius:99px}
+.emi-sched tr.emi-paid td{color:var(--muted)}
+.emi-sched tr.emi-overdue td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+.emi-sched tr.emi-soon td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
+.emi-sched-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:14px}
+.emi-sched-foot .hint{flex-basis:100%}
+.emi-rem{display:flex;flex-wrap:wrap;gap:8px}
+.emi-rem-opt{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid var(--line);border-radius:99px;cursor:pointer;font-size:13px;background:var(--card)}
+.emi-rem-opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.emi-rem-opt input{accent-color:var(--accent)}
+.emi-phone{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+body.phone .emi-row{grid-template-columns:auto minmax(0,1fr) auto}
+body.phone .emi-row .emi-pay{grid-column:1/-1;justify-self:stretch}
+body.phone .m-emi-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:14px}
+body.phone .m-emi-sum span{display:block;font-size:11.5px;color:var(--m-mute,#64748B)}
+body.phone .m-emi-sum b{font-size:16px}
+body.phone .s-bad{background:color-mix(in srgb,var(--m-neg,#B42318) 10%,transparent);color:var(--m-neg,#B42318)}
 </style>
 </head>
 <body>
@@ -4725,7 +4759,7 @@ body.phone .m-hint-bad{color:var(--red,#B42318);background:color-mix(in srgb,var
       <div class="brand-sub">Transport management</div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="side-foot" id="syncFoot">Version 8.72 &middot; 6 Oct 2026</div>
+    <div class="side-foot" id="syncFoot">Version 8.73 &middot; 6 Oct 2026</div>
   </aside>
   <div class="main">
     <header class="m-bar" id="mBar"><div class="m-bar-start" id="mBarStart"></div><div class="m-bar-end" id="mBarEnd"><div id="mBarExtra"></div></div></header>
@@ -4763,6 +4797,7 @@ const BLANK = {
     salaryAuto:true},
   trucks:[], parties:[], trips:[], ledger:[], expenses:[], drivers:[], driverTxns:[], places:[],
   shops:[], shopLedger:[], suppliers:[], supplierLedger:[], pods:{}, categories:[], assign:[],
+  loans:[], emiPaid:[],
   seeded:false
 };
 let DB = load();
@@ -6719,6 +6754,12 @@ function viewDashboard(){
   const attention = [];
   if(alertCount()) attention.push({tint:'red', icon:'settings', label:plural(alertCount(),'reminder')+' need attention',
     note:'Papers, PODs and payments that are due', action:'notifications()', cta:'Open'});
+  const emiA = emiAlerts();
+  if(emiA.length) attention.push({tint:emiA.some(a=>a.inst.days<0)?'red':'amber', icon:'trucks',
+    label: emiA.length===1 ? 'EMI on '+truckName(emiA[0].loan.truckId)+' \u2014 '+emiWhen(emiA[0].inst.days).toLowerCase()
+                           : plural(emiA.length,'truck EMI')+' due or overdue',
+    note: money(emiA.reduce((s,a)=>s+a.inst.amount,0))+' \u00b7 first '+fdate(emiA[0].inst.due),
+    action:"go('trucks');sub.tab='emi';render()", cta:'EMIs'});
   if(podHeld) attention.push({tint:'amber', icon:'pod', label:money(podHeld)+' waiting on paperwork',
     note:'Delivered, but the POD has not reached the party', action:"go('pod')", cta:'Deliveries'});
   if(recv) attention.push({tint:'blue', icon:'parties', label:money(recv)+' to collect',
@@ -8673,6 +8714,7 @@ function delParty(pid){
 function viewTrucks(){
   if(!sub.tab) sub.tab = 'fleet';
   if(sub.tab==='docs') return viewTruckDocs();
+  if(sub.tab==='emi') return viewEmi();
   $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="truckForm()">+ <span>New truck</span></button>';
   $('#view').innerHTML =
   truckTabs()+
@@ -8699,11 +8741,13 @@ function docHealth(t){
 }
 
 function truckTabs(){
-  const n = alertCount();
+  const n = truckAlerts().length, e = emiAlerts().length;
   return '<div class="tabs">'+
     '<button class="tab'+(sub.tab==='fleet'?' on':'')+'" onclick="sub={tab:\'fleet\'};render()">Fleet</button>'+
     '<button class="tab'+(sub.tab==='docs'?' on':'')+'" onclick="sub={tab:\'docs\'};render()">Documents'+
       (n?' <span class="chip chip-red" style="margin-left:6px">'+n+'</span>':'')+'</button>'+
+    '<button class="tab'+(sub.tab==='emi'?' on':'')+'" onclick="sub={tab:\'emi\'};render()">EMI'+
+      (e?' <span class="chip chip-amber" style="margin-left:6px">'+e+'</span>':'')+'</button>'+
   '</div>';
 }
 
@@ -9131,13 +9175,18 @@ function delTruck(id){
   const docCost = docs.reduce((s,d)=>s+docExpenseHistory(d.id).reduce((n2,e)=>n2+num(e.amount),0), 0);
   const booked = (DB.expenses||[]).filter(e=>e.truckId===id && !e.docId).length;
   const rc = attachCount(rcKey(id));
+  const loans = (DB.loans||[]).filter(l=>l.truckId===id);
   confirmAsk('Delete this truck?'+
     (rc ? ' Its RC ('+plural(rc,'page')+') is deleted with it.' : '')+
+    (loans.length ? ' Its '+plural(loans.length,'loan')+' and EMI schedule go too.' : '')+
     (docs.length ? ' Its '+plural(docs.length,'document')+
       (docCost?' and the '+money(docCost)+' recorded on them':'')+' go too.' : '')+
     (booked ? ' '+plural(booked,'expense')+' booked to it will stay in Expenses, no longer tied to a vehicle.' : ''), ()=>{
     docs.forEach(d=>dropDocExpense(d.id));
     dropAttach(rcKey(id));
+    const gone = new Set(loans.map(l=>l.id));
+    DB.loans = (DB.loans||[]).filter(l=>!gone.has(l.id));
+    DB.emiPaid = (DB.emiPaid||[]).filter(p=>!gone.has(p.loanId));
     DB.trucks = DB.trucks.filter(x=>x.id!==id);
     /* the seats it held, and every remaining pointer at a vehicle that has gone */
     DB.assign = (DB.assign||[]).filter(a=>a.truckId!==id);
@@ -9146,6 +9195,395 @@ function delTruck(id){
     (DB.supplierLedger||[]).forEach(l=>{ if(l.truckId===id) l.truckId=''; });
     save(); render(); toast('Truck deleted');
   }, true);
+}
+
+/* ============================================================
+   EMI — the loan on each truck, and when the next one falls due
+   A tracker and a reminder, nothing more. Marking an instalment
+   paid only ticks it off the schedule: it writes nothing into
+   Expenses, because the EMI is entered there by hand as before,
+   and writing it twice would count it twice.
+
+   loan:    {id, truckId, lender, loanNo, emi, firstDue, tenure,
+             remind:[5,3,1], notes, closed}
+   payment: {id, loanId, n, paidOn, amount, note}   (n is 1-based)
+   ============================================================ */
+const EMI_REMIND = [[5,'5 days before'],[3,'3 days before'],[1,'1 day before'],[0,'On the day']];
+function loanById(id){ return (DB.loans||[]).find(l=>l.id===id) || null; }
+function loanTitle(l){ return truckName(l.truckId)+(l.lender ? ' · '+l.lender : ''); }
+/* the n-th due date: the same day each month, or the month's last day when it is shorter */
+function emiDue(loan, n){
+  const [y,m,d] = String(loan.firstDue||today()).split('-').map(Number);
+  const k = (m-1) + (n-1);
+  const yy = y + Math.floor(k/12), mo = ((k%12)+12)%12;
+  const last = new Date(Date.UTC(yy, mo+1, 0)).getUTCDate();
+  return yy+'-'+String(mo+1).padStart(2,'0')+'-'+String(Math.min(d||1, last)).padStart(2,'0');
+}
+function emiPayments(loanId){ return (DB.emiPaid||[]).filter(p=>p.loanId===loanId); }
+function emiSchedule(loan){
+  const paid = {}; emiPayments(loan.id).forEach(p=>{ paid[p.n] = p; });
+  const t = today(), out = [];
+  for(let n=1; n<=Math.max(1, num(loan.tenure)); n++){
+    const due = emiDue(loan, n), p = paid[n] || null;
+    const days = daysSince(due) == null ? 0 : -daysSince(due);     /* days until due; below zero is overdue */
+    out.push({n, due, amount:num(loan.emi), paid:p, days,
+      state: p ? 'paid' : due < t ? 'overdue' : days <= emiWindow(loan) ? 'soon' : 'upcoming'});
+  }
+  return out;
+}
+function emiWindow(loan){ const r = (loan.remind||[]).map(Number); return r.length ? Math.max(...r) : 0; }
+function emiNext(loan){ return emiSchedule(loan).find(i=>!i.paid) || null; }
+function emiPaidCount(loan){ return emiSchedule(loan).filter(i=>i.paid).length; }
+/* What needs saying today: every unpaid instalment already past, and the
+   next one once it is inside the reminder window chosen for that loan. */
+function emiAlerts(){
+  const out = [];
+  (DB.loans||[]).filter(l=>!l.closed).forEach(l=>{
+    emiSchedule(l).forEach(i=>{
+      if(i.paid) return;
+      if(i.state==='overdue' || (i.state==='soon' && (l.remind||[]).length)) out.push({loan:l, inst:i});
+    });
+  });
+  return out.sort((a,b)=>a.inst.due.localeCompare(b.inst.due));
+}
+function emiWhen(days){
+  if(days < 0) return plural(-days,'day')+' overdue';
+  if(days === 0) return 'Due today';
+  if(days === 1) return 'Due tomorrow';
+  return 'Due in '+days+' days';
+}
+function emiChip(i){
+  if(i.paid) return '<span class="chip chip-green">Paid'+(i.paid.paidOn?' '+esc(fdate(i.paid.paidOn).slice(0,6)):'')+'</span>';
+  if(i.state==='overdue') return '<span class="chip chip-red">'+esc(emiWhen(i.days))+'</span>';
+  if(i.state==='soon')    return '<span class="chip chip-amber">'+esc(emiWhen(i.days))+'</span>';
+  return '<span class="chip chip-grey">'+esc(fdate(i.due))+'</span>';
+}
+
+/* ---------- the EMI tab ---------- */
+function viewEmi(){
+  $('#pageActions').innerHTML = '<button class="btn btn-amber" onclick="loanForm()">+ <span>Add loan</span></button>';
+  const loans = (DB.loans||[]).slice().sort((a,b)=>(a.closed?1:0)-(b.closed?1:0) || truckName(a.truckId).localeCompare(truckName(b.truckId)));
+  const live = loans.filter(l=>!l.closed);
+  const t = today(), in30 = addDays(t, 30), m = thisMonth();
+  const all = live.map(l=>({l, s:emiSchedule(l)}));
+  const flat = all.flatMap(x=>x.s.map(i=>Object.assign({loan:x.l}, i)));
+  const overdue = flat.filter(i=>i.state==='overdue');
+  const soon = flat.filter(i=>!i.paid && i.due>=t && i.due<=in30);
+  const paidMonth = flat.filter(i=>i.paid && monthKey(i.paid.paidOn||i.due)===m);
+  const left = flat.filter(i=>!i.paid);
+  const coming = all.map(x=>{ const nx = x.s.find(i=>!i.paid); return nx ? Object.assign({loan:x.l}, nx) : null; })
+    .filter(Boolean).sort((a,b)=>a.due.localeCompare(b.due));
+  /* every overdue one is listed, not only the first per loan */
+  const owing = overdue.filter(i=>!coming.some(c=>c.loan.id===i.loan.id && c.n===i.n));
+  const upNext = owing.concat(coming).sort((a,b)=>a.due.localeCompare(b.due));
+
+  $('#view').innerHTML = truckTabs()+
+  (!loans.length
+    ? empty('No truck loans yet','Add the loan on each truck once — the EMI amount, the first due date and how many EMIs — and the app keeps the schedule and reminds you before each one.',
+        '<button class="btn btn-amber" onclick="loanForm()">+ Add a loan</button>')
+    : summary([
+        {label:'Overdue', value:overdue.reduce((s,i)=>s+i.amount,0), icon:'expenses', tone:overdue.length?'neg':'pos',
+         note: overdue.length ? plural(overdue.length,'EMI')+' not marked paid' : 'Nothing overdue'},
+        {label:'Due in the next 30 days', value:soon.reduce((s,i)=>s+i.amount,0), icon:'reports',
+         note: soon.length ? plural(soon.length,'EMI')+(soon[0]?' · next '+fdate(soon[0].due).slice(0,6):'') : 'Nothing due'},
+        {label:'Paid this month', value:paidMonth.reduce((s,i)=>s+num(i.paid.amount||i.amount),0), icon:'pod', tone:'pos',
+         note: plural(paidMonth.length,'EMI')+' ticked off'},
+        {label:'Still to pay', value:left.reduce((s,i)=>s+i.amount,0), icon:'trucks',
+         note: plural(left.length,'EMI')+' across '+plural(live.length,'loan')}
+      ])+
+      '<div class="g-wide emi-grid" style="margin-top:4px">'+
+        '<div class="card">'+
+          '<div class="card-head"><h3 class="card-title">Coming up</h3><span class="hint">Tick one off once it is paid</span></div>'+
+          (upNext.length ? '<div class="emi-list">'+upNext.slice(0,12).map(i=>emiRow(i.loan, i)).join('')+'</div>'
+            : '<div class="empty" style="padding:24px 12px"><div class="empty-text">Every EMI is paid. Nothing is coming up.</div></div>')+
+        '</div>'+
+        '<div class="card card-pad emi-alerts">'+
+          '<h3 class="card-title" style="margin-bottom:6px">Reminders</h3>'+
+          '<p class="hint" style="margin:0 0 10px">The bell lists an EMI from the first reminder day you chose for its loan until it is marked paid, and an overdue one every day.</p>'+
+          emiPhonePanel()+
+        '</div>'+
+      '</div>'+
+      '<div class="card" style="margin-top:14px"><div class="card-head"><h3 class="card-title">Loans</h3><span class="hint">'+plural(live.length,'running loan')+'</span></div>'+
+        '<div class="tbl-wrap"><table>'+
+        '<thead><tr><th>Truck</th><th>Lender</th><th class="t-r">EMI</th><th>Paid</th><th>Next due</th><th>Reminders</th><th></th></tr></thead><tbody>'+
+        loans.map(l=>{
+          const s = emiSchedule(l), done = s.filter(i=>i.paid).length, nx = s.find(i=>!i.paid);
+          const pct = s.length ? done/s.length*100 : 0;
+          return '<tr class="row-link" onclick="loanSchedule(\''+l.id+'\')"'+(l.closed?' style="opacity:.6"':'')+'>'+
+            '<td data-label="Truck" class="num t-strong">'+esc(truckName(l.truckId))+'</td>'+
+            '<td data-label="Lender">'+esc(l.lender||'—')+(l.loanNo?'<div class="t-sub">'+esc(l.loanNo)+'</div>':'')+'</td>'+
+            '<td data-label="EMI" class="t-r num">'+money(l.emi)+'</td>'+
+            '<td data-label="Paid"><div class="emi-prog"><i style="width:'+pct.toFixed(1)+'%"></i></div>'+
+              '<div class="t-sub">'+done+' of '+s.length+(l.closed?' · closed':'')+'</div></td>'+
+            '<td data-label="Next due">'+(nx ? emiChip(nx)+'<div class="t-sub">EMI '+nx.n+' · '+fdate(nx.due)+'</div>' : '<span class="chip chip-green">All paid</span>')+'</td>'+
+            '<td data-label="Reminders" class="t-sub">'+((l.remind||[]).length ? (l.remind||[]).slice().sort((a,b)=>b-a).map(d=>d?d+'d':'day').join(' · ') : 'Off')+'</td>'+
+            '<td><div class="row-actions">'+
+              '<button class="btn btn-sm" onclick="event.stopPropagation();loanForm(\''+l.id+'\')">Edit</button>'+
+              '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();delLoan(\''+l.id+'\')">Delete</button>'+
+            '</div></td></tr>';
+        }).join('')+
+        '</tbody></table></div></div>');
+}
+function emiRow(loan, i){
+  const d = fdate(i.due);
+  return '<div class="emi-row emi-'+i.state+'" onclick="loanSchedule(\''+loan.id+'\')">'+
+    '<div class="emi-date"><b>'+esc(d.slice(0,2))+'</b><span>'+esc(d.slice(3,6))+'</span></div>'+
+    '<div class="emi-main"><b class="num">'+esc(truckName(loan.truckId))+'</b>'+
+      '<span>'+esc(loan.lender||'Loan')+' · EMI '+i.n+' of '+num(loan.tenure)+'</span></div>'+
+    '<div class="emi-end"><b class="num">'+money(i.amount)+'</b>'+emiChip(i)+'</div>'+
+    '<button class="btn btn-sm btn-primary emi-pay" onclick="event.stopPropagation();emiMarkPaid(\''+loan.id+'\','+i.n+')">Mark paid</button>'+
+  '</div>';
+}
+
+/* ---------- one loan's schedule ---------- */
+function loanSchedule(id){
+  const l = loanById(id); if(!l) return;
+  const s = emiSchedule(l), done = s.filter(i=>i.paid).length;
+  const left = s.filter(i=>!i.paid);
+  openModal({
+    title: truckName(l.truckId)+' — EMI schedule', wide:true,
+    body:
+      '<div class="trip-totals" style="margin-bottom:14px">'+
+        '<span>'+esc(l.lender||'Loan')+(l.loanNo?' · '+esc(l.loanNo):'')+'</span>'+
+        '<span>EMI <b class="num">'+money(l.emi)+'</b></span>'+
+        '<span>'+done+' of '+s.length+' paid</span>'+
+        '<span>'+(left.length ? money(left.length*num(l.emi))+' still to pay' : 'All paid')+'</span>'+
+      '</div>'+
+      '<div class="tbl-wrap"><table class="emi-sched">'+
+      '<thead><tr><th>EMI</th><th>Due on</th><th class="t-r">Amount</th><th>Status</th><th></th></tr></thead><tbody>'+
+      s.map(i=>'<tr class="emi-'+i.state+'">'+
+        '<td data-label="EMI" class="num t-strong">'+i.n+'</td>'+
+        '<td data-label="Due on" style="white-space:nowrap">'+fdate(i.due)+'</td>'+
+        '<td data-label="Amount" class="t-r num">'+money(i.paid && num(i.paid.amount) ? i.paid.amount : i.amount)+'</td>'+
+        '<td data-label="Status">'+emiChip(i)+(i.paid && i.paid.note ? '<div class="t-sub">'+esc(i.paid.note)+'</div>' : '')+'</td>'+
+        '<td>'+(i.paid
+          ? '<button class="btn btn-sm" onclick="emiUnpay(\''+l.id+'\','+i.n+')">Undo</button>'
+          : '<button class="btn btn-sm'+(i.state!=='upcoming'?' btn-primary':'')+'" onclick="emiMarkPaid(\''+l.id+'\','+i.n+')">Mark paid</button>')+
+        '</td></tr>').join('')+
+      '</tbody></table></div>'+
+      '<div class="emi-sched-foot">'+
+        '<button class="btn btn-sm" onclick="emiCalendar(\''+l.id+'\')">Add to phone calendar</button>'+
+        '<button class="btn btn-sm" onclick="closeModal();loanForm(\''+l.id+'\')">Edit loan</button>'+
+        '<span class="hint">Marking paid only ticks it off here. Enter the EMI in Expenses as you do now.</span>'+
+      '</div>'
+  });
+  setTimeout(()=>{ const r = document.querySelector('.emi-sched tr.emi-overdue, .emi-sched tr.emi-soon, .emi-sched tr.emi-upcoming');
+    if(r) r.scrollIntoView({block:'center'}); }, 60);
+}
+function emiRefresh(loanId){
+  if(document.querySelector('.emi-sched')) loanSchedule(loanId);
+  else render();
+  paintBell();
+}
+/* ticks one off; asks only for the day it was paid and a note */
+function emiMarkPaid(loanId, n){
+  const l = loanById(loanId); if(!l) return;
+  const due = emiDue(l, n);
+  const back = document.querySelector('.emi-sched') ? ()=>loanSchedule(loanId) : null;
+  openModal({
+    title:'Mark EMI '+n+' paid', okText:'Mark paid', wide:'ask',
+    body:'<p style="margin:0 0 12px;font-size:14px"><b class="num">'+esc(truckName(l.truckId))+'</b> · '+esc(l.lender||'Loan')+
+        ' · due '+fdate(due)+' · <b>'+money(l.emi)+'</b></p>'+
+      '<div class="form-grid">'+
+        fText('ep_date','Paid on', today() < due ? today() : due,'date')+
+        fText('ep_amt','Amount paid (₹)', num(l.emi)||'','number','min="0" step="1"')+
+        fText('ep_note','Note', '','text','placeholder="Optional — cheque no., UTR"')+
+      '</div>'+
+      '<p class="hint" style="margin:10px 0 0">This only ticks the EMI off and stops its reminders. Nothing is added to Expenses.</p>',
+    onOk(){
+      const paidOn = val('ep_date') || today();
+      if(!sensibleDate(paidOn)){ toast('Check the date — the year looks wrong.'); return; }
+      DB.emiPaid = (DB.emiPaid||[]).filter(p=>!(p.loanId===loanId && p.n===n));
+      DB.emiPaid.push({id:uid(), loanId, n, paidOn, amount:num(val('ep_amt'))||num(l.emi), note:val('ep_note')});
+      if(emiSchedule(l).every(i=>i.paid)) l.closed = true;
+      save(); closeModal(); toast('EMI '+n+' marked paid');
+      if(back) back(); else render();
+      paintBell();
+    }
+  });
+}
+function emiUnpay(loanId, n){
+  const l = loanById(loanId); if(!l) return;
+  DB.emiPaid = (DB.emiPaid||[]).filter(p=>!(p.loanId===loanId && p.n===n));
+  l.closed = false;
+  save(); toast('EMI '+n+' is unpaid again');
+  emiRefresh(loanId);
+}
+
+/* ---------- adding and editing a loan ---------- */
+function loanForm(id, truckId){
+  if(!DB.trucks.length){ openModal({title:'Add a truck first', body:'<p style="margin:0">A loan belongs to a truck, so add the truck before its EMI.</p>'}); return; }
+  const l = id ? loanById(id) : null;
+  const rem = l ? (l.remind||[]) : [5,3,1];
+  openModal({
+    title: l ? 'Edit loan' : 'Add a truck loan', okText: l ? 'Save changes' : 'Save loan',
+    body:'<div class="form-grid">'+
+      qTruck('ln_truck','Truck', l ? l.truckId : (truckId || sub.truck || ''))+
+      fText('ln_lender','Lender', l ? l.lender : '','text','placeholder="Bank or finance company"')+
+      fText('ln_no','Loan / agreement no.', l ? l.loanNo : '','text','placeholder="Optional"')+
+      fText('ln_emi','EMI amount (₹)', l ? (l.emi||'') : '','number','min="0" step="1"')+
+      fText('ln_first','First EMI due on', l ? l.firstDue : '','date')+
+      fText('ln_tenure','Number of EMIs', l ? (l.tenure||'') : '','number','min="1" max="240" step="1" placeholder="e.g. 48"')+
+      '<div class="field full"><label>Remind me</label><div class="emi-rem">'+
+        EMI_REMIND.map(([d,t])=>'<label class="emi-rem-opt"><input type="checkbox" name="ln_rem" value="'+d+'"'+(rem.includes(d)?' checked':'')+'><span>'+t+'</span></label>').join('')+
+      '</div></div>'+
+      (l ? '' : '<div class="field full"><label class="check-line"><input type="checkbox" id="ln_past" checked> '+
+        'Mark EMIs that fell due before today as already paid</label>'+
+        '<span class="hint">For a loan that is already running. Untick it if some of those are still unpaid.</span></div>')+
+      fArea('ln_notes','Notes', l ? (l.notes||'') : '')+
+    '</div>',
+    onOk(){
+      const truckId = val('ln_truck'), emi = num(val('ln_emi')), first = val('ln_first'), tenure = Math.round(num(val('ln_tenure')));
+      if(!truckId){ toast('Choose the truck this loan is on'); return; }
+      if(!emi){ toast('Enter the EMI amount'); return; }
+      if(!first || !sensibleDate(first)){ toast('Enter the date the first EMI is due'); return; }
+      if(!tenure || tenure < 1 || tenure > 240){ toast('Enter how many EMIs there are (1 to 240)'); return; }
+      const remind = [...document.querySelectorAll('input[name="ln_rem"]:checked')].map(x=>Number(x.value));
+      const rec = {id: l ? l.id : uid(), truckId, lender:val('ln_lender'), loanNo:val('ln_no'), emi, firstDue:first, tenure,
+        remind, notes:val('ln_notes'), closed: false};
+      DB.loans = DB.loans || []; DB.emiPaid = DB.emiPaid || [];
+      if(l){
+        /* a shorter loan no longer has its last instalments */
+        DB.emiPaid = DB.emiPaid.filter(p=>p.loanId!==l.id || p.n<=tenure);
+        DB.loans[DB.loans.findIndex(x=>x.id===l.id)] = rec;
+      } else {
+        DB.loans.push(rec);
+        if(document.getElementById('ln_past') && document.getElementById('ln_past').checked){
+          const t = today();
+          for(let n=1; n<=tenure; n++){ const due = emiDue(rec, n); if(due >= t) break;
+            DB.emiPaid.push({id:uid(), loanId:rec.id, n, paidOn:due, amount:emi, note:'Before the app'}); }
+        }
+      }
+      if(emiSchedule(rec).every(i=>i.paid)) rec.closed = true;
+      save(); closeModal();
+      if(route!=='trucks'){ route='trucks'; sub={tab:'emi'}; } else sub.tab = 'emi';
+      render(); paintBell();
+      toast(l ? 'Loan updated' : 'Loan saved · '+plural(tenure,'EMI')+' on the schedule');
+    }
+  });
+}
+function delLoan(id){
+  const l = loanById(id); if(!l) return;
+  const n = emiPayments(id).length;
+  confirmAsk('Delete the loan on '+truckName(l.truckId)+(l.lender?' with '+l.lender:'')+'?'+
+    (n ? ' Its '+plural(n,'EMI')+' marked paid go with it.' : '')+' Nothing in Expenses is touched.', ()=>{
+    DB.loans = (DB.loans||[]).filter(x=>x.id!==id);
+    DB.emiPaid = (DB.emiPaid||[]).filter(p=>p.loanId!==id);
+    save(); render(); paintBell(); toast('Loan deleted');
+  }, true);
+}
+
+/* ---------- reminders outside the app ---------- */
+/* a calendar file: one all-day event per EMI still to pay, with an
+   alarm on each reminder day chosen for the loan */
+function emiCalendar(id){
+  const l = loanById(id); if(!l) return;
+  const left = emiSchedule(l).filter(i=>!i.paid);
+  if(!left.length){ toast('Every EMI on this loan is paid'); return; }
+  const d8 = s => s.replace(/-/g,''), stamp = new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  const txt = s => String(s||'').replace(/[\\,;]/g, m=>'\\'+m).replace(/\n/g,'\\n');
+  const rem = (l.remind||[]).length ? l.remind : [];
+  const lines = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Maa Vandana Logistics//EMI//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  left.forEach(i=>{
+    const next = addDays(i.due, 1);
+    lines.push('BEGIN:VEVENT', 'UID:emi-'+l.id+'-'+i.n+'@mvl', 'DTSTAMP:'+stamp,
+      'DTSTART;VALUE=DATE:'+d8(i.due), 'DTEND;VALUE=DATE:'+d8(next),
+      'SUMMARY:'+txt('EMI '+i.n+'/'+num(l.tenure)+' – '+truckName(l.truckId)+' – '+money(i.amount)),
+      'DESCRIPTION:'+txt((l.lender||'Loan')+(l.loanNo?' · '+l.loanNo:'')));
+    rem.forEach(dd=>lines.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+txt('EMI due – '+truckName(l.truckId)),
+      'TRIGGER;RELATED=START:'+(dd ? '-P'+dd+'D' : 'PT9H'), 'END:VALARM'));
+    lines.push('END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  const blob = new Blob([lines.join('\r\n')], {type:'text/calendar;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'emi-'+nameSlug(truckName(l.truckId))+'.ics'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  toast(plural(left.length,'EMI')+' saved as a calendar file — open it to add them to your calendar');
+}
+/* alerts on the phone itself, shown when the app is opened on a reminder day */
+function emiPhonePanel(){
+  const can = 'Notification' in window;
+  const on = can && Notification.permission === 'granted';
+  const blocked = can && Notification.permission === 'denied';
+  return '<div class="emi-phone">'+
+    (on ? '<span class="chip chip-green">Phone alerts are on</span>'+
+          '<span class="hint">On a reminder day, opening the app also puts an alert in the phone’s notifications.</span>'
+     : blocked ? '<span class="chip chip-grey">Phone alerts are blocked</span>'+
+          '<span class="hint">Allow notifications for this app in the phone’s settings to turn them on.</span>'
+     : can ? '<button class="btn btn-sm" onclick="emiAskAlerts()">Turn on phone alerts</button>'+
+          '<span class="hint">Shows the reminder in the phone’s notifications when the app is opened on a reminder day.</span>'
+     : '<span class="hint">This browser cannot show notifications. The bell in the app still reminds you.</span>')+
+    '<span class="hint">For a reminder even when the app stays closed, open a loan and use <b>Add to phone calendar</b>.</span>'+
+  '</div>';
+}
+function emiAskAlerts(){
+  if(!('Notification' in window)) return;
+  Notification.requestPermission().then(()=>{ render(); emiNotify(true); });
+}
+const EMI_TOLD = 'mvl_emi_told';
+function emiNotify(force){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  let told = {}; try{ told = JSON.parse(localStorage.getItem(EMI_TOLD)||'{}') || {}; }catch(e){}
+  const t = today(), fresh = [];
+  emiAlerts().forEach(a=>{
+    const d = a.inst.days, key = a.loan.id+':'+a.inst.n;
+    const day = d < 0 || (a.loan.remind||[]).includes(d);
+    if(!day || (told[key]===t && !force)) return;
+    fresh.push(a); told[key] = t;
+  });
+  if(!fresh.length) return;
+  try{ localStorage.setItem(EMI_TOLD, JSON.stringify(told)); }catch(e){}
+  const body = fresh.slice(0,4).map(a=>truckName(a.loan.truckId)+' – '+money(a.inst.amount)+' – '+emiWhen(a.inst.days)).join('\n')+
+    (fresh.length>4 ? '\n and '+(fresh.length-4)+' more' : '');
+  const title = fresh.length===1 ? 'EMI '+emiWhen(fresh[0].inst.days).toLowerCase() : plural(fresh.length,'EMI')+' need attention';
+  const show = reg => reg && reg.showNotification
+    ? reg.showNotification(title, {body, tag:'mvl-emi', icon:'icon-192.png', badge:'icon-192.png'})
+    : new Notification(title, {body, tag:'mvl-emi', icon:'icon-192.png'});
+  try{
+    if(navigator.serviceWorker && navigator.serviceWorker.getRegistration)
+      navigator.serviceWorker.getRegistration().then(show).catch(()=>{ try{ show(null); }catch(e){} });
+    else show(null);
+  }catch(e){}
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') setTimeout(emiNotify, 1500); });
+setTimeout(emiNotify, 2500);
+
+/* ---------- the phone ---------- */
+function mEmiBody(){
+  const loans = (DB.loans||[]);
+  if(!loans.length) return '<div class="m-page">'+mEmpty('No truck loans yet','Add the loan on each truck once and the app reminds you before every EMI.',
+    '<button class="m-btn m-btn-dark" onclick="loanForm()">Add a loan</button>')+'</div>';
+  const live = loans.filter(l=>!l.closed);
+  const rows = [];
+  live.forEach(l=>emiSchedule(l).forEach(i=>{ if(!i.paid && (i.state!=='upcoming' || !rows.some(r=>r.l.id===l.id))) rows.push({l, i}); }));
+  rows.sort((a,b)=>a.i.due.localeCompare(b.i.due));
+  const due30 = rows.filter(r=>r.i.days<=30).reduce((s,r)=>s+r.i.amount,0);
+  return '<div class="m-page">'+
+    '<section class="m-card m-emi-sum"><div><span>Due in 30 days</span><b class="num">'+money(due30)+'</b></div>'+
+      '<div><span>Overdue</span><b class="num'+(rows.some(r=>r.i.state==='overdue')?' m-neg':'')+'">'+money(rows.filter(r=>r.i.state==='overdue').reduce((s,r)=>s+r.i.amount,0))+'</b></div>'+
+      '<div><span>Loans</span><b class="num">'+live.length+'</b></div></section>'+
+    '<h2 class="m-sec-h">Coming up</h2>'+
+    (rows.length ? '<section class="m-card m-rows">'+rows.slice(0,15).map((r,n)=>{
+        const d = fdate(r.i.due);
+        return '<div class="m-row m-trow" style="--i:'+n+'" onclick="loanSchedule(\''+r.l.id+'\')">'+
+          '<div class="m-tdate"><b>'+esc(d.slice(0,2))+'</b><span>'+esc(d.slice(3,6))+'</span></div>'+
+          '<div class="m-row-main"><b class="m-mono">'+esc(mPlateText(truckName(r.l.truckId)))+'</b>'+
+            '<span>'+esc(r.l.lender||'Loan')+' · EMI '+r.i.n+' of '+num(r.l.tenure)+'</span></div>'+
+          '<div class="m-row-end"><b class="num">'+money(r.i.amount)+'</b>'+
+            '<span class="m-state s-'+(r.i.state==='overdue'?'bad':r.i.state==='soon'?'gold':'grey')+'">'+esc(r.i.state==='upcoming'?fdate(r.i.due).slice(0,6):emiWhen(r.i.days))+'</span></div>'+
+        '</div>';
+      }).join('')+'</section>'
+      : '<section class="m-card">'+mEmpty('Nothing coming up','Every EMI is paid.','')+'</section>')+
+    '<h2 class="m-sec-h">Loans</h2>'+
+    '<section class="m-card m-rows">'+loans.map((l,n)=>{
+      const s = emiSchedule(l), done = s.filter(i=>i.paid).length;
+      return '<div class="m-row" style="--i:'+n+'" onclick="loanSchedule(\''+l.id+'\')">'+mSq('wallet', l.closed?'teal':'indigo')+
+        '<div class="m-row-main"><b class="m-mono">'+esc(mPlateText(truckName(l.truckId)))+'</b>'+
+          '<span>'+esc(l.lender||'Loan')+' · '+money(l.emi)+' · '+done+' of '+s.length+' paid</span></div>'+mi('chev','m-chev')+'</div>';
+    }).join('')+'</section>'+
+    '<section class="m-card" style="padding:12px 14px">'+emiPhonePanel()+'</section>'+
+  '</div>';
 }
 
 /* ============================================================
@@ -12870,7 +13308,7 @@ function truckAlerts(){
   }));
   return out.sort((a,b)=>(a.st.days||0)-(b.st.days||0));
 }
-function alertCount(){ return truckAlerts().length + podAlerts().length + marketOverspends().length; }
+function alertCount(){ return truckAlerts().length + podAlerts().length + marketOverspends().length + emiAlerts().length; }
 function urgency(st){
   if(st.key==='expired') return 'Document expired';
   if(st.days<=1)  return 'Final reminder';
@@ -12891,6 +13329,17 @@ function notifications(){
   const list = truckAlerts();
   const pods = podAlerts();
   const over = marketOverspends();
+  const emis = emiAlerts();
+  const emiBlock = emis.length
+    ? '<div class="sec-title" style="margin-top:0">Truck EMIs</div>'+
+      '<div class="notif-list" style="margin-bottom:18px">'+emis.map(a=>
+        '<button class="notif" onclick="closeModal();loanSchedule(\''+a.loan.id+'\')">'+
+          '<span class="notif-dot '+(a.inst.days<0?'bad':'warn')+'"></span>'+
+          '<span class="notif-body">'+
+            '<span class="notif-title">EMI '+a.inst.n+' \u2014 '+esc(truckName(a.loan.truckId))+' \u2014 '+money(a.inst.amount)+'</span>'+
+            '<span class="notif-sub">'+esc(emiWhen(a.inst.days))+' \u00b7 '+fdate(a.inst.due)+(a.loan.lender?' \u00b7 '+esc(a.loan.lender):'')+'</span>'+
+          '</span></button>').join('')+'</div>'
+    : '';
   const overBlock = over.length
     ? '<div class="sec-title" style="margin-top:'+(list.length||pods.length?'18px':'0')+'">Market trucks: spent more than the hire</div>'+
       '<div class="notif-list">'+over.map(a=>
@@ -12915,8 +13364,8 @@ function notifications(){
     : '';
   openModal({
     title:'Notifications', wide:true,
-    body: (list.length||pods.length||over.length)
-      ? (list.length? '<div class="sec-title" style="margin-top:0">Truck documents</div>':'')+
+    body: (list.length||pods.length||over.length||emis.length)
+      ? emiBlock + (list.length? '<div class="sec-title" style="margin-top:0">Truck documents</div>':'')+
         '<div class="notif-list">'+list.map(a=>
           '<button class="notif" onclick="closeModal();openTruckDocs(\''+a.truckId+'\')">'+
             '<span class="notif-dot '+(a.st.key==='expired'?'bad':'warn')+'"></span>'+
@@ -15199,12 +15648,14 @@ function mTruckState(t){
 }
 function mTruckOpen(id){ if(truckById(id)) truckForm(id); }
 function mTrucks(){
-  if(sub.tab!=='docs') sub.tab = 'fleet';
+  if(sub.tab!=='docs' && sub.tab!=='emi') sub.tab = 'fleet';
   if(sub.tab==='docs' && sub.dt) return mDocList();
-  const alerts = truckAlerts().length;
-  mTitle('Trucks & Documents', '', plural(DB.trucks.length,'truck')+(alerts?' · '+plural(alerts,'document')+' need attention':''));
-  const head = mTopTabs('trucks', [['fleet','Trucks'],['docs','Documents', alerts||'']], sub.tab, k=>"sub.tab='"+k+"';render()");
+  const alerts = truckAlerts().length, emiDue = emiAlerts().length;
+  mTitle('Trucks & Documents', '', plural(DB.trucks.length,'truck')+(alerts?' · '+plural(alerts,'document')+' need attention':'')+
+    (emiDue?' · '+plural(emiDue,'EMI')+' due':''));
+  const head = mTopTabs('trucks', [['fleet','Trucks'],['docs','Documents', alerts||''],['emi','EMI', emiDue||'']], sub.tab, k=>"sub.tab='"+k+"';render()");
   if(sub.tab==='docs'){ $('#view').innerHTML = head+mPane(mDocsBody())+mFab('Add document','truckDocForm()'); return; }
+  if(sub.tab==='emi'){ $('#view').innerHTML = head+mPane(mEmiBody())+mFab('Add loan','loanForm()'); return; }
   const states = {}; DB.trucks.forEach(t=>{ states[t.id] = mTruckState(t); });
   const onTrip = DB.trucks.filter(t=>states[t.id].on).length;
   const f = sub.tf || 'all';
@@ -15304,6 +15755,11 @@ function mHome(){
   const monthFreight = monthTrips.reduce((a,t)=>a+num(t.freight),0);
   const oldest = unpaid.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))[0];
   const attn = [];
+  const emiA = emiAlerts();
+  if(emiA.length) attn.push({tone:emiA.some(a=>a.inst.days<0)?'verm':'gold', icon:'wallet',
+    t: emiA.length===1 ? 'EMI '+emiWhen(emiA[0].inst.days).toLowerCase()+' \u2014 '+money(emiA[0].inst.amount) : plural(emiA.length,'EMI')+' due or overdue',
+    s: emiA.length===1 ? mPlateText(truckName(emiA[0].loan.truckId))+(emiA[0].loan.lender?' · '+emiA[0].loan.lender:'') : money(emiA.reduce((s,a)=>s+a.inst.amount,0))+' in all · first '+fdate(emiA[0].inst.due),
+    act:"mGo('trucks',{tab:'emi'})"});
   if(papers) attn.push({tone:'verm', icon:'shield', t:plural(papers,'document')+' need renewal', s:'Expired or expiring within 30 days', act:"mGo('trucks',{tab:'docs'})"});
   if(podDue) attn.push({tone:'gold', icon:'pod', t:plural(podDue,'POD')+' pending', s:'Delivered, paperwork not yet with the party', act:"mGo('trips',{stage:'podpending'})"});
   if(oldest && daysSince(oldest.date) > 15) attn.push({tone:'indigo', icon:'rupee', t:'Oldest unpaid: '+daysSince(oldest.date)+' days',
@@ -15366,6 +15822,7 @@ function mHome(){
       link('receipt','Expenses',"mGo('expenses')")+
       link('truck','Trucks',"mGo('trucks',{tab:'fleet'})")+
       link('shield','Documents',"mGo('trucks',{tab:'docs'})", papers||'')+
+      link('wallet','Truck EMIs',"mGo('trucks',{tab:'emi'})", emiA.length||'')+
       link('chart','Reports & P&L',"mGo('reports')")+
       link('trend','Insights',"mGo('insights')")+
     '</section>'+
